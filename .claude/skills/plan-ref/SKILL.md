@@ -7,7 +7,11 @@ description: Consulta el plan de implementación de TallerControl por ID (REQ-xx
 
 El plan está **fuera del repo**, en `../documentacion/analisis-vehix/Plan implementaicon/` (la carpeta se llama `implementaicon`).
 
+**Fuente única: `PlanImplementacionV2.html`.** Consolida los documentos 00–14; cada uno es `<section id="doc-NN">` con sus cambios V2 en un bloque `v2-delta`, y los IDs son anclas (`id="REQ-05"`, `id="T-SET-03"`, `id="D-15"`, `id="V-11"`). Las líneas son muy largas: buscá con Grep (`-o` o `head_limit`) para obtener el número de línea y leé con `offset`/`limit`. Los `.md` de la carpeta (y `V2/`) son el mismo contenido partido y solo sirven de atajo; si difieren, manda el HTML. No usar `PlanImplementacion.html` (V1, histórico).
+
 ## Dónde buscar según el ID
+
+La tabla indica la sección del HTML (`doc-NN`); el `.md` equivalente es un atajo.
 
 | ID / tema | Documento |
 |---|---|
@@ -23,22 +27,20 @@ El plan está **fuera del repo**, en `../documentacion/analisis-vehix/Plan imple
 | `D-xx`, `RT-xx`, `RF-xx`, `I-xx` | `10_riesgos_y_decisiones_pendientes.md` |
 | Requisito ↔ pruebas | `11_matriz_requisitos_pruebas.md` |
 
-## Versión 2 (manda sobre V1)
+## Secciones propias de V2
 
-Los `.md` 01–11 son de V1. Los cambios de V2 están en `V2/`:
-
-| Qué buscás | Dónde |
+| Qué buscás | Sección del HTML |
 |---|---|
-| Qué cambió en el documento NN | `V2/14_cambios_por_documento_v2.md`, sección `## NN` |
-| Regla nueva de un módulo, KPIs | `V2/13_reglas_nuevas_por_modulo_v2.md` |
-| Evidencia contra Vehix (`V-01..V-80`) | `V2/12_registro_verificacion_v2.md` |
-| Decisiones `D-15..D-21`, funcionalidades `F-53..F-58`, pruebas nuevas | `V2/14_...` (secciones 10, 01 y 08) |
+| Resumen y decisiones D-15..D-21 | `doc-00` (Novedades) |
+| Qué cambió en el documento NN | bloque `v2-delta` (`id="v2-NN"`) dentro de `doc-NN` |
+| Regla nueva de un módulo, KPIs | `doc-13` (Reglas nuevas por módulo) |
+| Evidencia contra Vehix (`V-01..V-80`) | `doc-12` (Registro de verificación) |
 
-Buscá siempre también en `V2/`; si V1 y V2 se contradicen, citá V2.
+El HTML es la base de desarrollo; si un `.md` lo contradice, citá el HTML.
 
 ## Procedimiento
 
-1. Con Grep buscá el ID exacto en la carpeta del plan **y en `V2/`** (`output_mode: content`, con contexto).
+1. Con Grep buscá el ID exacto en `PlanImplementacionV2.html` (ancla `id="…"`) y leé alrededor con `offset`/`limit`.
 2. Leé la sección completa, no solo la línea (reglas y criterios de aceptación van juntos).
 3. Cruzá con `11` para listar las pruebas asociadas y con `10` por si hay una decisión pendiente que afecte.
 4. Respondé con: regla literal, fuente (`archivo` §sección), dependencias, pruebas asociadas y decisiones abiertas.

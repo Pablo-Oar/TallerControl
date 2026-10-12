@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TallerControl.Api/TallerControl.Api.csproj" />
+    <Project Path="src/TallerControl.Application/TallerControl.Application.csproj" />
+    <Project Path="src/TallerControl.Domain/TallerControl.Domain.csproj" />
+    <Project Path="src/TallerControl.Infrastructure/TallerControl.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TallerControl.Api.IntegrationTests/TallerControl.Api.IntegrationTests.csproj" />
+    <Project Path="tests/TallerControl.Application.Tests/TallerControl.Application.Tests.csproj" />
+    <Project Path="tests/TallerControl.Domain.Tests/TallerControl.Domain.Tests.csproj" />
+  </Folder>
+</Solution>
