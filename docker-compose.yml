@@ -1,0 +1,74 @@
+# Entorno de desarrollo local de TallerControl.
+# Uso:   copy .env.example .env   (y completar las contraseñas)   →   docker compose up -d
+# Solo para desarrollo: los puertos se publican únicamente en 127.0.0.1.
+
+name: tallercontrol
+
+services:
+  db:
+    image: postgres:18
+    container_name: tc-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tallercontrol}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definí POSTGRES_PASSWORD en .env (copiá .env.example)}
+      POSTGRES_DB: ${POSTGRES_DB:-tallercontrol}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # PostgreSQL 18: el volumen se monta en /var/lib/postgresql (ya no en .../data)
+      - tc_pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tallercontrol} -d ${POSTGRES_DB:-tallercontrol}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 1g
+
+  # Sustituto local de Cloudflare R2 (API S3). MinIO ya no publica imágenes; ver README.
+  storage:
+    image: rustfs/rustfs:latest@sha256:1803faef57627e2d9c2e7d89d655d712ddded5389040054987163043fecb6a3c
+    container_name: tc-storage
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: ${STORAGE_ACCESS_KEY:-tcdevaccess}
+      RUSTFS_SECRET_KEY: ${STORAGE_SECRET_KEY:?Definí STORAGE_SECRET_KEY en .env (copiá .env.example)}
+    ports:
+      - "127.0.0.1:${STORAGE_API_PORT:-9000}:9000"
+      - "127.0.0.1:${STORAGE_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - tc_storage:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 512m
+
+  # Tarea de una sola vez: crea el bucket de desarrollo si no existe.
+  storage-init:
+    image: rustfs/rustfs:latest@sha256:1803faef57627e2d9c2e7d89d655d712ddded5389040054987163043fecb6a3c
+    container_name: tc-storage-init
+    depends_on:
+      storage:
+        condition: service_healthy
+    restart: "no"
+    environment:
+      RUSTFS_ACCESS_KEY: ${STORAGE_ACCESS_KEY:-tcdevaccess}
+      RUSTFS_SECRET_KEY: ${STORAGE_SECRET_KEY:?Definí STORAGE_SECRET_KEY en .env (copiá .env.example)}
+      BUCKET: ${STORAGE_BUCKET:-tallercontrol-dev}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        code=$$(curl -s -o /dev/null -w '%{http_code}' -X PUT \
+          --aws-sigv4 'aws:amz:us-east-1:s3' \
+          --user "$$RUSTFS_ACCESS_KEY:$$RUSTFS_SECRET_KEY" \
+          "http://storage:9000/$$BUCKET")
+        case "$$code" in
+          200|409) echo "Bucket $$BUCKET listo (HTTP $$code)" ;;
+          *) echo "No se pudo crear el bucket $$BUCKET (HTTP $$code)"; exit 1 ;;
+        esac
+
+volumes:
+  tc_pgdata:
+  tc_storage:

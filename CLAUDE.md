@@ -35,7 +35,7 @@ Skill `plan-ref` para consultar un REQ, T-* o decisión por ID.
 
 ## Stack
 
-ASP.NET Core 10 Web API (C#) · EF Core 10 + Npgsql · PostgreSQL 18 · React + TS (Vite) · Tailwind · TanStack Query · React Hook Form + Zod · Cloudflare R2 (MinIO en local) · QRCoder · PDF: QuestPDF o MigraDoc (D-05 pendiente) · Serilog.
+ASP.NET Core 10 Web API (C#) · EF Core 10 + Npgsql · PostgreSQL 18 · React + TS (Vite) · Tailwind · TanStack Query · React Hook Form + Zod · Cloudflare R2 (RustFS en local; MinIO ya no publica imágenes) · QRCoder · PDF: QuestPDF o MigraDoc (D-05 pendiente) · Serilog.
 Tests: xUnit, Testcontainers (PostgreSQL real, **no InMemory**), WebApplicationFactory, Vitest + Testing Library, Playwright.
 
 ## Estructura
@@ -51,7 +51,7 @@ docs/  scripts/  .github/workflows/
 ```
 
 Application y Domain se organizan **por módulo** (`Work/`, `Qr/`, `Customers/`…), no por tipo técnico.
-Estado actual: **E0 en curso**, la solución .NET y `web/` todavía no existen.
+Estado actual: **E0 en curso**. Existe el entorno local (`docker-compose.yml`, `.env.example`); la solución .NET y `web/` todavía no existen.
 
 ## Comandos
 
@@ -60,7 +60,8 @@ Disponibles desde E0 (actualizar esta sección al crearlos):
 ```
 dotnet build / dotnet test / dotnet format
 npm --prefix web run dev | build | lint | test
-docker compose up -d        # PostgreSQL 18 + MinIO (requiere Docker Desktop)
+copy .env.example .env     # primera vez; luego completar las contraseñas locales
+docker compose up -d        # PostgreSQL 18 + RustFS/S3 en 127.0.0.1 (requiere Docker Desktop)
 ```
 
 ## Reglas de arquitectura (no negociables)
@@ -118,4 +119,4 @@ Si una tarea depende de una, **preguntar** y registrar el valor provisorio.
 
 ## Entorno del usuario
 
-Windows 10, PowerShell. Git con Git Credential Manager (HTTPS), remoto `Pablo-Oar/TallerControl`. `gh` aún sin autenticar.
+Windows 10, PowerShell, 12 GB de RAM (WSL limitado a 4 GB en `.wslconfig`). Docker Desktop operativo. Git con Git Credential Manager (HTTPS), remoto `Pablo-Oar/TallerControl`; `gh` autenticado.
