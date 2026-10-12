@@ -1,0 +1,59 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(../documentacion/**)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git show*)",
+      "Bash(dotnet build*)",
+      "Bash(dotnet test*)",
+      "Bash(dotnet format*)",
+      "Bash(dotnet restore*)",
+      "Bash(dotnet --list-sdks)",
+      "Bash(dotnet ef migrations list*)",
+      "Bash(npm --prefix web run lint*)",
+      "Bash(npm --prefix web run test*)",
+      "Bash(npm --prefix web run build*)",
+      "Bash(docker compose ps*)",
+      "Bash(docker compose logs*)"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean -f*)",
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/secrets.json)",
+      "Read(**/*.pfx)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Edit(.env)",
+      "Edit(.env.*)"
+    ],
+    "ask": [
+      "Bash(git push*)",
+      "Bash(git commit*)",
+      "Bash(git checkout*)",
+      "Bash(git switch*)",
+      "Bash(git merge*)",
+      "Bash(git rebase*)",
+      "Bash(dotnet ef database update*)",
+      "Bash(dotnet ef migrations add*)",
+      "Bash(dotnet ef migrations remove*)",
+      "Bash(docker compose down*)"
+    ],
+    "additionalDirectories": [
+      "../documentacion"
+    ]
+  },
+  "enabledPlugins": {
+    "csharp-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "github@claude-plugins-official": true
+  }
+}
