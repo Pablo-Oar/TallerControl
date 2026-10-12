@@ -110,8 +110,10 @@ docker compose up -d        # PostgreSQL 18 + MinIO (requiere Docker Desktop)
 ## Decisiones aún abiertas (no asumir)
 
 D-02 host, D-03 proveedor PostgreSQL, D-04 email, D-05 librería PDF, D-07 stock negativo (recomendado: permitir con alerta),
-D-01/D-12/D-13 antes de E8 (QR). Nuevas en V2: D-15 alcance por sucursal, D-16 modelo de saldo de caja, D-17 límites por plan,
+D-01/D-12/D-13 antes de E8 (QR). Nuevas en V2: D-16 modelo de saldo de caja, D-17 límites por plan,
 D-18 Google en el panel, D-19 datos fiscales de compras, D-20 ventas de mostrador, D-21 kits.
+
+**Decididas:** D-15 (12/10/2026): clientes y catálogo compartidos dentro del taller; caja, stock y numeración por sucursal.
 Si una tarea depende de una, **preguntar** y registrar el valor provisorio.
 
 ## Entorno del usuario
