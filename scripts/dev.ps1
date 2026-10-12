@@ -2,7 +2,9 @@
 .SYNOPSIS
   Levanta el entorno de desarrollo completo: PostgreSQL + almacenamiento S3 local, la API y la SPA.
 .DESCRIPTION
-  Uso (desde cualquier carpeta):  .\scripts\dev.ps1
+  Uso (desde la carpeta del repositorio):  .\scripts\dev.ps1
+  Desde otra carpeta, con la ruta completa:  & "<ruta del repo>\scripts\dev.ps1"
+  Si PowerShell bloquea la ejecución:  powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1
   - Crea .env desde .env.example si no existe (cambiá las contraseñas si querés).
   - Levanta docker compose y espera a que esté "healthy".
   - Arma ConnectionStrings__Default con los valores de .env y lo pasa a la API.
@@ -22,8 +24,14 @@ foreach ($line in Get-Content .env) {
     if ($line -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$') { $cfg[$Matches[1]] = $Matches[2] }
 }
 
-docker compose up -d --wait
-if ($LASTEXITCODE -ne 0) { throw 'docker compose no pudo levantar el entorno.' }
+# db y storage son servicios de larga duración: se espera a que estén "healthy".
+docker compose up -d --wait db storage
+if ($LASTEXITCODE -ne 0) { throw 'docker compose no pudo levantar la base y el almacenamiento.' }
+
+# storage-init es una tarea de una sola vez (crea el bucket y termina con 0): con --wait
+# Compose la tomaría por un servicio caído, así que se corre aparte y se espera a que termine.
+docker compose up --no-log-prefix storage-init
+if ($LASTEXITCODE -ne 0) { throw 'No se pudo crear el bucket de desarrollo.' }
 
 $port = if ($cfg['POSTGRES_PORT']) { $cfg['POSTGRES_PORT'] } else { '5432' }
 $user = if ($cfg['POSTGRES_USER']) { $cfg['POSTGRES_USER'] } else { 'tallercontrol' }
