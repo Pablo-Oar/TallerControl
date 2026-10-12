@@ -27,6 +27,14 @@ docker compose down         # apagar; los datos se conservan (down -v los borra)
 | API S3 | `http://127.0.0.1:9000` | Bucket `tallercontrol-dev`, creado al levantar |
 | Consola del almacenamiento | `http://127.0.0.1:9001` | Misma clave de acceso que la API |
 
+### Consulta de la base desde Claude Code (MCP, solo lectura)
+
+`.mcp.json` y `dbhub.toml` declaran un servidor MCP de PostgreSQL ([DBHub](https://github.com/bytebase/dbhub) fijado en 1.5.0). Es de **solo lectura** y devuelve como máximo 200 filas; los cambios de esquema se hacen con migraciones.
+
+- Usa el `.env` de la carpeta del proyecto: hay que haberlo creado y tener `docker compose up -d` corriendo.
+- La contraseña de `POSTGRES_PASSWORD` no debe tener caracteres especiales (`@ : / ? #`), porque forma parte de la URL de conexión.
+- Claude Code pide aprobar el servidor la primera vez que lo ve.
+
 Los puertos solo escuchan en `127.0.0.1`. El almacenamiento local es un sustituto de desarrollo: MinIO dejó de publicar imágenes y se usa RustFS; CORS y URL prefirmadas se validan contra el bucket real de staging.
 
 ## Documentación
