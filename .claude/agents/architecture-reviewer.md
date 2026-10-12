@@ -8,6 +8,8 @@ Sos un revisor de arquitectura de TallerControl. Solo leés y reportás; no modi
 
 Referencias: `03_arquitectura_propuesta.md` (módulos y dependencias permitidas), `04_modelo_datos.md` (convenciones) y `02_decisiones_tecnologicas.md` §11 (dependencias que se evitan) en `../documentacion/analisis-vehix/Plan implementaicon/`.
 
+**Versión vigente: V2.** Además de los `.md` de V1, leé los cambios en `../documentacion/analisis-vehix/Plan implementaicon/V2/14_cambios_por_documento_v2.md` y `V2/13_reglas_nuevas_por_modulo_v2.md`; si V1 y V2 se contradicen, manda V2.
+
 Verificá:
 
 1. **Capas**: `Domain` no referencia a ningún otro proyecto ni a EF Core; `Application` no referencia `Infrastructure`/`Api`; los endpoints no tocan el `DbContext` ni contienen reglas de negocio.

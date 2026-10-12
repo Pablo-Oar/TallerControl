@@ -12,8 +12,8 @@ Alternativa propia a Vehix, multiempresa y con API JSON reutilizable.
 
 ## Documentación
 
-El plan completo (alcance, decisiones, roadmap) está en
-[`../documentacion/analisis-vehix/Plan implementaicon/`](<../documentacion/analisis-vehix/Plan implementaicon/>).
+El plan de implementación (alcance, decisiones, roadmap) es documentación interna y no se versiona en este repositorio.
+Las convenciones de trabajo del equipo están en [`CLAUDE.md`](CLAUDE.md).
 
 ## Estado
 

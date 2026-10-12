@@ -5,8 +5,17 @@ Foco del MVP: **vehículo + historial, ciclo presupuesto → orden → cobro, po
 
 ## Fuente de verdad: el plan
 
-El plan vive **fuera del repo**: `../documentacion/analisis-vehix/Plan implementaicon/` (la carpeta se llama `implementaicon`, sin "m").
+El plan vive **fuera del repo** (es documentación interna, no se sube): `../documentacion/analisis-vehix/Plan implementaicon/` (la carpeta se llama `implementaicon`, sin "m").
 Antes de implementar algo, leer el documento que corresponde. No inventar reglas: si el plan no lo dice, preguntar.
+
+**Versión vigente: V2** (`PlanImplementacionV2.html`). Los `.md` 01–11 de la carpeta son los de V1 y se leen **junto con** los cambios de V2; si se contradicen, manda V2:
+
+| Archivo en `V2/` | Contiene |
+|---|---|
+| `14_cambios_por_documento_v2.md` | Qué cambia en cada documento 01–11 (sección `## NN`) |
+| `13_reglas_nuevas_por_modulo_v2.md` | Reglas nuevas por módulo, prioridad, etapa y diccionario de KPIs |
+| `12_registro_verificacion_v2.md` | 80 verificaciones contra capturas de Vehix (V-01..V-80) |
+| `00_novedades_v2.md` | Resumen y decisiones D-15..D-21 |
 
 | Doc | Contiene |
 |---|---|
@@ -73,6 +82,9 @@ docker compose up -d        # PostgreSQL 18 + MinIO (requiere Docker Desktop)
 - Enums como `text` + `CHECK`. Concurrencia optimista con `xmin`.
 - Numeración correlativa por taller vía `document_sequences` con `SELECT … FOR UPDATE`.
 - Totales **siempre calculados en el servidor**.
+- **V2:** `document_sequences` con clave `(tenant_id, branch_id, kind)`, `stock_movements.branch_id` y `payments.account_id` (nulo) desde el MVP.
+- **V2:** una sola definición de deuda/"por cobrar": suma de `balance` de órdenes **no canceladas**, igual en listados, ficha, dashboard y reportes.
+- **V2:** cambiar el precio de un servicio o producto no altera renglones ya cargados.
 
 ## Seguridad (el frontend nunca es una barrera)
 
@@ -98,7 +110,9 @@ docker compose up -d        # PostgreSQL 18 + MinIO (requiere Docker Desktop)
 ## Decisiones aún abiertas (no asumir)
 
 D-02 host, D-03 proveedor PostgreSQL, D-04 email, D-05 librería PDF, D-07 stock negativo (recomendado: permitir con alerta),
-D-01/D-12/D-13 antes de E8 (QR). Si una tarea depende de una, **preguntar** y registrar el valor provisorio.
+D-01/D-12/D-13 antes de E8 (QR). Nuevas en V2: D-15 alcance por sucursal, D-16 modelo de saldo de caja, D-17 límites por plan,
+D-18 Google en el panel, D-19 datos fiscales de compras, D-20 ventas de mostrador, D-21 kits.
+Si una tarea depende de una, **preguntar** y registrar el valor provisorio.
 
 ## Entorno del usuario
 

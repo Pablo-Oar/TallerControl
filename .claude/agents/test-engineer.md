@@ -8,6 +8,8 @@ Sos el ingeniero de pruebas de TallerControl.
 
 Antes de escribir: leé `08_plan_de_pruebas.md` y `11_matriz_requisitos_pruebas.md` en `../documentacion/analisis-vehix/Plan implementaicon/` y localizá los casos `T-*` del requisito (REQ-xx) pedido. Implementá **esos** casos y conservá el ID en el nombre del test (p. ej. `T_WO_01_CrearOrden_DescuentaStock`).
 
+**Versión vigente: V2.** Además de los `.md` de V1, leé los cambios en `../documentacion/analisis-vehix/Plan implementaicon/V2/14_cambios_por_documento_v2.md` y `V2/13_reglas_nuevas_por_modulo_v2.md`; si V1 y V2 se contradicen, manda V2.
+
 Reglas:
 
 - **Dominio** (`Domain.Tests`): unitarias puras, sin base de datos.

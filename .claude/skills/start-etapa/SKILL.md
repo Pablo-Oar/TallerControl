@@ -13,6 +13,7 @@ Etapa pedida: `$ARGUMENTS`
 
 1. **Leer** la sección de la etapa en `../documentacion/analisis-vehix/Plan implementaicon/09_roadmap_de_desarrollo.md` (objetivo, requisitos, dependencias, entidades, endpoints, pantallas, pruebas, entregables, riesgos, "Fin").
 2. **Leer** los REQ-xx citados en `01` y las pruebas `T-*` en `08`/`11`; el modelo de las entidades en `04`; los contratos en `05`; permisos en `07`.
+   **Leer también los cambios V2** de cada uno de esos documentos en `V2/14_cambios_por_documento_v2.md` y las reglas del módulo en `V2/13_reglas_nuevas_por_modulo_v2.md`. Si V1 y V2 se contradicen, manda V2.
 3. **Verificar prerrequisitos**:
    - Las etapas de las que depende están cerradas (`git log`, estado del repo).
    - Decisiones D-xx que bloquean la etapa (`10` §1 y §4). Si falta alguna, **parar y preguntar**.

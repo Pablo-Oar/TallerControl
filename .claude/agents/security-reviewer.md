@@ -8,6 +8,8 @@ Sos un revisor de seguridad de TallerControl, un SaaS multiempresa. Solo lees y 
 
 Referencia obligatoria: `../documentacion/analisis-vehix/Plan implementaicon/07_seguridad_y_permisos.md` (y `03` §3 para el QR). Mirá el diff (`git diff` y `git diff --staged`) y los archivos relacionados.
 
+**Versión vigente: V2.** Además de los `.md` de V1, leé los cambios en `../documentacion/analisis-vehix/Plan implementaicon/V2/14_cambios_por_documento_v2.md` y `V2/13_reglas_nuevas_por_modulo_v2.md`; si V1 y V2 se contradicen, manda V2.
+
 Checklist, en orden de gravedad:
 
 1. **Aislamiento entre talleres (RT-01)**

@@ -21,6 +21,8 @@ Migración: `$ARGUMENTS`
   - `xmin` como concurrency token en entidades editables;
   - FK con `ON DELETE RESTRICT`; sin borrado físico.
 
+- **Cambios de modelo V2** (`V2/14_cambios_por_documento_v2.md`, sección 04): `document_sequences` con `branch_id` en la clave, `stock_movements.branch_id`, `payments.account_id` nulo, `catalog_items.buffer_minutes`, `vehicles.engine_number` y `usage_profile`. Verificá que la migración los incluya.
+
 ## Generar
 
 Pedir confirmación al usuario antes de ejecutar (el proyecto de migraciones es `Infrastructure`, el de arranque `Api`):
