@@ -8,7 +8,10 @@ Foco del MVP: **vehículo + historial, ciclo presupuesto → orden → cobro, po
 El plan vive **fuera del repo** (es documentación interna, no se sube): `../documentacion/analisis-vehix/Plan implementaicon/` (la carpeta se llama `implementaicon`, sin "m").
 Antes de implementar algo, leer el documento que corresponde. No inventar reglas: si el plan no lo dice, preguntar.
 
-**Versión vigente: V2** (`PlanImplementacionV2.html`). Los `.md` 01–11 de la carpeta son los de V1 y se leen **junto con** los cambios de V2; si se contradicen, manda V2:
+**Documento a seguir: `PlanImplementacionV2.html`** (V2, 12/10/2026, "base de desarrollo"). Consolida los documentos 00–14 en un solo archivo: cada uno es una `<section id="doc-NN">` y los cambios de V2 van en un bloque `v2-delta` dentro de cada sección. Los IDs (`REQ-xx`, `T-*`, `D-xx`, `V-xx`…) son anclas `id="…"`. Buscar con Grep por `id="doc-04"` o por el ID y leer con offset (las líneas son largas).
+Los `.md` 01–11 y `V2/*.md` de la carpeta son el mismo contenido en pedazos (V1 + deltas) y sirven solo como atajo de búsqueda; **si difieren del HTML, manda el HTML**. `PlanImplementacion.html` (V1) queda como histórico: no usarlo.
+
+Equivalencias, por si hay que ubicar algo en los `.md`:
 
 | Archivo en `V2/` | Contiene |
 |---|---|
@@ -51,14 +54,16 @@ docs/  scripts/  .github/workflows/
 ```
 
 Application y Domain se organizan **por módulo** (`Work/`, `Qr/`, `Customers/`…), no por tipo técnico.
-Estado actual: **E0 en curso**. Existe el entorno local (`docker-compose.yml`, `.env.example`); la solución .NET y `web/` todavía no existen.
+Estado actual: **E0 en curso**. Existen el entorno local (`docker-compose.yml`, `.env.example`) y la solución .NET (`TallerControl.slnx`: 4 proyectos + 3 de pruebas, `/health/live` y `/health/ready`). Falta `web/` (SPA), CI y README de arranque.
+La cadena de conexión sale de `ConnectionStrings:Default` (en Development, host/usuario en `appsettings.Development.json`; la contraseña por `dotnet user-secrets` o `ConnectionStrings__Default`, nunca en el repo).
 
 ## Comandos
 
 Disponibles desde E0 (actualizar esta sección al crearlos):
 
 ```
-dotnet build / dotnet test / dotnet format
+dotnet build TallerControl.slnx / dotnet test TallerControl.slnx / dotnet format TallerControl.slnx --verify-no-changes
+# los tests de integración levantan PostgreSQL con Testcontainers: requieren Docker Desktop
 npm --prefix web run dev | build | lint | test
 copy .env.example .env     # primera vez; luego completar las contraseñas locales
 docker compose up -d        # PostgreSQL 18 + RustFS/S3 en 127.0.0.1 (requiere Docker Desktop)
