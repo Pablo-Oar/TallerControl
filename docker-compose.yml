@@ -19,7 +19,9 @@ services:
       # PostgreSQL 18: el volumen se monta en /var/lib/postgresql (ya no en .../data)
       - tc_pgdata:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tallercontrol} -d ${POSTGRES_DB:-tallercontrol}"]
+      # -h 127.0.0.1 fuerza TCP: el servidor temporal de inicialización solo escucha por socket,
+      # así que "healthy" no aparece hasta que la base definitiva está lista.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U ${POSTGRES_USER:-tallercontrol} -d ${POSTGRES_DB:-tallercontrol}"]
       interval: 5s
       timeout: 3s
       retries: 20

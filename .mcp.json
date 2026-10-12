@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@bytebase/dbhub@1.5.0", "--transport", "stdio", "--config", "dbhub.toml"]
+    }
+  }
+}

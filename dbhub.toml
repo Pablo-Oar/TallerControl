@@ -1,0 +1,20 @@
+# Configuración del servidor MCP de PostgreSQL (DBHub) para el entorno LOCAL de desarrollo.
+# No contiene secretos: las ${VARIABLES} se toman del archivo .env de esta carpeta
+# (el servidor lee ./.env) o del entorno del usuario. Ver .mcp.json.
+#
+# Solo lectura y con tope de filas: sirve para inspeccionar el esquema y las migraciones,
+# no para modificar datos. Los cambios se hacen con migraciones de EF Core.
+
+[[sources]]
+id = "tallercontrol"
+dsn = "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable"
+
+[[tools]]
+name = "execute_sql"
+source = "tallercontrol"
+readonly = true
+max_rows = 200
+
+[[tools]]
+name = "search_objects"
+source = "tallercontrol"

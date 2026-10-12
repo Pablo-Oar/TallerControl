@@ -64,6 +64,8 @@ copy .env.example .env     # primera vez; luego completar las contraseñas local
 docker compose up -d        # PostgreSQL 18 + RustFS/S3 en 127.0.0.1 (requiere Docker Desktop)
 ```
 
+**Base de datos por MCP (`postgres`, solo lectura):** `.mcp.json` + `dbhub.toml`. Sirve para inspeccionar esquema y migraciones con `search_objects` y `execute_sql` (solo `SELECT`, 200 filas). **Nunca** se usa para modificar datos: los cambios van por migraciones de EF Core. Requiere el entorno local levantado y un `.env` creado por el usuario.
+
 ## Reglas de arquitectura (no negociables)
 
 - **Monolito modular.** Un módulo usa solo la interfaz pública de otro, nunca sus tablas ni su DbContext. Sin dependencias circulares.
