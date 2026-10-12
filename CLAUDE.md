@@ -54,7 +54,7 @@ docs/  scripts/  .github/workflows/
 ```
 
 Application y Domain se organizan **por módulo** (`Work/`, `Qr/`, `Customers/`…), no por tipo técnico.
-Estado actual: **E0 en curso**. Existen el entorno local (`docker-compose.yml`, `.env.example`) y la solución .NET (`TallerControl.slnx`: 4 proyectos + 3 de pruebas, `/health/live` y `/health/ready`). `web/` tiene el shell de la SPA (React 19 + Vite + Tailwind 4, ruteo con las tres áreas cargadas por separado, Vitest). Faltan CI y README de arranque.
+Estado actual: **E0 en curso**. Existen el entorno local (`docker-compose.yml`, `.env.example`) y la solución .NET (`TallerControl.slnx`: 4 proyectos + 3 de pruebas, `/health/live` y `/health/ready`). `web/` tiene el shell de la SPA (React 19 + Vite + Tailwind 4, ruteo con las tres áreas cargadas por separado, Vitest). CI en `.github/workflows/ci.yml` (build, format, test, lint, gitleaks) y arranque con `.\scripts\dev.ps1`. Con eso E0 queda completa salvo la verificación del CI en verde.
 La cadena de conexión sale de `ConnectionStrings:Default` (en Development, host/usuario en `appsettings.Development.json`; la contraseña por `dotnet user-secrets` o `ConnectionStrings__Default`, nunca en el repo).
 
 ## Comandos
@@ -65,6 +65,7 @@ Disponibles desde E0 (actualizar esta sección al crearlos):
 dotnet build TallerControl.slnx / dotnet test TallerControl.slnx / dotnet format TallerControl.slnx --verify-no-changes
 # los tests de integración levantan PostgreSQL con Testcontainers: requieren Docker Desktop
 npm --prefix web run dev | build | lint | test
+.\scripts\dev.ps1           # todo el entorno: .env si falta, docker, API (:5233) y SPA (:5173)
 copy .env.example .env     # primera vez; luego completar las contraseñas locales
 docker compose up -d        # PostgreSQL 18 + RustFS/S3 en 127.0.0.1 (requiere Docker Desktop)
 ```
