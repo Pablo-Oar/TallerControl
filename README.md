@@ -14,6 +14,20 @@ Alternativa propia a Vehix, multiempresa y con API JSON reutilizable.
 
 Requisitos: Docker Desktop (con WSL 2), .NET SDK 10 y Node.js 22.
 
+### Arranque con un comando
+
+```powershell
+.\scripts\dev.ps1
+```
+
+Crea `.env` si falta, levanta PostgreSQL y el almacenamiento, abre la API en otra ventana (`http://localhost:5233`) y deja la SPA en esta (`http://localhost:5173`, que reenvía `/api` y `/health` a la API).
+Comprobación: `http://localhost:5233/health/live` y `/health/ready` deben responder 200.
+
+### Paso a paso
+
+Para correr la API a mano, la cadena de conexión no está en el repositorio: se pasa por variable de entorno
+(`$env:ConnectionStrings__Default = "Host=127.0.0.1;Port=5432;Database=tallercontrol;Username=tallercontrol;Password=<la de .env>"`) o con `dotnet user-secrets`.
+
 ```powershell
 copy .env.example .env      # cambiar las contraseñas locales
 docker compose up -d        # PostgreSQL 18 + almacenamiento S3 local
@@ -26,6 +40,19 @@ docker compose down         # apagar; los datos se conservan (down -v los borra)
 | PostgreSQL 18 | `127.0.0.1:5432` | Usuario y base: `tallercontrol` (ver `.env`) |
 | API S3 | `http://127.0.0.1:9000` | Bucket `tallercontrol-dev`, creado al levantar |
 | Consola del almacenamiento | `http://127.0.0.1:9001` | Misma clave de acceso que la API |
+
+### Pruebas y calidad
+
+```powershell
+dotnet build TallerControl.slnx
+dotnet test TallerControl.slnx                          # las de integración usan Testcontainers: requieren Docker
+dotnet format TallerControl.slnx --verify-no-changes
+npm --prefix web run lint
+npm --prefix web test
+npm --prefix web run build
+```
+
+GitHub Actions (`.github/workflows/ci.yml`) corre lo mismo en cada push y PR a `Develop` y `main`, más un escaneo de secretos con gitleaks.
 
 ### Consulta de la base desde Claude Code (MCP, solo lectura)
 
@@ -44,7 +71,7 @@ Las convenciones de trabajo del equipo están en [`CLAUDE.md`](CLAUDE.md).
 
 ## Estado
 
-Etapa **E0** — preparación del repositorio y estructura.
+Etapa **E0** — preparación del repositorio y estructura (esqueleto de la API y de la SPA, entorno local y CI).
 
 ## Licencia
 
