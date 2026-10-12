@@ -25,13 +25,15 @@
       "Bash(git reset --hard*)",
       "Bash(git clean -f*)",
       "Read(.env)",
-      "Read(.env.*)",
+      "Read(.env.local)",
+      "Read(.env.*.local)",
       "Read(**/secrets.json)",
       "Read(**/*.pfx)",
       "Read(**/*.pem)",
       "Read(**/*.key)",
       "Edit(.env)",
-      "Edit(.env.*)"
+      "Edit(.env.local)",
+      "Edit(.env.*.local)"
     ],
     "ask": [
       "Bash(git push*)",
@@ -54,6 +56,6 @@
     "typescript-lsp@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "playwright@claude-plugins-official": true,
-    "github@claude-plugins-official": true
+    "github@claude-plugins-official": false
   }
 }
