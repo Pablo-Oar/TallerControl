@@ -54,7 +54,7 @@ docs/  scripts/  .github/workflows/
 ```
 
 Application y Domain se organizan **por módulo** (`Work/`, `Qr/`, `Customers/`…), no por tipo técnico.
-Estado actual: **E0 en curso**. Existen el entorno local (`docker-compose.yml`, `.env.example`) y la solución .NET (`TallerControl.slnx`: 4 proyectos + 3 de pruebas, `/health/live` y `/health/ready`). Falta `web/` (SPA), CI y README de arranque.
+Estado actual: **E0 en curso**. Existen el entorno local (`docker-compose.yml`, `.env.example`) y la solución .NET (`TallerControl.slnx`: 4 proyectos + 3 de pruebas, `/health/live` y `/health/ready`). `web/` tiene el shell de la SPA (React 19 + Vite + Tailwind 4, ruteo con las tres áreas cargadas por separado, Vitest). Faltan CI y README de arranque.
 La cadena de conexión sale de `ConnectionStrings:Default` (en Development, host/usuario en `appsettings.Development.json`; la contraseña por `dotnet user-secrets` o `ConnectionStrings__Default`, nunca en el repo).
 
 ## Comandos
