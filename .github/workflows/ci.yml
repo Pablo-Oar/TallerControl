@@ -17,6 +17,20 @@ jobs:
   backend:
     name: Backend (build, format, test)
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: tallercontrol
+          POSTGRES_PASSWORD: ci-owner-password
+          POSTGRES_DB: tallercontrol
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tallercontrol"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
 
@@ -33,6 +47,38 @@ jobs:
       # Las pruebas de integración usan Testcontainers (PostgreSQL real): el runner trae Docker.
       - name: Test
         run: dotnet test TallerControl.slnx --configuration Release --no-build
+
+      # Migrations bundle: el mismo artefacto que se aplicará en staging/producción, probado
+      # contra un PostgreSQL limpio con el rol de la aplicación creado antes (como en dev.ps1).
+      - name: Migrations bundle
+        run: |
+          dotnet tool restore
+          dotnet ef migrations bundle \
+            --project src/TallerControl.Infrastructure \
+            --startup-project src/TallerControl.Api \
+            --self-contained -r linux-x64 \
+            --output artifacts/efbundle --force
+
+      - name: Apply bundle on a clean PostgreSQL
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: 5432
+          PGUSER: tallercontrol
+          PGPASSWORD: ci-owner-password
+          PGDATABASE: tallercontrol
+        run: |
+          psql -q -v ON_ERROR_STOP=1 -v app_password=ci-app-password -f scripts/db/create-app-role.sql
+          ./artifacts/efbundle --connection "Host=127.0.0.1;Port=5432;Database=tallercontrol;Username=tallercontrol;Password=ci-owner-password"
+          # La auditoría debe existir y el rol de la aplicación no puede escribir sobre ella más que insertar.
+          psql -v ON_ERROR_STOP=1 -tA -c "SELECT count(*) FROM information_schema.tables WHERE table_name IN ('tenants','branches','tenant_settings','document_sequences','audit_events','outbox_messages','notifications')" | grep -qx 7
+          psql -v ON_ERROR_STOP=1 -tA -c "SELECT has_table_privilege('tallercontrol_app','audit_events','UPDATE')" | grep -qx f
+
+      - name: Upload migrations bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: efbundle-linux-x64
+          path: artifacts/efbundle
+          retention-days: 14
 
   web:
     name: Web (lint, test, build)
