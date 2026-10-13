@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 using TallerControl.Api.Endpoints.Auth;
+using TallerControl.Api.Endpoints.Users;
 using TallerControl.Api.Errors;
 using TallerControl.Api.Identity;
 using TallerControl.Api.Logging;
@@ -47,7 +48,8 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
     Predicate = check => check.Tags.Contains(DependencyInjection.ReadyTag),
 });
 
-app.MapAuthEndpoints();
+app.MapAuthEndpoints(app.Configuration);
+app.MapInvitationEndpoints(app.Configuration);
 
 app.Run();
 

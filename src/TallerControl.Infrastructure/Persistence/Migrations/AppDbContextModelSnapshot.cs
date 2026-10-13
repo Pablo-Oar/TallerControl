@@ -489,6 +489,40 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TallerControl.Domain.Users.PasswordReset", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("citext")
+                        .HasColumnName("email");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<byte[]>("TokenHash")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("token_hash");
+
+                    b.Property<DateTimeOffset?>("UsedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("used_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_password_resets");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_password_resets_token_hash");
+
+                    b.ToTable("password_resets", (string)null);
+                });
+
             modelBuilder.Entity("TallerControl.Domain.Users.User", b =>
                 {
                     b.Property<Guid>("Id")

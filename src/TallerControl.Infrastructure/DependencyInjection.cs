@@ -6,11 +6,14 @@ using Npgsql;
 using TallerControl.Application.Auth;
 using TallerControl.Application.Common;
 using TallerControl.Application.Tenancy;
+using TallerControl.Application.Users;
+using TallerControl.Infrastructure.Email;
 using TallerControl.Infrastructure.Health;
 using TallerControl.Infrastructure.Identity;
 using TallerControl.Infrastructure.Outbox;
 using TallerControl.Infrastructure.Persistence;
 using TallerControl.Infrastructure.Tenancy;
+using TallerControl.Infrastructure.Users;
 
 namespace TallerControl.Infrastructure;
 
@@ -47,6 +50,16 @@ public static class DependencyInjection
         services.AddScoped<LoginHandler>();
         services.AddScoped<LogoutHandler>();
         services.AddScoped<MeHandler>();
+
+        services.AddScoped<IInvitationRepository, EfInvitationRepository>();
+        services.AddScoped<IPasswordResetRepository, EfPasswordResetRepository>();
+        services.AddScoped<CreateInvitationHandler>();
+        services.AddScoped<AcceptInvitationHandler>();
+        services.AddScoped<ForgotPasswordHandler>();
+        services.AddScoped<ResetPasswordHandler>();
+
+        services.AddSingleton<IEmailSender, SmtpEmailSender>();
+        services.AddHostedService<OutboxDispatcher>();
 
         services.AddHealthChecks()
             .AddCheck<DatabaseHealthCheck>("database", tags: [ReadyTag]);

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using TallerControl.Api.Identity;
 using TallerControl.Application.Auth;
+using TallerControl.Application.Users;
 using TallerControl.Infrastructure.Identity;
 
 namespace TallerControl.Api.Endpoints.Auth;
@@ -13,8 +14,12 @@ namespace TallerControl.Api.Endpoints.Auth;
 /// </summary>
 internal static class AuthEndpoints
 {
-    public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
+    public static IEndpointRouteBuilder MapAuthEndpoints(
+        this IEndpointRouteBuilder app,
+        IConfiguration configuration)
     {
+        var frontendBaseUrl = configuration["App:FrontendBaseUrl"] ?? "http://localhost:5173";
+
         var group = app.MapGroup("/api/v1/auth");
 
         group.MapGet("/antiforgery-token", GetAntiforgeryToken)
@@ -30,6 +35,19 @@ internal static class AuthEndpoints
 
         group.MapGet("/me", MeAsync)
             .RequireAuthorization();
+
+        group.MapPost("/forgot-password",
+                (ForgotPasswordRequest request, ForgotPasswordHandler handler, CancellationToken ct) =>
+                    ForgotPasswordAsync(request, handler, frontendBaseUrl, ct))
+            .AllowAnonymous();
+
+        group.MapPost("/reset-password",
+                async (ResetPasswordRequest request, ResetPasswordHandler handler, CancellationToken ct) =>
+                {
+                    await handler.HandleAsync(request, ct);
+                    return Results.NoContent();
+                })
+            .AllowAnonymous();
 
         return app;
     }
@@ -101,6 +119,17 @@ internal static class AuthEndpoints
 
         var me = await handler.HandleAsync(userId, ct);
         return Results.Ok(me);
+    }
+
+    private static async Task<IResult> ForgotPasswordAsync(
+        ForgotPasswordRequest request,
+        ForgotPasswordHandler handler,
+        string frontendBaseUrl,
+        CancellationToken ct)
+    {
+        await handler.HandleAsync(request, frontendBaseUrl, ct);
+        // Siempre 202: no revelar si el email existe (T-AUTH-07).
+        return Results.Accepted();
     }
 
     private static async Task SignInAsync(HttpContext context, LoginResult result, bool rememberMe)
