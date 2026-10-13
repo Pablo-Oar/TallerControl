@@ -7,8 +7,10 @@ using TallerControl.Api.IntegrationTests.Auth;
 using TallerControl.Api.IntegrationTests.Persistence;
 using TallerControl.Application.Auth;
 using TallerControl.Application.Common;
+using TallerControl.Domain.Customers;
 using TallerControl.Domain.Tenancy;
 using TallerControl.Domain.Users;
+using TallerControl.Domain.Vehicles;
 using TallerControl.Infrastructure.Persistence;
 
 namespace TallerControl.Api.IntegrationTests.Permissions;
@@ -31,6 +33,12 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
 
     /// <summary>Recurso del Taller A (la membresía del administrativo) para probar T-ISO-ALL.</summary>
     public Guid ForeignMembershipId { get; private set; }
+
+    /// <summary>Cliente del Taller A sembrado para probar T-ISO-ALL en rutas /customers/{id}.</summary>
+    public Guid ForeignCustomerId { get; private set; }
+
+    /// <summary>Vehículo del Taller A sembrado para probar T-ISO-ALL en rutas /vehicles/{id}.</summary>
+    public Guid ForeignVehicleId { get; private set; }
 
     public string ConnectionString { get; }
 
@@ -126,6 +134,28 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
             db.Add(new Membership(tenantB.Id, ownerB.Id, TenantRole.Owner));
             await db.SaveChangesAsync();
         }
+
+        // Siembra un Cliente del Taller A para T-ISO-ALL en rutas /customers/{id}
+        var customerA = new Customer(tenantA.Id, "Cliente T-ISO-ALL");
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(customerA);
+            await db.SaveChangesAsync();
+        }
+
+        ForeignCustomerId = customerA.Id;
+
+        // Siembra un Vehículo del Taller A para T-ISO-ALL en rutas /vehicles/{id}
+        var vehicleA = new Vehicle(tenantA.Id, customerA.Id, "ISOTST");
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(vehicleA);
+            await db.SaveChangesAsync();
+        }
+
+        ForeignVehicleId = vehicleA.Id;
     }
 
     private static DbContextOptions<AppDbContext> BuildOptions(string cs)

@@ -117,13 +117,15 @@ public sealed class PermissionMatrixTests : IAsyncLifetime
     /// Pega al endpoint sin preocuparse por el cuerpo exacto: solo nos interesa si la autorización
     /// lo dejó pasar (cualquier código que no sea 403) o no (403). El CSRF y un If-Match "de relleno"
     /// evitan que el antiforgery filter o la falta de cabecera corten antes de llegar al caso de uso.
+    /// DELETE también lleva CSRF y body (reason) para pasar el AntiforgeryEndpointFilter de las rutas
+    /// de clientes y vehículos y llegar al handler donde el filtro de taller devuelve 404 (T-ISO-ALL).
     /// </summary>
     private static async Task<HttpStatusCode> HitAsync(HttpClient client, string method, string route, string csrf)
     {
         var req = new HttpRequestMessage(new HttpMethod(method), route);
-        if (method is "POST" or "PUT" or "PATCH")
+        if (method is "POST" or "PUT" or "PATCH" or "DELETE")
         {
-            req.Content = JsonContent.Create(new { });
+            req.Content = JsonContent.Create(new { reason = "perm-matrix-test" });
             req.Headers.TryAddWithoutValidation("If-Match", "\"0\"");
             req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
         }
@@ -173,7 +175,17 @@ public sealed class PermissionMatrixTests : IAsyncLifetime
     {
         var all = DiscoverPermissionEndpoints();
 
-        var resolvable = all.Where(e => e.RoutePattern.Contains("{membershipId", StringComparison.Ordinal)).ToList();
+        // Un endpoint es "resolvable" si su ruta con parámetros tiene un recurso sembrado del Taller A
+        // que el test puede sustituir para probar el aislamiento desde el Taller B.
+        // Al agregar endpoints nuevos con {id}, sumar el recurso sembrado en la factory
+        // y el caso de resolución aquí; si falta, el Assert.True(unresolved == 0) falla con mensaje.
+        var resolvable = all
+            .Where(e => RouteParam.IsMatch(e.RoutePattern) && (
+                e.RoutePattern.Contains("{membershipId", StringComparison.Ordinal) ||
+                e.RoutePattern.Contains("/customers/", StringComparison.Ordinal) ||
+                e.RoutePattern.Contains("/vehicles/", StringComparison.Ordinal)))
+            .ToList();
+
         var unresolved = all
             .Where(e => RouteParam.IsMatch(e.RoutePattern))
             .Except(resolvable)
@@ -194,10 +206,7 @@ public sealed class PermissionMatrixTests : IAsyncLifetime
         var failures = new List<string>();
         foreach (var endpoint in resolvable)
         {
-            var route = endpoint.RoutePattern
-                .Replace("{membershipId:guid}", _factory.ForeignMembershipId.ToString())
-                .Replace("{membershipId}", _factory.ForeignMembershipId.ToString());
-
+            var route = ResolveRoute(endpoint.RoutePattern);
             var status = await HitAsync(client, endpoint.Method, route, csrf);
             if (status != HttpStatusCode.NotFound)
             {
@@ -206,5 +215,32 @@ public sealed class PermissionMatrixTests : IAsyncLifetime
         }
 
         Assert.True(failures.Count == 0, string.Join("\n", failures));
+    }
+
+    /// <summary>
+    /// Sustituye los parámetros de ruta por el ID del recurso sembrado del Taller A que corresponde
+    /// al prefijo de la ruta. Cada nuevo módulo con endpoints <c>{id}</c> debe agregar su caso acá.
+    /// </summary>
+    private string ResolveRoute(string pattern)
+    {
+        if (pattern.Contains("{membershipId", StringComparison.Ordinal))
+        {
+            return pattern
+                .Replace("{membershipId:guid}", _factory.ForeignMembershipId.ToString())
+                .Replace("{membershipId}", _factory.ForeignMembershipId.ToString());
+        }
+
+        if (pattern.Contains("/customers/", StringComparison.Ordinal))
+        {
+            return RouteParam.Replace(pattern, _factory.ForeignCustomerId.ToString());
+        }
+
+        if (pattern.Contains("/vehicles/", StringComparison.Ordinal))
+        {
+            return RouteParam.Replace(pattern, _factory.ForeignVehicleId.ToString());
+        }
+
+        // Fallback: no debería llegar aquí si resolvable está correctamente definido
+        return RouteParam.Replace(pattern, Guid.NewGuid().ToString());
     }
 }

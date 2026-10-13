@@ -84,6 +84,123 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TallerControl.Domain.Customers.Customer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Address")
+                        .HasColumnType("text")
+                        .HasColumnName("address");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("text")
+                        .HasColumnName("delete_reason");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<bool>("DoNotContact")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("do_not_contact");
+
+                    b.Property<string>("DocNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("doc_number");
+
+                    b.Property<string>("DocType")
+                        .HasColumnType("text")
+                        .HasColumnName("doc_type");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("citext")
+                        .HasColumnName("email");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text")
+                        .HasColumnName("notes");
+
+                    b.Property<byte[]>("OwnerAccessCodeHash")
+                        .HasColumnType("bytea")
+                        .HasColumnName("owner_access_code_hash");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("text")
+                        .HasColumnName("phone");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<string>("VatCondition")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("vat_condition");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_customers");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("ix_customers_name_trgm");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
+
+                    b.HasIndex("TenantId", "Name")
+                        .HasDatabaseName("ix_customers_tenant_id_name");
+
+                    b.HasIndex("TenantId", "Phone")
+                        .HasDatabaseName("ix_customers_tenant_id_phone");
+
+                    b.HasIndex("TenantId", "DocType", "DocNumber")
+                        .IsUnique()
+                        .HasDatabaseName("ix_customers_tenant_id_doc_type_doc_number")
+                        .HasFilter("deleted_at is null and doc_number is not null");
+
+                    b.ToTable("customers", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_customers_doc_type", "\"doc_type\" IN ('cuil', 'cuit', 'dni', 'otro', 'pasaporte')");
+
+                            t.HasCheckConstraint("ck_customers_vat_condition", "\"vat_condition\" IN ('consumidor_final', 'exento', 'monotributo', 'no_responsable', 'responsable_inscripto')");
+                        });
+                });
+
             modelBuilder.Entity("TallerControl.Domain.Notifications.Notification", b =>
                 {
                     b.Property<Guid>("Id")
@@ -596,6 +713,128 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TallerControl.Domain.Vehicles.Vehicle", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Brand")
+                        .HasColumnType("text")
+                        .HasColumnName("brand");
+
+                    b.Property<string>("Color")
+                        .HasColumnType("text")
+                        .HasColumnName("color");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("text")
+                        .HasColumnName("delete_reason");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<string>("Fuel")
+                        .HasColumnType("text")
+                        .HasColumnName("fuel");
+
+                    b.Property<string>("Model")
+                        .HasColumnType("text")
+                        .HasColumnName("model");
+
+                    b.Property<int>("OdometerKm")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("odometer_km");
+
+                    b.Property<string>("Plate")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("plate");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<string>("VersionName")
+                        .HasColumnType("text")
+                        .HasColumnName("version");
+
+                    b.Property<string>("Vin")
+                        .HasColumnType("text")
+                        .HasColumnName("vin");
+
+                    b.Property<short?>("Year")
+                        .HasColumnType("smallint")
+                        .HasColumnName("year");
+
+                    b.HasKey("Id")
+                        .HasName("pk_vehicles");
+
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("ix_vehicles_customer_id");
+
+                    b.HasIndex("TenantId", "CustomerId")
+                        .HasDatabaseName("ix_vehicles_tenant_id_customer_id");
+
+                    b.HasIndex("TenantId", "Plate")
+                        .IsUnique()
+                        .HasDatabaseName("ix_vehicles_tenant_id_plate")
+                        .HasFilter("deleted_at is null");
+
+                    b.HasIndex("TenantId", "Vin")
+                        .IsUnique()
+                        .HasDatabaseName("ix_vehicles_tenant_id_vin")
+                        .HasFilter("deleted_at is null and vin is not null");
+
+                    b.ToTable("vehicles", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_vehicles_year_range", "year IS NULL OR (year BETWEEN 1900 AND extract(year from now()) + 1)");
+                        });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Customers.Customer", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_customers_tenant_tenant_id");
+                });
+
             modelBuilder.Entity("TallerControl.Domain.Notifications.Notification", b =>
                 {
                     b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
@@ -662,6 +901,23 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_memberships_user_user_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Vehicles.Vehicle", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Customers.Customer", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_vehicles_customers_customer_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_vehicles_tenants_tenant_id");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,0 +1,172 @@
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { customersApi, type CustomerDto, type CustomerUpsertRequest, type DocType, type VatCondition } from '../../../lib/api/customers'
+import { Button } from '../../../components/ui/Button'
+import { ApiError } from '../../../lib/api/client'
+
+const VAT_OPTIONS: { value: VatCondition; label: string }[] = [
+  { value: 'consumidor_final', label: 'Consumidor Final' },
+  { value: 'responsable_inscripto', label: 'Responsable Inscripto' },
+  { value: 'monotributo', label: 'Monotributo' },
+  { value: 'exento', label: 'Exento' },
+  { value: 'no_responsable', label: 'No Responsable' },
+]
+
+const DOC_OPTIONS: { value: DocType; label: string }[] = [
+  { value: 'dni', label: 'DNI' },
+  { value: 'cuit', label: 'CUIT' },
+  { value: 'cuil', label: 'CUIL' },
+  { value: 'pasaporte', label: 'Pasaporte' },
+  { value: 'otro', label: 'Otro' },
+]
+
+const inputCls = 'w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500'
+
+const schema = z.object({
+  name: z.string().trim().min(1, 'Requerido').max(150),
+  email: z.string().trim().max(200).optional(),
+  phone: z.string().trim().max(50).optional(),
+  docType: z.string().optional(),
+  docNumber: z.string().trim().max(30).optional(),
+  vatCondition: z.string().min(1),
+  address: z.string().trim().max(200).optional(),
+  doNotContact: z.boolean(),
+  notes: z.string().trim().max(1000).optional(),
+})
+
+type FormData = z.infer<typeof schema>
+
+function toFormData(dto: CustomerDto): FormData {
+  return {
+    name: dto.name,
+    email: dto.email ?? '',
+    phone: dto.phone ?? '',
+    docType: dto.docType ?? '',
+    docNumber: dto.docNumber ?? '',
+    vatCondition: dto.vatCondition,
+    address: dto.address ?? '',
+    doNotContact: dto.doNotContact,
+    notes: dto.notes ?? '',
+  }
+}
+
+interface Props {
+  customer?: CustomerDto
+  onSuccess: (dto: CustomerDto) => void
+  onClose: () => void
+}
+
+export function CustomerFormModal({ customer, onSuccess, onClose }: Props) {
+  const [serverError, setServerError] = useState<string | null>(null)
+  const isEdit = !!customer
+
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: customer
+      ? toFormData(customer)
+      : { vatCondition: 'consumidor_final', doNotContact: false },
+  })
+
+  async function onSubmit(data: FormData) {
+    setServerError(null)
+    try {
+      const body: CustomerUpsertRequest = {
+        name: data.name,
+        email: data.email || null,
+        phone: data.phone || null,
+        docType: (data.docType || null) as DocType | null,
+        docNumber: data.docNumber || null,
+        vatCondition: data.vatCondition as VatCondition,
+        address: data.address || null,
+        doNotContact: data.doNotContact,
+        notes: data.notes || null,
+      }
+      const result = isEdit
+        ? await customersApi.update(customer.id, body, customer.version)
+        : await customersApi.create(body)
+      onSuccess(result)
+    } catch (e) {
+      setServerError(e instanceof ApiError ? e.detail : 'Error inesperado')
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+        <h2 className="mb-5 text-lg font-semibold">
+          {isEdit ? 'Editar cliente' : 'Nuevo cliente'}
+        </h2>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium">Nombre *</label>
+            <input {...register('name')} className={inputCls} placeholder="Nombre completo o razón social" />
+            {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium">Email</label>
+              <input {...register('email')} type="email" className={inputCls} placeholder="email@ejemplo.com" />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium">Teléfono</label>
+              <input {...register('phone')} className={inputCls} placeholder="011 15-0000-0000" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium">Tipo de documento</label>
+              <select {...register('docType')} className={inputCls}>
+                <option value="">Sin documento</option>
+                {DOC_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium">Número</label>
+              <input {...register('docNumber')} className={inputCls} placeholder="20-12345678-9" />
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">Condición IVA</label>
+            <select {...register('vatCondition')} className={inputCls}>
+              {VAT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">Dirección</label>
+            <input {...register('address')} className={inputCls} placeholder="Av. Ejemplo 1234, CABA" />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">Notas</label>
+            <textarea
+              {...register('notes')}
+              rows={2}
+              className={inputCls}
+              placeholder="Observaciones internas…"
+            />
+          </div>
+
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" {...register('doNotContact')} className="h-4 w-4 rounded" />
+            No contactar
+          </label>
+
+          {serverError && (
+            <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
+          )}
+
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
+            <Button type="submit" loading={isSubmitting}>Guardar</Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}

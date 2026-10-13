@@ -1,0 +1,104 @@
+using Microsoft.EntityFrameworkCore;
+using TallerControl.Application.Common;
+using TallerControl.Application.Vehicles;
+using TallerControl.Domain.Customers;
+using TallerControl.Domain.Vehicles;
+using TallerControl.Infrastructure.Persistence;
+
+namespace TallerControl.Infrastructure.Vehicles;
+
+internal sealed class EfVehicleRepository : IVehicleRepository
+{
+    private readonly AppDbContext _db;
+
+    public EfVehicleRepository(AppDbContext db) => _db = db;
+
+    public async Task<Page<VehicleListDto>> SearchAsync(string? q, int page, int pageSize, CancellationToken ct)
+    {
+        var query = _db.Set<Vehicle>()
+            .AsNoTracking()
+            .Join(_db.Set<Customer>().AsNoTracking(),
+                v => v.CustomerId,
+                c => c.Id,
+                (v, c) => new { Vehicle = v, CustomerName = c.Name });
+
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var term = q.Trim();
+            // La patente se normaliza antes de buscar (T-VEH-01)
+            var normalizedTerm = term.ToUpperInvariant().Replace("-", "").Replace(" ", "");
+            query = query.Where(x =>
+                EF.Functions.ILike(x.Vehicle.Plate, $"%{normalizedTerm}%") ||
+                (x.Vehicle.Brand != null && EF.Functions.ILike(x.Vehicle.Brand, $"%{term}%")) ||
+                (x.Vehicle.Model != null && EF.Functions.ILike(x.Vehicle.Model, $"%{term}%")) ||
+                EF.Functions.ILike(x.CustomerName, $"%{term}%"));
+        }
+
+        var total = await query.CountAsync(ct);
+
+        var items = await query
+            .OrderBy(x => x.Vehicle.Plate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(x => new VehicleListDto(
+                x.Vehicle.Id,
+                x.Vehicle.Plate,
+                x.Vehicle.Brand,
+                x.Vehicle.Model,
+                x.Vehicle.Year,
+                x.CustomerName))
+            .ToListAsync(ct);
+
+        return new Page<VehicleListDto>(items, page, pageSize, total);
+    }
+
+    public async Task<VehicleDto?> GetFullAsync(Guid id, CancellationToken ct)
+    {
+        var result = await _db.Set<Vehicle>()
+            .AsNoTracking()
+            .Where(v => v.Id == id)
+            .Join(_db.Set<Customer>().AsNoTracking(),
+                v => v.CustomerId,
+                c => c.Id,
+                (v, c) => new { Vehicle = v, CustomerName = c.Name })
+            .FirstOrDefaultAsync(ct);
+
+        if (result is null) return null;
+
+        var v = result.Vehicle;
+        return new VehicleDto(
+            v.Id,
+            v.Plate,
+            v.CustomerId,
+            result.CustomerName,
+            v.Brand,
+            v.Model,
+            v.VersionName,
+            v.Color,
+            v.Year,
+            v.Vin,
+            v.Fuel,
+            v.OdometerKm,
+            ActiveQrCard: null, // E8
+            v.Version);
+    }
+
+    public Task<Vehicle?> FindByIdAsync(Guid id, CancellationToken ct) =>
+        _db.Set<Vehicle>().FirstOrDefaultAsync(v => v.Id == id, ct);
+
+    public Task<bool> PlateExistsAsync(Guid? excludeId, string normalizedPlate, CancellationToken ct) =>
+        _db.Set<Vehicle>()
+            .AnyAsync(v => v.Plate == normalizedPlate
+                && (excludeId == null || v.Id != excludeId.Value), ct);
+
+    public Task<bool> CustomerExistsAsync(Guid customerId, CancellationToken ct) =>
+        _db.Set<Customer>().AnyAsync(c => c.Id == customerId, ct);
+
+    public Task<bool> HasOpenWorkOrdersAsync(Guid vehicleId, CancellationToken ct) =>
+        Task.FromResult(false); // Implementado en E4
+
+    public async Task AddAsync(Vehicle vehicle, CancellationToken ct) =>
+        await _db.Set<Vehicle>().AddAsync(vehicle, ct);
+
+    public Task SaveChangesAsync(CancellationToken ct) => _db.SaveChangesAsync(ct);
+}
