@@ -53,10 +53,13 @@ public static class DependencyInjection
 
         services.AddScoped<IInvitationRepository, EfInvitationRepository>();
         services.AddScoped<IPasswordResetRepository, EfPasswordResetRepository>();
+        services.AddScoped<IMembershipRepository, EfMembershipRepository>();
         services.AddScoped<CreateInvitationHandler>();
         services.AddScoped<AcceptInvitationHandler>();
         services.AddScoped<ForgotPasswordHandler>();
         services.AddScoped<ResetPasswordHandler>();
+        services.AddScoped<ListMembersHandler>();
+        services.AddScoped<UpdateMembershipHandler>();
 
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddHostedService<OutboxDispatcher>();

@@ -32,3 +32,14 @@ public sealed class ConflictException : Exception
     {
     }
 }
+
+/// <summary>
+/// Versión del recurso (ETag / If-Match) no coincide: responde 412 (doc 05 §1, REQ-03).
+/// </summary>
+public sealed class ConcurrencyException : Exception
+{
+    public ConcurrencyException()
+        : base("El recurso fue modificado por otra operación. Recargá y volvé a intentar.")
+    {
+    }
+}
