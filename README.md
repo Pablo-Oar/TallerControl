@@ -89,7 +89,7 @@ Las convenciones de trabajo del equipo están en [`CLAUDE.md`](CLAUDE.md).
 
 ## Estado
 
-Etapa **E0** — preparación del repositorio y estructura (esqueleto de la API y de la SPA, entorno local y CI).
+Etapas **E0** (repositorio, esqueleto de la API y de la SPA, entorno local y CI) y **E1** (persistencia, aislamiento por taller, auditoría, outbox, numeración, rol de aplicación, logs y errores) completas. Sigue **E2**: autenticación y multiempresa.
 
 ## Licencia
 

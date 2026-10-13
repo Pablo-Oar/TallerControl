@@ -54,8 +54,7 @@ docs/  scripts/  .github/workflows/
 ```
 
 Application y Domain se organizan **por módulo** (`Work/`, `Qr/`, `Customers/`…), no por tipo técnico.
-Estado actual: **E0 en curso**. Existen el entorno local (`docker-compose.yml`, `.env.example`) y la solución .NET (`TallerControl.slnx`: 4 proyectos + 3 de pruebas, `/health/live` y `/health/ready`). Persistencia (E1): `AppDbContext` con aislamiento por taller, auditoría automática de entidades `IAudited` (`audit_events`, solo inserción), outbox (`IOutbox`), avisos y numeración por sucursal (`IDocumentNumberGenerator`, siempre dentro de la transacción del documento). `web/` tiene el shell de la SPA (React 19 + Vite + Tailwind 4, ruteo con las tres áreas cargadas por separado, Vitest). CI en `.github/workflows/ci.yml` (build, format, test, lint, gitleaks) y arranque con `.\scripts\dev.ps1`. Con eso E0 queda completa salvo la verificación del CI en verde.
-Observabilidad y errores (E1): Serilog (JSON a consola en producción, `TraceId` y `tenant_id` en cada evento, rutas saneadas por `LogSanitizer`) y errores RFC 7807 con `traceId` (`ApiExceptionHandler`: `NotFoundException`/`TenantViolationException` → 404, `BusinessRuleException` → 422, `ConflictException`/unicidad → 409, concurrencia → 412, el resto → 500 sin detalles). El orden del pipeline está en `UseApiErrorPipeline()`. CI genera el *migrations bundle* y lo aplica en un PostgreSQL limpio.
+Estado actual: **E0 y E1 completas; sigue E2** (autenticación y multiempresa). Existen el entorno local (`docker-compose.yml`, `.env.example`) y la solución .NET (`TallerControl.slnx`: 4 proyectos + 3 de pruebas, `/health/live` y `/health/ready`). Persistencia (E1): `AppDbContext` con aislamiento por taller, auditoría automática de entidades `IAudited` (`audit_events`, solo inserción), outbox (`IOutbox`), avisos y numeración por sucursal (`IDocumentNumberGenerator`, siempre dentro de la transacción del documento). `web/` tiene el shell de la SPA (React 19 + Vite + Tailwind 4, ruteo con las tres áreas cargadas por separado, Vitest). CI en `.github/workflows/ci.yml` (build, format, test, lint, gitleaks) y arranque con `.\scripts\dev.ps1`.Observabilidad y errores (E1): Serilog (JSON a consola en producción, `TraceId` y `tenant_id` en cada evento, rutas saneadas por `LogSanitizer`) y errores RFC 7807 con `traceId` (`ApiExceptionHandler`: `NotFoundException`/`TenantViolationException` → 404, `BusinessRuleException` → 422, `ConflictException`/unicidad → 409, concurrencia → 412, el resto → 500 sin detalles). El orden del pipeline está en `UseApiErrorPipeline()`. CI genera el *migrations bundle* y lo aplica en un PostgreSQL limpio.
 La API usa `ConnectionStrings:Default` con el rol **`tallercontrol_app`** (sin `DELETE` ni `UPDATE` sobre `audit_events`); las migraciones (`dotnet ef`, bundle) usan el dueño por `ConnectionStrings:Migrations`. Contraseñas por `dotnet user-secrets` o variables de entorno, nunca en el repo. El rol se crea con `scripts/db/create-app-role.sql` antes de migrar (`dev.ps1` lo hace); una tabla nueva de solo inserción debe revocarle `UPDATE` en su migración.
 
 ## Comandos
@@ -120,11 +119,12 @@ docker compose up -d        # PostgreSQL 18 + RustFS/S3 en 127.0.0.1 (requiere D
 
 ## Decisiones aún abiertas (no asumir)
 
-D-02 host, D-03 proveedor PostgreSQL, D-04 email, D-05 librería PDF, D-07 stock negativo (recomendado: permitir con alerta),
+D-02 host, D-03 proveedor PostgreSQL, D-05 librería PDF, D-07 stock negativo (recomendado: permitir con alerta),
 D-01/D-12/D-13 antes de E8 (QR). Nuevas en V2: D-16 modelo de saldo de caja, D-17 límites por plan,
 D-18 Google en el panel, D-19 datos fiscales de compras, D-20 ventas de mostrador, D-21 kits.
 
 **Decididas:** D-15 (12/10/2026): clientes y catálogo compartidos dentro del taller; caja, stock y numeración por sucursal.
+**D-04 (provisoria, 12/10/2026):** el email sale por **Gmail** (SMTP con contraseña de aplicación) detrás de una interfaz `IEmailSender` y siempre desde el outbox, para poder cambiar de proveedor sin tocar el negocio. Revisar antes de E8/E9: el límite de Gmail (≈500 envíos/día) y la entregabilidad del OTP del QR (el plan pide probar 20 envíos reales).
 Si una tarea depende de una, **preguntar** y registrar el valor provisorio.
 
 ## Entorno del usuario
