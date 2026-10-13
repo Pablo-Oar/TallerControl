@@ -101,6 +101,7 @@ internal sealed class CustomersVehiclesWebApplicationFactory : WebApplicationFac
         {
             db.Add(new Membership(tenant.Id, owner.Id, TenantRole.Owner));
             db.Add(new Membership(tenant.Id, admin.Id, TenantRole.AdminStaff));
+            db.Add(Branch.CreateMain(tenant.Id));
             await db.SaveChangesAsync();
         }
     }

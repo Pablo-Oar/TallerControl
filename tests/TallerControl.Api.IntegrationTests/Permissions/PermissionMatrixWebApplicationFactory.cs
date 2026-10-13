@@ -7,6 +7,7 @@ using TallerControl.Api.IntegrationTests.Auth;
 using TallerControl.Api.IntegrationTests.Persistence;
 using TallerControl.Application.Auth;
 using TallerControl.Application.Common;
+using TallerControl.Domain.Catalog;
 using TallerControl.Domain.Customers;
 using TallerControl.Domain.Tenancy;
 using TallerControl.Domain.Users;
@@ -39,6 +40,9 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
 
     /// <summary>Vehículo del Taller A sembrado para probar T-ISO-ALL en rutas /vehicles/{id}.</summary>
     public Guid ForeignVehicleId { get; private set; }
+
+    /// <summary>Ítem del catálogo del Taller A sembrado para probar T-ISO-ALL en rutas /catalog/{id}.</summary>
+    public Guid ForeignCatalogItemId { get; private set; }
 
     public string ConnectionString { get; }
 
@@ -156,6 +160,28 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
         }
 
         ForeignVehicleId = vehicleA.Id;
+
+        // Siembra un ítem del catálogo del Taller A para T-ISO-ALL en rutas /catalog/{id}
+        var catalogItemA = new CatalogItem(tenantA.Id, CatalogItemKind.Service, "Servicio T-ISO-ALL",
+            sku: null, netPrice: 0, vatRate: 21, cost: null, trackStock: false, stockMin: null,
+            durationMinutes: null, bufferMinutes: null);
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(catalogItemA);
+            await db.SaveChangesAsync();
+        }
+
+        ForeignCatalogItemId = catalogItemA.Id;
+
+        // Siembra la sucursal principal del Taller A (requerida por ManualStockAdjustmentHandler)
+        var branchA = Branch.CreateMain(tenantA.Id);
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(branchA);
+            await db.SaveChangesAsync();
+        }
     }
 
     private static DbContextOptions<AppDbContext> BuildOptions(string cs)
