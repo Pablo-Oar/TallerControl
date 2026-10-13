@@ -1,14 +1,17 @@
-<#
+﻿<#
 .SYNOPSIS
-  Levanta el entorno de desarrollo completo: PostgreSQL + almacenamiento S3 local, la API y la SPA.
+  Levanta el entorno de desarrollo completo: PostgreSQL + almacenamiento S3 local, migraciones, la API y la SPA.
 .DESCRIPTION
   Uso (desde la carpeta del repositorio):  .\scripts\dev.ps1
   Desde otra carpeta, con la ruta completa:  & "<ruta del repo>\scripts\dev.ps1"
   Si PowerShell bloquea la ejecución:  powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1
+
   - Crea .env desde .env.example si no existe (cambiá las contraseñas si querés).
+  - Si .env no tiene POSTGRES_APP_PASSWORD, genera una clave y la agrega.
   - Levanta docker compose y espera a que esté "healthy".
-  - Arma ConnectionStrings__Default con los valores de .env y lo pasa a la API.
-  - Abre la API en otra ventana y deja la SPA (Vite) en esta.
+  - Crea el rol tallercontrol_app (sin DELETE ni UPDATE sobre la auditoría) y le pone la clave de .env.
+  - Aplica las migraciones con el dueño de la base (ConnectionStrings__Migrations).
+  - Abre la API en otra ventana con el rol de aplicación (ConnectionStrings__Default) y deja la SPA aquí.
 #>
 $ErrorActionPreference = 'Stop'
 Set-Location (Split-Path -Parent $PSScriptRoot)
@@ -19,9 +22,32 @@ if (-not (Test-Path .env)) {
 }
 
 # Lee .env (KEY=VALUE, ignora comentarios y líneas vacías).
-$cfg = @{}
-foreach ($line in Get-Content .env) {
-    if ($line -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$') { $cfg[$Matches[1]] = $Matches[2] }
+function Read-DotEnv {
+    $values = @{}
+    foreach ($line in Get-Content .env) {
+        if ($line -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$') { $values[$Matches[1]] = $Matches[2] }
+    }
+    return $values
+}
+$cfg = Read-DotEnv
+
+# Un .env anterior puede no tener la clave del rol de la aplicación, o conservar la de la plantilla.
+$placeholder = 'cambiar-esta-clave-de-la-app'
+if (-not $cfg['POSTGRES_APP_PASSWORD'] -or $cfg['POSTGRES_APP_PASSWORD'] -eq $placeholder) {
+    $chars = [char[]]('abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'.ToCharArray())
+    $bytes = New-Object byte[] 24
+    [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+    $generated = -join ($bytes | ForEach-Object { $chars[$_ % $chars.Length] })
+
+    $content = Get-Content .env -Raw
+    if ($content -match '(?m)^\s*POSTGRES_APP_PASSWORD\s*=') {
+        $content = [regex]::Replace($content, '(?m)^\s*POSTGRES_APP_PASSWORD\s*=.*$', "POSTGRES_APP_PASSWORD=$generated")
+    } else {
+        $content = $content.TrimEnd() + "`r`n`r`n# Clave del rol tallercontrol_app (generada por scripts/dev.ps1)`r`nPOSTGRES_APP_PASSWORD=$generated`r`n"
+    }
+    [IO.File]::WriteAllText((Join-Path (Get-Location) '.env'), $content, (New-Object System.Text.UTF8Encoding $false))
+    Write-Host 'Generé POSTGRES_APP_PASSWORD en .env.'
+    $cfg = Read-DotEnv
 }
 
 # db y storage son servicios de larga duración: se espera a que estén "healthy".
@@ -36,7 +62,21 @@ if ($LASTEXITCODE -ne 0) { throw 'No se pudo crear el bucket de desarrollo.' }
 $port = if ($cfg['POSTGRES_PORT']) { $cfg['POSTGRES_PORT'] } else { '5432' }
 $user = if ($cfg['POSTGRES_USER']) { $cfg['POSTGRES_USER'] } else { 'tallercontrol' }
 $db   = if ($cfg['POSTGRES_DB'])   { $cfg['POSTGRES_DB'] }   else { 'tallercontrol' }
-$env:ConnectionStrings__Default = "Host=127.0.0.1;Port=$port;Database=$db;Username=$user;Password=$($cfg['POSTGRES_PASSWORD'])"
+
+# Rol de la aplicación (idempotente). El SQL es ASCII para viajar sin problemas por stdin.
+$OutputEncoding = New-Object System.Text.UTF8Encoding $false
+Get-Content -Raw scripts/db/create-app-role.sql |
+    docker compose exec -T db psql -q -U $user -d $db -v ON_ERROR_STOP=1 -v "app_password=$($cfg['POSTGRES_APP_PASSWORD'])" -f -
+if ($LASTEXITCODE -ne 0) { throw 'No se pudo crear el rol de la aplicación.' }
+
+# Migraciones con el dueño de la base.
+$env:ConnectionStrings__Migrations = "Host=127.0.0.1;Port=$port;Database=$db;Username=$user;Password=$($cfg['POSTGRES_PASSWORD'])"
+dotnet tool restore | Out-Null
+dotnet ef database update --project src/TallerControl.Infrastructure --startup-project src/TallerControl.Api
+if ($LASTEXITCODE -ne 0) { throw 'No se pudieron aplicar las migraciones.' }
+
+# La API corre con el rol de aplicación, no con el dueño.
+$env:ConnectionStrings__Default = "Host=127.0.0.1;Port=$port;Database=$db;Username=tallercontrol_app;Password=$($cfg['POSTGRES_APP_PASSWORD'])"
 $env:ASPNETCORE_ENVIRONMENT = 'Development'
 
 if (-not (Test-Path web/node_modules)) { npm --prefix web ci }

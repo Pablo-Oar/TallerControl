@@ -55,7 +55,7 @@ docs/  scripts/  .github/workflows/
 
 Application y Domain se organizan **por módulo** (`Work/`, `Qr/`, `Customers/`…), no por tipo técnico.
 Estado actual: **E0 en curso**. Existen el entorno local (`docker-compose.yml`, `.env.example`) y la solución .NET (`TallerControl.slnx`: 4 proyectos + 3 de pruebas, `/health/live` y `/health/ready`). Persistencia (E1): `AppDbContext` con aislamiento por taller, auditoría automática de entidades `IAudited` (`audit_events`, solo inserción), outbox (`IOutbox`), avisos y numeración por sucursal (`IDocumentNumberGenerator`, siempre dentro de la transacción del documento). `web/` tiene el shell de la SPA (React 19 + Vite + Tailwind 4, ruteo con las tres áreas cargadas por separado, Vitest). CI en `.github/workflows/ci.yml` (build, format, test, lint, gitleaks) y arranque con `.\scripts\dev.ps1`. Con eso E0 queda completa salvo la verificación del CI en verde.
-La cadena de conexión sale de `ConnectionStrings:Default` (en Development, host/usuario en `appsettings.Development.json`; la contraseña por `dotnet user-secrets` o `ConnectionStrings__Default`, nunca en el repo).
+La API usa `ConnectionStrings:Default` con el rol **`tallercontrol_app`** (sin `DELETE` ni `UPDATE` sobre `audit_events`); las migraciones (`dotnet ef`, bundle) usan el dueño por `ConnectionStrings:Migrations`. Contraseñas por `dotnet user-secrets` o variables de entorno, nunca en el repo. El rol se crea con `scripts/db/create-app-role.sql` antes de migrar (`dev.ps1` lo hace); una tabla nueva de solo inserción debe revocarle `UPDATE` en su migración.
 
 ## Comandos
 

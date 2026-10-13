@@ -20,13 +20,31 @@ Requisitos: Docker Desktop (con WSL 2), .NET SDK 10 y Node.js 22.
 .\scripts\dev.ps1
 ```
 
-Crea `.env` si falta, levanta PostgreSQL y el almacenamiento, abre la API en otra ventana (`http://localhost:5233`) y deja la SPA en esta (`http://localhost:5173`, que reenvía `/api` y `/health` a la API).
+Crea `.env` si falta (y genera `POSTGRES_APP_PASSWORD` si no la tiene), levanta PostgreSQL y el almacenamiento, crea el rol de la aplicación, aplica las migraciones, abre la API en otra ventana (`http://localhost:5233`) y deja la SPA en esta (`http://localhost:5173`, que reenvía `/api` y `/health` a la API).
 Comprobación: `http://localhost:5233/health/live` y `/health/ready` deben responder 200.
+
+### Roles de base de datos
+
+| Rol | Quién lo usa | Puede |
+|---|---|---|
+| `tallercontrol` (dueño, `POSTGRES_USER`) | migraciones: `dotnet ef` y el *bundle* | todo sobre su base |
+| `tallercontrol_app` | la API en ejecución (`ConnectionStrings__Default`) | `SELECT`, `INSERT` y `UPDATE`; **no** `DELETE`, ni `UPDATE` sobre `audit_events`, ni cambiar el esquema |
+
+La API nunca corre con el dueño: si hubiera una inyección SQL o un bug, no podría borrar datos ni reescribir la auditoría. El borrado físico está prohibido en el negocio, y la auditoría tiene además un *trigger* que la hace de solo inserción incluso para el dueño.
+
+- El rol lo crea `scripts/db/create-app-role.sql` (idempotente: volver a correrlo rota la clave). Hay que crearlo **antes** de aplicar las migraciones: la migración `AppRolePermissions` otorga los permisos solo si el rol ya existe.
+- Las migraciones usan `ConnectionStrings__Migrations` (el dueño); si falta, `dotnet ef` cae en `ConnectionStrings__Default`.
+- Una tabla nueva que deba ser de solo inserción tiene que revocar `UPDATE` al rol en su propia migración: los permisos por defecto incluyen `UPDATE`.
 
 ### Paso a paso
 
-Para correr la API a mano, la cadena de conexión no está en el repositorio: se pasa por variable de entorno
-(`$env:ConnectionStrings__Default = "Host=127.0.0.1;Port=5432;Database=tallercontrol;Username=tallercontrol;Password=<la de .env>"`) o con `dotnet user-secrets`.
+Para correr la API a mano, las cadenas de conexión no están en el repositorio: se pasan por variable de entorno o con `dotnet user-secrets`.
+
+```powershell
+$env:ConnectionStrings__Migrations = "Host=127.0.0.1;Port=5432;Database=tallercontrol;Username=tallercontrol;Password=<POSTGRES_PASSWORD de .env>"
+$env:ConnectionStrings__Default    = "Host=127.0.0.1;Port=5432;Database=tallercontrol;Username=tallercontrol_app;Password=<POSTGRES_APP_PASSWORD de .env>"
+dotnet ef database update --project src/TallerControl.Infrastructure --startup-project src/TallerControl.Api
+```
 
 ```powershell
 copy .env.example .env      # cambiar las contraseñas locales
