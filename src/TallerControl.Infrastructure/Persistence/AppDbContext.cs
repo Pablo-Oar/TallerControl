@@ -193,14 +193,28 @@ public class AppDbContext : DbContext
                 continue;
             }
 
-            if (tenantId is null)
-            {
-                throw new TenantViolationException(
-                    $"No hay taller en la sesión: no se puede escribir {entry.Metadata.ClrType.Name}.");
-            }
-
             var property = entry.Property(nameof(ITenantOwned.TenantId));
             var current = (Guid)property.CurrentValue!;
+
+            if (tenantId is null)
+            {
+                // Sin sesión: operaciones de plataforma (p. ej. AcceptInvitationHandler) donde el
+                // TenantId ya está fijado por código interno (invitación, semilla). Solo se permite
+                // si el TenantId es explícito y no se está modificando.
+                if (current == Guid.Empty)
+                {
+                    throw new TenantViolationException(
+                        $"No hay taller en la sesión: no se puede escribir {entry.Metadata.ClrType.Name}.");
+                }
+
+                if (property.IsModified)
+                {
+                    throw new TenantViolationException(
+                        $"No se permite cambiar el taller de {entry.Metadata.ClrType.Name}.");
+                }
+
+                continue;
+            }
 
             if (entry.State == EntityState.Added)
             {

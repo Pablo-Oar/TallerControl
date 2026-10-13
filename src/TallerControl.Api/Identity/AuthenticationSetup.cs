@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TallerControl.Application.Common;
 using TallerControl.Infrastructure.Identity;
@@ -53,7 +54,8 @@ public static class AuthenticationSetup
                 options.Events.OnValidatePrincipal = ValidateSecurityStampAsync;
             });
 
-        services.AddAuthorization();
+        services.AddAuthorization(options => options.AddPermissionPolicies());
+        services.AddScoped<IAuthorizationHandler, HasPermissionHandler>();
 
         services.AddAntiforgery(options =>
         {
