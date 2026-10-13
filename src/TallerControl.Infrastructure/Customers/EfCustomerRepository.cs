@@ -50,10 +50,13 @@ internal sealed class EfCustomerRepository : ICustomerRepository
 
     public async Task<CustomerDto?> GetFullAsync(Guid id, CancellationToken ct)
     {
+        // IgnoreQueryFilters para aplicar la condición de taller manualmente; se excluyen
+        // los clientes borrados (DeletedAt != null) salvo en FindAnyByIdAsync, que los necesita
+        // para la restauración (T-CUS-06: GET de cliente borrado debe devolver 404).
         var customer = await _db.Set<Customer>()
             .AsNoTracking()
             .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(c => c.Id == id && c.TenantId == _tenantContext.TenantId, ct);
+            .FirstOrDefaultAsync(c => c.Id == id && c.TenantId == _tenantContext.TenantId && c.DeletedAt == null, ct);
 
         if (customer is null) return null;
 

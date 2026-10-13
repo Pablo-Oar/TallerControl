@@ -44,7 +44,8 @@ internal static class VehiclesEndpoints
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
         app.MapDelete("/api/v1/vehicles/{id:guid}",
-                (Guid id, DeleteVehicleRequest request, DeleteVehicleHandler handler, CancellationToken ct) =>
+                (Guid id, [Microsoft.AspNetCore.Mvc.FromBody] DeleteVehicleRequest request,
+                 DeleteVehicleHandler handler, CancellationToken ct) =>
                     DeleteAsync(id, request.Reason, handler, ct))
             .RequirePermission(Permission.VehiclesWrite)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();

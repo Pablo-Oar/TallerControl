@@ -42,7 +42,8 @@ internal static class CustomersEndpoints
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
         app.MapDelete("/api/v1/customers/{id:guid}",
-                (Guid id, DeleteCustomerRequest request, DeleteCustomerHandler handler, CancellationToken ct) =>
+                (Guid id, [Microsoft.AspNetCore.Mvc.FromBody] DeleteCustomerRequest request,
+                 DeleteCustomerHandler handler, CancellationToken ct) =>
                     DeleteAsync(id, request.Reason, handler, ct))
             .RequirePermission(Permission.CustomersDelete)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
