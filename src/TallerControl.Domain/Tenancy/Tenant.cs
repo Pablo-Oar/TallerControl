@@ -3,7 +3,7 @@ using TallerControl.Domain.Common;
 namespace TallerControl.Domain.Tenancy;
 
 /// <summary>Un taller (empresa). Nunca se borra: se suspende (doc 04 §3.1).</summary>
-public sealed class Tenant : Entity, IVersioned
+public sealed class Tenant : Entity, IVersioned, IAudited
 {
     public const int NameMaxLength = 120;
     public const string DefaultTimeZone = "America/Argentina/Buenos_Aires";

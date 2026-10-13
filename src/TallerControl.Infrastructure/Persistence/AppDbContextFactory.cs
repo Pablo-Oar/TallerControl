@@ -18,6 +18,6 @@ internal sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbCon
         var builder = new DbContextOptionsBuilder<AppDbContext>();
         builder.UseTallerControlNpgsql(connectionString);
 
-        return new AppDbContext(builder.Options, new NoTenantContext());
+        return new AppDbContext(builder.Options, new NoTenantContext(), new SystemActorContext(), TimeProvider.System);
     }
 }

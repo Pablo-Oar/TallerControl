@@ -84,8 +84,8 @@ public sealed class ConventionTests
         await using var connection = new NpgsqlConnection(connectionString);
         await connection.OpenAsync();
         await using var command = new NpgsqlCommand(
-            "INSERT INTO test_items (id, tenant_id, name, status, price, occurred_at) " +
-            "VALUES (gen_random_uuid(), gen_random_uuid(), 'x', 'inexistente', 1, now())",
+            "INSERT INTO test_items (id, tenant_id, name, status, price, occurred_at, secret) " +
+            "VALUES (gen_random_uuid(), gen_random_uuid(), 'x', 'inexistente', 1, now(), '')",
             connection);
 
         var error = await Assert.ThrowsAsync<PostgresException>(() => command.ExecuteNonQueryAsync());
