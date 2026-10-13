@@ -63,6 +63,7 @@ Disponibles desde E0 (actualizar esta sección al crearlos):
 
 ```
 dotnet build TallerControl.slnx / dotnet test TallerControl.slnx / dotnet format TallerControl.slnx --verify-no-changes
+dotnet ef migrations add <Nombre> --project src/TallerControl.Infrastructure --startup-project src/TallerControl.Api --output-dir Persistence/Migrations   # tras dotnet tool restore
 # los tests de integración levantan PostgreSQL con Testcontainers: requieren Docker Desktop
 npm --prefix web run dev | build | lint | test
 .\scripts\dev.ps1           # todo el entorno: .env si falta, docker, API (:5233) y SPA (:5173)
@@ -85,10 +86,10 @@ docker compose up -d        # PostgreSQL 18 + RustFS/S3 en 127.0.0.1 (requiere D
 
 - Código y tablas en **inglés** `snake_case`; la UI en **español**.
 - PK `uuid` v7 (`Guid.CreateVersion7()`). Dinero `numeric(14,2)`/`decimal`, redondeo `MidpointRounding.AwayFromZero` por renglón. Cantidades `numeric(12,3)`.
-- Fechas `timestamptz` en **UTC**; convertir a la zona del taller solo al mostrar (X6/X12).
+- Fechas `timestamptz` en **UTC**, como `DateTimeOffset` (Npgsql rechaza offset distinto de 0) y reloj `TimeProvider`; convertir a la zona del taller solo al mostrar (X6/X12).
 - Toda tabla del taller lleva `tenant_id`; índices compuestos empiezan por `tenant_id`.
 - **Borrado físico prohibido** en datos de negocio (FK `RESTRICT`); borrado lógico con motivo donde aplique.
-- Enums como `text` + `CHECK`. Concurrencia optimista con `xmin`.
+- Enums como `text` en `snake_case` + `CHECK` (convención en `AppDbContext`, no a mano). Concurrencia optimista con `xmin` (`IVersioned`).
 - Numeración correlativa por taller vía `document_sequences` con `SELECT … FOR UPDATE`.
 - Totales **siempre calculados en el servidor**.
 - **V2:** `document_sequences` con clave `(tenant_id, branch_id, kind)`, `stock_movements.branch_id` y `payments.account_id` (nulo) desde el MVP.
