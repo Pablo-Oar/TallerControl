@@ -15,8 +15,8 @@ Antes de escribir, ubicá el endpoint en `05_contratos_api.md` y su permiso en `
 4. **Caso de uso**: clase simple en `Application/<Modulo>/`; el endpoint solo mapea request → handler → response. Sin reglas de negocio en el endpoint.
 5. **Transacción**: una sola si toca varios módulos; emails por outbox.
 6. **Respuesta**: DTO dedicado; **omitir** (no vaciar) montos/costos según permiso; en público, sin UUID internos ni contacto.
-7. **Errores**: `ProblemDetails` RFC 7807 con `traceId`. 404 uniforme para ajeno/inexistente; 409 para transición/estado inválido o conflicto de concurrencia; 422 para validación; 403 solo cuando el recurso es visible y la acción no.
-8. **Concurrencia**: si edita una entidad con `xmin`, manejar el conflicto → 409.
+7. **Errores**: `ProblemDetails` RFC 7807 con `traceId`. 404 uniforme para ajeno/inexistente; 409 para transición/estado inválido o unicidad; **412** para conflicto de concurrencia optimista (`xmin`); 422 para validación; 403 solo cuando el recurso es visible y la acción no.
+8. **Concurrencia**: si edita una entidad con `xmin` (`IVersioned`), lanzar `ConcurrencyException` → 412 (Precondition Failed). El cliente envía `If-Match: "<version>"` con el valor de `xmin` leído en el GET previo.
 9. **Auditoría**: registrar en `audit_events` los cambios relevantes (antes/después, sin datos sensibles).
 10. **Rate limit**: obligatorio en rutas públicas y de autenticación (`07` §6).
 11. **OpenAPI**: anotado, para regenerar los tipos del frontend (`openapi-typescript`).

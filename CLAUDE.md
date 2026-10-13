@@ -54,8 +54,24 @@ docs/  scripts/  .github/workflows/
 ```
 
 Application y Domain se organizan **por módulo** (`Work/`, `Qr/`, `Customers/`…), no por tipo técnico.
-Estado actual: **E0 y E1 completas; sigue E2** (autenticación y multiempresa). Existen el entorno local (`docker-compose.yml`, `.env.example`) y la solución .NET (`TallerControl.slnx`: 4 proyectos + 3 de pruebas, `/health/live` y `/health/ready`). Persistencia (E1): `AppDbContext` con aislamiento por taller, auditoría automática de entidades `IAudited` (`audit_events`, solo inserción), outbox (`IOutbox`), avisos y numeración por sucursal (`IDocumentNumberGenerator`, siempre dentro de la transacción del documento). `web/` tiene el shell de la SPA (React 19 + Vite + Tailwind 4, ruteo con las tres áreas cargadas por separado, Vitest). CI en `.github/workflows/ci.yml` (build, format, test, lint, gitleaks) y arranque con `.\scripts\dev.ps1`.Observabilidad y errores (E1): Serilog (JSON a consola en producción, `TraceId` y `tenant_id` en cada evento, rutas saneadas por `LogSanitizer`) y errores RFC 7807 con `traceId` (`ApiExceptionHandler`: `NotFoundException`/`TenantViolationException` → 404, `BusinessRuleException` → 422, `ConflictException`/unicidad → 409, concurrencia → 412, el resto → 500 sin detalles). El orden del pipeline está en `UseApiErrorPipeline()`. CI genera el *migrations bundle* y lo aplica en un PostgreSQL limpio.
+Estado actual: **E0 y E1 completas; E2 en curso (bloques 1–5 de 6 completos)**. Sigue E2 bloque 6: settings (REQ-04) + T-SET + T-ISO-02/03 + pantalla `/app/settings/general`. Luego E3 (clientes y vehículos). Existen el entorno local (`docker-compose.yml`, `.env.example`) y la solución .NET (`TallerControl.slnx`: 4 proyectos + 3 de pruebas, `/health/live` y `/health/ready`). Persistencia (E1): `AppDbContext` con aislamiento por taller, auditoría automática de entidades `IAudited` (`audit_events`, solo inserción), outbox (`IOutbox`), avisos y numeración por sucursal (`IDocumentNumberGenerator`, siempre dentro de la transacción del documento). `web/` tiene el SPA completa con auth (React 19 + Vite + Tailwind 4, TanStack Query, React Hook Form + Zod, ruteo con tres áreas, guards `RequireAuth`, Vitest + Playwright). CI en `.github/workflows/ci.yml` (build, format, test, lint, gitleaks) y arranque con `.\scripts\dev.ps1`. Observabilidad y errores (E1): Serilog (JSON a consola en producción, `TraceId` y `tenant_id` en cada evento, rutas saneadas por `LogSanitizer`) y errores RFC 7807 con `traceId` (`ApiExceptionHandler`: `NotFoundException`/`TenantViolationException` → 404, `BusinessRuleException` → 422, `ConflictException`/unicidad → 409, `ConcurrencyException`/`DbUpdateConcurrencyException` → 412, el resto → 500 sin detalles). El orden del pipeline está en `UseApiErrorPipeline()`. CI genera el *migrations bundle* y lo aplica en un PostgreSQL limpio.
 La API usa `ConnectionStrings:Default` con el rol **`tallercontrol_app`** (sin `DELETE` ni `UPDATE` sobre `audit_events`); las migraciones (`dotnet ef`, bundle) usan el dueño por `ConnectionStrings:Migrations`. Contraseñas por `dotnet user-secrets` o variables de entorno, nunca en el repo. El rol se crea con `scripts/db/create-app-role.sql` antes de migrar (`dev.ps1` lo hace); una tabla nueva de solo inserción debe revocarle `UPDATE` en su migración.
+
+**E2 — lo implementado (bloques 1–5, en `Develop`):**
+- Dominio: `User`, `Membership`, `Invitation`, `PasswordResetToken`, roles `TenantRole`, permisos `Permission`, `MembershipStatus`.
+- Auth API: `POST /api/v1/auth/login` (cookie + antiforgery), `/logout`, `GET /me`, `/forgot-password`, `/reset-password`.
+- Invitaciones: `POST /api/v1/invitations` (Owner), `POST /api/public/v1/invitations/{token}/accept`.
+- Miembros: `GET /api/v1/users`, `PATCH /api/v1/users/{id}` (concurrencia por `xmin`, `If-Match`).
+- Frontend: `LoginPage`, `ForgotPasswordPage`, `ResetPasswordPage`, `AcceptInvitationPage`, `RequireAuth`, `AuthContext`, `TallerLayout`, `/app/settings/users` (listar, editar, invitar).
+- Tests: 138 .NET (43 Domain + 1 Application + 94 Integration) + 12 Vitest; Playwright configurado (E2E-01 requiere entorno).
+
+**E2 — pendiente (bloque 6):**
+- `GET/PATCH /api/v1/settings` (REQ-04): nombre, logo, zona horaria, días de vigencia, alícuota IVA.
+- Upload de logo a R2/RustFS (URL prefirmada).
+- Tests T-SET-01..03, T-ISO-02, T-ISO-03.
+- Primera versión de T-PERM-ALL y T-ISO-ALL (generadores).
+- Pantalla `/app/settings/general` en React.
+- PR de `feature/e2-frontend` → Develop → merge.
 
 ## Comandos
 
@@ -66,6 +82,8 @@ dotnet build TallerControl.slnx / dotnet test TallerControl.slnx / dotnet format
 dotnet ef migrations add <Nombre> --project src/TallerControl.Infrastructure --startup-project src/TallerControl.Api --output-dir Persistence/Migrations   # tras dotnet tool restore
 # los tests de integración levantan PostgreSQL con Testcontainers: requieren Docker Desktop
 npm --prefix web run dev | build | lint | test
+npx playwright test                                 # E2E (requiere entorno local levantado)
+npx playwright test --headed                        # E2E con navegador visible
 .\scripts\dev.ps1           # todo el entorno: .env si falta, docker, API (:5233) y SPA (:5173)
 copy .env.example .env     # primera vez; luego completar las contraseñas locales
 docker compose up -d        # PostgreSQL 18 + RustFS/S3 en 127.0.0.1 (requiere Docker Desktop)

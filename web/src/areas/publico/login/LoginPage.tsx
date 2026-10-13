@@ -1,0 +1,90 @@
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router'
+import { Input } from '../../../components/ui/Input'
+import { Button } from '../../../components/ui/Button'
+import { authApi } from '../../../lib/api/auth'
+import { useAuth } from '../../../lib/auth/AuthContext'
+import { ApiError } from '../../../lib/api/client'
+
+const schema = z.object({
+  email: z.string().email('Email inválido'),
+  password: z.string().min(1, 'Ingresá la contraseña'),
+  rememberMe: z.boolean().optional(),
+})
+
+type FormData = z.infer<typeof schema>
+
+export function LoginPage() {
+  const navigate = useNavigate()
+  const { invalidate } = useAuth()
+  const [serverError, setServerError] = useState<string | null>(null)
+
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  })
+
+  async function onSubmit(data: FormData) {
+    setServerError(null)
+    try {
+      await authApi.login({ email: data.email, password: data.password, rememberMe: data.rememberMe })
+      invalidate()
+      navigate('/app', { replace: true })
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 423) {
+          setServerError('Tu cuenta está bloqueada por intentos fallidos. Intentá de nuevo en unos minutos.')
+        } else {
+          setServerError('Email o contraseña incorrectos.')
+        }
+      } else {
+        setServerError('Ocurrió un error. Intentá de nuevo.')
+      }
+    }
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-slate-50">
+      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+        <h1 className="mb-6 text-2xl font-semibold text-slate-900">Ingresar</h1>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
+          <Input
+            label="Email"
+            type="email"
+            autoComplete="email"
+            error={errors.email?.message}
+            {...register('email')}
+          />
+          <Input
+            label="Contraseña"
+            type="password"
+            autoComplete="current-password"
+            error={errors.password?.message}
+            {...register('password')}
+          />
+          <label className="flex items-center gap-2 text-sm text-slate-600">
+            <input type="checkbox" {...register('rememberMe')} className="rounded" />
+            Recordarme
+          </label>
+
+          {serverError && (
+            <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+              {serverError}
+            </p>
+          )}
+
+          <Button type="submit" loading={isSubmitting} className="mt-2 w-full">
+            Ingresar
+          </Button>
+        </form>
+        <p className="mt-4 text-center text-sm text-slate-500">
+          <Link to="/forgot-password" className="text-blue-600 hover:underline">
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </p>
+      </div>
+    </div>
+  )
+}
