@@ -33,6 +33,9 @@ export function TallerLayout({ children }: { children: ReactNode }) {
             <Link to="/app/vehicles" className="text-slate-600 hover:text-slate-900">
               Vehículos
             </Link>
+            <Link to="/app/catalog" className="text-slate-600 hover:text-slate-900">
+              Catálogo
+            </Link>
             {user?.role === 'Owner' && (
               <Link to="/app/settings/general" className="text-slate-600 hover:text-slate-900">
                 General

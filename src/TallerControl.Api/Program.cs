@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 using TallerControl.Api.Endpoints.Auth;
+using TallerControl.Api.Endpoints.Catalog;
 using TallerControl.Api.Endpoints.Customers;
 using TallerControl.Api.Endpoints.Settings;
 using TallerControl.Api.Endpoints.Users;
@@ -58,6 +59,7 @@ app.MapUsersEndpoints();
 app.MapSettingsEndpoints();
 app.MapCustomersEndpoints();
 app.MapVehiclesEndpoints();
+app.MapCatalogEndpoints();
 
 app.Run();
 

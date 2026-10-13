@@ -4,12 +4,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
 using TallerControl.Application.Auth;
+using TallerControl.Application.Catalog;
 using TallerControl.Application.Common;
 using TallerControl.Application.Customers;
 using TallerControl.Application.Settings;
 using TallerControl.Application.Tenancy;
 using TallerControl.Application.Users;
 using TallerControl.Application.Vehicles;
+using TallerControl.Infrastructure.Catalog;
 using TallerControl.Infrastructure.Customers;
 using TallerControl.Infrastructure.Email;
 using TallerControl.Infrastructure.Health;
@@ -91,6 +93,16 @@ public static class DependencyInjection
         services.AddScoped<UpdateVehicleHandler>();
         services.AddScoped<DeleteVehicleHandler>();
         services.AddScoped<GetVehicleHistoryHandler>();
+
+        services.AddScoped<ICatalogRepository, EfCatalogRepository>();
+        services.AddScoped<SearchCatalogHandler>();
+        services.AddScoped<CreateCatalogItemHandler>();
+        services.AddScoped<GetCatalogItemHandler>();
+        services.AddScoped<UpdateCatalogItemHandler>();
+        services.AddScoped<DeleteCatalogItemHandler>();
+        services.AddScoped<RestoreCatalogItemHandler>();
+        services.AddScoped<ManualStockAdjustmentHandler>();
+        services.AddScoped<GetStockMovementsHandler>();
 
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddHostedService<OutboxDispatcher>();
