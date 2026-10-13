@@ -86,13 +86,25 @@ public class AppDbContext : DbContext
         {
             ApplyEnumConventions(entityType);
 
-            if (typeof(ITenantOwned).IsAssignableFrom(entityType.ClrType))
+            var isTenantOwned = typeof(ITenantOwned).IsAssignableFrom(entityType.ClrType);
+            var isSoftDeletable = typeof(ISoftDeletable).IsAssignableFrom(entityType.ClrType);
+
+            if (isTenantOwned && isSoftDeletable)
+            {
+                // HasQueryFilter acepta solo uno por tipo — hay que combinarlos.
+                InvokeFilter(nameof(ApplyTenantAndSoftDeleteFilter), entityType.ClrType, modelBuilder);
+            }
+            else if (isTenantOwned)
             {
                 InvokeFilter(nameof(ApplyTenantFilter), entityType.ClrType, modelBuilder);
             }
             else if (typeof(IOptionalTenantOwned).IsAssignableFrom(entityType.ClrType))
             {
                 InvokeFilter(nameof(ApplyOptionalTenantFilter), entityType.ClrType, modelBuilder);
+            }
+            else if (isSoftDeletable)
+            {
+                InvokeFilter(nameof(ApplySoftDeleteFilter), entityType.ClrType, modelBuilder);
             }
 
             if (typeof(IVersioned).IsAssignableFrom(entityType.ClrType))
@@ -157,6 +169,20 @@ public class AppDbContext : DbContext
             e => EF.Property<Guid?>(e, nameof(IOptionalTenantOwned.TenantId)) == CurrentTenantId);
     }
 
+    private void ApplyTenantAndSoftDeleteFilter<TEntity>(ModelBuilder modelBuilder)
+        where TEntity : class, ITenantOwned, ISoftDeletable
+    {
+        modelBuilder.Entity<TEntity>().HasQueryFilter(
+            e => EF.Property<Guid>(e, nameof(ITenantOwned.TenantId)) == CurrentTenantId
+              && e.DeletedAt == null);
+    }
+
+    private static void ApplySoftDeleteFilter<TEntity>(ModelBuilder modelBuilder)
+        where TEntity : class, ISoftDeletable
+    {
+        modelBuilder.Entity<TEntity>().HasQueryFilter(e => e.DeletedAt == null);
+    }
+
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         PrepareChanges();
@@ -174,8 +200,49 @@ public class AppDbContext : DbContext
     private void PrepareChanges()
     {
         ChangeTracker.DetectChanges();
+        GuardSoftDeletableHardDelete();
+        SetAuditTimestamps();
         EnforceTenantBoundaries();
         CaptureAudit();
+    }
+
+    /// <summary>
+    /// Bloquea el borrado físico de entidades con borrado lógico. Siempre usar el método
+    /// <c>Delete()</c> de la entidad y guardar con <c>SaveChanges</c>.
+    /// </summary>
+    private void GuardSoftDeletableHardDelete()
+    {
+        foreach (var entry in ChangeTracker.Entries<ISoftDeletable>())
+        {
+            if (entry.State == EntityState.Deleted)
+            {
+                throw new InvalidOperationException(
+                    $"No se puede borrar físicamente '{entry.Metadata.ClrType.Name}'. " +
+                    "Usar el método Delete() de la entidad (borrado lógico).");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Setea <c>created_at</c>/<c>created_by</c> en altas y <c>updated_at</c>/<c>updated_by</c>
+    /// en modificaciones, para todas las entidades <see cref="IAuditable"/> (doc 04 §1).
+    /// </summary>
+    private void SetAuditTimestamps()
+    {
+        var now = _clock.GetUtcNow();
+        foreach (var entry in ChangeTracker.Entries<IAuditable>())
+        {
+            if (entry.State == EntityState.Added)
+            {
+                entry.Property(nameof(IAuditable.CreatedAt)).CurrentValue = now;
+                entry.Property(nameof(IAuditable.CreatedBy)).CurrentValue = _actorContext.ActorId;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Property(nameof(IAuditable.UpdatedAt)).CurrentValue = now;
+                entry.Property(nameof(IAuditable.UpdatedBy)).CurrentValue = _actorContext.ActorId;
+            }
+        }
     }
 
     /// <summary>

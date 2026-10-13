@@ -5,9 +5,12 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
 using TallerControl.Application.Auth;
 using TallerControl.Application.Common;
+using TallerControl.Application.Customers;
 using TallerControl.Application.Settings;
 using TallerControl.Application.Tenancy;
 using TallerControl.Application.Users;
+using TallerControl.Application.Vehicles;
+using TallerControl.Infrastructure.Customers;
 using TallerControl.Infrastructure.Email;
 using TallerControl.Infrastructure.Health;
 using TallerControl.Infrastructure.Identity;
@@ -17,6 +20,7 @@ using TallerControl.Infrastructure.Settings;
 using TallerControl.Infrastructure.Storage;
 using TallerControl.Infrastructure.Tenancy;
 using TallerControl.Infrastructure.Users;
+using TallerControl.Infrastructure.Vehicles;
 
 namespace TallerControl.Infrastructure;
 
@@ -71,6 +75,22 @@ public static class DependencyInjection
         services.AddScoped<UpdateSettingsHandler>();
         services.AddScoped<GetLogoUploadUrlHandler>();
         services.AddScoped<ConfirmLogoHandler>();
+
+        services.AddScoped<ICustomerRepository, EfCustomerRepository>();
+        services.AddScoped<SearchCustomersHandler>();
+        services.AddScoped<CreateCustomerHandler>();
+        services.AddScoped<GetCustomerHandler>();
+        services.AddScoped<UpdateCustomerHandler>();
+        services.AddScoped<DeleteCustomerHandler>();
+        services.AddScoped<RestoreCustomerHandler>();
+
+        services.AddScoped<IVehicleRepository, EfVehicleRepository>();
+        services.AddScoped<SearchVehiclesHandler>();
+        services.AddScoped<CreateVehicleHandler>();
+        services.AddScoped<GetVehicleHandler>();
+        services.AddScoped<UpdateVehicleHandler>();
+        services.AddScoped<DeleteVehicleHandler>();
+        services.AddScoped<GetVehicleHistoryHandler>();
 
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddHostedService<OutboxDispatcher>();
