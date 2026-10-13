@@ -28,6 +28,10 @@ public sealed class Tenant : Entity, IVersioned, IAudited
 
     public string? TaxId { get; private set; }
 
+    public string? Address { get; private set; }
+
+    public string? Phone { get; private set; }
+
     public TenantStatus Status { get; private set; }
 
     public string TimeZone { get; private set; } = DefaultTimeZone;
@@ -39,6 +43,46 @@ public sealed class Tenant : Entity, IVersioned, IAudited
     public void Suspend() => Status = TenantStatus.Suspended;
 
     public void Activate() => Status = TenantStatus.Active;
+
+    /// <summary>Actualiza los datos editables de REQ-04. El nombre es obligatorio; el resto, opcional.</summary>
+    public void UpdateSettings(
+        string name,
+        string? legalName,
+        string? taxId,
+        string? address,
+        string? phone,
+        string timeZone)
+    {
+        Name = ValidateName(name);
+        LegalName = legalName;
+        TaxId = taxId;
+        Address = address;
+        Phone = phone;
+        TimeZone = ValidateTimeZone(timeZone);
+    }
+
+    private static string ValidateTimeZone(string timeZone)
+    {
+        if (string.IsNullOrWhiteSpace(timeZone))
+        {
+            throw new ArgumentException("La zona horaria es obligatoria.", nameof(timeZone));
+        }
+
+        try
+        {
+            TimeZoneInfo.FindSystemTimeZoneById(timeZone);
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            throw new ArgumentException($"Zona horaria desconocida: {timeZone}.", nameof(timeZone));
+        }
+        catch (InvalidTimeZoneException)
+        {
+            throw new ArgumentException($"Zona horaria inválida: {timeZone}.", nameof(timeZone));
+        }
+
+        return timeZone;
+    }
 
     internal static string ValidateName(string name)
     {

@@ -14,6 +14,8 @@ internal sealed class TenantConfiguration : IEntityTypeConfiguration<Tenant>
         builder.HasKey(t => t.Id);
         builder.Property(t => t.Id).ValueGeneratedNever();
         builder.Property(t => t.Name).IsRequired();
+        builder.Property(t => t.Address);
+        builder.Property(t => t.Phone);
         builder.Property(t => t.TimeZone).IsRequired().HasDefaultValue(Tenant.DefaultTimeZone);
         builder.Property(t => t.Status).HasDefaultValue(TenantStatus.Active);
     }

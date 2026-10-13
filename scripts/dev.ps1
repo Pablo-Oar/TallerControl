@@ -79,6 +79,13 @@ if ($LASTEXITCODE -ne 0) { throw 'No se pudieron aplicar las migraciones.' }
 $env:ConnectionStrings__Default = "Host=127.0.0.1;Port=$port;Database=$db;Username=tallercontrol_app;Password=$($cfg['POSTGRES_APP_PASSWORD'])"
 $env:ASPNETCORE_ENVIRONMENT = 'Development'
 
+# Almacenamiento S3 local (RustFS), sustituto de Cloudflare R2 en desarrollo.
+$storagePort = if ($cfg['STORAGE_API_PORT']) { $cfg['STORAGE_API_PORT'] } else { '9000' }
+$env:Storage__ServiceUrl = "http://127.0.0.1:$storagePort"
+$env:Storage__AccessKey = $cfg['STORAGE_ACCESS_KEY']
+$env:Storage__SecretKey = $cfg['STORAGE_SECRET_KEY']
+$env:Storage__Bucket = if ($cfg['STORAGE_BUCKET']) { $cfg['STORAGE_BUCKET'] } else { 'tallercontrol-dev' }
+
 if (-not (Test-Path web/node_modules)) { npm --prefix web ci }
 
 # La API en otra ventana (hereda las variables de entorno de esta sesión).

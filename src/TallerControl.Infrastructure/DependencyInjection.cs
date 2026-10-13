@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
 using TallerControl.Application.Auth;
 using TallerControl.Application.Common;
+using TallerControl.Application.Settings;
 using TallerControl.Application.Tenancy;
 using TallerControl.Application.Users;
 using TallerControl.Infrastructure.Email;
@@ -12,6 +13,8 @@ using TallerControl.Infrastructure.Health;
 using TallerControl.Infrastructure.Identity;
 using TallerControl.Infrastructure.Outbox;
 using TallerControl.Infrastructure.Persistence;
+using TallerControl.Infrastructure.Settings;
+using TallerControl.Infrastructure.Storage;
 using TallerControl.Infrastructure.Tenancy;
 using TallerControl.Infrastructure.Users;
 
@@ -60,6 +63,14 @@ public static class DependencyInjection
         services.AddScoped<ResetPasswordHandler>();
         services.AddScoped<ListMembersHandler>();
         services.AddScoped<UpdateMembershipHandler>();
+
+        services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
+        services.AddSingleton<IObjectStorage, S3ObjectStorage>();
+        services.AddScoped<ISettingsRepository, EfSettingsRepository>();
+        services.AddScoped<GetSettingsHandler>();
+        services.AddScoped<UpdateSettingsHandler>();
+        services.AddScoped<GetLogoUploadUrlHandler>();
+        services.AddScoped<ConfirmLogoHandler>();
 
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddHostedService<OutboxDispatcher>();

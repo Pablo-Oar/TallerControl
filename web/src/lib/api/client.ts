@@ -65,23 +65,28 @@ async function request<T>(
   return json as T
 }
 
+/** `version` es el valor crudo (sin comillas); acá se arma el ETag como pide HTTP. */
+async function requestWithIfMatch<T>(method: string, url: string, body: unknown, version: string): Promise<T> {
+  const res = await fetch(url, {
+    method,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'If-Match': `"${version}"`,
+      'X-XSRF-TOKEN': await ensureCsrfToken(),
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (res.status === 204) return undefined as T
+  const json = await res.json().catch(() => null)
+  if (!res.ok) throw new ApiError(res.status, json?.detail ?? res.statusText, json ?? undefined)
+  return json as T
+}
+
 export const api = {
   get: <T>(url: string) => request<T>('GET', url),
   post: <T>(url: string, body?: unknown, csrf = false) => request<T>('POST', url, body, csrf),
-  patch: <T>(url: string, body: unknown, ifMatch: string) =>
-    fetch(url, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'If-Match': ifMatch,
-        'X-XSRF-TOKEN': csrfToken ?? '',
-      },
-      body: JSON.stringify(body),
-    }).then(async (res) => {
-      if (res.status === 204) return undefined as T
-      const json = await res.json().catch(() => null)
-      if (!res.ok) throw new ApiError(res.status, json?.detail ?? res.statusText, json ?? undefined)
-      return json as T
-    }),
+  put: <T>(url: string, body: unknown, ifMatch: string) => requestWithIfMatch<T>('PUT', url, body, ifMatch),
+  patch: <T>(url: string, body: unknown, ifMatch: string) => requestWithIfMatch<T>('PATCH', url, body, ifMatch),
 }

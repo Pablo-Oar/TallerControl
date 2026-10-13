@@ -6,6 +6,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Cliente S3 para R2/RustFS (doc 02): firma URLs PUT/GET prefirmadas, sin transferir el
+         archivo por la API. Licencia Apache-2.0; no está en la lista de dependencias a evitar
+         de doc 02 §11 (MediatR, AutoMapper, colas, Redis, GraphQL). -->
+    <PackageReference Include="AWSSDK.S3" Version="4.0.104.3" />
     <PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="10.0.12" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.12" />

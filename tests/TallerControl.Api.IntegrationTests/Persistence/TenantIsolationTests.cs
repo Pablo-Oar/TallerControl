@@ -115,6 +115,7 @@ public sealed class TenantIsolationTests
         await Assert.ThrowsAsync<TenantViolationException>(() => a.SaveChangesAsync());
     }
 
+    /// <summary>T-ISO-03 (doc 08): forzar el cambio de TenantId lanza excepción y no persiste nada.</summary>
     [Fact]
     public async Task Cambiar_el_TenantId_de_una_entidad_propia_se_rechaza()
     {
