@@ -54,7 +54,7 @@ docs/  scripts/  .github/workflows/
 ```
 
 Application y Domain se organizan **por módulo** (`Work/`, `Qr/`, `Customers/`…), no por tipo técnico.
-Estado actual: **E0 y E1 completas; E2 completa en `feature/e2-settings`, falta el PR a Develop**. Luego E3 (clientes y vehículos). Existen el entorno local (`docker-compose.yml`, `.env.example`) y la solución .NET (`TallerControl.slnx`: 4 proyectos + 3 de pruebas, `/health/live` y `/health/ready`). Persistencia (E1): `AppDbContext` con aislamiento por taller, auditoría automática de entidades `IAudited` (`audit_events`, solo inserción), outbox (`IOutbox`), avisos y numeración por sucursal (`IDocumentNumberGenerator`, siempre dentro de la transacción del documento). `web/` tiene el SPA completa con auth (React 19 + Vite + Tailwind 4, TanStack Query, React Hook Form + Zod, ruteo con tres áreas, guards `RequireAuth`, Vitest + Playwright). CI en `.github/workflows/ci.yml` (build, format, test, lint, gitleaks) y arranque con `.\scripts\dev.ps1`. Observabilidad y errores (E1): Serilog (JSON a consola en producción, `TraceId` y `tenant_id` en cada evento, rutas saneadas por `LogSanitizer`) y errores RFC 7807 con `traceId` (`ApiExceptionHandler`: `NotFoundException`/`TenantViolationException` → 404, `BusinessRuleException` → 422, `ConflictException`/unicidad → 409, `ConcurrencyException`/`DbUpdateConcurrencyException` → 412, el resto → 500 sin detalles). El orden del pipeline está en `UseApiErrorPipeline()`. CI genera el *migrations bundle* y lo aplica en un PostgreSQL limpio.
+Estado actual: **E0 y E1 completas; E2 mergeada a Develop; E3 completa en `feature/e3-customers-vehicles`, falta el PR a Develop**. Luego E4 (órdenes de trabajo). Existen el entorno local (`docker-compose.yml`, `.env.example`) y la solución .NET (`TallerControl.slnx`: 4 proyectos + 3 de pruebas, `/health/live` y `/health/ready`). Persistencia (E1): `AppDbContext` con aislamiento por taller, auditoría automática de entidades `IAudited` (`audit_events`, solo inserción), outbox (`IOutbox`), avisos y numeración por sucursal (`IDocumentNumberGenerator`, siempre dentro de la transacción del documento). `web/` tiene el SPA completa con auth (React 19 + Vite + Tailwind 4, TanStack Query, React Hook Form + Zod, ruteo con tres áreas, guards `RequireAuth`, Vitest + Playwright). CI en `.github/workflows/ci.yml` (build, format, test, lint, gitleaks) y arranque con `.\scripts\dev.ps1`. Observabilidad y errores (E1): Serilog (JSON a consola en producción, `TraceId` y `tenant_id` en cada evento, rutas saneadas por `LogSanitizer`) y errores RFC 7807 con `traceId` (`ApiExceptionHandler`: `NotFoundException`/`TenantViolationException` → 404, `BusinessRuleException` → 422, `ConflictException`/unicidad → 409, `ConcurrencyException`/`DbUpdateConcurrencyException` → 412, el resto → 500 sin detalles). El orden del pipeline está en `UseApiErrorPipeline()`. CI genera el *migrations bundle* y lo aplica en un PostgreSQL limpio.
 La API usa `ConnectionStrings:Default` con el rol **`tallercontrol_app`** (sin `DELETE` ni `UPDATE` sobre `audit_events`); las migraciones (`dotnet ef`, bundle) usan el dueño por `ConnectionStrings:Migrations`. Contraseñas por `dotnet user-secrets` o variables de entorno, nunca en el repo. El rol se crea con `scripts/db/create-app-role.sql` antes de migrar (`dev.ps1` lo hace); una tabla nueva de solo inserción debe revocarle `UPDATE` en su migración.
 
 **E2 — lo implementado (bloques 1–6, bloque 6 en `feature/e2-settings`, sin mergear):**
@@ -67,8 +67,18 @@ La API usa `ConnectionStrings:Default` con el rol **`tallercontrol_app`** (sin `
 - **T-PERM-ALL y T-ISO-ALL** (doc 08, `tests/TallerControl.Api.IntegrationTests/Permissions/`): generados por reflexión sobre `EndpointDataSource` (no una lista a mano). T-PERM-ALL descubre todo endpoint `/api/v1/*` con política `perm:*` y lo prueba contra Owner/AdminStaff/Mechanic; T-ISO-ALL hace lo mismo para los que tienen parámetro de ruta (hoy solo `PATCH /api/v1/users/{membershipId}`) contra un recurso de otro taller, y falla con mensaje explícito si aparece un endpoint con `{id}` nuevo que no sepa resolver (fuerza a sumarle el recurso sembrado correspondiente).
 - Tests: 155 .NET (43 Domain + 1 Application + 111 Integration, incluye T-SET-01..03, T-ISO-02/03, T-PERM-ALL, T-ISO-ALL) + 12 Vitest; Playwright configurado (E2E-01 requiere entorno).
 
-**E2 — pendiente para cerrar:**
-- PR de `feature/e2-settings` → Develop (criterio de cierre ya verificado: matriz de permisos 100% y aislamiento entre talleres, por T-PERM-ALL/T-ISO-ALL).
+**E3 — lo implementado (`feature/e3-customers-vehicles`, sin mergear):**
+- Dominio: `Customer` (soft delete, xmin, PhoneNormalizer E.164, VatCondition, DocType), `Vehicle` (soft delete, xmin, patente normalizada, guardia de odómetro), `IAuditable`, `ISoftDeletable`.
+- AppDbContext: filtro combinado tenant+soft-delete (`HasQueryFilter` único), auto-timestamps (`IAuditable`), guardia de borrado físico en `PrepareChanges`.
+- Application: handlers CRUD + restore para ambos módulos; `Page<T>`; stubs balance/órdenes (E4) e historial (E4); `ICustomerRepository`, `IVehicleRepository`.
+- Infrastructure: `EfCustomerRepository` (ILike, citext, GIN trgm), `EfVehicleRepository`; configuraciones con índices parciales únicos (patente, VIN, doc).
+- API: `CustomersEndpoints`, `VehiclesEndpoints`; corrección de odómetro via `IAuthorizationService` (vehicles.odometer.correct).
+- Migration `CustomersVehicles`: tablas `customers` y `vehicles`, GIN trgm en nombre, índices parciales.
+- Tests: 194 .NET (64 Domain + 130 Integration; T-CUS-01..08, T-VEH-01..09, T-ISO-01, T-PERM-ALL/T-ISO-ALL expandidos) + 12 Vitest.
+- Frontend: `api/customers.ts`, `api/vehicles.ts`, `CustomersPage`, `CustomerFormModal`, `VehiclesPage`, `VehicleFormModal`; nav en `TallerLayout`; `asyncUtilTimeout` subido a 3000ms en setup.
+
+**E3 — pendiente para cerrar:**
+- PR de `feature/e3-customers-vehicles` → Develop.
 
 ## Comandos
 
