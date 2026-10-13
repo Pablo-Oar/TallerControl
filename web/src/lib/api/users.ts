@@ -23,7 +23,7 @@ export interface UpdateMembershipRequest {
 export const usersApi = {
   listMembers: () => api.get<MemberDto[]>('/api/v1/users'),
   updateMember: (membershipId: string, body: UpdateMembershipRequest, version: number) =>
-    api.patch<MemberDto>(`/api/v1/users/${membershipId}`, body, `"${version}"`),
+    api.patch<MemberDto>(`/api/v1/users/${membershipId}`, body, `${version}`),
 }
 
 export const invitationsApi = {

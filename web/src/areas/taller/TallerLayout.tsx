@@ -28,6 +28,11 @@ export function TallerLayout({ children }: { children: ReactNode }) {
               Inicio
             </Link>
             {user?.role === 'Owner' && (
+              <Link to="/app/settings/general" className="text-slate-600 hover:text-slate-900">
+                General
+              </Link>
+            )}
+            {user?.role === 'Owner' && (
               <Link to="/app/settings/users" className="text-slate-600 hover:text-slate-900">
                 Usuarios
               </Link>
