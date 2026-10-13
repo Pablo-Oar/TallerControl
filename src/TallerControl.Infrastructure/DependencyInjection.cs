@@ -6,6 +6,7 @@ using Npgsql;
 using TallerControl.Application.Common;
 using TallerControl.Application.Tenancy;
 using TallerControl.Infrastructure.Health;
+using TallerControl.Infrastructure.Outbox;
 using TallerControl.Infrastructure.Persistence;
 using TallerControl.Infrastructure.Tenancy;
 
@@ -29,6 +30,9 @@ public static class DependencyInjection
         // Sin sesión por defecto; E2 registra la implementación basada en la cookie de sesión.
         services.TryAddScoped<ITenantContext, NoTenantContext>();
         services.TryAddScoped<IBranchContext, NoTenantContext>();
+        services.TryAddScoped<IActorContext, SystemActorContext>();
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddScoped<IOutbox, OutboxWriter>();
 
         services.AddDbContext<AppDbContext>((provider, options) =>
             options.UseTallerControlNpgsql(provider.GetRequiredService<NpgsqlDataSource>()));

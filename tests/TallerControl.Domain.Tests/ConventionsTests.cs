@@ -31,17 +31,18 @@ public class ConventionsTests
     }
 
     /// <summary>
-    /// REQ-01: una entidad con <c>TenantId</c> debe declararse <see cref="ITenantOwned"/>; sin eso
-    /// no recibiría el filtro global ni la validación en SaveChanges.
+    /// REQ-01: una entidad con <c>TenantId</c> debe declararse <see cref="ITenantOwned"/> (taller
+    /// obligatorio) o <see cref="IOptionalTenantOwned"/> (eventos de sistema); sin eso no recibiría
+    /// el filtro global ni la validación en SaveChanges.
     /// </summary>
     [Fact]
-    public void Toda_entidad_con_TenantId_implementa_ITenantOwned()
+    public void Toda_entidad_con_TenantId_declara_su_pertenencia_al_taller()
     {
         var domain = typeof(Entity).Assembly;
 
         var offenders = domain.GetTypes()
             .Where(t => t.GetProperty("TenantId", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic) is not null)
-            .Where(t => !typeof(ITenantOwned).IsAssignableFrom(t))
+            .Where(t => !typeof(ITenantOwned).IsAssignableFrom(t) && !typeof(IOptionalTenantOwned).IsAssignableFrom(t))
             .Select(t => t.FullName)
             .ToList();
 

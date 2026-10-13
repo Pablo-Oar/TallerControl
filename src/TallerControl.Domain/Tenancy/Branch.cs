@@ -5,7 +5,7 @@ namespace TallerControl.Domain.Tenancy;
 /// <summary>
 /// Sucursal. Todo taller tiene al menos una, la principal; ninguna tabla asume <c>branch_id</c> nulo (D-15).
 /// </summary>
-public sealed class Branch : Entity, ITenantOwned, IVersioned
+public sealed class Branch : Entity, ITenantOwned, IVersioned, IAudited
 {
     public const string MainName = "Principal";
 

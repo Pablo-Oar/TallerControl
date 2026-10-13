@@ -46,11 +46,19 @@ public sealed class TenancyDb
         return new TenancyDb(connectionString, tenantId, branchId);
     }
 
-    public static AppDbContext CreateContext(string connectionString, Guid? tenantId)
+    public static AppDbContext CreateContext(
+        string connectionString,
+        Guid? tenantId,
+        IActorContext? actor = null,
+        TimeProvider? clock = null)
     {
         var builder = new DbContextOptionsBuilder<AppDbContext>();
         builder.UseTallerControlNpgsql(connectionString);
-        return new AppDbContext(builder.Options, new TestTenantContext(tenantId));
+        return new AppDbContext(
+            builder.Options,
+            new TestTenantContext(tenantId),
+            actor ?? new TestActorContext(),
+            clock ?? TimeProvider.System);
     }
 
     public static async Task<(Guid TenantId, Guid BranchId)> SeedTenantAsync(string connectionString, string name)

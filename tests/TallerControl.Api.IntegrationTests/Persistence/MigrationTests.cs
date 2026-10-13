@@ -57,7 +57,7 @@ public sealed class MigrationTests
         {
             var builder = new DbContextOptionsBuilder<AppDbContext>();
             builder.UseTallerControlNpgsql(_connectionString);
-            return new AppDbContext(builder.Options, new TestTenantContext());
+            return new AppDbContext(builder.Options, new TestTenantContext(), new TestActorContext(), TimeProvider.System);
         }
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TallerControl.Application.Common;
+using TallerControl.Domain.Audit;
 using TallerControl.Domain.Common;
 using TallerControl.Infrastructure.Persistence;
 
@@ -12,7 +13,7 @@ public enum TestStatus
 }
 
 /// <summary>Entidad de prueba que ejercita todas las convenciones: taller, xmin, enum, dinero y fecha.</summary>
-public sealed class TestItem : Entity, ITenantOwned, IVersioned
+public sealed class TestItem : Entity, ITenantOwned, IVersioned, IAudited
 {
     private TestItem()
     {
@@ -37,9 +38,22 @@ public sealed class TestItem : Entity, ITenantOwned, IVersioned
 
     public DateTimeOffset OccurredAt { get; set; }
 
+    /// <summary>Dato sensible: no debe aparecer nunca en la auditoría.</summary>
+    [AuditIgnore]
+    public string Secret { get; set; } = string.Empty;
+
     public uint Version { get; private set; }
 
     public void ChangeTenant(Guid tenantId) => TenantId = tenantId;
+}
+
+public sealed class TestActorContext : IActorContext
+{
+    public AuditActorType ActorType { get; init; } = AuditActorType.System;
+
+    public Guid? ActorId { get; init; }
+
+    public System.Net.IPAddress? TruncatedIp { get; init; }
 }
 
 public sealed class TestTenantContext : ITenantContext
@@ -54,8 +68,12 @@ public sealed class TestTenantContext : ITenantContext
 
 public sealed class TestDbContext : AppDbContext
 {
-    public TestDbContext(DbContextOptions<TestDbContext> options, ITenantContext tenantContext)
-        : base(options, tenantContext)
+    public TestDbContext(
+        DbContextOptions<TestDbContext> options,
+        ITenantContext tenantContext,
+        IActorContext actorContext,
+        TimeProvider clock)
+        : base(options, tenantContext, actorContext, clock)
     {
     }
 
@@ -71,6 +89,10 @@ public sealed class TestDbContext : AppDbContext
     {
         var builder = new DbContextOptionsBuilder<TestDbContext>();
         builder.UseTallerControlNpgsql(connectionString);
-        return new TestDbContext(builder.Options, new TestTenantContext(tenantId));
+        return new TestDbContext(
+            builder.Options,
+            new TestTenantContext(tenantId),
+            new TestActorContext(),
+            TimeProvider.System);
     }
 }

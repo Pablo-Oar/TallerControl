@@ -3,7 +3,7 @@ using TallerControl.Domain.Common;
 namespace TallerControl.Domain.Tenancy;
 
 /// <summary>Configuración del taller, 1:1 con <see cref="Tenant"/> (doc 04 §3.1).</summary>
-public sealed class TenantSettings : ITenantOwned, IVersioned
+public sealed class TenantSettings : ITenantOwned, IVersioned, IAudited
 {
     public const decimal DefaultVatRate = 21.00m;
     public const int DefaultQuoteValidityDays = 15;
