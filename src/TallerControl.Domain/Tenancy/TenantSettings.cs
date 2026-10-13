@@ -41,4 +41,36 @@ public sealed class TenantSettings : ITenantOwned, IVersioned, IAudited
     public bool QrPlateLookupEnabled { get; private set; }
 
     public uint Version { get; private set; }
+
+    /// <summary>Actualiza IVA y vigencia de presupuesto (REQ-04). El IVA debe estar en <see cref="AllowedVatRates"/>.</summary>
+    public void UpdateSettings(decimal defaultVat, int quoteValidityDays)
+    {
+        if (!AllowedVatRates.Contains(defaultVat))
+        {
+            throw new ArgumentException(
+                $"Alícuota de IVA inválida: {defaultVat}. Valores permitidos: {string.Join(", ", AllowedVatRates)}.",
+                nameof(defaultVat));
+        }
+
+        if (quoteValidityDays is < 1 or > 180)
+        {
+            throw new ArgumentException(
+                "Los días de vigencia del presupuesto deben estar entre 1 y 180.",
+                nameof(quoteValidityDays));
+        }
+
+        DefaultVat = defaultVat;
+        QuoteValidityDays = quoteValidityDays;
+    }
+
+    /// <summary>Fija la clave del logo ya subido a R2/RustFS (doc 05 §2.2, T-SET-03).</summary>
+    public void SetLogo(string fileKey)
+    {
+        if (string.IsNullOrWhiteSpace(fileKey))
+        {
+            throw new ArgumentException("La clave del logo no puede estar vacía.", nameof(fileKey));
+        }
+
+        LogoFileKey = fileKey;
+    }
 }

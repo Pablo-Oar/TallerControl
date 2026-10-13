@@ -70,6 +70,7 @@ internal sealed class DevelopmentSeeder : IHostedService
 
         var tenant = new Tenant(tenantName, _clock.GetUtcNow());
         db.Add(tenant);
+        db.Add(new TenantSettings(tenant.Id));
 
         var user = new User(normalizedEmail, displayName);
         user.Activate(hasher.Hash(password));
