@@ -3,9 +3,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
+using TallerControl.Application.Auth;
 using TallerControl.Application.Common;
 using TallerControl.Application.Tenancy;
 using TallerControl.Infrastructure.Health;
+using TallerControl.Infrastructure.Identity;
 using TallerControl.Infrastructure.Outbox;
 using TallerControl.Infrastructure.Persistence;
 using TallerControl.Infrastructure.Tenancy;
@@ -38,6 +40,13 @@ public static class DependencyInjection
             options.UseTallerControlNpgsql(provider.GetRequiredService<NpgsqlDataSource>()));
 
         services.AddScoped<IDocumentNumberGenerator, DocumentNumberGenerator>();
+
+        services.AddSingleton<IPasswordHasher, IdentityPasswordHasher>();
+        services.AddScoped<IAuthRepository, EfAuthRepository>();
+        services.AddScoped<SecurityStampValidator>();
+        services.AddScoped<LoginHandler>();
+        services.AddScoped<LogoutHandler>();
+        services.AddScoped<MeHandler>();
 
         services.AddHealthChecks()
             .AddCheck<DatabaseHealthCheck>("database", tags: [ReadyTag]);
