@@ -5,7 +5,7 @@ import { afterEach } from 'vitest'
 
 // La cadena de lazy routes (/ → /app → /login) puede tardar más de 1000ms
 // en un entorno de pruebas con muchos módulos cargados.
-configure({ asyncUtilTimeout: 3000 })
+configure({ asyncUtilTimeout: 5000 })
 
 afterEach(() => {
   cleanup()
