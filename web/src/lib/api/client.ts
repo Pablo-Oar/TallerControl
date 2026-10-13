@@ -89,4 +89,5 @@ export const api = {
   post: <T>(url: string, body?: unknown, csrf = false) => request<T>('POST', url, body, csrf),
   put: <T>(url: string, body: unknown, ifMatch: string) => requestWithIfMatch<T>('PUT', url, body, ifMatch),
   patch: <T>(url: string, body: unknown, ifMatch: string) => requestWithIfMatch<T>('PATCH', url, body, ifMatch),
+  delete: <T>(url: string, body?: unknown, csrf = false) => request<T>('DELETE', url, body, csrf),
 }
