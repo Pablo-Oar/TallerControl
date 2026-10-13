@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
 using TallerControl.Application.Common;
+using TallerControl.Application.Tenancy;
 using TallerControl.Infrastructure.Health;
 using TallerControl.Infrastructure.Persistence;
 using TallerControl.Infrastructure.Tenancy;
@@ -31,6 +32,8 @@ public static class DependencyInjection
 
         services.AddDbContext<AppDbContext>((provider, options) =>
             options.UseTallerControlNpgsql(provider.GetRequiredService<NpgsqlDataSource>()));
+
+        services.AddScoped<IDocumentNumberGenerator, DocumentNumberGenerator>();
 
         services.AddHealthChecks()
             .AddCheck<DatabaseHealthCheck>("database", tags: [ReadyTag]);
