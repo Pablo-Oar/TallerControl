@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 using TallerControl.Api.Endpoints.Auth;
 using TallerControl.Api.Endpoints.Users;
+
 using TallerControl.Api.Errors;
 using TallerControl.Api.Identity;
 using TallerControl.Api.Logging;
@@ -50,6 +51,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 
 app.MapAuthEndpoints(app.Configuration);
 app.MapInvitationEndpoints(app.Configuration);
+app.MapUsersEndpoints();
 
 app.Run();
 

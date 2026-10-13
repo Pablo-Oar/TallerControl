@@ -5,6 +5,7 @@ using Npgsql;
 using TallerControl.Application.Common;
 using TallerControl.Infrastructure.Persistence;
 
+
 namespace TallerControl.Api.Errors;
 
 /// <summary>
@@ -84,7 +85,7 @@ public sealed class ApiExceptionHandler : IExceptionHandler
         },
 
         // Concurrencia optimista (xmin / If-Match): otro usuario modificó el recurso.
-        DbUpdateConcurrencyException => new ProblemDetails
+        ConcurrencyException or DbUpdateConcurrencyException => new ProblemDetails
         {
             Status = StatusCodes.Status412PreconditionFailed,
             Title = "El recurso cambió",
