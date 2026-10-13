@@ -9,7 +9,7 @@ import { ApiError } from '../../../lib/api/client'
 const inputCls = 'w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500'
 
 const schema = z.object({
-  quantity: z.coerce.number().refine(v => v !== 0, 'La cantidad no puede ser cero'),
+  quantity: z.number().refine(v => v !== 0, 'La cantidad no puede ser cero'),
   note: z.string().trim().min(1, 'La nota es obligatoria').max(500),
 })
 
@@ -60,7 +60,7 @@ export function StockAdjustmentModal({ item, onSuccess, onClose }: Props) {
               Cantidad (positivo = entrada, negativo = salida) *
             </label>
             <input
-              {...register('quantity')}
+              {...register('quantity', { valueAsNumber: true })}
               type="number"
               step="0.001"
               className={inputCls}

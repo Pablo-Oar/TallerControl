@@ -13,11 +13,11 @@ const schema = z.object({
   sku: z.string().trim().max(50).optional(),
   name: z.string().trim().min(1, 'Requerido').max(200),
   description: z.string().trim().max(500).optional(),
-  netPrice: z.coerce.number().min(0, 'El precio no puede ser negativo'),
-  vatRate: z.coerce.number().min(0).max(100),
+  netPrice: z.number().min(0, 'El precio no puede ser negativo'),
+  vatRate: z.number().min(0).max(100),
   trackStock: z.boolean(),
-  minStockQty: z.union([z.coerce.number().min(0), z.literal('')]).optional(),
-  maxStockQty: z.union([z.coerce.number().min(0), z.literal('')]).optional(),
+  minStockQty: z.string().optional(),
+  maxStockQty: z.string().optional(),
   isActive: z.boolean(),
 })
 
@@ -32,8 +32,8 @@ function toFormData(dto: CatalogItemDto): FormData {
     netPrice: dto.netPrice,
     vatRate: dto.vatRate,
     trackStock: dto.trackStock,
-    minStockQty: dto.minStockQty ?? '',
-    maxStockQty: dto.maxStockQty ?? '',
+    minStockQty: dto.minStockQty != null ? String(dto.minStockQty) : '',
+    maxStockQty: dto.maxStockQty != null ? String(dto.maxStockQty) : '',
     isActive: dto.isActive,
   }
 }
@@ -61,8 +61,8 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
   async function onSubmit(data: FormData) {
     setServerError(null)
     try {
-      const numOrNull = (v: number | '' | undefined) =>
-        v === '' || v == null ? null : Number(v)
+      const numOrNull = (v: string | undefined) =>
+        !v || v.trim() === '' ? null : Number(v)
 
       if (isEdit) {
         const result = await catalogApi.update(item.id, {
@@ -141,7 +141,7 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
             <div>
               <label className="mb-1 block text-sm font-medium">Precio neto *</label>
               <input
-                {...register('netPrice')}
+                {...register('netPrice', { valueAsNumber: true })}
                 type="number"
                 min={0}
                 step="0.01"
@@ -153,7 +153,7 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
             <div>
               <label className="mb-1 block text-sm font-medium">IVA %</label>
               <input
-                {...register('vatRate')}
+                {...register('vatRate', { valueAsNumber: true })}
                 type="number"
                 min={0}
                 max={100}
