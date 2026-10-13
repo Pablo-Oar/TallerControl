@@ -22,9 +22,12 @@ public class ConventionsTests
     public void Los_ids_nuevos_son_ordenables_por_tiempo()
     {
         var first = new Sample().IdValue;
+        Thread.Sleep(5); // el UUIDv7 solo ordena entre milisegundos distintos
         var second = new Sample().IdValue;
 
-        Assert.True(first.CompareTo(second) < 0);
+        // PostgreSQL ordena los uuid byte a byte (orden RFC), igual que su texto hexadecimal;
+        // Guid.CompareTo de .NET compara por campos de la estructura y no sirve para esto.
+        Assert.True(string.CompareOrdinal(first.ToString(), second.ToString()) < 0);
     }
 
     /// <summary>
