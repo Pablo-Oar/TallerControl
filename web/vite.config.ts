@@ -17,5 +17,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    // La cadena lazy / → /app → /login carga más módulos con cada etapa;
+    // 15 s evita falsos negativos sin ser exageradamente permisivo.
+    testTimeout: 15000,
   },
 })
