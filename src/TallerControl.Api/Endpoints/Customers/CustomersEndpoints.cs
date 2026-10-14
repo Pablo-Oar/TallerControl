@@ -1,5 +1,6 @@
 using TallerControl.Api.Identity;
 using TallerControl.Application.Customers;
+using TallerControl.Application.Qr;
 using TallerControl.Domain.Users;
 
 namespace TallerControl.Api.Endpoints.Customers;
@@ -12,6 +13,7 @@ namespace TallerControl.Api.Endpoints.Customers;
 /// PUT    /api/v1/customers/{id}                → customers.write  (O, A)
 /// DELETE /api/v1/customers/{id}                → customers.delete (O)
 /// POST   /api/v1/customers/{id}/restore        → customers.delete (O)
+/// POST   /api/v1/customers/{id}/owner-access-code → customers.write (O, A)  [REQ-17 D-01]
 /// </summary>
 internal static class CustomersEndpoints
 {
@@ -52,6 +54,12 @@ internal static class CustomersEndpoints
                 (Guid id, RestoreCustomerHandler handler, CancellationToken ct) =>
                     RestoreAsync(id, handler, ct))
             .RequirePermission(Permission.CustomersDelete)
+            .AddEndpointFilter<AntiforgeryEndpointFilter>();
+
+        app.MapPost("/api/v1/customers/{id:guid}/owner-access-code",
+                (Guid id, GetOwnerAccessCodeHandler handler, CancellationToken ct) =>
+                    GetOwnerAccessCodeAsync(id, handler, ct))
+            .RequirePermission(Permission.CustomersWrite)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
         return app;
@@ -99,6 +107,13 @@ internal static class CustomersEndpoints
         Guid id,
         RestoreCustomerHandler handler,
         CancellationToken ct)
+    {
+        var dto = await handler.HandleAsync(id, ct);
+        return Results.Ok(dto);
+    }
+
+    private static async Task<IResult> GetOwnerAccessCodeAsync(
+        Guid id, GetOwnerAccessCodeHandler handler, CancellationToken ct)
     {
         var dto = await handler.HandleAsync(id, ct);
         return Results.Ok(dto);

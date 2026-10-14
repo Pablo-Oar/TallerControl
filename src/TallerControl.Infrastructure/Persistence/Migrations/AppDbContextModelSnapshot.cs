@@ -678,6 +678,198 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TallerControl.Domain.Qr.OwnerVerification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Attempts")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("attempts");
+
+                    b.Property<DateTimeOffset?>("ConsumedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("consumed_at");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<byte[]>("OtpHash")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("otp_hash");
+
+                    b.Property<Guid>("QrCardId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("qr_card_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_owner_verifications");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_owner_verifications_tenant_id");
+
+                    b.HasIndex("QrCardId", "ExpiresAt")
+                        .HasDatabaseName("ix_owner_verifications_card_expires");
+
+                    b.ToTable("owner_verifications", (string)null);
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Qr.QrCard", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("AssignedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("assigned_at");
+
+                    b.Property<Guid>("BatchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("batch_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("RevokeReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("revoke_reason");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid?>("VehicleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("vehicle_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_qr_cards");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_qr_cards_code");
+
+                    b.HasIndex("VehicleId")
+                        .HasDatabaseName("ix_qr_cards_vehicle_id");
+
+                    b.HasIndex("TenantId", "Status")
+                        .HasDatabaseName("ix_qr_cards_tenant_id_status");
+
+                    b.HasIndex("TenantId", "VehicleId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_qr_cards_tenant_vehicle_active")
+                        .HasFilter("status IN ('assigned', 'lost') AND vehicle_id IS NOT NULL");
+
+                    b.ToTable("qr_cards", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_qr_cards_status", "\"status\" IN ('assigned', 'free', 'lost', 'revoked')");
+                        });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Qr.QrScanEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<byte[]>("CodeHash")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("code_hash");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("event_type");
+
+                    b.Property<string>("IpTruncated")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("ip_truncated");
+
+                    b.Property<string>("Outcome")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("outcome");
+
+                    b.Property<Guid?>("QrCardId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("qr_card_id");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("user_agent");
+
+                    b.HasKey("Id")
+                        .HasName("pk_qr_scan_events");
+
+                    b.HasIndex("TenantId", "QrCardId", "CreatedAt")
+                        .HasDatabaseName("ix_qr_scan_events_tenant_card_at");
+
+                    b.ToTable("qr_scan_events", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_qr_scan_events_event_type", "\"event_type\" IN ('otp_failed', 'otp_sent', 'owner_challenge', 'owner_session', 'scan')");
+                        });
+                });
+
             modelBuilder.Entity("TallerControl.Domain.Quotes.Quote", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2019,6 +2211,32 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_public_links_tenant_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Qr.OwnerVerification", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_owner_verifications_tenant_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Qr.QrCard", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_qr_cards_tenant_tenant_id");
+
+                    b.HasOne("TallerControl.Domain.Vehicles.Vehicle", null)
+                        .WithMany()
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_qr_cards_vehicle_vehicle_id");
                 });
 
             modelBuilder.Entity("TallerControl.Domain.Quotes.Quote", b =>
