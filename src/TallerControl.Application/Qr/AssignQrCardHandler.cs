@@ -13,7 +13,7 @@ public sealed class AssignQrCardHandler(
         var card = await repo.FindByIdAsync(qrCardId, ct)
             ?? throw new NotFoundException("Tarjeta QR no encontrada.");
 
-        if (!await vehicles.CustomerExistsAsync(request.VehicleId, ct))
+        if (await vehicles.FindByIdAsync(request.VehicleId, ct) is null)
             throw new NotFoundException("Vehículo no encontrado.");
 
         var existing = await repo.FindActiveByVehicleAsync(request.VehicleId, ct);
