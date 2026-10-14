@@ -5,6 +5,7 @@ using TallerControl.Domain.Users;
 using TallerControl.Domain.Work;
 using TallerControl.Infrastructure.Identity;
 
+
 namespace TallerControl.Api.Endpoints.Work;
 
 /// <summary>
@@ -18,6 +19,7 @@ namespace TallerControl.Api.Endpoints.Work;
 /// PATCH  /api/v1/work-orders/{id}/mechanic-notes       → workorders.status   (M)
 /// GET    /api/v1/work-orders/{id}/history              → workorders.read     (O, A)
 /// GET    /api/v1/work-orders/{id}/pdf                  → workorders.read     (O, A)
+/// GET    /api/v1/work-orders/{id}/public-link          → workorders.read     (O, A)
 /// * El mecánico solo ve las suyas o sin asignar; la lógica está en el handler.
 /// </summary>
 internal static class WorkOrdersEndpoints
@@ -81,6 +83,11 @@ internal static class WorkOrdersEndpoints
         app.MapGet("/api/v1/work-orders/{id:guid}/pdf",
                 (Guid id, GetWorkOrderPdfHandler handler, CancellationToken ct) =>
                     PdfAsync(id, handler, ct))
+            .RequirePermission(Permission.WorkOrdersRead);
+
+        app.MapGet("/api/v1/work-orders/{id:guid}/public-link",
+                (Guid id, GetWorkOrderPublicLinkHandler handler, CancellationToken ct) =>
+                    PublicLinkAsync(id, handler, ct))
             .RequirePermission(Permission.WorkOrdersRead);
 
         return app;
@@ -193,6 +200,15 @@ internal static class WorkOrdersEndpoints
     {
         var bytes = await handler.HandleAsync(id, ct);
         return Results.File(bytes, "application/pdf", $"orden-{id}.pdf");
+    }
+
+    private static async Task<IResult> PublicLinkAsync(
+        Guid id,
+        GetWorkOrderPublicLinkHandler handler,
+        CancellationToken ct)
+    {
+        var dto = await handler.HandleAsync(id, ct);
+        return Results.Ok(dto);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

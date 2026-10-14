@@ -40,6 +40,8 @@ internal sealed class WorkOrderConfiguration : IEntityTypeConfiguration<WorkOrde
         builder.Property(w => w.InternalNotes).HasMaxLength(WorkOrder.NotesMaxLength);
         builder.Property(w => w.CancelReason).HasMaxLength(WorkOrder.CancelReasonMaxLength);
 
+        builder.Property(w => w.GlobalDiscountPct).IsRequired().HasDefaultValue(0m);
+
         // Totales dinero: numeric(14,2) viene de la convención global de AppDbContext.
         builder.Property(w => w.SubtotalNet).IsRequired();
         builder.Property(w => w.DiscountAmount).IsRequired();

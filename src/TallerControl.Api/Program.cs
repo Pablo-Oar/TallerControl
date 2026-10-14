@@ -4,6 +4,8 @@ using Serilog;
 using TallerControl.Api.Endpoints.Auth;
 using TallerControl.Api.Endpoints.Catalog;
 using TallerControl.Api.Endpoints.Customers;
+using TallerControl.Api.Endpoints.Public;
+using TallerControl.Api.Endpoints.Quotes;
 using TallerControl.Api.Endpoints.Settings;
 using TallerControl.Api.Endpoints.Users;
 using TallerControl.Api.Endpoints.Vehicles;
@@ -63,6 +65,8 @@ app.MapVehiclesEndpoints();
 app.MapCatalogEndpoints();
 app.MapWorkOrdersEndpoints();
 app.MapAttachmentsEndpoints();
+app.MapQuotesEndpoints();
+app.MapPublicEndpoints();
 
 app.Run();
 

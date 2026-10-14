@@ -119,3 +119,6 @@ public sealed record AssignMechanicRequest(Guid MechanicId);
 
 /// <summary>Cuerpo de PATCH /api/v1/work-orders/{id}/mechanic-notes.</summary>
 public sealed record UpdateMechanicNotesRequest(string? MechanicNotes);
+
+/// <summary>Link público de una OT para compartir con el cliente (doc 05 §2.8).</summary>
+public sealed record WorkOrderPublicLinkDto(string TokenBase64Url, DateTimeOffset ExpiresAt);

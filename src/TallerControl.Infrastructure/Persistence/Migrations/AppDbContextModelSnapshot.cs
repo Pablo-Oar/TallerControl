@@ -486,6 +486,428 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TallerControl.Domain.PublicLinks.PublicLink", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AccessCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("access_count");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTimeOffset?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<DateTimeOffset?>("LastAccessedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_accessed_at");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<Guid?>("RevokedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("revoked_by");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("target_id");
+
+                    b.Property<string>("TargetType")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("target_type");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<byte[]>("TokenHash")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("token_hash");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_public_links");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_public_links_token_hash");
+
+                    b.HasIndex("TenantId", "TargetType", "TargetId")
+                        .HasDatabaseName("ix_public_links_tenant_target");
+
+                    b.ToTable("public_links", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_public_links_target_type", "\"target_type\" IN ('payment', 'quote', 'work_order')");
+                        });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Quotes.Quote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal?>("ApprovedTotal")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("approved_total");
+
+                    b.Property<string>("CancelReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("cancel_reason");
+
+                    b.Property<DateTimeOffset?>("ConvertedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("converted_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
+
+                    b.Property<string>("CustomerNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("customer_notes");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("text")
+                        .HasColumnName("delete_reason");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("discount_amount");
+
+                    b.Property<decimal>("GlobalDiscountPct")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("global_discount_pct");
+
+                    b.Property<string>("InternalNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("internal_notes");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer")
+                        .HasColumnName("number");
+
+                    b.Property<DateTimeOffset?>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<decimal>("SubtotalNet")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("subtotal_net");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("total");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<DateOnly>("ValidUntil")
+                        .HasColumnType("date")
+                        .HasColumnName("valid_until");
+
+                    b.Property<decimal>("VatAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("vat_amount");
+
+                    b.Property<Guid>("VehicleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("vehicle_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<Guid?>("WorkOrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("work_order_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_quotes");
+
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("ix_quotes_customer_id");
+
+                    b.HasIndex("VehicleId")
+                        .HasDatabaseName("ix_quotes_vehicle_id");
+
+                    b.HasIndex("WorkOrderId")
+                        .HasDatabaseName("ix_quotes_work_order_id");
+
+                    b.HasIndex("TenantId", "CustomerId")
+                        .HasDatabaseName("ix_quotes_tenant_customer");
+
+                    b.HasIndex("TenantId", "Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_quotes_tenant_number");
+
+                    b.HasIndex("TenantId", "Status")
+                        .HasDatabaseName("ix_quotes_tenant_status");
+
+                    b.HasIndex("TenantId", "VehicleId")
+                        .HasDatabaseName("ix_quotes_tenant_vehicle");
+
+                    b.ToTable("quotes", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_quotes_status", "\"status\" IN ('approved', 'cancelled', 'converted', 'draft', 'expired', 'partially_approved', 'rejected', 'sent')");
+                        });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Quotes.QuoteItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("CatalogItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("catalog_item_id");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("kind");
+
+                    b.Property<decimal>("LineNet")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("line_net");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("line_total");
+
+                    b.Property<decimal>("LineVat")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("line_vat");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(12,3)")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid>("QuoteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("quote_id");
+
+                    b.Property<bool>("RequiredForApproval")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("required_for_approval");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<decimal?>("UnitCostSnapshot")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("unit_cost_snapshot");
+
+                    b.Property<decimal>("UnitNetPrice")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("unit_net_price");
+
+                    b.Property<decimal>("VatRate")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("vat_rate");
+
+                    b.HasKey("Id")
+                        .HasName("pk_quote_items");
+
+                    b.HasIndex("CatalogItemId")
+                        .HasDatabaseName("ix_quote_items_catalog_item_id");
+
+                    b.HasIndex("QuoteId")
+                        .HasDatabaseName("ix_quote_items_quote_id");
+
+                    b.HasIndex("TenantId", "QuoteId", "Position")
+                        .HasDatabaseName("ix_quote_items_tenant_quote_position");
+
+                    b.ToTable("quote_items", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_quote_items_kind", "\"kind\" IN ('manual', 'product', 'service')");
+                        });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Quotes.QuoteResponse", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("ApprovedTotal")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("approved_total");
+
+                    b.Property<IPAddress>("ClientIpTruncated")
+                        .HasColumnType("inet")
+                        .HasColumnName("client_ip_truncated");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("comment");
+
+                    b.Property<byte[]>("ContentHash")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("content_hash");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Decision")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("decision");
+
+                    b.Property<bool>("IsCurrent")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_current");
+
+                    b.Property<Guid>("QuoteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("quote_id");
+
+                    b.Property<string>("SignerName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("signer_name");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("user_agent");
+
+                    b.HasKey("Id")
+                        .HasName("pk_quote_responses");
+
+                    b.HasIndex("QuoteId")
+                        .HasDatabaseName("ix_quote_responses_quote_id");
+
+                    b.HasIndex("TenantId", "QuoteId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_quote_responses_tenant_quote")
+                        .HasFilter("is_current = true");
+
+                    b.ToTable("quote_responses", (string)null);
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Quotes.QuoteResponseItem", b =>
+                {
+                    b.Property<Guid>("ResponseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("response_id");
+
+                    b.Property<Guid>("QuoteItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("quote_item_id");
+
+                    b.Property<bool>("Approved")
+                        .HasColumnType("boolean")
+                        .HasColumnName("approved");
+
+                    b.HasKey("ResponseId", "QuoteItemId")
+                        .HasName("pk_quote_response_items");
+
+                    b.HasIndex("QuoteItemId")
+                        .HasDatabaseName("ix_quote_response_items_quote_item_id");
+
+                    b.ToTable("quote_response_items", (string)null);
+                });
+
             modelBuilder.Entity("TallerControl.Domain.Tenancy.Branch", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1144,6 +1566,13 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("fuel_level");
 
+                    b.Property<decimal>("GlobalDiscountPct")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("global_discount_pct");
+
                     b.Property<string>("InternalNotes")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
@@ -1451,6 +1880,103 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_notifications_tenant_tenant_id");
                 });
 
+            modelBuilder.Entity("TallerControl.Domain.PublicLinks.PublicLink", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_public_links_tenant_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Quotes.Quote", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Customers.Customer", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_quotes_customers_customer_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_quotes_tenant_tenant_id");
+
+                    b.HasOne("TallerControl.Domain.Vehicles.Vehicle", null)
+                        .WithMany()
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_quotes_vehicle_vehicle_id");
+
+                    b.HasOne("TallerControl.Domain.Work.WorkOrder", null)
+                        .WithMany()
+                        .HasForeignKey("WorkOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_quotes_work_order_work_order_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Quotes.QuoteItem", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Catalog.CatalogItem", null)
+                        .WithMany()
+                        .HasForeignKey("CatalogItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_quote_items_catalog_items_catalog_item_id");
+
+                    b.HasOne("TallerControl.Domain.Quotes.Quote", null)
+                        .WithMany("Items")
+                        .HasForeignKey("QuoteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_quote_items_quotes_quote_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_quote_items_tenant_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Quotes.QuoteResponse", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Quotes.Quote", null)
+                        .WithMany("Responses")
+                        .HasForeignKey("QuoteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_quote_responses_quotes_quote_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_quote_responses_tenant_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Quotes.QuoteResponseItem", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Quotes.QuoteItem", null)
+                        .WithMany()
+                        .HasForeignKey("QuoteItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_quote_response_items_quote_items_quote_item_id");
+
+                    b.HasOne("TallerControl.Domain.Quotes.QuoteResponse", null)
+                        .WithMany("Items")
+                        .HasForeignKey("ResponseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_quote_response_items_quote_responses_response_id");
+                });
+
             modelBuilder.Entity("TallerControl.Domain.Tenancy.Branch", b =>
                 {
                     b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
@@ -1582,7 +2108,7 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_work_order_items_catalog_items_catalog_item_id");
 
                     b.HasOne("TallerControl.Domain.Work.WorkOrder", null)
-                        .WithMany()
+                        .WithMany("Items")
                         .HasForeignKey("WorkOrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
@@ -1592,11 +2118,30 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("TallerControl.Domain.Work.WorkOrderStatusChange", b =>
                 {
                     b.HasOne("TallerControl.Domain.Work.WorkOrder", null)
-                        .WithMany()
+                        .WithMany("StatusChanges")
                         .HasForeignKey("WorkOrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_work_order_status_changes_work_orders_work_order_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Quotes.Quote", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("Responses");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Quotes.QuoteResponse", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Work.WorkOrder", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("StatusChanges");
                 });
 #pragma warning restore 612, 618
         }

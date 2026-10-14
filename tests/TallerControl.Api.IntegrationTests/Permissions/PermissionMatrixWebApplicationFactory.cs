@@ -9,6 +9,7 @@ using TallerControl.Application.Auth;
 using TallerControl.Application.Common;
 using TallerControl.Domain.Catalog;
 using TallerControl.Domain.Customers;
+using TallerControl.Domain.Quotes;
 using TallerControl.Domain.Tenancy;
 using TallerControl.Domain.Users;
 using TallerControl.Domain.Vehicles;
@@ -50,6 +51,9 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
 
     /// <summary>Adjunto del Taller A sembrado para probar T-ISO-ALL en rutas /attachments/{id}.</summary>
     public Guid ForeignAttachmentId { get; private set; }
+
+    /// <summary>Presupuesto del Taller A sembrado para probar T-ISO-ALL en rutas /quotes/{id}.</summary>
+    public Guid ForeignQuoteId { get; private set; }
 
     public string ConnectionString { get; }
 
@@ -223,6 +227,22 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
         }
 
         ForeignAttachmentId = attachmentA.Id;
+
+        // Siembra un presupuesto del Taller A para T-ISO-ALL en rutas /quotes/{id}.
+        var quoteA = new Quote(
+            tenantA.Id, number: 1,
+            customerA.Id, vehicleA.Id,
+            validUntil: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
+            customerNotes: null, internalNotes: null, createdBy: null);
+
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(quoteA);
+            await db.SaveChangesAsync();
+        }
+
+        ForeignQuoteId = quoteA.Id;
     }
 
     private static DbContextOptions<AppDbContext> BuildOptions(string cs)
