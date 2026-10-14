@@ -1,4 +1,5 @@
 using TallerControl.Application.Common;
+using TallerControl.Application.Payments;
 using TallerControl.Application.PublicLinks;
 
 namespace TallerControl.Api.Endpoints.Public;
@@ -9,6 +10,7 @@ namespace TallerControl.Api.Endpoints.Public;
 /// GET  /api/public/v1/quotes/{token}              → vista pública del presupuesto
 /// POST /api/public/v1/quotes/{token}/responses    → enviar respuesta del cliente
 /// GET  /api/public/v1/work-orders/{token}         → vista pública de la OT
+/// GET  /api/public/v1/payments/{token}            → comprobante de pago
 /// </summary>
 internal static class PublicEndpoints
 {
@@ -30,6 +32,12 @@ internal static class PublicEndpoints
         app.MapGet("/api/public/v1/work-orders/{token}",
                 (string token, GetPublicWorkOrderHandler handler, CancellationToken ct) =>
                     GetWorkOrderAsync(token, handler, ct))
+            .AllowAnonymous()
+            .WithPublicSecurity();
+
+        app.MapGet("/api/public/v1/payments/{token}",
+                (string token, GetPublicPaymentHandler handler, CancellationToken ct) =>
+                    GetPublicPaymentAsync(token, handler, ct))
             .AllowAnonymous()
             .WithPublicSecurity();
 
@@ -72,6 +80,13 @@ internal static class PublicEndpoints
 
     private static async Task<IResult> GetWorkOrderAsync(
         string token, GetPublicWorkOrderHandler handler, CancellationToken ct)
+    {
+        var dto = await handler.HandleAsync(token, ct);
+        return Results.Ok(dto);
+    }
+
+    private static async Task<IResult> GetPublicPaymentAsync(
+        string token, GetPublicPaymentHandler handler, CancellationToken ct)
     {
         var dto = await handler.HandleAsync(token, ct);
         return Results.Ok(dto);

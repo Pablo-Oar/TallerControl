@@ -8,13 +8,23 @@ import {
   STATUS_COLORS,
   PRIORITY_LABELS,
 } from '../../../lib/api/workOrders'
+import {
+  getPayments,
+  voidPayment,
+  getPaymentPdfUrl,
+  METHOD_LABELS,
+  STATUS_LABELS as PAYMENT_STATUS_LABELS,
+} from '../../../lib/api/payments'
 import { Button } from '../../../components/ui/Button'
 import { ChangeStatusModal } from './ChangeStatusModal'
+import { CreatePaymentModal } from './CreatePaymentModal'
 
 export function WorkOrderDetailPage() {
   const { id } = useParams<{ id: string }>()
   const queryClient = useQueryClient()
   const [changingStatus, setChangingStatus] = useState(false)
+  const [creatingPayment, setCreatingPayment] = useState(false)
+  const [voidingPaymentId, setVoidingPaymentId] = useState<string | null>(null)
 
   const { data: order, isLoading, error } = useQuery({
     queryKey: ['work-order', id],
@@ -28,11 +38,33 @@ export function WorkOrderDetailPage() {
     enabled: !!id,
   })
 
+  const { data: payments, refetch: refetchPayments } = useQuery({
+    queryKey: ['work-order-payments', id],
+    queryFn: () => getPayments(id!),
+    enabled: !!id,
+  })
+
   function handleStatusChange() {
     setChangingStatus(false)
     queryClient.invalidateQueries({ queryKey: ['work-order', id] })
     queryClient.invalidateQueries({ queryKey: ['work-order-history', id] })
     queryClient.invalidateQueries({ queryKey: ['work-orders'] })
+  }
+
+  function handlePaymentSuccess() {
+    setCreatingPayment(false)
+    setVoidingPaymentId(null)
+    void refetchPayments()
+    queryClient.invalidateQueries({ queryKey: ['work-order', id] })
+    queryClient.invalidateQueries({ queryKey: ['work-orders'] })
+  }
+
+  async function handleVoidPayment(paymentId: string, reason: string) {
+    if (!id) return
+    await voidPayment(id, paymentId, reason)
+    setVoidingPaymentId(null)
+    void refetchPayments()
+    queryClient.invalidateQueries({ queryKey: ['work-order', id] })
   }
 
   if (isLoading) {
@@ -177,6 +209,84 @@ export function WorkOrderDetailPage() {
         </InfoCard>
       )}
 
+      {/* Pagos */}
+      <InfoCard title="Cobros">
+        {payments && (
+          <div className="mb-3 flex items-center gap-6 text-sm">
+            <span className="text-slate-500">
+              Total: <strong>${payments.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</strong>
+            </span>
+            <span className="text-slate-500">
+              Cobrado: <strong>${payments.paid.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</strong>
+            </span>
+            <span className={payments.balance > 0 ? 'text-amber-600' : 'text-green-600'}>
+              Saldo: <strong>${payments.balance.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</strong>
+            </span>
+          </div>
+        )}
+        {payments && payments.payments.length > 0 && (
+          <table className="mb-3 w-full text-sm">
+            <thead className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <tr>
+                <th className="pb-1 text-left">#</th>
+                <th className="pb-1 text-left">Método</th>
+                <th className="pb-1 text-right">Monto</th>
+                <th className="pb-1 text-left">Fecha</th>
+                <th className="pb-1 text-left">Estado</th>
+                <th className="pb-1" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {payments.payments.map(pay => (
+                <tr key={pay.id}>
+                  <td className="py-1.5 text-slate-500">{String(pay.number).padStart(4, '0')}</td>
+                  <td className="py-1.5">{METHOD_LABELS[pay.method]}</td>
+                  <td className="py-1.5 text-right tabular-nums font-medium">
+                    ${pay.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="py-1.5 text-slate-500">
+                    {new Date(pay.paidAt).toLocaleDateString('es-AR')}
+                  </td>
+                  <td className="py-1.5">
+                    <span className={`text-xs font-medium ${pay.status === 'voided' ? 'text-red-600' : 'text-green-600'}`}>
+                      {PAYMENT_STATUS_LABELS[pay.status]}
+                    </span>
+                  </td>
+                  <td className="py-1.5">
+                    <div className="flex justify-end gap-2">
+                      <a
+                        href={getPaymentPdfUrl(id!, pay.id)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        PDF
+                      </a>
+                      {pay.status === 'valid' && (
+                        <button
+                          onClick={() => setVoidingPaymentId(pay.id)}
+                          className="text-xs text-red-500 hover:underline"
+                        >
+                          Anular
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        {!payments?.payments.length && (
+          <p className="mb-3 text-sm text-slate-400">Sin cobros registrados.</p>
+        )}
+        {order.status !== 'cancelled' && order.status !== 'delivered' && (payments?.balance ?? 0) > 0 && (
+          <Button variant="secondary" onClick={() => setCreatingPayment(true)}>
+            + Registrar cobro
+          </Button>
+        )}
+      </InfoCard>
+
       {/* Historial */}
       {history && history.length > 0 && (
         <InfoCard title="Historial de estados">
@@ -210,6 +320,22 @@ export function WorkOrderDetailPage() {
           onClose={() => setChangingStatus(false)}
         />
       )}
+
+      {creatingPayment && payments && (
+        <CreatePaymentModal
+          workOrderId={id!}
+          balance={payments.balance}
+          onSuccess={handlePaymentSuccess}
+          onClose={() => setCreatingPayment(false)}
+        />
+      )}
+
+      {voidingPaymentId && (
+        <VoidPaymentDialog
+          onConfirm={(reason) => handleVoidPayment(voidingPaymentId, reason)}
+          onClose={() => setVoidingPaymentId(null)}
+        />
+      )}
     </div>
   )
 }
@@ -230,6 +356,54 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
     <div className="flex items-baseline justify-between py-1 text-sm">
       <span className="text-slate-500">{label}</span>
       <span>{children}</span>
+    </div>
+  )
+}
+
+function VoidPaymentDialog({
+  onConfirm,
+  onClose,
+}: {
+  onConfirm: (reason: string) => void
+  onClose: () => void
+}) {
+  const [reason, setReason] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function handleConfirm() {
+    if (!reason.trim()) return
+    setLoading(true)
+    try {
+      await onConfirm(reason.trim())
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+        <h2 className="mb-3 text-base font-semibold text-slate-800">Anular cobro</h2>
+        <p className="mb-3 text-sm text-slate-500">Ingrese el motivo de la anulación:</p>
+        <textarea
+          value={reason}
+          onChange={e => setReason(e.target.value)}
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          rows={3}
+          placeholder="Motivo..."
+          autoFocus
+        />
+        <div className="mt-4 flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose} disabled={loading}>Cancelar</Button>
+          <Button
+            onClick={handleConfirm}
+            disabled={loading || !reason.trim()}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            {loading ? 'Anulando…' : 'Anular'}
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }

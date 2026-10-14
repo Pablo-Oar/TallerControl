@@ -282,6 +282,34 @@ public sealed class WorkOrder : Entity, ITenantOwned, IVersioned, IAudited, IAud
                 $"No se puede modificar una orden en estado {Status}.");
     }
 
+    /// <summary>Aplica un cobro sobre la orden (REQ-15). Valida que el monto no supere el saldo.</summary>
+    public void AplicarPago(decimal amount, Guid? by, DateTimeOffset at)
+    {
+        if (Status == WorkOrderStatus.Cancelled)
+            throw new InvalidOperationException("No se puede registrar un pago en una orden cancelada.");
+
+        var balance = Total - PaidAmount;
+        if (amount <= 0)
+            throw new InvalidOperationException("El monto del pago debe ser mayor a 0.");
+        if (amount > balance)
+            throw new InvalidOperationException(
+                $"El monto supera el saldo pendiente de la orden.");
+
+        PaidAmount += amount;
+        UpdatedAt = at;
+        UpdatedBy = by;
+    }
+
+    /// <summary>Revierte el importe de un pago anulado. Llamar solo después de Payment.Anular().</summary>
+    public void AnularPago(decimal amount, Guid? by, DateTimeOffset at)
+    {
+        PaidAmount -= amount;
+        if (PaidAmount < 0)
+            PaidAmount = 0;
+        UpdatedAt = at;
+        UpdatedBy = by;
+    }
+
     /// <summary>Aplica el descuento del presupuesto de origen (E6). Solo desde Pending/Editable.</summary>
     public void SetGlobalDiscountFromQuote(decimal globalDiscountPct)
     {
