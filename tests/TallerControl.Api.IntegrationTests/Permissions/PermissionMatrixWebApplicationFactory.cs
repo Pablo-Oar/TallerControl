@@ -9,6 +9,7 @@ using TallerControl.Application.Auth;
 using TallerControl.Application.Common;
 using TallerControl.Domain.Catalog;
 using TallerControl.Domain.Customers;
+using TallerControl.Domain.Payments;
 using TallerControl.Domain.Quotes;
 using TallerControl.Domain.Tenancy;
 using TallerControl.Domain.Users;
@@ -54,6 +55,9 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
 
     /// <summary>Presupuesto del Taller A sembrado para probar T-ISO-ALL en rutas /quotes/{id}.</summary>
     public Guid ForeignQuoteId { get; private set; }
+
+    /// <summary>Pago del Taller A sembrado para probar T-ISO-ALL en rutas /work-orders/{id}/payments/{id}.</summary>
+    public Guid ForeignPaymentId { get; private set; }
 
     public string ConnectionString { get; }
 
@@ -243,6 +247,25 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
         }
 
         ForeignQuoteId = quoteA.Id;
+
+        // Siembra un pago del Taller A para T-ISO-ALL en rutas /work-orders/{id}/payments/{id}.
+        var fakeHash = new byte[32];
+        var paymentA = new Payment(
+            tenantA.Id, workOrderA.Id, number: 1,
+            PaymentMethod.Cash, amount: 100m,
+            paidAt: DateTimeOffset.UtcNow,
+            reference: null, publicTokenHash: fakeHash,
+            idempotencyKey: null, createdBy: null,
+            createdAt: DateTimeOffset.UtcNow);
+
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(paymentA);
+            await db.SaveChangesAsync();
+        }
+
+        ForeignPaymentId = paymentA.Id;
     }
 
     private static DbContextOptions<AppDbContext> BuildOptions(string cs)

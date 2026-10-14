@@ -7,6 +7,7 @@ using TallerControl.Application.Auth;
 using TallerControl.Application.Catalog;
 using TallerControl.Application.Common;
 using TallerControl.Application.Customers;
+using TallerControl.Application.Payments;
 using TallerControl.Application.PublicLinks;
 using TallerControl.Application.Quotes;
 using TallerControl.Application.Settings;
@@ -20,6 +21,7 @@ using TallerControl.Infrastructure.Email;
 using TallerControl.Infrastructure.Health;
 using TallerControl.Infrastructure.Identity;
 using TallerControl.Infrastructure.Outbox;
+using TallerControl.Infrastructure.Payments;
 using TallerControl.Infrastructure.Persistence;
 using TallerControl.Infrastructure.PublicLinks;
 using TallerControl.Infrastructure.Quotes;
@@ -143,6 +145,14 @@ public static class DependencyInjection
         services.AddScoped<DeleteQuoteHandler>();
         services.AddScoped<GetQuoteResponsesHandler>();
         services.AddScoped<GetQuotePdfHandler>();
+
+        services.AddScoped<IPaymentRepository, EfPaymentRepository>();
+        services.AddScoped<IPaymentPdfGenerator, PaymentPdfGenerator>();
+        services.AddScoped<GetPaymentsHandler>();
+        services.AddScoped<CreatePaymentHandler>();
+        services.AddScoped<VoidPaymentHandler>();
+        services.AddScoped<GetPaymentPdfHandler>();
+        services.AddScoped<GetPublicPaymentHandler>();
 
         services.AddScoped<IPublicLinkRepository, EfPublicLinkRepository>();
         services.AddScoped<GetPublicQuoteHandler>();
