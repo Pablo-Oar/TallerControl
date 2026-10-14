@@ -50,9 +50,15 @@ internal sealed class EfQuoteRepository : IQuoteRepository
             .Take(pageSize)
             .Select(q => new
             {
-                q.Id, q.Number, q.Status,
-                q.CustomerId, q.VehicleId,
-                q.Total, q.GlobalDiscountPct, q.ValidUntil, q.CreatedAt
+                q.Id,
+                q.Number,
+                q.Status,
+                q.CustomerId,
+                q.VehicleId,
+                q.Total,
+                q.GlobalDiscountPct,
+                q.ValidUntil,
+                q.CreatedAt
             })
             .ToListAsync(ct);
 
