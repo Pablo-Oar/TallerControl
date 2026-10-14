@@ -23,9 +23,13 @@ internal static class QrCardsEndpoints
     public static IEndpointRouteBuilder MapQrCardsEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapGet("/api/v1/qr/cards",
-                (QrCardStatus? status, string? q, int page = 1, int pageSize = 25,
+                (string? status, string? q, int page = 1, int pageSize = 25,
                  SearchQrCardsHandler handler = default!, CancellationToken ct = default) =>
-                    SearchAsync(status, q, page, pageSize, handler, ct))
+                {
+                    var s = status is not null && Enum.TryParse<QrCardStatus>(status, ignoreCase: true, out var parsed)
+                        ? (QrCardStatus?)parsed : null;
+                    return SearchAsync(s, q, page, pageSize, handler, ct);
+                })
             .RequirePermission(Permission.QrManage);
 
         app.MapPost("/api/v1/qr/cards/batch",

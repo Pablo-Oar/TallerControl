@@ -101,7 +101,7 @@ internal sealed class EfQrRepository : IQrRepository
             c.VehicleId.HasValue ? plates.GetValueOrDefault(c.VehicleId.Value) : null,
             c.AssignedAt, c.RevokedAt)).ToList();
 
-        return new Page<QrCardListDto>(dtos, total, page, pageSize);
+        return new Page<QrCardListDto>(dtos, page, pageSize, total);
     }
 
     public async Task<Page<QrEventDto>> GetEventsAsync(Guid qrCardId, int page, int pageSize, CancellationToken ct)
@@ -120,7 +120,7 @@ internal sealed class EfQrRepository : IQrRepository
             .Select(e => new QrEventDto(e.Id, e.EventType, e.Outcome, e.IpTruncated, e.CreatedAt))
             .ToListAsync(ct);
 
-        return new Page<QrEventDto>(events, total, page, pageSize);
+        return new Page<QrEventDto>(events, page, pageSize, total);
     }
 
     public async Task AddRangeAsync(IEnumerable<QrCard> cards, CancellationToken ct) =>

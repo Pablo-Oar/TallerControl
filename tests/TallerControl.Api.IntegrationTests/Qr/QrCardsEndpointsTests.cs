@@ -340,6 +340,7 @@ public sealed class QrCardsEndpointsTests : IAsyncLifetime
         await GenerateBatchAsync(client, quantity: 1);
 
         var listResp = await client.GetAsync("/api/v1/qr/cards?status=free&pageSize=1");
+        Assert.Equal(HttpStatusCode.OK, listResp.StatusCode);
         var list = await listResp.Content.ReadFromJsonAsync<JsonElement>();
         var cardId = list.GetProperty("items")[0].GetProperty("id").GetString()!;
 
@@ -366,6 +367,7 @@ public sealed class QrCardsEndpointsTests : IAsyncLifetime
         await GenerateBatchAsync(client, quantity: 1);
 
         var listResp = await client.GetAsync("/api/v1/qr/cards?status=free&pageSize=1");
+        Assert.Equal(HttpStatusCode.OK, listResp.StatusCode);
         var list = await listResp.Content.ReadFromJsonAsync<JsonElement>();
         var cardId = list.GetProperty("items")[0].GetProperty("id").GetString()!;
 
@@ -418,6 +420,7 @@ public sealed class QrCardsEndpointsTests : IAsyncLifetime
         await GenerateBatchAsync(client, quantity: 1);
 
         var listResp = await client.GetAsync("/api/v1/qr/cards?status=free&pageSize=1");
+        Assert.Equal(HttpStatusCode.OK, listResp.StatusCode);
         var list = await listResp.Content.ReadFromJsonAsync<JsonElement>();
         var cardId = list.GetProperty("items")[0].GetProperty("id").GetString()!;
 
@@ -435,6 +438,7 @@ public sealed class QrCardsEndpointsTests : IAsyncLifetime
         await GenerateBatchAsync(client, quantity: 1);
 
         var listResp = await client.GetAsync("/api/v1/qr/cards?status=free&pageSize=1");
+        Assert.Equal(HttpStatusCode.OK, listResp.StatusCode);
         var list = await listResp.Content.ReadFromJsonAsync<JsonElement>();
         var cardId = list.GetProperty("items")[0].GetProperty("id").GetString()!;
 
