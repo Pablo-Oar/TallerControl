@@ -16,6 +16,7 @@ public interface IQrRepository
     Task SaveChangesAsync(CancellationToken ct);
 
     // Métodos para superficies públicas (IgnoreQueryFilters en la implementación)
+    Task<QrCard?> FindByIdPublicAsync(Guid id, CancellationToken ct);
     Task<WorkshopInfoDto?> GetWorkshopInfoByCardIdAsync(Guid qrCardId, CancellationToken ct);
     Task<VehicleOwnerInfo?> GetVehicleOwnerForChallengeAsync(Guid vehicleId, CancellationToken ct);
     Task<OwnerVehicleDto?> GetOwnerVehicleDtoAsync(Guid vehicleId, Guid tenantId, CancellationToken ct);

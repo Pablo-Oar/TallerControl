@@ -38,7 +38,7 @@ public sealed class ValidateOwnerOtpHandler(
         verification.Consume(now);
 
         // Verificar que la tarjeta sigue activa en el momento de emitir la sesión
-        var card = await repo.FindByIdAsync(verification.QrCardId, ct);
+        var card = await repo.FindByIdPublicAsync(verification.QrCardId, ct);
         if (card is null || card.Status == QrCardStatus.Revoked || card.VehicleId is null)
         {
             await verifications.SaveChangesAsync(ct);

@@ -12,7 +12,7 @@ public sealed class GetOwnerVehicleHandler(IQrRepository repo, TimeProvider cloc
             throw new BusinessRuleException("La sesión expiró. Escaneá el código QR nuevamente.");
 
         // Verificar que la tarjeta sigue activa y asignada al mismo vehículo
-        var card = await repo.FindByIdAsync(session.QrCardId, ct);
+        var card = await repo.FindByIdPublicAsync(session.QrCardId, ct);
         if (card is null || card.Status == QrCardStatus.Revoked
             || card.VehicleId != session.VehicleId)
             throw new BusinessRuleException("La tarjeta ya no está activa.");

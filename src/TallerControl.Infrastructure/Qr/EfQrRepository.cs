@@ -29,6 +29,12 @@ internal sealed class EfQrRepository : IQrRepository
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(q => q.Code == code, ct);
 
+    // IgnoreQueryFilters: usado en la validación OTP pública, sin tenant en sesión.
+    public Task<QrCard?> FindByIdPublicAsync(Guid id, CancellationToken ct) =>
+        _db.Set<QrCard>()
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(q => q.Id == id, ct);
+
     public Task<QrCard?> FindActiveByVehicleAsync(Guid vehicleId, CancellationToken ct) =>
         _db.Set<QrCard>()
             .FirstOrDefaultAsync(q => q.VehicleId == vehicleId
