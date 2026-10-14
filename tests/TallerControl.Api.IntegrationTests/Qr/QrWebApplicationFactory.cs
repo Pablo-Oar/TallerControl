@@ -59,6 +59,7 @@ internal sealed class QrWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:Default", ConnectionString);
+        builder.UseSetting("Qr:TurnstileSecretKey", "1x0000000000000000000000000000000AA");
 
         builder.ConfigureServices(services =>
         {
