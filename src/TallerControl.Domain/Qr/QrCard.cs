@@ -76,8 +76,11 @@ public sealed class QrCard : Entity, ITenantOwned, IVersioned, IAudited, IAudita
         if (Status == QrCardStatus.Revoked)
             throw new InvalidOperationException("La tarjeta ya está revocada.");
 
+        if (string.IsNullOrWhiteSpace(reason))
+            throw new ArgumentException("Se requiere un motivo para revocar la tarjeta.", nameof(reason));
+
         Status = QrCardStatus.Revoked;
-        RevokeReason = reason?.Trim();
+        RevokeReason = reason.Trim();
         RevokedAt = now;
         VehicleId = null;
     }

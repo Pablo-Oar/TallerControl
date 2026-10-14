@@ -10,6 +10,7 @@ using TallerControl.Application.Common;
 using TallerControl.Domain.Catalog;
 using TallerControl.Domain.Customers;
 using TallerControl.Domain.Payments;
+using TallerControl.Domain.Qr;
 using TallerControl.Domain.Quotes;
 using TallerControl.Domain.Tenancy;
 using TallerControl.Domain.Users;
@@ -58,6 +59,9 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
 
     /// <summary>Pago del Taller A sembrado para probar T-ISO-ALL en rutas /work-orders/{id}/payments/{id}.</summary>
     public Guid ForeignPaymentId { get; private set; }
+
+    /// <summary>Tarjeta QR del Taller A sembrada para probar T-ISO-ALL en rutas /qr/cards/{id}.</summary>
+    public Guid ForeignQrCardId { get; private set; }
 
     public string ConnectionString { get; }
 
@@ -266,6 +270,18 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
         }
 
         ForeignPaymentId = paymentA.Id;
+
+        // Siembra una tarjeta QR del Taller A para T-ISO-ALL en rutas /qr/cards/{id}.
+        var qrCardA = new QrCard(tenantA.Id, QrCodeGenerator.GenerateCode(), Guid.NewGuid(), DateTimeOffset.UtcNow);
+
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(qrCardA);
+            await db.SaveChangesAsync();
+        }
+
+        ForeignQrCardId = qrCardA.Id;
     }
 
     private static DbContextOptions<AppDbContext> BuildOptions(string cs)
