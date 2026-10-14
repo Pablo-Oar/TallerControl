@@ -92,6 +92,7 @@ public sealed class WorkOrder : Entity, ITenantOwned, IVersioned, IAudited, IAud
     public string? MechanicNotes { get; private set; }
     public string? InternalNotes { get; private set; }
     public Guid? SourceQuoteId { get; private set; }
+    public decimal GlobalDiscountPct { get; private set; }
     public decimal SubtotalNet { get; private set; }
     public decimal DiscountAmount { get; private set; }
     public decimal VatAmount { get; private set; }
@@ -281,11 +282,21 @@ public sealed class WorkOrder : Entity, ITenantOwned, IVersioned, IAudited, IAud
                 $"No se puede modificar una orden en estado {Status}.");
     }
 
+    /// <summary>Aplica el descuento del presupuesto de origen (E6). Solo desde Pending/Editable.</summary>
+    public void SetGlobalDiscountFromQuote(decimal globalDiscountPct)
+    {
+        if (globalDiscountPct is < 0 or > 100)
+            throw new ArgumentOutOfRangeException(nameof(globalDiscountPct), "El descuento debe estar entre 0 y 100 %.");
+        GlobalDiscountPct = globalDiscountPct;
+        RecalculateTotals();
+    }
+
     private void RecalculateTotals()
     {
         SubtotalNet = _items.Sum(i => i.LineNet);
-        VatAmount = _items.Sum(i => i.LineVat);
-        DiscountAmount = 0; // Descuentos en E6 (presupuestos)
+        DiscountAmount = decimal.Round(SubtotalNet * GlobalDiscountPct / 100m, 2, MidpointRounding.AwayFromZero);
+        VatAmount = _items.Sum(i =>
+            decimal.Round(i.LineNet * (1m - GlobalDiscountPct / 100m) * i.VatRate / 100m, 2, MidpointRounding.AwayFromZero));
         Total = SubtotalNet - DiscountAmount + VatAmount;
     }
 

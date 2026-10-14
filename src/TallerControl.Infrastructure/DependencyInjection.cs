@@ -11,9 +11,13 @@ using TallerControl.Application.Settings;
 using TallerControl.Application.Tenancy;
 using TallerControl.Application.Users;
 using TallerControl.Application.Vehicles;
+using TallerControl.Application.PublicLinks;
+using TallerControl.Application.Quotes;
 using TallerControl.Application.Work;
 using TallerControl.Infrastructure.Catalog;
 using TallerControl.Infrastructure.Customers;
+using TallerControl.Infrastructure.PublicLinks;
+using TallerControl.Infrastructure.Quotes;
 using TallerControl.Infrastructure.Email;
 using TallerControl.Infrastructure.Health;
 using TallerControl.Infrastructure.Identity;
@@ -117,12 +121,33 @@ public static class DependencyInjection
         services.AddScoped<UpdateMechanicNotesHandler>();
         services.AddScoped<GetWorkOrderHistoryHandler>();
         services.AddScoped<GetWorkOrderPdfHandler>();
+        services.AddScoped<GetWorkOrderPublicLinkHandler>();
         services.AddScoped<IWorkOrderPdfGenerator, WorkOrderPdfGenerator>();
         services.AddScoped<RequestAttachmentUploadUrlHandler>();
         services.AddScoped<ConfirmAttachmentHandler>();
         services.AddScoped<ListAttachmentsHandler>();
         services.AddScoped<UpdateAttachmentHandler>();
         services.AddScoped<DeleteAttachmentHandler>();
+
+        services.AddScoped<IQuoteRepository, EfQuoteRepository>();
+        services.AddScoped<ITenantSettingsReader, EfTenantSettingsReader>();
+        services.AddScoped<IQuotePdfGenerator, QuotePdfGenerator>();
+        services.AddScoped<CreateQuoteHandler>();
+        services.AddScoped<UpdateQuoteHandler>();
+        services.AddScoped<GetQuoteHandler>();
+        services.AddScoped<SearchQuotesHandler>();
+        services.AddScoped<SendQuoteHandler>();
+        services.AddScoped<ReopenQuoteHandler>();
+        services.AddScoped<ConvertQuoteHandler>();
+        services.AddScoped<CancelQuoteHandler>();
+        services.AddScoped<DeleteQuoteHandler>();
+        services.AddScoped<GetQuoteResponsesHandler>();
+        services.AddScoped<GetQuotePdfHandler>();
+
+        services.AddScoped<IPublicLinkRepository, EfPublicLinkRepository>();
+        services.AddScoped<GetPublicQuoteHandler>();
+        services.AddScoped<SubmitPublicResponseHandler>();
+        services.AddScoped<GetPublicWorkOrderHandler>();
 
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddHostedService<OutboxDispatcher>();
