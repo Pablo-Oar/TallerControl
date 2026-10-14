@@ -6,6 +6,8 @@ import { AcceptInvitationPage } from './invitations/AcceptInvitationPage'
 import { PublicQuotePage } from './quotes/PublicQuotePage'
 import { PublicWorkOrderPage } from './work-orders/PublicWorkOrderPage'
 import { PublicPaymentPage } from './payments/PublicPaymentPage'
+import { PublicQrPage } from './qr/PublicQrPage'
+import { OwnerVehiclePage } from './qr/OwnerVehiclePage'
 
 /** Área pública (`/*`): sin menú del panel. Liviana — no descarga el panel completo (doc 06 §1). */
 export function Component() {
@@ -19,6 +21,9 @@ export function Component() {
       <Route path="p/:token" element={<PublicQuotePage />} />
       <Route path="o/:token" element={<PublicWorkOrderPage />} />
       <Route path="c/:token" element={<PublicPaymentPage />} />
+      {/* Portal QR del dueño del vehículo */}
+      <Route path="q/:code" element={<PublicQrPage />} />
+      <Route path="q/:code/mi-vehiculo" element={<OwnerVehiclePage />} />
       <Route
         path="*"
         element={

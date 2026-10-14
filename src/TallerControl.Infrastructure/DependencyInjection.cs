@@ -9,6 +9,7 @@ using TallerControl.Application.Common;
 using TallerControl.Application.Customers;
 using TallerControl.Application.Payments;
 using TallerControl.Application.PublicLinks;
+using TallerControl.Application.Qr;
 using TallerControl.Application.Quotes;
 using TallerControl.Application.Settings;
 using TallerControl.Application.Tenancy;
@@ -24,6 +25,7 @@ using TallerControl.Infrastructure.Outbox;
 using TallerControl.Infrastructure.Payments;
 using TallerControl.Infrastructure.Persistence;
 using TallerControl.Infrastructure.PublicLinks;
+using TallerControl.Infrastructure.Qr;
 using TallerControl.Infrastructure.Quotes;
 using TallerControl.Infrastructure.Settings;
 using TallerControl.Infrastructure.Storage;
@@ -158,6 +160,29 @@ public static class DependencyInjection
         services.AddScoped<GetPublicQuoteHandler>();
         services.AddScoped<SubmitPublicResponseHandler>();
         services.AddScoped<GetPublicWorkOrderHandler>();
+
+        services.Configure<QrOptions>(configuration.GetSection(QrOptions.Section));
+        services.AddScoped<IQrRepository, EfQrRepository>();
+        services.AddScoped<IOwnerVerificationRepository, EfOwnerVerificationRepository>();
+        services.AddScoped<IQrPdfGenerator, QrPdfGenerator>();
+        services.AddScoped<IQrCookieService, QrCookieService>();
+        services.AddSingleton<ITurnstileVerifier>(sp =>
+            new TurnstileVerifier(new HttpClient(), sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<QrOptions>>()));
+        services.AddScoped<GenerateBatchHandler>();
+        services.AddScoped<SearchQrCardsHandler>();
+        services.AddScoped<GetQrCardHandler>();
+        services.AddScoped<AssignQrCardHandler>();
+        services.AddScoped<AssignByCodeHandler>();
+        services.AddScoped<UnassignQrCardHandler>();
+        services.AddScoped<MarkLostHandler>();
+        services.AddScoped<RevokeQrCardHandler>();
+        services.AddScoped<GetQrCardPrintHandler>();
+        services.AddScoped<GetQrCardEventsHandler>();
+        services.AddScoped<GetOwnerAccessCodeHandler>();
+        services.AddScoped<ScanQrCodeHandler>();
+        services.AddScoped<StartOwnerChallengeHandler>();
+        services.AddScoped<ValidateOwnerOtpHandler>();
+        services.AddScoped<GetOwnerVehicleHandler>();
 
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddHostedService<OutboxDispatcher>();

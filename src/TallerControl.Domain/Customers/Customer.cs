@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using TallerControl.Domain.Common;
 
 namespace TallerControl.Domain.Customers;
@@ -98,6 +99,28 @@ public sealed class Customer : Entity, ITenantOwned, IVersioned, IAudited, IAudi
         DeletedAt = null;
         DeletedBy = null;
         DeleteReason = null;
+    }
+
+    // Genera un código alfanumérico de 8 chars (Base32 Crockford) para acceso QR sin email (D-01a).
+    // Devuelve el código en texto claro solo en esta llamada; solo el hash se persiste.
+    public string GenerateOwnerAccessCode()
+    {
+        Span<byte> bytes = stackalloc byte[8];
+        RandomNumberGenerator.Fill(bytes);
+        const string alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+        var chars = new char[8];
+        for (var i = 0; i < 8; i++)
+            chars[i] = alphabet[bytes[i] % alphabet.Length];
+        var code = new string(chars);
+        OwnerAccessCodeHash = SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(code));
+        return code;
+    }
+
+    public bool VerifyOwnerAccessCode(string code)
+    {
+        if (OwnerAccessCodeHash is null || string.IsNullOrEmpty(code)) return false;
+        var hash = SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(code));
+        return CryptographicOperations.FixedTimeEquals(hash, OwnerAccessCodeHash);
     }
 
     private static string ValidateName(string name)

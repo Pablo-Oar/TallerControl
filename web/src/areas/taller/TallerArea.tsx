@@ -10,6 +10,7 @@ import { WorkOrdersPage } from './work-orders/WorkOrdersPage'
 import { WorkOrderDetailPage } from './work-orders/WorkOrderDetailPage'
 import { QuotesPage } from './quotes/QuotesPage'
 import { QuoteDetailPage } from './quotes/QuoteDetailPage'
+import { QrCardsPage } from './qr/QrCardsPage'
 
 /** Área del taller (`/app/*`): dueño y administrativo. Escritorio primero. */
 export function Component() {
@@ -25,6 +26,7 @@ export function Component() {
           <Route path="quotes/:id" element={<QuoteDetailPage />} />
           <Route path="work-orders" element={<WorkOrdersPage />} />
           <Route path="work-orders/:id" element={<WorkOrderDetailPage />} />
+          <Route path="qr" element={<QrCardsPage />} />
           <Route
             path="settings/general"
             element={
