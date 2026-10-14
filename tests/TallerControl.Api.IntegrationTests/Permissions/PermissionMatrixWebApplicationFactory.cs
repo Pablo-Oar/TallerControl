@@ -12,6 +12,7 @@ using TallerControl.Domain.Customers;
 using TallerControl.Domain.Tenancy;
 using TallerControl.Domain.Users;
 using TallerControl.Domain.Vehicles;
+using TallerControl.Domain.Work;
 using TallerControl.Infrastructure.Persistence;
 
 namespace TallerControl.Api.IntegrationTests.Permissions;
@@ -43,6 +44,12 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
 
     /// <summary>Ítem del catálogo del Taller A sembrado para probar T-ISO-ALL en rutas /catalog/{id}.</summary>
     public Guid ForeignCatalogItemId { get; private set; }
+
+    /// <summary>OT del Taller A sembrada para probar T-ISO-ALL en rutas /work-orders/{id}.</summary>
+    public Guid ForeignWorkOrderId { get; private set; }
+
+    /// <summary>Adjunto del Taller A sembrado para probar T-ISO-ALL en rutas /attachments/{id}.</summary>
+    public Guid ForeignAttachmentId { get; private set; }
 
     public string ConnectionString { get; }
 
@@ -101,12 +108,13 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
         TenantBId = tenantB.Id;
 
         var ownerA = new User(OwnerAEmail, "Dueño A");
-        ownerA.Activate(hasher.Hash(Password));
         var adminA = new User(AdminAEmail, "Administrativo A");
-        adminA.Activate(hasher.Hash(Password));
         var mechanicA = new User(MechanicAEmail, "Mecánico A");
-        mechanicA.Activate(hasher.Hash(Password));
         var ownerB = new User(OwnerBEmail, "Dueño B");
+
+        ownerA.Activate(hasher.Hash(Password));
+        adminA.Activate(hasher.Hash(Password));
+        mechanicA.Activate(hasher.Hash(Password));
         ownerB.Activate(hasher.Hash(Password));
 
         await using (var db = new AppDbContext(
@@ -121,12 +129,17 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
 
         var adminAMembership = new Membership(tenantA.Id, adminA.Id, TenantRole.AdminStaff);
 
+        // La sucursal principal del Taller A se siembra junto con las membresías para que esté
+        // disponible antes de crear la OT (que requiere branch_id).
+        var branchA = Branch.CreateMain(tenantA.Id);
+
         await using (var db = new AppDbContext(
             BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
         {
             db.Add(new Membership(tenantA.Id, ownerA.Id, TenantRole.Owner));
             db.Add(adminAMembership);
             db.Add(new Membership(tenantA.Id, mechanicA.Id, TenantRole.Mechanic));
+            db.Add(branchA);
             await db.SaveChangesAsync();
         }
 
@@ -174,14 +187,42 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
 
         ForeignCatalogItemId = catalogItemA.Id;
 
-        // Siembra la sucursal principal del Taller A (requerida por ManualStockAdjustmentHandler)
-        var branchA = Branch.CreateMain(tenantA.Id);
+        // Siembra una OT del Taller A para T-ISO-ALL en rutas /work-orders/{id}.
+        // Número 1 directo: en tests de aislamiento no importa la secuencia.
+        var workOrderA = new WorkOrder(
+            tenantA.Id, branchA.Id, number: 1,
+            customerA.Id, vehicleA.Id,
+            odometerKm: 0, fuelLevel: null, reportedIssue: null,
+            WorkOrderPriority.Normal, assignedMechanicId: null, sourceQuoteId: null,
+            createdBy: null, createdAt: DateTimeOffset.UtcNow);
+
         await using (var db = new AppDbContext(
             BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
         {
-            db.Add(branchA);
+            db.Add(workOrderA);
             await db.SaveChangesAsync();
         }
+
+        ForeignWorkOrderId = workOrderA.Id;
+
+        // Siembra un adjunto pendiente del Taller A para T-ISO-ALL en rutas /attachments/{id}.
+        var attachmentA = new Attachment(
+            tenantA.Id, AttachmentOwnerType.WorkOrder, workOrderA.Id,
+            fileKey: "tenants/iso-test/att.jpg",
+            contentType: "image/jpeg",
+            sizeBytes: 1024,
+            isInternal: false,
+            createdBy: null,
+            createdAt: DateTimeOffset.UtcNow);
+
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(attachmentA);
+            await db.SaveChangesAsync();
+        }
+
+        ForeignAttachmentId = attachmentA.Id;
     }
 
     private static DbContextOptions<AppDbContext> BuildOptions(string cs)

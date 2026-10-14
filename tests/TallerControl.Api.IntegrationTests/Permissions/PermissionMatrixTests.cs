@@ -184,7 +184,9 @@ public sealed class PermissionMatrixTests : IAsyncLifetime
                 e.RoutePattern.Contains("{membershipId", StringComparison.Ordinal) ||
                 e.RoutePattern.Contains("/customers/", StringComparison.Ordinal) ||
                 e.RoutePattern.Contains("/vehicles/", StringComparison.Ordinal) ||
-                e.RoutePattern.Contains("/catalog/", StringComparison.Ordinal)))
+                e.RoutePattern.Contains("/catalog/", StringComparison.Ordinal) ||
+                e.RoutePattern.Contains("/work-orders/", StringComparison.Ordinal) ||
+                e.RoutePattern.Contains("/attachments/", StringComparison.Ordinal)))
             .ToList();
 
         var unresolved = all
@@ -244,6 +246,16 @@ public sealed class PermissionMatrixTests : IAsyncLifetime
         if (pattern.Contains("/catalog/", StringComparison.Ordinal))
         {
             return RouteParam.Replace(pattern, _factory.ForeignCatalogItemId.ToString());
+        }
+
+        if (pattern.Contains("/work-orders/", StringComparison.Ordinal))
+        {
+            return RouteParam.Replace(pattern, _factory.ForeignWorkOrderId.ToString());
+        }
+
+        if (pattern.Contains("/attachments/", StringComparison.Ordinal))
+        {
+            return RouteParam.Replace(pattern, _factory.ForeignAttachmentId.ToString());
         }
 
         // Fallback: no debería llegar aquí si resolvable está correctamente definido

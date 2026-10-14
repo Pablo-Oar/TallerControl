@@ -3,6 +3,7 @@ using TallerControl.Application.Common;
 using TallerControl.Application.Customers;
 using TallerControl.Domain.Customers;
 using TallerControl.Domain.Vehicles;
+using TallerControl.Domain.Work;
 using TallerControl.Infrastructure.Persistence;
 
 namespace TallerControl.Infrastructure.Customers;
@@ -97,7 +98,10 @@ internal sealed class EfCustomerRepository : ICustomerRepository
                 && (excludeId == null || c.Id != excludeId.Value), ct);
 
     public Task<decimal> GetPendingBalanceAsync(Guid customerId, CancellationToken ct) =>
-        Task.FromResult(0m); // Implementado en E4
+        // Balance = suma de (total - paid_amount) de OTs no canceladas del cliente (V2: definición única).
+        _db.Set<WorkOrder>()
+            .Where(w => w.CustomerId == customerId && w.Status != WorkOrderStatus.Cancelled)
+            .SumAsync(w => w.Total - w.PaidAmount, ct);
 
     public async Task AddAsync(Customer customer, CancellationToken ct) =>
         await _db.Set<Customer>().AddAsync(customer, ct);

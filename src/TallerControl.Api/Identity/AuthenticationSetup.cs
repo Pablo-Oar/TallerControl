@@ -56,6 +56,7 @@ public static class AuthenticationSetup
 
         services.AddAuthorization(options => options.AddPermissionPolicies());
         services.AddScoped<IAuthorizationHandler, HasPermissionHandler>();
+        services.AddScoped<IAuthorizationHandler, HasAnyPermissionHandler>();
 
         services.AddAntiforgery(options =>
         {

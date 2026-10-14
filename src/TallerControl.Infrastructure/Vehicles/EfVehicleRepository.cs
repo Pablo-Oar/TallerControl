@@ -3,6 +3,7 @@ using TallerControl.Application.Common;
 using TallerControl.Application.Vehicles;
 using TallerControl.Domain.Customers;
 using TallerControl.Domain.Vehicles;
+using TallerControl.Domain.Work;
 using TallerControl.Infrastructure.Persistence;
 
 namespace TallerControl.Infrastructure.Vehicles;
@@ -95,7 +96,10 @@ internal sealed class EfVehicleRepository : IVehicleRepository
         _db.Set<Customer>().AnyAsync(c => c.Id == customerId, ct);
 
     public Task<bool> HasOpenWorkOrdersAsync(Guid vehicleId, CancellationToken ct) =>
-        Task.FromResult(false); // Implementado en E4
+        _db.Set<WorkOrder>()
+            .AnyAsync(w => w.VehicleId == vehicleId
+                && w.Status != WorkOrderStatus.Cancelled
+                && w.Status != WorkOrderStatus.Delivered, ct);
 
     public async Task AddAsync(Vehicle vehicle, CancellationToken ct) =>
         await _db.Set<Vehicle>().AddAsync(vehicle, ct);

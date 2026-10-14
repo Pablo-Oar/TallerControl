@@ -120,7 +120,7 @@ public sealed class DocumentNumberGeneratorTests
     }
 
     [Fact]
-    public async Task Sin_taller_o_sin_sucursal_en_la_sesion_se_rechaza()
+    public async Task Sin_taller_en_la_sesion_se_rechaza()
     {
         var env = await TenancyDb.CreateAsync(_postgres);
         await using var db = TenancyDb.CreateContext(env.ConnectionString, env.TenantId);
@@ -128,7 +128,18 @@ public sealed class DocumentNumberGeneratorTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => CreateGenerator(db, null, env.BranchId).NextAsync(DocumentKind.Quote));
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => CreateGenerator(db, env.TenantId, null).NextAsync(DocumentKind.Quote));
+    }
+
+    [Fact]
+    public async Task Sin_sucursal_en_sesion_usa_la_sucursal_principal()
+    {
+        // MVP: BranchId nulo cae al fallback de sucursal principal (no hay selector aún).
+        var env = await TenancyDb.CreateAsync(_postgres);
+        await using var db = TenancyDb.CreateContext(env.ConnectionString, env.TenantId);
+        await using var tx = await db.Database.BeginTransactionAsync();
+
+        var generator = CreateGenerator(db, env.TenantId, null);
+        var number = await generator.NextAsync(DocumentKind.Quote);
+        Assert.True(number > 0);
     }
 }

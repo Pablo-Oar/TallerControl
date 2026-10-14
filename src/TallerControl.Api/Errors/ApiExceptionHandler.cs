@@ -84,6 +84,14 @@ public sealed class ApiExceptionHandler : IExceptionHandler
             Detail = conflict.Message,
         },
 
+        // Acción no permitida por las reglas de negocio para el rol actual (p.ej. mecánico intenta entregar).
+        UnauthorizedAccessException => new ProblemDetails
+        {
+            Status = StatusCodes.Status403Forbidden,
+            Title = "Acceso denegado",
+            Detail = "No tenés permiso para realizar esta operación.",
+        },
+
         // Concurrencia optimista (xmin / If-Match): otro usuario modificó el recurso.
         ConcurrencyException or DbUpdateConcurrencyException => new ProblemDetails
         {

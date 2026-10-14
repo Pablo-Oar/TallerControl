@@ -11,6 +11,7 @@ using TallerControl.Application.Settings;
 using TallerControl.Application.Tenancy;
 using TallerControl.Application.Users;
 using TallerControl.Application.Vehicles;
+using TallerControl.Application.Work;
 using TallerControl.Infrastructure.Catalog;
 using TallerControl.Infrastructure.Customers;
 using TallerControl.Infrastructure.Email;
@@ -23,6 +24,7 @@ using TallerControl.Infrastructure.Storage;
 using TallerControl.Infrastructure.Tenancy;
 using TallerControl.Infrastructure.Users;
 using TallerControl.Infrastructure.Vehicles;
+using TallerControl.Infrastructure.Work;
 
 namespace TallerControl.Infrastructure;
 
@@ -103,6 +105,24 @@ public static class DependencyInjection
         services.AddScoped<RestoreCatalogItemHandler>();
         services.AddScoped<ManualStockAdjustmentHandler>();
         services.AddScoped<GetStockMovementsHandler>();
+
+        services.AddScoped<IWorkOrderRepository, EfWorkOrderRepository>();
+        services.AddScoped<IAttachmentRepository, EfAttachmentRepository>();
+        services.AddScoped<SearchWorkOrdersHandler>();
+        services.AddScoped<GetWorkOrderHandler>();
+        services.AddScoped<CreateWorkOrderHandler>();
+        services.AddScoped<UpdateWorkOrderHandler>();
+        services.AddScoped<ChangeWorkOrderStatusHandler>();
+        services.AddScoped<AssignMechanicHandler>();
+        services.AddScoped<UpdateMechanicNotesHandler>();
+        services.AddScoped<GetWorkOrderHistoryHandler>();
+        services.AddScoped<GetWorkOrderPdfHandler>();
+        services.AddScoped<IWorkOrderPdfGenerator, WorkOrderPdfGenerator>();
+        services.AddScoped<RequestAttachmentUploadUrlHandler>();
+        services.AddScoped<ConfirmAttachmentHandler>();
+        services.AddScoped<ListAttachmentsHandler>();
+        services.AddScoped<UpdateAttachmentHandler>();
+        services.AddScoped<DeleteAttachmentHandler>();
 
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddHostedService<OutboxDispatcher>();

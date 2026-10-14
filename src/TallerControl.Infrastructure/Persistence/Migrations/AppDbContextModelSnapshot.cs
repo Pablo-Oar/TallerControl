@@ -1013,6 +1013,397 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TallerControl.Domain.Work.Attachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("content_type");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("FileKey")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("file_key");
+
+                    b.Property<bool>("IsInternal")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_internal");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owner_id");
+
+                    b.Property<string>("OwnerType")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("owner_type");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_bytes");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_attachments");
+
+                    b.HasIndex("TenantId", "OwnerType", "OwnerId")
+                        .HasDatabaseName("ix_attachments_tenant_owner");
+
+                    b.ToTable("attachments", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_attachments_owner_type", "\"owner_type\" IN ('quote', 'vehicle', 'work_order')");
+
+                            t.HasCheckConstraint("ck_attachments_status", "\"status\" IN ('pending_upload', 'ready')");
+                        });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Work.WorkOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AssignedMechanicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assigned_mechanic_id");
+
+                    b.Property<decimal>("Balance")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("balance")
+                        .HasComputedColumnSql("CASE WHEN status = 'cancelled' THEN 0::numeric ELSE total - paid_amount END", true);
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<string>("CancelReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("cancel_reason");
+
+                    b.Property<DateTimeOffset?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cancelled_at");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
+
+                    b.Property<DateTimeOffset?>("DeliveredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("delivered_at");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("discount_amount");
+
+                    b.Property<int?>("FuelLevel")
+                        .HasColumnType("integer")
+                        .HasColumnName("fuel_level");
+
+                    b.Property<string>("InternalNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("internal_notes");
+
+                    b.Property<string>("MechanicNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("mechanic_notes");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer")
+                        .HasColumnName("number");
+
+                    b.Property<int>("OdometerKm")
+                        .HasColumnType("integer")
+                        .HasColumnName("odometer_km");
+
+                    b.Property<decimal>("PaidAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("paid_amount");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("priority");
+
+                    b.Property<string>("ReportedIssue")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("reported_issue");
+
+                    b.Property<Guid?>("SourceQuoteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_quote_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<decimal>("SubtotalNet")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("subtotal_net");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("total");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<decimal>("VatAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("vat_amount");
+
+                    b.Property<Guid>("VehicleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("vehicle_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_work_orders");
+
+                    b.HasIndex("AssignedMechanicId")
+                        .HasDatabaseName("ix_work_orders_assigned_mechanic_id");
+
+                    b.HasIndex("BranchId")
+                        .HasDatabaseName("ix_work_orders_branch_id");
+
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("ix_work_orders_customer_id");
+
+                    b.HasIndex("VehicleId")
+                        .HasDatabaseName("ix_work_orders_vehicle_id");
+
+                    b.HasIndex("TenantId", "AssignedMechanicId")
+                        .HasDatabaseName("ix_work_orders_tenant_mechanic");
+
+                    b.HasIndex("TenantId", "CustomerId")
+                        .HasDatabaseName("ix_work_orders_tenant_customer");
+
+                    b.HasIndex("TenantId", "Status")
+                        .HasDatabaseName("ix_work_orders_tenant_status");
+
+                    b.HasIndex("TenantId", "VehicleId")
+                        .HasDatabaseName("ix_work_orders_tenant_vehicle");
+
+                    b.HasIndex("TenantId", "BranchId", "Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_work_orders_tenant_branch_number");
+
+                    b.ToTable("work_orders", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_work_orders_priority", "\"priority\" IN ('high', 'low', 'normal')");
+
+                            t.HasCheckConstraint("ck_work_orders_status", "\"status\" IN ('cancelled', 'completed', 'delivered', 'in_progress', 'pending', 'waiting_parts')");
+                        });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Work.WorkOrderItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("CatalogItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("catalog_item_id");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("kind");
+
+                    b.Property<decimal>("LineNet")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("line_net");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("line_total");
+
+                    b.Property<decimal>("LineVat")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("line_vat");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(12,3)")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid?>("QuoteItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("quote_item_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<decimal?>("UnitCostSnapshot")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("unit_cost_snapshot");
+
+                    b.Property<decimal>("UnitNetPrice")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("unit_net_price");
+
+                    b.Property<decimal>("VatRate")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("vat_rate");
+
+                    b.Property<Guid>("WorkOrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("work_order_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_work_order_items");
+
+                    b.HasIndex("CatalogItemId")
+                        .HasDatabaseName("ix_work_order_items_catalog_item_id");
+
+                    b.HasIndex("WorkOrderId")
+                        .HasDatabaseName("ix_work_order_items_work_order_id");
+
+                    b.HasIndex("TenantId", "WorkOrderId")
+                        .HasDatabaseName("ix_work_order_items_tenant_order");
+
+                    b.ToTable("work_order_items", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_work_order_items_kind", "\"kind\" IN ('manual', 'product', 'service')");
+                        });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Work.WorkOrderStatusChange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("ChangedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("changed_at");
+
+                    b.Property<Guid?>("ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("changed_by");
+
+                    b.Property<string>("FromStatus")
+                        .HasColumnType("text")
+                        .HasColumnName("from_status");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text")
+                        .HasColumnName("note");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("ToStatus")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("to_status");
+
+                    b.Property<Guid>("WorkOrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("work_order_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_work_order_status_changes");
+
+                    b.HasIndex("WorkOrderId")
+                        .HasDatabaseName("ix_work_order_status_changes_work_order_id");
+
+                    b.HasIndex("TenantId", "WorkOrderId")
+                        .HasDatabaseName("ix_work_order_status_changes_tenant_order");
+
+                    b.ToTable("work_order_status_changes", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_work_order_status_changes_from_status", "\"from_status\" IN ('cancelled', 'completed', 'delivered', 'in_progress', 'pending', 'waiting_parts')");
+
+                            t.HasCheckConstraint("ck_work_order_status_changes_to_status", "\"to_status\" IN ('cancelled', 'completed', 'delivered', 'in_progress', 'pending', 'waiting_parts')");
+                        });
+                });
+
             modelBuilder.Entity("TallerControl.Domain.Catalog.CatalogItem", b =>
                 {
                     b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
@@ -1133,6 +1524,79 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_vehicles_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Work.Attachment", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_attachments_tenant_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Work.WorkOrder", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Users.Membership", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedMechanicId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_work_orders_memberships_assigned_mechanic_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Branch", null)
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_work_orders_branches_branch_id");
+
+                    b.HasOne("TallerControl.Domain.Customers.Customer", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_work_orders_customers_customer_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_work_orders_tenants_tenant_id");
+
+                    b.HasOne("TallerControl.Domain.Vehicles.Vehicle", null)
+                        .WithMany()
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_work_orders_vehicles_vehicle_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Work.WorkOrderItem", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Catalog.CatalogItem", null)
+                        .WithMany()
+                        .HasForeignKey("CatalogItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_work_order_items_catalog_items_catalog_item_id");
+
+                    b.HasOne("TallerControl.Domain.Work.WorkOrder", null)
+                        .WithMany()
+                        .HasForeignKey("WorkOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_work_order_items_work_orders_work_order_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Work.WorkOrderStatusChange", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Work.WorkOrder", null)
+                        .WithMany()
+                        .HasForeignKey("WorkOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_work_order_status_changes_work_orders_work_order_id");
                 });
 #pragma warning restore 612, 618
         }
