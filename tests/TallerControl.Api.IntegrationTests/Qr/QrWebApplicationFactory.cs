@@ -7,6 +7,7 @@ using TallerControl.Api.IntegrationTests.Auth;
 using TallerControl.Api.IntegrationTests.Persistence;
 using TallerControl.Application.Auth;
 using TallerControl.Application.Common;
+using TallerControl.Application.Qr;
 using TallerControl.Domain.Customers;
 using TallerControl.Domain.Tenancy;
 using TallerControl.Domain.Users;
@@ -59,12 +60,15 @@ internal sealed class QrWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:Default", ConnectionString);
-        builder.UseSetting("Qr:TurnstileSecretKey", "1x0000000000000000000000000000000AA");
 
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(new FakeEmailSender());
+
+            // Reemplazar con stub para evitar llamadas reales a Cloudflare en tests
+            services.RemoveAll<ITurnstileVerifier>();
+            services.AddSingleton<ITurnstileVerifier>(new AlwaysPassTurnstileVerifier());
         });
     }
 
@@ -141,4 +145,10 @@ internal sealed class QrWebApplicationFactory : WebApplicationFactory<Program>
         b.UseTallerControlNpgsql(cs);
         return b.Options;
     }
+}
+
+internal sealed class AlwaysPassTurnstileVerifier : ITurnstileVerifier
+{
+    public Task<bool> VerifyAsync(string token, string? clientIp, CancellationToken ct) =>
+        Task.FromResult(true);
 }
