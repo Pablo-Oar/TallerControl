@@ -6,6 +6,8 @@ import { GeneralSettingsPage } from './settings/general/GeneralSettingsPage'
 import { CustomersPage } from './customers/CustomersPage'
 import { VehiclesPage } from './vehicles/VehiclesPage'
 import { CatalogPage } from './catalog/CatalogPage'
+import { WorkOrdersPage } from './work-orders/WorkOrdersPage'
+import { WorkOrderDetailPage } from './work-orders/WorkOrderDetailPage'
 
 /** Área del taller (`/app/*`): dueño y administrativo. Escritorio primero. */
 export function Component() {
@@ -17,6 +19,8 @@ export function Component() {
           <Route path="customers" element={<CustomersPage />} />
           <Route path="vehicles" element={<VehiclesPage />} />
           <Route path="catalog" element={<CatalogPage />} />
+          <Route path="work-orders" element={<WorkOrdersPage />} />
+          <Route path="work-orders/:id" element={<WorkOrderDetailPage />} />
           <Route
             path="settings/general"
             element={

@@ -7,6 +7,7 @@ using TallerControl.Api.Endpoints.Customers;
 using TallerControl.Api.Endpoints.Settings;
 using TallerControl.Api.Endpoints.Users;
 using TallerControl.Api.Endpoints.Vehicles;
+using TallerControl.Api.Endpoints.Work;
 
 using TallerControl.Api.Errors;
 using TallerControl.Api.Identity;
@@ -60,6 +61,8 @@ app.MapSettingsEndpoints();
 app.MapCustomersEndpoints();
 app.MapVehiclesEndpoints();
 app.MapCatalogEndpoints();
+app.MapWorkOrdersEndpoints();
+app.MapAttachmentsEndpoints();
 
 app.Run();
 

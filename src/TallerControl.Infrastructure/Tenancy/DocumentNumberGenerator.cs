@@ -28,8 +28,15 @@ public sealed class DocumentNumberGenerator : IDocumentNumberGenerator
     {
         var tenantId = _tenant.TenantId
             ?? throw new InvalidOperationException("No hay taller en la sesión.");
+
+        // MVP: cuando no hay sucursal en la sesión (selector no implementado aún), se usa la principal.
         var branchId = _branch.BranchId
-            ?? throw new InvalidOperationException("No hay sucursal activa en la sesión.");
+            ?? await _db.Set<Branch>()
+                .AsNoTracking()
+                .Where(b => b.TenantId == tenantId && b.IsMain)
+                .Select(b => (Guid?)b.Id)
+                .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new InvalidOperationException("No hay sucursal principal configurada para el taller.");
 
         if (_db.Database.CurrentTransaction is null)
         {
