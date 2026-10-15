@@ -80,7 +80,7 @@ export async function createPayment(
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      'X-XSRF-TOKEN': token as string,
+      'X-CSRF-TOKEN': token as string,
       'Idempotency-Key': idempotencyKey,
     },
     body: JSON.stringify(request),

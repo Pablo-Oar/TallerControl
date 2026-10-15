@@ -38,7 +38,7 @@ async function request<T>(
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
 
   if (requiresCsrf) {
-    headers['X-XSRF-TOKEN'] = await ensureCsrfToken()
+    headers['X-CSRF-TOKEN'] = await ensureCsrfToken()
   }
 
   const res = await fetch(url, {
@@ -73,7 +73,7 @@ async function requestWithIfMatch<T>(method: string, url: string, body: unknown,
     headers: {
       'Content-Type': 'application/json',
       'If-Match': `"${version}"`,
-      'X-XSRF-TOKEN': await ensureCsrfToken(),
+      'X-CSRF-TOKEN': await ensureCsrfToken(),
     },
     body: JSON.stringify(body),
   })

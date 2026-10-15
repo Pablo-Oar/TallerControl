@@ -118,7 +118,7 @@ export async function markLost(id: string, lost: boolean): Promise<void> {
   const res = await fetch(`/api/v1/qr/cards/${id}/lost`, {
     method: 'PATCH',
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': token as string },
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token as string },
     body: JSON.stringify({ lost }),
   })
   if (!res.ok) {

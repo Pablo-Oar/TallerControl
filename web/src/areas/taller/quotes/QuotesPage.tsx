@@ -67,13 +67,13 @@ export function QuotesPage() {
             <table className="w-full text-sm">
               <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="px-4 py-3">#</th>
+                  <th className="w-12 px-4 py-3">#</th>
                   <th className="px-4 py-3">Estado</th>
                   <th className="px-4 py-3">Cliente</th>
-                  <th className="px-4 py-3">Vehículo</th>
-                  <th className="px-4 py-3 text-right">Total</th>
-                  <th className="px-4 py-3">Válido hasta</th>
-                  <th className="px-4 py-3">Creado</th>
+                  <th className="w-28 px-4 py-3">Vehículo</th>
+                  <th className="w-32 px-4 py-3 text-right">Total</th>
+                  <th className="w-28 px-4 py-3 whitespace-nowrap">Válido hasta</th>
+                  <th className="w-24 px-4 py-3 whitespace-nowrap">Creado</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -98,13 +98,13 @@ export function QuotesPage() {
                       </td>
                       <td className="px-4 py-3 text-slate-700">{q.customerName}</td>
                       <td className="px-4 py-3 text-slate-600">{q.vehiclePlate}</td>
-                      <td className="px-4 py-3 text-right font-medium text-slate-800">
+                      <td className="px-4 py-3 text-right font-medium tabular-nums text-slate-800">
                         ${q.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                       </td>
-                      <td className="px-4 py-3 text-slate-600">
+                      <td className="px-4 py-3 whitespace-nowrap text-slate-600">
                         {new Date(q.validUntil).toLocaleDateString('es-AR')}
                       </td>
-                      <td className="px-4 py-3 text-slate-500">
+                      <td className="px-4 py-3 whitespace-nowrap text-slate-500">
                         {new Date(q.createdAt).toLocaleDateString('es-AR')}
                       </td>
                     </tr>

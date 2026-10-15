@@ -6,8 +6,8 @@ import { CatalogFormModal } from './CatalogFormModal'
 import { StockAdjustmentModal } from './StockAdjustmentModal'
 
 const KIND_LABELS: Record<CatalogItemKind, string> = {
-  Service: 'Servicio',
-  Product: 'Producto',
+  service: 'Servicio',
+  product: 'Producto',
 }
 
 export function CatalogPage() {
@@ -28,7 +28,7 @@ export function CatalogPage() {
       catalogApi.search(
         search || null,
         kindFilter || null,
-        activeOnly,
+        activeOnly ? true : null,
         page,
       ),
   })
@@ -78,8 +78,8 @@ export function CatalogPage() {
           className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">Todos los tipos</option>
-          <option value="Service">Servicios</option>
-          <option value="Product">Productos</option>
+          <option value="service">Servicios</option>
+          <option value="product">Productos</option>
         </select>
         <label className="flex items-center gap-1.5 text-sm text-slate-600">
           <input
@@ -169,7 +169,7 @@ export function CatalogPage() {
                         )}
                         <button
                           onClick={() => setEditing(item)}
-                          className="text-xs text-blue-600 hover:underline"
+                          className="cursor-pointer text-xs text-blue-600 hover:underline"
                         >
                           Editar
                         </button>

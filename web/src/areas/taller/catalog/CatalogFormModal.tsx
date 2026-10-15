@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import type { Resolver } from 'react-hook-form'
 import { catalogApi, type CatalogItemDto } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
 import { ApiError } from '../../../lib/api/client'
@@ -9,7 +10,7 @@ import { ApiError } from '../../../lib/api/client'
 const inputCls = 'w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500'
 
 const schema = z.object({
-  kind: z.enum(['Service', 'Product']),
+  kind: z.enum(['service', 'product']),
   sku: z.string().trim().max(50).optional(),
   name: z.string().trim().min(1, 'Requerido').max(200),
   description: z.string().trim().max(500).optional(),
@@ -22,6 +23,16 @@ const schema = z.object({
 })
 
 type FormData = z.infer<typeof schema>
+
+// @hookform/resolvers v5 only passes registered field values to the Zod resolver.
+// In edit mode the `kind` select is not rendered so we inject it from the item prop.
+function makeResolver(item: CatalogItemDto | undefined): Resolver<FormData> {
+  const base = zodResolver(schema)
+  return (values, ctx, opts) => {
+    const patched = item ? { ...values, kind: item.kind } : values
+    return base(patched as FormData, ctx, opts)
+  }
+}
 
 function toFormData(dto: CatalogItemDto): FormData {
   return {
@@ -49,10 +60,10 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
   const isEdit = !!item
 
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: makeResolver(item),
     defaultValues: item
       ? toFormData(item)
-      : { kind: 'Service', vatRate: 21, trackStock: false, isActive: true },
+      : { kind: 'service' as const, vatRate: 21, trackStock: false, isActive: true },
   })
 
   const kind = watch('kind')
@@ -108,8 +119,8 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
             <div>
               <label className="mb-1 block text-sm font-medium">Tipo *</label>
               <select {...register('kind')} className={inputCls}>
-                <option value="Service">Servicio</option>
-                <option value="Product">Producto</option>
+                <option value="service">Servicio</option>
+                <option value="product">Producto</option>
               </select>
             </div>
           )}
@@ -144,7 +155,7 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
                 {...register('netPrice', { valueAsNumber: true })}
                 type="number"
                 min={0}
-                step="0.01"
+                step="1"
                 className={inputCls}
                 placeholder="0.00"
               />
@@ -164,7 +175,7 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
             </div>
           </div>
 
-          {(kind === 'Product' || isEdit) && (
+          {(kind === 'product' || isEdit) && (
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" {...register('trackStock')} className="h-4 w-4 rounded" />
               Controlar stock
@@ -179,7 +190,7 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
                   {...register('minStockQty')}
                   type="number"
                   min={0}
-                  step="0.001"
+                  step="1"
                   className={inputCls}
                   placeholder="—"
                 />
@@ -190,7 +201,7 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
                   {...register('maxStockQty')}
                   type="number"
                   min={0}
-                  step="0.001"
+                  step="1"
                   className={inputCls}
                   placeholder="—"
                 />

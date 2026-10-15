@@ -153,23 +153,23 @@ export function WorkOrderDetailPage() {
           <table className="w-full text-sm">
             <thead className="text-xs font-semibold uppercase tracking-wide text-slate-400">
               <tr>
-                <th className="pb-2 text-left">Descripción</th>
-                <th className="pb-2 text-right">Cant.</th>
-                <th className="pb-2 text-right">P. neto</th>
-                <th className="pb-2 text-right">IVA %</th>
-                <th className="pb-2 text-right">Total línea</th>
+                <th className="pb-2 pr-3 text-left">Descripción</th>
+                <th className="pb-2 px-3 text-right">Cant.</th>
+                <th className="pb-2 px-3 text-right">P. neto</th>
+                <th className="pb-2 px-3 text-right">IVA %</th>
+                <th className="pb-2 pl-3 text-right">Total línea</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {order.items.map(item => (
                 <tr key={item.id}>
-                  <td className="py-2">{item.description}</td>
-                  <td className="py-2 text-right tabular-nums">{item.quantity}</td>
-                  <td className="py-2 text-right tabular-nums">
+                  <td className="py-2 pr-3">{item.description}</td>
+                  <td className="py-2 px-3 text-right tabular-nums">{item.quantity}</td>
+                  <td className="py-2 px-3 text-right tabular-nums">
                     {order.subtotalNet != null ? `$${item.unitNetPrice.toFixed(2)}` : '—'}
                   </td>
-                  <td className="py-2 text-right">{item.vatRate}%</td>
-                  <td className="py-2 text-right tabular-nums font-medium">
+                  <td className="py-2 px-3 text-right">{item.vatRate}%</td>
+                  <td className="py-2 pl-3 text-right tabular-nums font-medium">
                     {order.total != null ? `$${item.lineTotal.toFixed(2)}` : '—'}
                   </td>
                 </tr>
@@ -228,26 +228,26 @@ export function WorkOrderDetailPage() {
           <table className="mb-3 w-full text-sm">
             <thead className="text-xs font-semibold uppercase tracking-wide text-slate-400">
               <tr>
-                <th className="pb-1 text-left">#</th>
-                <th className="pb-1 text-left">Método</th>
-                <th className="pb-1 text-right">Monto</th>
-                <th className="pb-1 text-left">Fecha</th>
-                <th className="pb-1 text-left">Estado</th>
+                <th className="pb-1 pr-3 text-left">#</th>
+                <th className="pb-1 px-3 text-left">Método</th>
+                <th className="pb-1 px-3 text-right">Monto</th>
+                <th className="pb-1 px-3 text-left">Fecha</th>
+                <th className="pb-1 px-3 text-left">Estado</th>
                 <th className="pb-1" />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {payments.payments.map(pay => (
                 <tr key={pay.id}>
-                  <td className="py-1.5 text-slate-500">{String(pay.number).padStart(4, '0')}</td>
-                  <td className="py-1.5">{METHOD_LABELS[pay.method]}</td>
-                  <td className="py-1.5 text-right tabular-nums font-medium">
+                  <td className="py-1.5 pr-3 text-slate-500">{String(pay.number).padStart(4, '0')}</td>
+                  <td className="py-1.5 px-3">{METHOD_LABELS[pay.method]}</td>
+                  <td className="py-1.5 px-3 text-right tabular-nums font-medium">
                     ${pay.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                   </td>
-                  <td className="py-1.5 text-slate-500">
+                  <td className="py-1.5 px-3 text-slate-500">
                     {new Date(pay.paidAt).toLocaleDateString('es-AR')}
                   </td>
-                  <td className="py-1.5">
+                  <td className="py-1.5 px-3">
                     <span className={`text-xs font-medium ${pay.status === 'voided' ? 'text-red-600' : 'text-green-600'}`}>
                       {PAYMENT_STATUS_LABELS[pay.status]}
                     </span>

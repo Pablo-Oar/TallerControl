@@ -1,8 +1,11 @@
 import type { ReactNode } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { NavLink, useNavigate } from 'react-router'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { Button } from '../../components/ui/Button'
 import { useState } from 'react'
+
+const navCls = ({ isActive }: { isActive: boolean }) =>
+  isActive ? 'text-blue-600 hover:underline' : 'text-slate-600 hover:text-slate-900'
 
 export function TallerLayout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth()
@@ -24,38 +27,38 @@ export function TallerLayout({ children }: { children: ReactNode }) {
       <header className="border-b border-slate-200 bg-white px-6 py-3">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <nav className="flex items-center gap-6 text-sm font-medium">
-            <Link to="/app" className="text-blue-600 hover:underline">
+            <NavLink to="/app" end className={navCls}>
               Inicio
-            </Link>
-            <Link to="/app/customers" className="text-slate-600 hover:text-slate-900">
+            </NavLink>
+            <NavLink to="/app/customers" className={navCls}>
               Clientes
-            </Link>
-            <Link to="/app/vehicles" className="text-slate-600 hover:text-slate-900">
+            </NavLink>
+            <NavLink to="/app/vehicles" className={navCls}>
               Vehículos
-            </Link>
-            <Link to="/app/catalog" className="text-slate-600 hover:text-slate-900">
+            </NavLink>
+            <NavLink to="/app/catalog" className={navCls}>
               Catálogo
-            </Link>
-            <Link to="/app/quotes" className="text-slate-600 hover:text-slate-900">
+            </NavLink>
+            <NavLink to="/app/quotes" className={navCls}>
               Presupuestos
-            </Link>
-            <Link to="/app/work-orders" className="text-slate-600 hover:text-slate-900">
+            </NavLink>
+            <NavLink to="/app/work-orders" className={navCls}>
               Órdenes
-            </Link>
+            </NavLink>
             {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
-              <Link to="/app/qr" className="text-slate-600 hover:text-slate-900">
+              <NavLink to="/app/qr" className={navCls}>
                 Tarjetas QR
-              </Link>
+              </NavLink>
             )}
             {user?.role === 'Owner' && (
-              <Link to="/app/settings/general" className="text-slate-600 hover:text-slate-900">
+              <NavLink to="/app/settings/general" className={navCls}>
                 General
-              </Link>
+              </NavLink>
             )}
             {user?.role === 'Owner' && (
-              <Link to="/app/settings/users" className="text-slate-600 hover:text-slate-900">
+              <NavLink to="/app/settings/users" className={navCls}>
                 Usuarios
-              </Link>
+              </NavLink>
             )}
           </nav>
           <div className="flex items-center gap-3 text-sm text-slate-500">

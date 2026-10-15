@@ -74,7 +74,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
   const { data: customersData } = useQuery({
     queryKey: ['customers-search', customerSearch],
     queryFn: () => customersApi.search(customerSearch || null, 1, 20),
-    enabled: true,
+    enabled: customerSearch.length >= 1,
   })
 
   const { data: customerDetail } = useQuery({
@@ -91,6 +91,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
   function handleSelectCustomer(id: string) {
     setValue('customerId', id)
     setValue('vehicleId', '')
+    setCustomerSearch('')
   }
 
   function handleSelectCatalogItem(index: number, catalogId: string) {
@@ -146,24 +147,51 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
             <label className="mb-1 block text-sm font-medium text-slate-700">
               Cliente <span className="text-red-500">*</span>
             </label>
-            <input
-              value={customerSearch}
-              onChange={e => setCustomerSearch(e.target.value)}
-              className={inputCls}
-              placeholder="Buscar cliente..."
-            />
-            {customersData && customersData.items.length > 0 && (
-              <ul className="mt-1 max-h-40 overflow-y-auto rounded-md border border-slate-200 bg-white shadow-sm">
-                {customersData.items.map(c => (
-                  <li
-                    key={c.id}
-                    className="cursor-pointer px-3 py-2 text-sm hover:bg-blue-50"
-                    onClick={() => { handleSelectCustomer(c.id); setCustomerSearch(c.name) }}
-                  >
-                    {c.name} — {c.docNumber}
-                  </li>
-                ))}
-              </ul>
+            {!selectedCustomerId && (
+              <div className="relative">
+                <input
+                  type="search"
+                  value={customerSearch}
+                  onChange={e => setCustomerSearch(e.target.value)}
+                  className={inputCls}
+                  placeholder="Escribir nombre o DNI para buscar…"
+                  autoComplete="off"
+                />
+                {customerSearch.length >= 1 && (
+                  <ul className="absolute z-10 mt-1 w-full max-h-52 overflow-y-auto rounded-md border border-slate-200 bg-white shadow-lg">
+                    {!customersData && (
+                      <li className="px-3 py-2 text-sm text-slate-400">Buscando…</li>
+                    )}
+                    {customersData && customersData.items.length === 0 && (
+                      <li className="px-3 py-2 text-sm text-slate-400">Sin resultados</li>
+                    )}
+                    {customersData && customersData.items.map(c => (
+                      <li key={c.id}>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectCustomer(c.id)}
+                          className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50"
+                        >
+                          <span className="font-medium">{c.name}</span>
+                          {c.docNumber && <span className="ml-2 text-xs text-slate-400">{c.docNumber}</span>}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+            {selectedCustomerId && customerDetail && (
+              <div className="mt-1 flex items-center gap-2 rounded-md bg-blue-50 px-3 py-2 text-sm">
+                <span className="font-medium">{customerDetail.name}</span>
+                <button
+                  type="button"
+                  onClick={() => { setValue('customerId', ''); setValue('vehicleId', ''); setCustomerSearch('') }}
+                  className="ml-auto text-xs text-slate-400 hover:text-red-500"
+                >
+                  Cambiar
+                </button>
+              </div>
             )}
             {errors.customerId && (
               <p className="mt-1 text-xs text-red-600">{errors.customerId.message}</p>
@@ -206,7 +234,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
               <label className="mb-1 block text-sm font-medium text-slate-700">Descuento global (%)</label>
               <input
                 type="number"
-                step="0.01"
+                step="1"
                 min="0"
                 max="100"
                 {...register('globalDiscountPct', { valueAsNumber: true })}
@@ -297,7 +325,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                       <label className="mb-1 block text-xs text-slate-500">Cantidad</label>
                       <input
                         type="number"
-                        step="0.001"
+                        step="1"
                         min="0"
                         {...register(`items.${index}.quantity`, { valueAsNumber: true })}
                         className={inputCls}
@@ -307,7 +335,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                       <label className="mb-1 block text-xs text-slate-500">Precio neto</label>
                       <input
                         type="number"
-                        step="0.01"
+                        step="1"
                         min="0"
                         {...register(`items.${index}.unitNetPrice`, { valueAsNumber: true })}
                         className={inputCls}
@@ -317,7 +345,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                       <label className="mb-1 block text-xs text-slate-500">IVA (%)</label>
                       <input
                         type="number"
-                        step="0.01"
+                        step="1"
                         min="0"
                         max="100"
                         {...register(`items.${index}.vatRate`, { valueAsNumber: true })}

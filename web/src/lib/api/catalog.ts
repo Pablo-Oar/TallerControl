@@ -1,7 +1,7 @@
 import { api } from './client'
 import type { Page } from './customers'
 
-export type CatalogItemKind = 'Service' | 'Product'
+export type CatalogItemKind = 'service' | 'product'
 
 export interface CatalogItemListDto {
   id: string

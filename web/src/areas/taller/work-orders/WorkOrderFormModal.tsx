@@ -61,7 +61,7 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
   const { data: customersData } = useQuery({
     queryKey: ['customers-search', customerSearch],
     queryFn: () => customersApi.search(customerSearch || null, 1, 20),
-    enabled: true,
+    enabled: customerSearch.length >= 1,
   })
 
   const { data: customerDetail } = useQuery({
@@ -137,28 +137,39 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
           {/* Cliente */}
           <div>
             <label className="mb-1 block text-sm font-medium">Cliente *</label>
-            <input
-              type="search"
-              value={customerSearch}
-              onChange={e => setCustomerSearch(e.target.value)}
-              placeholder="Buscar cliente…"
-              className={inputCls}
-            />
-            {customersData && customersData.items.length > 0 && !selectedCustomerId && (
-              <ul className="mt-1 max-h-40 overflow-y-auto rounded-md border border-slate-200 bg-white shadow-sm">
-                {customersData.items.map(c => (
-                  <li key={c.id}>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectCustomer(c.id)}
-                      className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50"
-                    >
-                      {c.name}
-                      {c.docNumber && <span className="ml-2 text-xs text-slate-400">{c.docNumber}</span>}
-                    </button>
-                  </li>
-                ))}
-              </ul>
+            {!selectedCustomerId && (
+              <div className="relative">
+                <input
+                  type="search"
+                  value={customerSearch}
+                  onChange={e => setCustomerSearch(e.target.value)}
+                  placeholder="Escribir nombre o DNI para buscar…"
+                  className={inputCls}
+                  autoComplete="off"
+                />
+                {customerSearch.length >= 1 && (
+                  <ul className="absolute z-10 mt-1 w-full max-h-52 overflow-y-auto rounded-md border border-slate-200 bg-white shadow-lg">
+                    {!customersData && (
+                      <li className="px-3 py-2 text-sm text-slate-400">Buscando…</li>
+                    )}
+                    {customersData && customersData.items.length === 0 && (
+                      <li className="px-3 py-2 text-sm text-slate-400">Sin resultados</li>
+                    )}
+                    {customersData && customersData.items.map(c => (
+                      <li key={c.id}>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectCustomer(c.id)}
+                          className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50"
+                        >
+                          <span className="font-medium">{c.name}</span>
+                          {c.docNumber && <span className="ml-2 text-xs text-slate-400">{c.docNumber}</span>}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             )}
             {selectedCustomerId && customerDetail && (
               <div className="mt-1 flex items-center gap-2 rounded-md bg-blue-50 px-3 py-2 text-sm">
@@ -344,7 +355,7 @@ function ItemRow({ index, register, errors, catalogItems, onSelectCatalog, onRem
               {...register(`items.${index}.quantity`, { valueAsNumber: true })}
               type="number"
               min={0}
-              step="0.001"
+              step="1"
               className="w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm outline-none"
             />
           </div>
@@ -354,7 +365,7 @@ function ItemRow({ index, register, errors, catalogItems, onSelectCatalog, onRem
               {...register(`items.${index}.unitNetPrice`, { valueAsNumber: true })}
               type="number"
               min={0}
-              step="0.01"
+              step="1"
               className="w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm outline-none"
             />
           </div>
