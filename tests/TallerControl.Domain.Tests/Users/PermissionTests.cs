@@ -28,6 +28,13 @@ public class PermissionTests
         Assert.DoesNotContain(Permission.PricesView, Permission.ForMechanic);
     }
 
+    [Fact(DisplayName = "T-PERM-08: mecánico nuevo no tiene prices.view por defecto (doc 08 §3, V2-delta)")]
+    public void Mecanico_nuevo_no_tiene_prices_view_por_defecto()
+    {
+        Assert.DoesNotContain(Permission.PricesView, Permission.ForMechanic);
+        Assert.Contains(Permission.PricesView, Permission.MechanicFineGrained);
+    }
+
     [Fact]
     public void Los_permisos_finos_del_mecánico_son_un_subconjunto_del_owner()
     {

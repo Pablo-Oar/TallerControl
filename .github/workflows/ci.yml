@@ -56,6 +56,7 @@ jobs:
           dotnet ef migrations bundle \
             --project src/TallerControl.Infrastructure \
             --startup-project src/TallerControl.Api \
+            --context AppDbContext \
             --self-contained -r linux-x64 \
             --output artifacts/efbundle --force
 

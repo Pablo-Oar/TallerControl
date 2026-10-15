@@ -22,6 +22,9 @@ internal sealed class AuthWebApplicationFactory : WebApplicationFactory<Program>
     public const string SeedDisplayName = "Dueño";
     public const string SeedTenantName = "Taller de prueba";
 
+    public const string MechanicEmail = "mechanic@taller.com";
+    public const string MechanicPassword = "MechanicSeedPassword!2026";
+
     public Guid SeedUserId { get; private set; }
 
     public Guid SeedTenantId { get; private set; }
@@ -78,6 +81,8 @@ internal sealed class AuthWebApplicationFactory : WebApplicationFactory<Program>
 
         var user = new User(SeedEmail, SeedDisplayName);
         user.Activate(hasher.Hash(SeedPassword));
+        var mechanic = new User(MechanicEmail, "Mecánico");
+        mechanic.Activate(hasher.Hash(MechanicPassword));
 
         await using (var platform = new AppDbContext(
             BuildOptions(ownerConnectionString),
@@ -86,6 +91,7 @@ internal sealed class AuthWebApplicationFactory : WebApplicationFactory<Program>
             TimeProvider.System))
         {
             platform.Add(user);
+            platform.Add(mechanic);
             await platform.SaveChangesAsync();
         }
 
@@ -96,6 +102,7 @@ internal sealed class AuthWebApplicationFactory : WebApplicationFactory<Program>
             TimeProvider.System))
         {
             scoped.Add(new Membership(tenant.Id, user.Id, TenantRole.Owner));
+            scoped.Add(new Membership(tenant.Id, mechanic.Id, TenantRole.Mechanic));
             await scoped.SaveChangesAsync();
         }
 

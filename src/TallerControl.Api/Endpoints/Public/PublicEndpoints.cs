@@ -1,3 +1,4 @@
+using TallerControl.Api.Security;
 using TallerControl.Application.Common;
 using TallerControl.Application.Payments;
 using TallerControl.Application.PublicLinks;
@@ -27,14 +28,16 @@ internal static class PublicEndpoints
                 (string token, GetPublicQuoteHandler handler, CancellationToken ct) =>
                     GetQuoteAsync(token, handler, ct))
             .AllowAnonymous()
-            .WithPublicSecurity();
+            .WithPublicSecurity()
+            .RequireRateLimiting(RateLimitPolicies.PublicQuote);
 
         app.MapPost("/api/public/v1/quotes/{token}/responses",
                 (string token, SubmitPublicResponseRequest request,
                  SubmitPublicResponseHandler handler, HttpContext ctx, CancellationToken ct) =>
                     SubmitResponseAsync(token, request, handler, ctx, ct))
             .AllowAnonymous()
-            .WithPublicSecurity();
+            .WithPublicSecurity()
+            .RequireRateLimiting(RateLimitPolicies.QuoteResponse);
 
         app.MapGet("/api/public/v1/work-orders/{token}",
                 (string token, GetPublicWorkOrderHandler handler, CancellationToken ct) =>
@@ -53,14 +56,16 @@ internal static class PublicEndpoints
                 (string code, ScanQrCodeHandler handler, HttpContext ctx, CancellationToken ct) =>
                     ScanQrAsync(code, handler, ctx, ct))
             .AllowAnonymous()
-            .WithPublicSecurity();
+            .WithPublicSecurity()
+            .RequireRateLimiting(RateLimitPolicies.QrScan);
 
         app.MapPost("/api/public/v1/qr/{code}/owner-challenge",
                 (string code, OwnerChallengeRequest request,
                  StartOwnerChallengeHandler handler, HttpContext ctx, CancellationToken ct) =>
                     StartChallengeAsync(code, request, handler, ctx, ct))
             .AllowAnonymous()
-            .WithPublicSecurity();
+            .WithPublicSecurity()
+            .RequireRateLimiting(RateLimitPolicies.QrChallenge);
 
         app.MapPost("/api/public/v1/qr/{code}/owner-session",
                 (string code, ValidateOwnerOtpRequest request,

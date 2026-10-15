@@ -1,4 +1,5 @@
 using TallerControl.Application.Common;
+using TallerControl.Domain.Users;
 
 namespace TallerControl.Application.Auth;
 
@@ -28,11 +29,14 @@ public sealed class MeHandler
             .OrderBy(static p => p, StringComparer.Ordinal)
             .ToList();
 
+        var home = membership.Membership.Role == TenantRole.Mechanic ? "/m" : "/app";
+
         return new MeResponse(
             User: new MeUserDto(user.Id, user.Email, user.DisplayName),
             Tenant: new MeTenantDto(membership.Tenant.Id, membership.Tenant.Name),
             Role: membership.Membership.Role,
             Permissions: permissions,
-            TimeZone: membership.Tenant.TimeZone);
+            TimeZone: membership.Tenant.TimeZone,
+            Home: home);
     }
 }

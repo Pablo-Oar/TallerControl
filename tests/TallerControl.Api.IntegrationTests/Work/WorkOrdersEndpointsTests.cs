@@ -590,6 +590,62 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         AssertNullOrMissing(dto, "balance");
     }
 
+    [Fact(DisplayName = "T-PERM-09: mecánico sin prices.view no ve montos en listado ni detalle de OT (doc 08 §3, V2-delta)")]
+    public async Task Mecanico_sin_prices_view_no_ve_montos_en_listado_ni_detalle()
+    {
+        using var ownerClient = CreateClient();
+        using var mechanicClient = CreateClient();
+
+        await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        await LoginAsync(mechanicClient, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
+
+        // Crear orden con items para que haya totales.
+        var csrf = await FetchCsrfAsync(ownerClient);
+        var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/work-orders")
+        {
+            Content = JsonContent.Create(new
+            {
+                customerId = _factory.CustomerId,
+                vehicleId = _factory.VehicleId,
+                odometerKm = 0,
+                fuelLevel = (int?)null,
+                reportedIssue = (string?)null,
+                priority = "normal",
+                assignedMechanicId = _factory.MechanicMembershipId,
+                items = new[]
+                {
+                    new { kind = "product", description = "Repuesto T-PERM-09",
+                          catalogItemId = _factory.CatalogItemId, quantity = 1m,
+                          unitNetPrice = 1000m, vatRate = 21m },
+                },
+            }),
+        };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        var createResp = await ownerClient.SendAsync(req);
+        Assert.Equal(HttpStatusCode.Created, createResp.StatusCode);
+        var orderId = (await createResp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+
+        // Listado: total y balance deben ser null para el mecánico.
+        var listResp = await mechanicClient.GetAsync("/api/v1/work-orders");
+        Assert.Equal(HttpStatusCode.OK, listResp.StatusCode);
+        var page = await listResp.Content.ReadFromJsonAsync<JsonElement>();
+        var listItem = page.GetProperty("items").EnumerateArray()
+            .First(i => i.GetProperty("id").GetGuid() == orderId);
+        AssertNullOrMissing(listItem, "total");
+        AssertNullOrMissing(listItem, "balance");
+
+        // Detalle: todos los campos de precio deben ser null.
+        var detailResp = await mechanicClient.GetAsync($"/api/v1/work-orders/{orderId}");
+        Assert.Equal(HttpStatusCode.OK, detailResp.StatusCode);
+        var dto = await detailResp.Content.ReadFromJsonAsync<JsonElement>();
+        AssertNullOrMissing(dto, "subtotalNet");
+        AssertNullOrMissing(dto, "vatAmount");
+        AssertNullOrMissing(dto, "discountAmount");
+        AssertNullOrMissing(dto, "total");
+        AssertNullOrMissing(dto, "paidAmount");
+        AssertNullOrMissing(dto, "balance");
+    }
+
     private static void AssertNullOrMissing(JsonElement element, string propertyName)
     {
         if (element.TryGetProperty(propertyName, out var prop))

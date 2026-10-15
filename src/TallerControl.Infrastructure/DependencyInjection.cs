@@ -7,6 +7,7 @@ using TallerControl.Application.Auth;
 using TallerControl.Application.Catalog;
 using TallerControl.Application.Common;
 using TallerControl.Application.Customers;
+using TallerControl.Application.Dashboard;
 using TallerControl.Application.Payments;
 using TallerControl.Application.PublicLinks;
 using TallerControl.Application.Qr;
@@ -18,6 +19,7 @@ using TallerControl.Application.Vehicles;
 using TallerControl.Application.Work;
 using TallerControl.Infrastructure.Catalog;
 using TallerControl.Infrastructure.Customers;
+using TallerControl.Infrastructure.Dashboard;
 using TallerControl.Infrastructure.Email;
 using TallerControl.Infrastructure.Health;
 using TallerControl.Infrastructure.Identity;
@@ -147,6 +149,9 @@ public static class DependencyInjection
         services.AddScoped<DeleteQuoteHandler>();
         services.AddScoped<GetQuoteResponsesHandler>();
         services.AddScoped<GetQuotePdfHandler>();
+
+        services.AddScoped<IDashboardRepository, EfDashboardRepository>();
+        services.AddScoped<GetDashboardHandler>();
 
         services.AddScoped<IPaymentRepository, EfPaymentRepository>();
         services.AddScoped<IPaymentPdfGenerator, PaymentPdfGenerator>();

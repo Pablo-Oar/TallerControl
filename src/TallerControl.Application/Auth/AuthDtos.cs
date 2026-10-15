@@ -11,7 +11,9 @@ public sealed record MeResponse(
     MeTenantDto Tenant,
     TenantRole Role,
     IReadOnlyList<string> Permissions,
-    string TimeZone);
+    string TimeZone,
+    /// <summary>Ruta inicial del rol: <c>/app</c> para Owner y AdminStaff, <c>/m</c> para Mechanic.</summary>
+    string Home);
 
 public sealed record MeUserDto(Guid Id, string Email, string DisplayName);
 
