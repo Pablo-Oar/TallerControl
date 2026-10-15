@@ -8,6 +8,7 @@ using Npgsql;
 using Serilog;
 using TallerControl.Api.Endpoints.Auth;
 using TallerControl.Api.Endpoints.Catalog;
+using TallerControl.Api.Endpoints.Dashboard;
 using TallerControl.Api.Endpoints.Customers;
 using TallerControl.Api.Endpoints.Payments;
 using TallerControl.Api.Endpoints.Public;
@@ -97,6 +98,7 @@ app.MapAttachmentsEndpoints();
 app.MapQuotesEndpoints();
 app.MapPaymentsEndpoints();
 app.MapQrCardsEndpoints();
+app.MapDashboardEndpoints();
 app.MapPublicEndpoints();
 
 app.Run();

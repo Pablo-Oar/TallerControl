@@ -11,6 +11,7 @@ import { WorkOrderDetailPage } from './work-orders/WorkOrderDetailPage'
 import { QuotesPage } from './quotes/QuotesPage'
 import { QuoteDetailPage } from './quotes/QuoteDetailPage'
 import { QrCardsPage } from './qr/QrCardsPage'
+import { DashboardPage } from './DashboardPage'
 
 /** Área del taller (`/app/*`): dueño y administrativo. Escritorio primero. */
 export function Component() {
@@ -18,7 +19,7 @@ export function Component() {
     <RequireAuth>
       <TallerLayout>
         <Routes>
-          <Route index element={<h1 className="text-2xl font-semibold">Inicio</h1>} />
+          <Route index element={<DashboardPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="vehicles" element={<VehiclesPage />} />
           <Route path="catalog" element={<CatalogPage />} />
