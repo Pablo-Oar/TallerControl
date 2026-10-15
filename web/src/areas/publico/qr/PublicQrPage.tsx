@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import { useParams, useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { scanQrCode, startOwnerChallenge, validateOwnerOtp } from '../../../lib/api/qrCards'
@@ -191,6 +192,11 @@ export function PublicQrPage() {
           </form>
         )}
       </div>
+      <p className="mt-6 text-center text-xs text-slate-400">
+        <Link to="/privacidad" className="hover:underline">
+          Aviso de privacidad
+        </Link>
+      </p>
     </div>
   )
 }
