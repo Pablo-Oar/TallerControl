@@ -1,5 +1,4 @@
 using TallerControl.Api.Security;
-using TallerControl.Application.Common;
 using TallerControl.Application.Payments;
 using TallerControl.Application.PublicLinks;
 using TallerControl.Application.Qr;
@@ -84,23 +83,6 @@ internal static class PublicEndpoints
 
         return app;
     }
-
-    // Adds security headers and catches NotFoundException so headers survive the 404 response.
-    private static RouteHandlerBuilder WithPublicSecurity(this RouteHandlerBuilder builder) =>
-        builder.AddEndpointFilter(async (ctx, next) =>
-        {
-            ctx.HttpContext.Response.Headers["Cache-Control"] = "no-store";
-            ctx.HttpContext.Response.Headers["X-Robots-Tag"] = "noindex";
-            ctx.HttpContext.Response.Headers["Referrer-Policy"] = "no-referrer";
-            try
-            {
-                return await next(ctx);
-            }
-            catch (NotFoundException)
-            {
-                return Results.NotFound();
-            }
-        });
 
     private static async Task<IResult> GetQuoteAsync(
         string token, GetPublicQuoteHandler handler, CancellationToken ct)

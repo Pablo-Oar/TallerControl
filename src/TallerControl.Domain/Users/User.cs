@@ -44,11 +44,33 @@ public sealed class User : Entity, IVersioned, IAudited
 
     public uint Version { get; private set; }
 
+    /// <summary>Indica si el usuario verificó su email. Los invitados se consideran verificados al aceptar la invitación.</summary>
+    public bool IsEmailVerified { get; private set; }
+
+    /// <summary>
+    /// Factory para el auto-registro: crea el usuario con contraseña ya definida y email
+    /// pendiente de verificación (D-22). El taller queda activo pero el login está bloqueado
+    /// hasta que el usuario confirme su email.
+    /// </summary>
+    public static User RegisterSelf(string email, string displayName, string passwordHash)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(passwordHash);
+        return new User(email, displayName)
+        {
+            PasswordHash = passwordHash,
+            Status = UserStatus.Active,
+            IsEmailVerified = false,
+        };
+    }
+
+    public void MarkEmailVerified() => IsEmailVerified = true;
+
     public void Activate(string passwordHash)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(passwordHash);
         PasswordHash = passwordHash;
         Status = UserStatus.Active;
+        IsEmailVerified = true; // invitación = email verificado implícitamente
         AccessFailedCount = 0;
         LockoutEnd = null;
     }

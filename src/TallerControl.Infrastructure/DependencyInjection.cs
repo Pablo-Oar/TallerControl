@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
 using TallerControl.Application.Auth;
 using TallerControl.Application.Catalog;
+using TallerControl.Application.Registration;
 using TallerControl.Application.Common;
 using TallerControl.Application.Customers;
 using TallerControl.Application.Dashboard;
@@ -71,6 +72,10 @@ public static class DependencyInjection
         services.AddScoped<LoginHandler>();
         services.AddScoped<LogoutHandler>();
         services.AddScoped<MeHandler>();
+
+        services.AddScoped<IRegistrationRepository, EfRegistrationRepository>();
+        services.AddScoped<RegisterTenantHandler>();
+        services.AddScoped<VerifyEmailHandler>();
 
         services.AddScoped<IInvitationRepository, EfInvitationRepository>();
         services.AddScoped<IPasswordResetRepository, EfPasswordResetRepository>();

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using TallerControl.Application.Auth;
 using TallerControl.Application.Common;
 using TallerControl.Infrastructure.Persistence;
 
@@ -61,6 +62,15 @@ public sealed class ApiExceptionHandler : IExceptionHandler
 
     private static ProblemDetails Map(Exception exception) => exception switch
     {
+        // Cuenta registrada pero email no verificado aún (D-22).
+        EmailNotVerifiedException => new ProblemDetails
+        {
+            Status = StatusCodes.Status401Unauthorized,
+            Title = "Email no verificado",
+            Detail = "Verificá tu email antes de ingresar. Revisá tu casilla.",
+            Extensions = { ["code"] = "email_not_verified" },
+        },
+
         // Un recurso de otro taller responde igual que uno inexistente.
         NotFoundException or TenantViolationException => new ProblemDetails
         {

@@ -68,6 +68,13 @@ public sealed class LoginHandler
             user.SetPasswordHash(_passwordHasher.Hash(password));
         }
 
+        // D-22: cuenta bloqueada hasta verificar email (solo auto-registro; invitados = true).
+        if (!user.IsEmailVerified)
+        {
+            await _repository.SaveChangesAsync(ct);
+            throw new EmailNotVerifiedException();
+        }
+
         user.ResetAccessFailed();
 
         var membership = await _repository.FindActiveMembershipAsync(user.Id, ct);

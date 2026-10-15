@@ -33,8 +33,8 @@ function renderEn(ruta: string) {
 }
 
 describe('shell de la SPA', () => {
-  it('la raíz redirige a /app, que sin sesión redirige a /login', async () => {
-    renderEn('/')
+  it('/app sin sesión redirige a /login', async () => {
+    renderEn('/app')
     // Sin sesión, RequireAuth redirige a /login → aparece la pantalla de ingreso
     expect(await screen.findByRole('heading', { name: /ingresar/i })).toBeInTheDocument()
   })

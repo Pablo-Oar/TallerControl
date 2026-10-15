@@ -29,5 +29,6 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.SecurityStamp).IsRequired();
         builder.Property(u => u.Status).HasDefaultValue(UserStatus.Pending);
         builder.Property(u => u.AccessFailedCount).HasDefaultValue(0);
+        builder.Property(u => u.IsEmailVerified).HasDefaultValue(true); // existentes = verificados
     }
 }
