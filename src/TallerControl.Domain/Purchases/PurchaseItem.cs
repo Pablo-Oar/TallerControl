@@ -23,8 +23,8 @@ public sealed class PurchaseItem : Entity, ITenantOwned
             throw new ArgumentOutOfRangeException(nameof(quantity), "La cantidad debe ser mayor que cero.");
         if (unitCost < 0)
             throw new ArgumentOutOfRangeException(nameof(unitCost), "El costo unitario no puede ser negativo.");
-        if (vatRate < 0 || vatRate > 1)
-            throw new ArgumentOutOfRangeException(nameof(vatRate), "La tasa de IVA debe estar entre 0 y 1.");
+        if (vatRate < 0 || vatRate > 100)
+            throw new ArgumentOutOfRangeException(nameof(vatRate), "La tasa de IVA debe estar entre 0 y 100.");
 
         TenantId = tenantId;
         PurchaseId = purchaseId;
@@ -33,7 +33,7 @@ public sealed class PurchaseItem : Entity, ITenantOwned
         Quantity = quantity;
         UnitCost = unitCost;
         VatRate = vatRate;
-        Total = Math.Round(quantity * unitCost * (1 + vatRate), 2, MidpointRounding.AwayFromZero);
+        Total = Math.Round(quantity * unitCost * (1 + vatRate / 100m), 2, MidpointRounding.AwayFromZero);
     }
 
     public Guid TenantId { get; private set; }

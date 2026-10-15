@@ -119,7 +119,7 @@ public sealed class Purchase : Entity, ITenantOwned, IVersioned, IAuditable, ISo
     private void RecalculateTotals()
     {
         SubtotalNet = _items.Sum(i => Math.Round(i.Quantity * i.UnitCost, 2, MidpointRounding.AwayFromZero));
-        VatAmount = _items.Sum(i => Math.Round(i.Quantity * i.UnitCost * i.VatRate, 2, MidpointRounding.AwayFromZero));
+        VatAmount = _items.Sum(i => Math.Round(i.Quantity * i.UnitCost * i.VatRate / 100m, 2, MidpointRounding.AwayFromZero));
         Total = SubtotalNet + VatAmount + Perceptions - Retentions;
     }
 }

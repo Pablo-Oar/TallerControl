@@ -23,8 +23,8 @@ public sealed class CounterSaleItem : Entity, ITenantOwned
             throw new ArgumentOutOfRangeException(nameof(quantity), "La cantidad debe ser mayor que cero.");
         if (unitPrice < 0)
             throw new ArgumentOutOfRangeException(nameof(unitPrice), "El precio unitario no puede ser negativo.");
-        if (vatRate < 0 || vatRate > 1)
-            throw new ArgumentOutOfRangeException(nameof(vatRate), "La tasa de IVA debe estar entre 0 y 1.");
+        if (vatRate < 0 || vatRate > 100)
+            throw new ArgumentOutOfRangeException(nameof(vatRate), "La tasa de IVA debe estar entre 0 y 100.");
 
         TenantId = tenantId;
         CounterSaleId = counterSaleId;
@@ -34,7 +34,7 @@ public sealed class CounterSaleItem : Entity, ITenantOwned
         UnitPrice = unitPrice;
         VatRate = vatRate;
         NetAmount = Math.Round(quantity * unitPrice, 2, MidpointRounding.AwayFromZero);
-        VatAmount = Math.Round(NetAmount * vatRate, 2, MidpointRounding.AwayFromZero);
+        VatAmount = Math.Round(NetAmount * vatRate / 100m, 2, MidpointRounding.AwayFromZero);
         Total = NetAmount + VatAmount;
     }
 
