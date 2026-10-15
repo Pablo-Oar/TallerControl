@@ -29,10 +29,15 @@ internal static class WorkOrdersEndpoints
         app.MapGet("/api/v1/work-orders",
                 (SearchWorkOrdersHandler handler, IAuthRepository auth,
                  HttpContext ctx, CancellationToken ct,
-                 WorkOrderStatus? status = null, Guid? mechanicId = null, Guid? vehicleId = null,
+                 string? status = null, Guid? mechanicId = null, Guid? vehicleId = null,
                  bool? withBalance = null, DateTimeOffset? from = null, DateTimeOffset? to = null,
                  int page = 1, int pageSize = 25) =>
-                    SearchAsync(handler, auth, ctx, status, mechanicId, vehicleId, withBalance, from, to, page, pageSize, ct))
+                {
+                    WorkOrderStatus? parsedStatus = status is not null
+                        && Enum.TryParse<WorkOrderStatus>(status, ignoreCase: true, out var s)
+                        ? s : null;
+                    return SearchAsync(handler, auth, ctx, parsedStatus, mechanicId, vehicleId, withBalance, from, to, page, pageSize, ct);
+                })
             .RequirePermission(Permission.WorkOrdersRead);
 
         app.MapPost("/api/v1/work-orders",

@@ -25,10 +25,15 @@ internal static class QuotesEndpoints
     {
         app.MapGet("/api/v1/quotes",
                 (SearchQuotesHandler handler, CancellationToken ct,
-                 QuoteStatus? status = null, Guid? customerId = null, Guid? vehicleId = null,
+                 string? status = null, Guid? customerId = null, Guid? vehicleId = null,
                  DateOnly? from = null, DateOnly? to = null,
                  int page = 1, int pageSize = 25) =>
-                    handler.HandleAsync(status, customerId, vehicleId, from, to, page, pageSize, ct))
+                {
+                    QuoteStatus? parsedStatus = status is not null
+                        && Enum.TryParse<QuoteStatus>(status, ignoreCase: true, out var s)
+                        ? s : null;
+                    return handler.HandleAsync(parsedStatus, customerId, vehicleId, from, to, page, pageSize, ct);
+                })
             .RequirePermission(Permission.QuotesRead);
 
         app.MapPost("/api/v1/quotes",
