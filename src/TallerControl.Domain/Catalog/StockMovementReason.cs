@@ -6,5 +6,9 @@ public enum StockMovementReason
     WorkOrder,
     WorkOrderCancel,
     ItemRemoved,
-    ManualAdjust
+    ManualAdjust,
+    Purchase,
+    PurchaseCancel,
+    CounterSale,
+    CounterSaleCancel
 }
