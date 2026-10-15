@@ -13,7 +13,9 @@ public sealed record MeResponse(
     IReadOnlyList<string> Permissions,
     string TimeZone,
     /// <summary>Ruta inicial del rol: <c>/app</c> para Owner y AdminStaff, <c>/m</c> para Mechanic.</summary>
-    string Home);
+    string Home,
+    /// <summary>Plan comercial del taller (D-17). "free" en el MVP.</summary>
+    string PlanCode);
 
 public sealed record MeUserDto(Guid Id, string Email, string DisplayName);
 
