@@ -8,31 +8,27 @@ Foco del MVP: **vehículo + historial, ciclo presupuesto → orden → cobro, po
 El plan vive **fuera del repo** (es documentación interna, no se sube): `../documentacion/analisis-vehix/Plan implementaicon/` (la carpeta se llama `implementaicon`, sin "m").
 Antes de implementar algo, leer el documento que corresponde. No inventar reglas: si el plan no lo dice, preguntar.
 
-**Documento a seguir: `PlanImplementacionV2.html`** (V2, 12/10/2026, "base de desarrollo"). Consolida los documentos 00–14 en un solo archivo: cada uno es una `<section id="doc-NN">` y los cambios de V2 van en un bloque `v2-delta` dentro de cada sección. Los IDs (`REQ-xx`, `T-*`, `D-xx`, `V-xx`…) son anclas `id="…"`. Buscar con Grep por `id="doc-04"` o por el ID y leer con offset (las líneas son largas).
-Los `.md` 01–11 y `V2/*.md` de la carpeta son el mismo contenido en pedazos (V1 + deltas) y sirven solo como atajo de búsqueda; **si difieren del HTML, manda el HTML**. `PlanImplementacion.html` (V1) queda como histórico: no usarlo.
+**Documento a seguir: `PlanImplementacionV3.html`** (V3, 15/10/2026, "estado real del proyecto"). Reemplaza a V2 como referencia principal. Estructura por secciones `<section id="doc-NN">`:
 
-Equivalencias, por si hay que ubicar algo en los `.md`:
-
-| Archivo en `V2/` | Contiene |
+| doc | Contiene |
 |---|---|
-| `14_cambios_por_documento_v2.md` | Qué cambia en cada documento 01–11 (sección `## NN`) |
-| `13_reglas_nuevas_por_modulo_v2.md` | Reglas nuevas por módulo, prioridad, etapa y diccionario de KPIs |
-| `12_registro_verificacion_v2.md` | 80 verificaciones contra capturas de Vehix (V-01..V-80) |
-| `00_novedades_v2.md` | Resumen y decisiones D-15..D-21 |
+| doc-00 | Resumen V3 y diferencias con V2 |
+| doc-01 | Estado por etapa (E0–E10 completas, E11–E13 pendientes) |
+| doc-02 | Decisiones D-01..D-22 con estado y valor elegido |
+| doc-03 | Stack confirmado con versiones reales |
+| doc-04 | Arquitectura implementada (capas, módulos, interfaces por entidad) |
+| doc-05 | Modelo de datos (17 migraciones en orden) |
+| doc-06 | API implementada (todos los endpoints) |
+| doc-07 | Frontend implementado (todas las pantallas por área) |
+| doc-08 | Tests implementados (IDs por módulo, E2E specs) |
+| doc-09 | Roadmap pendiente E11–E13 + agenda de turnos sin etapa |
+| doc-10 | Decisiones abiertas para E11+ |
+| doc-11 | Patrones y convenciones establecidos en la práctica |
 
-| Doc | Contiene |
-|---|---|
-| 01 | Alcance, REQ-01..19, prioridades P0/P1/P2, contradicciones X1–X12 |
-| 02 | Stack y dependencias a evitar |
-| 03 | Arquitectura, módulos, diseño del QR |
-| 04 | Modelo de datos y convenciones |
-| 05 | Contratos de API |
-| 06 | Diseño del frontend |
-| 07 | Seguridad, matriz de permisos, aislamiento |
-| 08 | Plan de pruebas (IDs `T-*`, `E2E-*`) |
-| 09 | Roadmap por etapas E0–E13 |
-| 10 | Riesgos y decisiones pendientes D-01..D-14 |
-| 11 | Matriz requisito ↔ prueba |
+Los IDs de V2 (`REQ-xx`, `T-*`, `D-xx`) siguen siendo válidos y están referenciados en V3.
+`PlanImplementacionV2.html` queda como histórico: no usarlo como referencia activa.
+`PlanImplementacion.html` (V1) también queda como histórico.
+Los `.md` de la carpeta `V2/` sirven solo como atajo de búsqueda de los IDs originales.
 
 Skill `plan-ref` para consultar un REQ, T-* o decisión por ID.
 
