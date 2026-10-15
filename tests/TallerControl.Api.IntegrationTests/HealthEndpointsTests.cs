@@ -15,7 +15,10 @@ public sealed class HealthEndpointsTests : IAsyncLifetime
 
     private WebApplicationFactory<Program> CreateFactory(string connectionString) =>
         new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-            builder.UseSetting("ConnectionStrings:Default", connectionString));
+        {
+            builder.UseSetting("ConnectionStrings:Default", connectionString);
+            builder.UseSetting("Seed:Owner:Email", ""); // disable seeder: appsettings.Development.json has defaults
+        });
 
     [Fact]
     public async Task Live_responde_200_sin_depender_de_la_base()
