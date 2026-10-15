@@ -1,7 +1,9 @@
 using System.Security.Cryptography;
+using TallerControl.Application.Cash;
 using TallerControl.Application.Common;
 using TallerControl.Application.Tenancy;
 using TallerControl.Application.Work;
+using TallerControl.Domain.Cash;
 using TallerControl.Domain.Payments;
 using TallerControl.Domain.Tenancy;
 
@@ -15,6 +17,7 @@ public sealed class CreatePaymentHandler
 {
     private readonly IWorkOrderRepository _woRepo;
     private readonly IPaymentRepository _paymentRepo;
+    private readonly ICashRepository _cashRepo;
     private readonly ITenantContext _tenantContext;
     private readonly IActorContext _actorContext;
     private readonly IDocumentNumberGenerator _numbers;
@@ -23,6 +26,7 @@ public sealed class CreatePaymentHandler
     public CreatePaymentHandler(
         IWorkOrderRepository woRepo,
         IPaymentRepository paymentRepo,
+        ICashRepository cashRepo,
         ITenantContext tenantContext,
         IActorContext actorContext,
         IDocumentNumberGenerator numbers,
@@ -30,6 +34,7 @@ public sealed class CreatePaymentHandler
     {
         _woRepo = woRepo;
         _paymentRepo = paymentRepo;
+        _cashRepo = cashRepo;
         _tenantContext = tenantContext;
         _actorContext = actorContext;
         _numbers = numbers;
@@ -99,6 +104,31 @@ public sealed class CreatePaymentHandler
         }
 
         await _paymentRepo.AddAsync(payment, ct);
+
+        // E11 (D-16): si se especifica una cuenta de caja, vincular el pago y crear el movimiento.
+        if (request.AccountId.HasValue)
+        {
+            var account = await _cashRepo.FindAccountByIdAsync(tenantId, request.AccountId.Value, ct)
+                ?? throw new NotFoundException("La cuenta de caja no existe.");
+
+            payment.SetAccountId(request.AccountId.Value);
+
+            var cashMovement = new CashMovement(
+                tenantId,
+                account.BranchId,
+                account.Id,
+                request.Amount,
+                CashMovementDirection.In,
+                CashMovementReason.Payment,
+                referenceType: "payment",
+                referenceId: payment.Id,
+                note: null,
+                createdByMembershipId: actorId,
+                createdAt: now);
+
+            await _cashRepo.AddMovementAsync(cashMovement, ct);
+        }
+
         await _woRepo.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
 

@@ -84,6 +84,244 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TallerControl.Domain.Cash.CashAccount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("text")
+                        .HasColumnName("delete_reason");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_cash_accounts");
+
+                    b.HasIndex("BranchId")
+                        .HasDatabaseName("ix_cash_accounts_branch_id");
+
+                    b.HasIndex("TenantId", "BranchId")
+                        .HasDatabaseName("ix_cash_accounts_tenant_id_branch_id");
+
+                    b.ToTable("cash_accounts", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_cash_accounts_kind", "\"kind\" IN ('bank_transfer', 'card', 'cash', 'check', 'other')");
+                        });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Cash.CashMovement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("account_id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedByMembershipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_membership_id");
+
+                    b.Property<string>("Direction")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("direction");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("note");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid?>("ReferenceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reference_id");
+
+                    b.Property<string>("ReferenceType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("reference_type");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_cash_movements");
+
+                    b.HasIndex("AccountId")
+                        .HasDatabaseName("ix_cash_movements_account_id");
+
+                    b.HasIndex("BranchId")
+                        .HasDatabaseName("ix_cash_movements_branch_id");
+
+                    b.HasIndex("TenantId", "AccountId", "CreatedAt")
+                        .HasDatabaseName("ix_cash_movements_tenant_id_account_id_created_at");
+
+                    b.ToTable("cash_movements", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_cash_movements_direction", "\"direction\" IN ('in', 'out')");
+
+                            t.HasCheckConstraint("ck_cash_movements_reason", "\"reason\" IN ('counter_sale_income', 'manual_expense', 'manual_income', 'payment', 'purchase_payment')");
+                        });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Cash.CashSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("account_id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<Guid?>("ClosedByMembershipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("closed_by_membership_id");
+
+                    b.Property<string>("ClosingNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("closing_note");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTimeOffset>("OpenedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("opened_at");
+
+                    b.Property<Guid>("OpenedByMembershipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("opened_by_membership_id");
+
+                    b.Property<string>("OpeningNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("opening_note");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_cash_sessions");
+
+                    b.HasIndex("AccountId")
+                        .HasDatabaseName("ix_cash_sessions_account_id");
+
+                    b.HasIndex("BranchId")
+                        .HasDatabaseName("ix_cash_sessions_branch_id");
+
+                    b.HasIndex("TenantId", "AccountId", "Status")
+                        .HasDatabaseName("ix_cash_sessions_tenant_id_account_id_status");
+
+                    b.ToTable("cash_sessions", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_cash_sessions_status", "\"status\" IN ('closed', 'open')");
+                        });
+                });
+
             modelBuilder.Entity("TallerControl.Domain.Catalog.CatalogItem", b =>
                 {
                     b.Property<Guid>("Id")
@@ -268,8 +506,182 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
 
                     b.ToTable("stock_movements", null, t =>
                         {
-                            t.HasCheckConstraint("ck_stock_movements_reason", "\"reason\" IN ('item_removed', 'manual_adjust', 'work_order', 'work_order_cancel')");
+                            t.HasCheckConstraint("ck_stock_movements_reason", "\"reason\" IN ('counter_sale', 'counter_sale_cancel', 'item_removed', 'manual_adjust', 'purchase', 'purchase_cancel', 'work_order', 'work_order_cancel')");
                         });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.CounterSales.CounterSale", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("account_id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid?>("CustomerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
+
+                    b.Property<DateTimeOffset>("Date")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("text")
+                        .HasColumnName("delete_reason");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<int>("DocumentNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("document_number");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<decimal>("SubtotalNet")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("subtotal_net");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("total");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<decimal>("VatAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("vat_amount");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_counter_sales");
+
+                    b.HasIndex("BranchId")
+                        .HasDatabaseName("ix_counter_sales_branch_id");
+
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("ix_counter_sales_customer_id");
+
+                    b.HasIndex("TenantId", "Date")
+                        .HasDatabaseName("ix_counter_sales_tenant_id_date");
+
+                    b.HasIndex("TenantId", "BranchId", "DocumentNumber")
+                        .HasDatabaseName("ix_counter_sales_tenant_id_branch_id_document_number");
+
+                    b.ToTable("counter_sales", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_counter_sales_status", "\"status\" IN ('cancelled', 'confirmed', 'draft')");
+                        });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.CounterSales.CounterSaleItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("CatalogItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("catalog_item_id");
+
+                    b.Property<Guid>("CounterSaleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("counter_sale_id");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("description");
+
+                    b.Property<decimal>("NetAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("net_amount");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(12,3)")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("total");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("unit_price");
+
+                    b.Property<decimal>("VatAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("vat_amount");
+
+                    b.Property<decimal>("VatRate")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("vat_rate");
+
+                    b.HasKey("Id")
+                        .HasName("pk_counter_sale_items");
+
+                    b.HasIndex("CatalogItemId")
+                        .HasDatabaseName("ix_counter_sale_items_catalog_item_id");
+
+                    b.HasIndex("CounterSaleId")
+                        .HasDatabaseName("ix_counter_sale_items_counter_sale_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_counter_sale_items_tenant_id");
+
+                    b.ToTable("counter_sale_items", (string)null);
                 });
 
             modelBuilder.Entity("TallerControl.Domain.Customers.Customer", b =>
@@ -676,6 +1088,192 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         {
                             t.HasCheckConstraint("ck_public_links_target_type", "\"target_type\" IN ('payment', 'quote', 'work_order')");
                         });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Purchases.Purchase", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("account_id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("text")
+                        .HasColumnName("delete_reason");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<int>("DocumentNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("document_number");
+
+                    b.Property<DateTimeOffset>("InvoiceDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("invoice_date");
+
+                    b.Property<int?>("InvoiceNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("invoice_number");
+
+                    b.Property<decimal>("Perceptions")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("perceptions");
+
+                    b.Property<int?>("PointOfSale")
+                        .HasColumnType("integer")
+                        .HasColumnName("point_of_sale");
+
+                    b.Property<decimal>("Retentions")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("retentions");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<decimal>("SubtotalNet")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("subtotal_net");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("supplier_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("total");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<decimal>("VatAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("vat_amount");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_purchases");
+
+                    b.HasIndex("BranchId")
+                        .HasDatabaseName("ix_purchases_branch_id");
+
+                    b.HasIndex("SupplierId")
+                        .HasDatabaseName("ix_purchases_supplier_id");
+
+                    b.HasIndex("TenantId", "InvoiceDate")
+                        .HasDatabaseName("ix_purchases_tenant_id_invoice_date");
+
+                    b.HasIndex("TenantId", "BranchId", "DocumentNumber")
+                        .HasDatabaseName("ix_purchases_tenant_id_branch_id_document_number");
+
+                    b.ToTable("purchases", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_purchases_status", "\"status\" IN ('cancelled', 'confirmed', 'draft')");
+                        });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Purchases.PurchaseItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("CatalogItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("catalog_item_id");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("description");
+
+                    b.Property<Guid>("PurchaseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("purchase_id");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(12,3)")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("total");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("unit_cost");
+
+                    b.Property<decimal>("VatRate")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("vat_rate");
+
+                    b.HasKey("Id")
+                        .HasName("pk_purchase_items");
+
+                    b.HasIndex("CatalogItemId")
+                        .HasDatabaseName("ix_purchase_items_catalog_item_id");
+
+                    b.HasIndex("PurchaseId")
+                        .HasDatabaseName("ix_purchase_items_purchase_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_purchase_items_tenant_id");
+
+                    b.ToTable("purchase_items", (string)null);
                 });
 
             modelBuilder.Entity("TallerControl.Domain.Qr.OwnerVerification", b =>
@@ -1214,6 +1812,104 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                     b.ToTable("quote_response_items", (string)null);
                 });
 
+            modelBuilder.Entity("TallerControl.Domain.Suppliers.Supplier", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("address");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Cuit")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("cuit");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("text")
+                        .HasColumnName("delete_reason");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("phone");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<string>("VatCondition")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("vat_condition");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_suppliers");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("ix_suppliers_name_trgm");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
+
+                    b.HasIndex("TenantId", "Name")
+                        .HasDatabaseName("ix_suppliers_tenant_id_name");
+
+                    b.ToTable("suppliers", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_suppliers_vat_condition", "\"vat_condition\" IN ('consumidor_final', 'exento', 'monotributo', 'no_responsable', 'responsable_inscripto')");
+                        });
+                });
+
             modelBuilder.Entity("TallerControl.Domain.Tenancy.Branch", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1297,7 +1993,7 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
 
                     b.ToTable("document_sequences", null, t =>
                         {
-                            t.HasCheckConstraint("ck_document_sequences_kind", "\"kind\" IN ('payment', 'quote', 'work_order')");
+                            t.HasCheckConstraint("ck_document_sequences_kind", "\"kind\" IN ('cash_session', 'counter_sale', 'payment', 'purchase', 'quote', 'work_order')");
 
                             t.HasCheckConstraint("ck_document_sequences_next_value", "next_value >= 1");
                         });
@@ -2188,6 +2884,71 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TallerControl.Domain.Cash.CashAccount", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Tenancy.Branch", null)
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_cash_accounts_branches_branch_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_cash_accounts_tenant_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Cash.CashMovement", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Cash.CashAccount", null)
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_cash_movements_cash_accounts_account_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Branch", null)
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_cash_movements_branches_branch_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_cash_movements_tenant_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Cash.CashSession", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Cash.CashAccount", null)
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_cash_sessions_cash_accounts_account_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Branch", null)
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_cash_sessions_branches_branch_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_cash_sessions_tenant_tenant_id");
+                });
+
             modelBuilder.Entity("TallerControl.Domain.Catalog.CatalogItem", b =>
                 {
                     b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
@@ -2213,6 +2974,52 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_stock_movements_tenant_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.CounterSales.CounterSale", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Tenancy.Branch", null)
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_counter_sales_branches_branch_id");
+
+                    b.HasOne("TallerControl.Domain.Customers.Customer", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_counter_sales_customer_customer_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_counter_sales_tenant_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.CounterSales.CounterSaleItem", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Catalog.CatalogItem", null)
+                        .WithMany()
+                        .HasForeignKey("CatalogItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_counter_sale_items_catalog_items_catalog_item_id");
+
+                    b.HasOne("TallerControl.Domain.CounterSales.CounterSale", null)
+                        .WithMany("Items")
+                        .HasForeignKey("CounterSaleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_counter_sale_items_counter_sales_counter_sale_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_counter_sale_items_tenant_tenant_id");
                 });
 
             modelBuilder.Entity("TallerControl.Domain.Customers.Customer", b =>
@@ -2260,6 +3067,53 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_public_links_tenant_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Purchases.Purchase", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Tenancy.Branch", null)
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_purchases_branches_branch_id");
+
+                    b.HasOne("TallerControl.Domain.Suppliers.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_purchases_supplier_supplier_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_purchases_tenant_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Purchases.PurchaseItem", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Catalog.CatalogItem", null)
+                        .WithMany()
+                        .HasForeignKey("CatalogItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_purchase_items_catalog_items_catalog_item_id");
+
+                    b.HasOne("TallerControl.Domain.Purchases.Purchase", null)
+                        .WithMany("Items")
+                        .HasForeignKey("PurchaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_purchase_items_purchases_purchase_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_purchase_items_tenant_tenant_id");
                 });
 
             modelBuilder.Entity("TallerControl.Domain.Qr.OwnerVerification", b =>
@@ -2373,6 +3227,16 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_quote_response_items_quote_responses_response_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Suppliers.Supplier", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_suppliers_tenant_tenant_id");
                 });
 
             modelBuilder.Entity("TallerControl.Domain.Tenancy.Branch", b =>
@@ -2531,6 +3395,16 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_work_order_status_changes_work_orders_work_order_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.CounterSales.CounterSale", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Purchases.Purchase", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("TallerControl.Domain.Quotes.Quote", b =>

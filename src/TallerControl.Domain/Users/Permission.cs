@@ -43,6 +43,20 @@ public static class Permission
     public const string QrManage = "qr.manage";
     public const string QrRevoke = "qr.revoke";
 
+    public const string CashRead = "cash.read";
+    public const string CashOpen = "cash.open";
+    public const string CashClose = "cash.close";
+    public const string CashAdjust = "cash.adjust";
+
+    public const string SuppliersRead = "suppliers.read";
+    public const string SuppliersWrite = "suppliers.write";
+
+    public const string PurchasesRead = "purchases.read";
+    public const string PurchasesWrite = "purchases.write";
+
+    public const string CounterSalesRead = "counter_sales.read";
+    public const string CounterSalesWrite = "counter_sales.write";
+
     public const string AuditRead = "audit.read";
 
     /// <summary>Permisos base del owner: todos.</summary>
@@ -57,6 +71,10 @@ public static class Permission
         AttachmentsWrite,
         PaymentsRead, PaymentsWrite, PaymentsVoid,
         QrManage, QrRevoke,
+        CashRead, CashOpen, CashClose, CashAdjust,
+        SuppliersRead, SuppliersWrite,
+        PurchasesRead, PurchasesWrite,
+        CounterSalesRead, CounterSalesWrite,
         AuditRead,
     };
 
@@ -71,6 +89,10 @@ public static class Permission
         AttachmentsWrite,
         PaymentsRead, PaymentsWrite,
         QrManage,
+        CashRead, CashOpen, CashClose, CashAdjust,
+        SuppliersRead, SuppliersWrite,
+        PurchasesRead, PurchasesWrite,
+        CounterSalesRead, CounterSalesWrite,
     };
 
     /// <summary>Permisos base del mecánico (sin finos adicionales).</summary>

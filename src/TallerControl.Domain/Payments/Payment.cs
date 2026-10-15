@@ -68,6 +68,9 @@ public sealed class Payment : Entity, ITenantOwned, IAudited, IAuditable
     public DateTimeOffset? UpdatedAt { get; private set; }
     public Guid? UpdatedBy { get; private set; }
 
+    /// <summary>Vincula el pago a una cuenta de caja (E11, D-16).</summary>
+    public void SetAccountId(Guid accountId) => AccountId = accountId;
+
     /// <summary>Anula el pago. Lanza si ya está anulado.</summary>
     public void Anular(string reason, Guid? by, DateTimeOffset at)
     {

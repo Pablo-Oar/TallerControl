@@ -6,4 +6,7 @@ public enum DocumentKind
     Quote,
     WorkOrder,
     Payment,
+    Purchase,
+    CounterSale,
+    CashSession,
 }
