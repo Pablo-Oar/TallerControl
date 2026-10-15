@@ -8,8 +8,8 @@ using Npgsql;
 using Serilog;
 using TallerControl.Api.Endpoints.Auth;
 using TallerControl.Api.Endpoints.Catalog;
-using TallerControl.Api.Endpoints.Dashboard;
 using TallerControl.Api.Endpoints.Customers;
+using TallerControl.Api.Endpoints.Dashboard;
 using TallerControl.Api.Endpoints.Payments;
 using TallerControl.Api.Endpoints.Public;
 using TallerControl.Api.Endpoints.Qr;
@@ -18,7 +18,6 @@ using TallerControl.Api.Endpoints.Settings;
 using TallerControl.Api.Endpoints.Users;
 using TallerControl.Api.Endpoints.Vehicles;
 using TallerControl.Api.Endpoints.Work;
-
 using TallerControl.Api.Errors;
 using TallerControl.Api.Identity;
 using TallerControl.Api.Logging;
