@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using TallerControl.Api.Identity;
+using TallerControl.Api.Security;
 using TallerControl.Application.Auth;
 using TallerControl.Application.Users;
 using TallerControl.Infrastructure.Identity;
@@ -27,7 +28,8 @@ internal static class AuthEndpoints
 
         group.MapPost("/login", LoginAsync)
             .AllowAnonymous()
-            .AddEndpointFilter<AntiforgeryEndpointFilter>();
+            .AddEndpointFilter<AntiforgeryEndpointFilter>()
+            .RequireRateLimiting(RateLimitPolicies.Login);
 
         group.MapPost("/logout", LogoutAsync)
             .RequireAuthorization()
@@ -39,7 +41,8 @@ internal static class AuthEndpoints
         group.MapPost("/forgot-password",
                 (ForgotPasswordRequest request, ForgotPasswordHandler handler, CancellationToken ct) =>
                     ForgotPasswordAsync(request, handler, frontendBaseUrl, ct))
-            .AllowAnonymous();
+            .AllowAnonymous()
+            .RequireRateLimiting(RateLimitPolicies.ForgotPassword);
 
         group.MapPost("/reset-password",
                 async (ResetPasswordRequest request, ResetPasswordHandler handler, CancellationToken ct) =>

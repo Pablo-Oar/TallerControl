@@ -21,6 +21,7 @@ using TallerControl.Api.Endpoints.Work;
 using TallerControl.Api.Errors;
 using TallerControl.Api.Identity;
 using TallerControl.Api.Logging;
+using TallerControl.Api.Security;
 using TallerControl.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +50,7 @@ builder.Services.AddDataProtection()
     .PersistKeysToDbContext<DataProtectionDbContext>();
 
 builder.Services.AddTallerControlAuthentication();
+builder.Services.AddTallerControlRateLimiting();
 builder.Services.AddApiErrorHandling();
 
 // Enums como strings en snake_case para que el frontend reciba valores legibles y estables.
@@ -67,6 +69,7 @@ if (builder.Environment.IsDevelopment())
 var app = builder.Build();
 
 app.UseForwardedHeaders();
+app.UseRateLimiter();
 app.UseApiErrorPipeline();
 app.UseAuthentication();
 app.UseAuthorization();
