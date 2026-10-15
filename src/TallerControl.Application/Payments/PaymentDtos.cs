@@ -35,7 +35,8 @@ public sealed record CreatePaymentRequest(
     PaymentMethod Method,
     decimal Amount,
     DateTimeOffset? PaidAt,
-    string? Reference
+    string? Reference,
+    Guid? AccountId
 );
 
 public sealed record VoidPaymentRequest(
