@@ -9,12 +9,20 @@ import { PublicPaymentPage } from './payments/PublicPaymentPage'
 import { PublicQrPage } from './qr/PublicQrPage'
 import { OwnerVehiclePage } from './qr/OwnerVehiclePage'
 import { PrivacidadPage } from './PrivacidadPage'
+import { LandingPage } from './landing/LandingPage'
+import { RegisterPage } from './registro/RegisterPage'
+import { VerifyEmailPage } from './verificar-email/VerifyEmailPage'
 
 /** Área pública (`/*`): sin menú del panel. Liviana — no descarga el panel completo (doc 06 §1). */
 export function Component() {
   return (
     <Routes>
+      {/* Landing page (D-23) */}
+      <Route index element={<LandingPage />} />
+      {/* Autenticación */}
       <Route path="login" element={<LoginPage />} />
+      <Route path="registro" element={<RegisterPage />} />
+      <Route path="verificar-email" element={<VerifyEmailPage />} />
       <Route path="forgot-password" element={<ForgotPasswordPage />} />
       <Route path="reset-password" element={<ResetPasswordPage />} />
       <Route path="invitations/:token/accept" element={<AcceptInvitationPage />} />

@@ -14,6 +14,7 @@ using TallerControl.Api.Endpoints.Payments;
 using TallerControl.Api.Endpoints.Public;
 using TallerControl.Api.Endpoints.Qr;
 using TallerControl.Api.Endpoints.Quotes;
+using TallerControl.Api.Endpoints.Registration;
 using TallerControl.Api.Endpoints.Settings;
 using TallerControl.Api.Endpoints.Users;
 using TallerControl.Api.Endpoints.Vehicles;
@@ -98,6 +99,7 @@ app.MapQuotesEndpoints();
 app.MapPaymentsEndpoints();
 app.MapQrCardsEndpoints();
 app.MapDashboardEndpoints();
+app.MapRegistrationEndpoints(app.Configuration);
 app.MapPublicEndpoints();
 
 app.Run();

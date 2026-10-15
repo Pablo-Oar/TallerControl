@@ -1425,6 +1425,42 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TallerControl.Domain.Users.EmailVerificationToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<byte[]>("TokenHash")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("token_hash");
+
+                    b.Property<DateTimeOffset?>("UsedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("used_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_email_verification_tokens");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_email_verification_tokens_token_hash");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_email_verification_tokens_user_id");
+
+                    b.ToTable("email_verification_tokens", (string)null);
+                });
+
             modelBuilder.Entity("TallerControl.Domain.Users.Invitation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1592,6 +1628,12 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("citext")
                         .HasColumnName("email");
+
+                    b.Property<bool>("IsEmailVerified")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_email_verified");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("timestamp with time zone")
@@ -2362,6 +2404,16 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_tenant_settings_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Users.EmailVerificationToken", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_email_verification_tokens_user_user_id");
                 });
 
             modelBuilder.Entity("TallerControl.Domain.Users.Invitation", b =>

@@ -93,6 +93,7 @@ internal sealed class OutboxDispatcher : BackgroundService
         {
             "email.invitation" => BuildInvitationEmail(message.PayloadJson),
             "email.password_reset" => BuildPasswordResetEmail(message.PayloadJson),
+            "email.email_verification" => BuildEmailVerificationEmail(message.PayloadJson),
             _ => null,
         };
     }
@@ -136,6 +137,25 @@ internal sealed class OutboxDispatcher : BackgroundService
                 """);
     }
 
+    private static EmailMessage? BuildEmailVerificationEmail(string json)
+    {
+        var payload = JsonSerializer.Deserialize<EmailVerificationPayload>(json);
+        if (payload is null)
+        {
+            return null;
+        }
+
+        var link = $"{payload.FrontendBaseUrl}/verificar-email?token={Uri.EscapeDataString(payload.Token)}";
+        return new EmailMessage(
+            To: payload.To,
+            Subject: "Verificá tu email — TallerControl",
+            HtmlBody: $"""
+                <p>Gracias por registrarte en TallerControl.</p>
+                <p><a href="{link}">Verificar mi email</a></p>
+                <p>El enlace vence el {payload.ExpiresAt:f}. Si no te registraste, ignorá este email.</p>
+                """);
+    }
+
     // Proyecciones locales que coinciden con los payloads serializados por los handlers.
     private sealed record InvitationPayload(
         string To,
@@ -145,6 +165,12 @@ internal sealed class OutboxDispatcher : BackgroundService
         string FrontendBaseUrl);
 
     private sealed record PasswordResetPayload(
+        string To,
+        string Token,
+        DateTimeOffset ExpiresAt,
+        string FrontendBaseUrl);
+
+    private sealed record EmailVerificationPayload(
         string To,
         string Token,
         DateTimeOffset ExpiresAt,

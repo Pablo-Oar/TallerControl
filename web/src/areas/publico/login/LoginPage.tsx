@@ -30,12 +30,15 @@ export function LoginPage() {
     setServerError(null)
     try {
       await authApi.login({ email: data.email, password: data.password, rememberMe: data.rememberMe })
+      const me = await authApi.me()
       invalidate()
-      navigate('/app', { replace: true })
+      navigate(me.home, { replace: true })
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 423) {
           setServerError('Tu cuenta está bloqueada por intentos fallidos. Intentá de nuevo en unos minutos.')
+        } else if (err.status === 401 && err.extensions?.['code'] === 'email_not_verified') {
+          setServerError('Verificá tu email antes de ingresar. Revisá tu casilla de correo.')
         } else {
           setServerError('Email o contraseña incorrectos.')
         }
@@ -82,6 +85,12 @@ export function LoginPage() {
         <p className="mt-4 text-center text-sm text-slate-500">
           <Link to="/forgot-password" className="text-blue-600 hover:underline">
             ¿Olvidaste tu contraseña?
+          </Link>
+        </p>
+        <p className="mt-2 text-center text-sm text-slate-500">
+          ¿No tenés cuenta?{' '}
+          <Link to="/registro" className="text-blue-600 hover:underline">
+            Crear cuenta gratis
           </Link>
         </p>
       </div>

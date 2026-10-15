@@ -12,6 +12,7 @@ using TallerControl.Application.Payments;
 using TallerControl.Application.PublicLinks;
 using TallerControl.Application.Qr;
 using TallerControl.Application.Quotes;
+using TallerControl.Application.Registration;
 using TallerControl.Application.Settings;
 using TallerControl.Application.Tenancy;
 using TallerControl.Application.Users;
@@ -71,6 +72,10 @@ public static class DependencyInjection
         services.AddScoped<LoginHandler>();
         services.AddScoped<LogoutHandler>();
         services.AddScoped<MeHandler>();
+
+        services.AddScoped<IRegistrationRepository, EfRegistrationRepository>();
+        services.AddScoped<RegisterTenantHandler>();
+        services.AddScoped<VerifyEmailHandler>();
 
         services.AddScoped<IInvitationRepository, EfInvitationRepository>();
         services.AddScoped<IPasswordResetRepository, EfPasswordResetRepository>();

@@ -94,6 +94,17 @@ internal static class RateLimitingExtensions
                         QueueLimit = 0,
                     }));
 
+            // POST /api/public/v1/register — 5 req/15 min por IP (anti-spam de cuentas)
+            options.AddPolicy(RateLimitPolicies.Registration, ctx =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: $"reg:{GetIp(ctx)}",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(15),
+                        QueueLimit = 0,
+                    }));
+
             // POST .../quotes/{token}/responses — 10 req/h por token
             options.AddPolicy(RateLimitPolicies.QuoteResponse, ctx =>
             {
@@ -121,6 +132,7 @@ internal static class RateLimitPolicies
 {
     public const string Login = "login";
     public const string ForgotPassword = "forgot-password";
+    public const string Registration = "registration";
     public const string QrScan = "qr-scan";
     public const string QrChallenge = "qr-challenge";
     public const string PublicQuote = "public-quote";

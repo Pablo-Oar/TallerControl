@@ -6,6 +6,7 @@ export interface MeResponse {
   role: 'Owner' | 'AdminStaff' | 'Mechanic'
   permissions: string[]
   timeZone: string
+  home: string
 }
 
 export interface LoginRequest {
