@@ -1,5 +1,7 @@
+using System.Net;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 using TallerControl.Api.Endpoints.Auth;
 using TallerControl.Api.Endpoints.Catalog;
@@ -25,6 +27,15 @@ builder.Host.UseSerilog(
     (context, _, logger) => SerilogConfiguration.Configure(context, logger),
     preserveStaticLogger: true);
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+    options.KnownProxies.Add(IPAddress.Loopback);
+    options.KnownProxies.Add(IPAddress.IPv6Loopback);
+});
+
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddTallerControlAuthentication();
 builder.Services.AddApiErrorHandling();
@@ -44,6 +55,7 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
 app.UseApiErrorPipeline();
 app.UseAuthentication();
 app.UseAuthorization();

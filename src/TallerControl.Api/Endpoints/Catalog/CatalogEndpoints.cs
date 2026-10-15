@@ -22,9 +22,14 @@ internal static class CatalogEndpoints
     {
         app.MapGet("/api/v1/catalog",
                 (SearchCatalogHandler handler, CancellationToken ct,
-                 string? q = null, CatalogItemKind? kind = null, bool? activeOnly = null,
+                 string? q = null, string? kind = null, bool? activeOnly = null,
                  int page = 1, int pageSize = 25) =>
-                    handler.HandleAsync(q, kind, activeOnly, page, pageSize, ct))
+                {
+                    CatalogItemKind? parsedKind = kind is not null
+                        && Enum.TryParse<CatalogItemKind>(kind, ignoreCase: true, out var k)
+                        ? k : null;
+                    return handler.HandleAsync(q, parsedKind, activeOnly, page, pageSize, ct);
+                })
             .RequirePermission(Permission.CatalogRead);
 
         app.MapPost("/api/v1/catalog",

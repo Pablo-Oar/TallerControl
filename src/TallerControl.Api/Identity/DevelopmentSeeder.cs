@@ -64,6 +64,22 @@ internal sealed class DevelopmentSeeder : IHostedService
             .FirstOrDefaultAsync(u => u.Email == normalizedEmail, cancellationToken);
         if (existing is not null)
         {
+            // Asegura que el taller del usuario ya tenga sucursal principal (fix para entornos existentes).
+            var membership = await db.Set<Membership>()
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(m => m.UserId == existing.Id, cancellationToken);
+            if (membership is not null)
+            {
+                var hasBranch = await db.Set<Branch>()
+                    .IgnoreQueryFilters()
+                    .AnyAsync(b => b.TenantId == membership.TenantId, cancellationToken);
+                if (!hasBranch)
+                {
+                    db.Add(Branch.CreateMain(membership.TenantId));
+                    await db.SaveChangesAsync(cancellationToken);
+                    _logger.LogInformation("Development seed: sucursal principal creada para taller existente {Tenant}.", membership.TenantId);
+                }
+            }
             _logger.LogInformation("Development seed: el usuario inicial ya existe.");
             return;
         }
@@ -71,13 +87,14 @@ internal sealed class DevelopmentSeeder : IHostedService
         var tenant = new Tenant(tenantName, _clock.GetUtcNow());
         db.Add(tenant);
         db.Add(new TenantSettings(tenant.Id));
+        db.Add(Branch.CreateMain(tenant.Id));
 
         var user = new User(normalizedEmail, displayName);
         user.Activate(hasher.Hash(password));
         db.Add(user);
 
-        var membership = new Membership(tenant.Id, user.Id, TenantRole.Owner);
-        db.Add(membership);
+        var membership2 = new Membership(tenant.Id, user.Id, TenantRole.Owner);
+        db.Add(membership2);
 
         await db.SaveChangesAsync(cancellationToken);
 
