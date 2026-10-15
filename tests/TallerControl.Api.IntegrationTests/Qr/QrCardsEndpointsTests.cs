@@ -678,4 +678,34 @@ public sealed class QrCardsEndpointsTests : IAsyncLifetime
         const string base32Alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
         Assert.All(code, c => Assert.Contains(c, base32Alphabet));
     }
+
+    // ── T-QR-31: página pública solo muestra marca del taller ────────────────
+
+    [Fact(DisplayName = "T-QR-31: el escaneo público devuelve solo la marca del taller, sin datos del proveedor (doc 08, V2-delta)")]
+    public async Task Escaneo_publico_devuelve_solo_marca_del_taller_sin_datos_proveedor()
+    {
+        using var ownerClient = CreateClient();
+        await LoginAsync(ownerClient, QrWebApplicationFactory.OwnerEmail, QrWebApplicationFactory.Password);
+
+        var code = await CreateAssignedCardAsync(ownerClient);
+
+        // Escaneo anónimo: responde con los datos del taller.
+        using var publicClient = CreateClient();
+        var resp = await publicClient.GetAsync($"/api/public/v1/qr/{code}");
+        Assert.True(resp.IsSuccessStatusCode);
+
+        var json = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        var workshop = json.GetProperty("workshop");
+
+        // El nombre es el del taller, no el del proveedor.
+        var workshopName = workshop.GetProperty("name").GetString()!;
+        Assert.False(string.IsNullOrEmpty(workshopName));
+        Assert.DoesNotContain("TallerControl", workshopName, StringComparison.OrdinalIgnoreCase);
+
+        // La respuesta no incluye campos de identificación del proveedor.
+        Assert.False(json.TryGetProperty("providerName", out _));
+        Assert.False(json.TryGetProperty("poweredBy", out _));
+        Assert.False(workshop.TryGetProperty("providerName", out _));
+        Assert.False(workshop.TryGetProperty("poweredBy", out _));
+    }
 }

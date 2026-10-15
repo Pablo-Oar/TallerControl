@@ -198,6 +198,25 @@ public sealed class AuthEndpointsTests : IAsyncLifetime
         Assert.Contains(Permission.UsersManage, permissions);
     }
 
+    [Fact(DisplayName = "T-AUTH-09: /auth/me para mecánico devuelve home=/m y sin prices.view (doc 08 §3, V2-delta)")]
+    public async Task Me_para_mecanico_devuelve_home_m_y_sin_prices_view()
+    {
+        using var client = CreateClient();
+        var token = await FetchAntiforgeryTokenAsync(client);
+        var login = await client.SendAsync(LoginRequest(
+            AuthWebApplicationFactory.MechanicEmail,
+            AuthWebApplicationFactory.MechanicPassword,
+            token));
+        Assert.Equal(HttpStatusCode.NoContent, login.StatusCode);
+
+        var me = await client.GetFromJsonAsync<JsonElement>("/api/v1/auth/me");
+
+        Assert.Equal("mechanic", me.GetProperty("role").GetString());
+        Assert.Equal("/m", me.GetProperty("home").GetString());
+        var permissions = me.GetProperty("permissions").EnumerateArray().Select(e => e.GetString()).ToList();
+        Assert.DoesNotContain("prices.view", permissions);
+    }
+
     private async Task<string> ReadSecurityStampAsync()
     {
         var builder = new DbContextOptionsBuilder<AppDbContext>();
