@@ -141,7 +141,7 @@ La API usa `ConnectionStrings:Default` con el rol **`tallercontrol_app`** (sin `
 - Endpoints: 14 archivos (`DashboardEndpoints` nuevo respecto a E8).
 - Migraciones totales: 15 (`DataProtectionKeys` + `TenantPlanCode` nuevas).
 
-**E10 — lo implementado (`feature/e10-self-registration`, 15/10/2026):**
+**E10 — lo implementado (`feature/e10-self-registration`, mergeado a Develop PR #28, 15/10/2026):**
 - Dominio: `EmailVerificationToken` (token hash SHA-256 de 64 bytes, expira 24 h, `MarkAsUsed()`, `IsExpired()`); `User.EmailVerified` + `User.TenantId?` (nulo hasta verificar); método `User.MarkEmailVerified()`.
 - Application: `RegisterTenantHandler` (crea `User` + `Tenant` + `Branch` principal + `TenantSettings` + `Membership` + token de verificación + `OutboxMessage email.email_verification`; respuesta uniforme 201 aunque el email ya exista — sin revelar existencia); `VerifyEmailHandler` (marca token como usado, activa `User.EmailVerified`); `IRegistrationRepository` (`FindUserByEmailAsync`, `FindTokenByHashAsync`); `RegistrationDtos`.
 - Infrastructure: `EfRegistrationRepository`; `EmailVerificationTokenConfiguration` (FK `HasOne<User>().WithMany()`, índice único en `token_hash`); migración `Registration` (tabla `email_verification_tokens`); migración `EmailVerificationFk` (alinea nombre de FK con convención de EF: `fk_email_verification_tokens_user_user_id`, agrega índice `ix_email_verification_tokens_user_id`).
@@ -151,7 +151,8 @@ La API usa `ConnectionStrings:Default` con el rol **`tallercontrol_app`** (sin `
 - Tests: 327 .NET (107 Domain + 1 Application + 219 Integration; T-REG-01..06) + 12 Vitest. Fix clave: `EmailVerificationTokenConfiguration` requería `HasOne<User>().WithMany().HasForeignKey(t => t.UserId)` para que EF ordene correctamente el INSERT (User antes que EmailVerificationToken en el mismo SaveChanges).
 - Frontend: `LandingPage.tsx` (`/` — página de bienvenida pública con links a Ingresar y Registrarse), `RegisterPage.tsx` (`/registro` — formulario nombre del taller, nombre personal, email, contraseña; on success muestra aviso de verificación pendiente), `VerifyEmailPage.tsx` (`/verificar-email?token=…` — llama al endpoint y muestra éxito o error); rutas en `PublicoArea`; `LoginPage` con link a `/registro`. `api/registration.ts` con `registerTenant` y `verifyEmail`.
 - Routing: `/` ya no redirige a `/app`, muestra `LandingPage`; `/app` sin sesión sigue redirigiendo a `/login` vía `RequireAuth`.
-- Estado actual: **E10 completa, en `feature/e10-self-registration`. Sigue E11.**
+- Bugfixes post-merge (commit `6fcbde8`): `scripts/dev.ps1` agrega `--context AppDbContext` a ef database update (dos DbContexts desde E10); `VerifyEmailPage` captura `ApiError` 400 y muestra el mensaje del servidor en lugar del genérico; `TallerLayout.handleLogout` mueve `navigate('/login')` al bloque `finally` para redirigir aunque `logout()` lance error de antiforgery.
+- Estado actual: **E0–E10 completas, mergeadas a Develop (PR #28, 15/10/2026). Sigue E11.**
 
 **Post-E8 — bugfixes en Develop (14–15/10/2026, commits `27d0d01` / `3395d74` / `b87f7a7` / `ab4dee8` / `a229bcb` / `e46bd2c` / `09a8c7d`):**
 - fix(api): `CatalogItemKind`, `WorkOrderStatus` y `QuoteStatus` como `string?` + `Enum.TryParse(ignoreCase: true)` en todos los endpoints de búsqueda — ASP.NET Core 10 minimal APIs son case-sensitive para enum query params.
