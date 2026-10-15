@@ -22,6 +22,9 @@ public sealed class Tenant : Entity, IVersioned, IAudited
         CreatedAt = createdAt;
     }
 
+    /// <summary>Código de plan (D-17). En el MVP todos los talleres tienen "free".</summary>
+    public const string DefaultPlanCode = "free";
+
     public string Name { get; private set; } = string.Empty;
 
     public string? LegalName { get; private set; }
@@ -35,6 +38,9 @@ public sealed class Tenant : Entity, IVersioned, IAudited
     public TenantStatus Status { get; private set; }
 
     public string TimeZone { get; private set; } = DefaultTimeZone;
+
+    /// <summary>Plan comercial del taller (D-17). Punto de control preparado; no se cobra en el MVP.</summary>
+    public string PlanCode { get; private set; } = DefaultPlanCode;
 
     public DateTimeOffset CreatedAt { get; private set; }
 
