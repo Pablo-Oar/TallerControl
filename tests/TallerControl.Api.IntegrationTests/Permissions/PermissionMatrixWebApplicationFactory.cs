@@ -7,11 +7,15 @@ using TallerControl.Api.IntegrationTests.Auth;
 using TallerControl.Api.IntegrationTests.Persistence;
 using TallerControl.Application.Auth;
 using TallerControl.Application.Common;
+using TallerControl.Domain.Cash;
 using TallerControl.Domain.Catalog;
+using TallerControl.Domain.CounterSales;
 using TallerControl.Domain.Customers;
 using TallerControl.Domain.Payments;
+using TallerControl.Domain.Purchases;
 using TallerControl.Domain.Qr;
 using TallerControl.Domain.Quotes;
+using TallerControl.Domain.Suppliers;
 using TallerControl.Domain.Tenancy;
 using TallerControl.Domain.Users;
 using TallerControl.Domain.Vehicles;
@@ -62,6 +66,18 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
 
     /// <summary>Tarjeta QR del Taller A sembrada para probar T-ISO-ALL en rutas /qr/cards/{id}.</summary>
     public Guid ForeignQrCardId { get; private set; }
+
+    /// <summary>Cuenta de caja del Taller A para probar T-ISO-ALL en rutas /cash/accounts/{id}.</summary>
+    public Guid ForeignCashAccountId { get; private set; }
+
+    /// <summary>Proveedor del Taller A para probar T-ISO-ALL en rutas /suppliers/{id}.</summary>
+    public Guid ForeignSupplierId { get; private set; }
+
+    /// <summary>Compra del Taller A para probar T-ISO-ALL en rutas /purchases/{id}.</summary>
+    public Guid ForeignPurchaseId { get; private set; }
+
+    /// <summary>Venta de mostrador del Taller A para probar T-ISO-ALL en rutas /counter-sales/{id}.</summary>
+    public Guid ForeignCounterSaleId { get; private set; }
 
     public string ConnectionString { get; }
 
@@ -282,6 +298,54 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
         }
 
         ForeignQrCardId = qrCardA.Id;
+
+        // Siembra una cuenta de caja del Taller A para T-ISO-ALL en rutas /cash/accounts/{id}.
+        var cashAccountA = new CashAccount(tenantA.Id, branchA.Id, "Caja T-ISO-ALL", CashAccountKind.Cash);
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(cashAccountA);
+            await db.SaveChangesAsync();
+        }
+
+        ForeignCashAccountId = cashAccountA.Id;
+
+        // Siembra un proveedor del Taller A para T-ISO-ALL en rutas /suppliers/{id}.
+        var supplierA = new Supplier(tenantA.Id, "Proveedor T-ISO-ALL",
+            cuit: null, VatCondition.ConsumidorFinal, address: null, phone: null, email: null, notes: null);
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(supplierA);
+            await db.SaveChangesAsync();
+        }
+
+        ForeignSupplierId = supplierA.Id;
+
+        // Siembra una compra del Taller A para T-ISO-ALL en rutas /purchases/{id}.
+        var purchaseA = new Purchase(
+            tenantA.Id, branchA.Id, supplierA.Id,
+            DateTimeOffset.UtcNow, pointOfSale: null, invoiceNumber: null,
+            perceptions: 0, retentions: 0, documentNumber: 1);
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(purchaseA);
+            await db.SaveChangesAsync();
+        }
+
+        ForeignPurchaseId = purchaseA.Id;
+
+        // Siembra una venta de mostrador del Taller A para T-ISO-ALL en rutas /counter-sales/{id}.
+        var counterSaleA = new CounterSale(tenantA.Id, branchA.Id, customerId: null, documentNumber: 1, DateTimeOffset.UtcNow);
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(counterSaleA);
+            await db.SaveChangesAsync();
+        }
+
+        ForeignCounterSaleId = counterSaleA.Id;
     }
 
     private static DbContextOptions<AppDbContext> BuildOptions(string cs)

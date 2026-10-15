@@ -188,7 +188,11 @@ public sealed class PermissionMatrixTests : IAsyncLifetime
                 e.RoutePattern.Contains("/work-orders/", StringComparison.Ordinal) ||
                 e.RoutePattern.Contains("/attachments/", StringComparison.Ordinal) ||
                 e.RoutePattern.Contains("/quotes/", StringComparison.Ordinal) ||
-                e.RoutePattern.Contains("/qr/cards/", StringComparison.Ordinal)))
+                e.RoutePattern.Contains("/qr/cards/", StringComparison.Ordinal) ||
+                e.RoutePattern.Contains("/cash/accounts/", StringComparison.Ordinal) ||
+                e.RoutePattern.Contains("/suppliers/", StringComparison.Ordinal) ||
+                e.RoutePattern.Contains("/purchases/", StringComparison.Ordinal) ||
+                e.RoutePattern.Contains("/counter-sales/", StringComparison.Ordinal)))
             .ToList();
 
         var unresolved = all
@@ -268,6 +272,26 @@ public sealed class PermissionMatrixTests : IAsyncLifetime
         if (pattern.Contains("/qr/cards/", StringComparison.Ordinal))
         {
             return RouteParam.Replace(pattern, _factory.ForeignQrCardId.ToString());
+        }
+
+        if (pattern.Contains("/cash/accounts/", StringComparison.Ordinal))
+        {
+            return RouteParam.Replace(pattern, _factory.ForeignCashAccountId.ToString());
+        }
+
+        if (pattern.Contains("/suppliers/", StringComparison.Ordinal))
+        {
+            return RouteParam.Replace(pattern, _factory.ForeignSupplierId.ToString());
+        }
+
+        if (pattern.Contains("/purchases/", StringComparison.Ordinal))
+        {
+            return RouteParam.Replace(pattern, _factory.ForeignPurchaseId.ToString());
+        }
+
+        if (pattern.Contains("/counter-sales/", StringComparison.Ordinal))
+        {
+            return RouteParam.Replace(pattern, _factory.ForeignCounterSaleId.ToString());
         }
 
         // Fallback: no debería llegar aquí si resolvable está correctamente definido
