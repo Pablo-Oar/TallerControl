@@ -134,6 +134,12 @@ La API usa `ConnectionStrings:Default` con el rol **`tallercontrol_app`** (sin `
 - fix(web): `activeOnly ? true : null` en CatalogPage (false enviaba solo inactivos); `CatalogItemKind` en minúsculas (snake_case_lower del API); búsqueda de clientes como dropdown flotante absoluto; header `X-CSRF-TOKEN` (era `X-XSRF-TOKEN`); `allowedHosts: ['tallercontrol.com.ar']` en Vite.
 - Patrón documentado: cualquier enum query param en minimal APIs → `string?` + `Enum.TryParse(ignoreCase: true, ...)`.
 
+## Infraestructura de producción
+
+Stack objetivo: **Cloudflare Containers** (API + SPA) · **Cloudflare Hyperdrive** · **Neon PostgreSQL** · **Cloudflare R2** · **Cloudflare Turnstile**.
+Guía completa paso a paso: `docs/deploy-produccion.md` (Dockerfile, wrangler.toml, secrets, GitHub Actions CD, checklist).
+**Pendiente antes del primer deploy**: persistir claves de Data Protection en BD (`PersistKeysToDbContext<AppDbContext>()`) para que las cookies `tc_qr` sobrevivan reinicios y escala horizontal.
+
 ## Comandos
 
 Disponibles desde E0 (actualizar esta sección al crearlos):
