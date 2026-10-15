@@ -69,6 +69,7 @@ if (builder.Environment.IsDevelopment())
 var app = builder.Build();
 
 app.UseForwardedHeaders();
+app.UseSecurityHeaders();
 app.UseRateLimiter();
 app.UseApiErrorPipeline();
 app.UseAuthentication();
