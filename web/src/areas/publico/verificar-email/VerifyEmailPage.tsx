@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, Link } from 'react-router'
 import { registrationApi } from '../../../lib/api/registration'
+import { ApiError } from '../../../lib/api/client'
 
 type Status = 'loading' | 'success' | 'error'
 
@@ -28,9 +29,14 @@ export function VerifyEmailPage() {
           setMessage(res.message)
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        // El endpoint devuelve 400 con { success: false, message } para tokens inválidos/expirados.
+        if (err instanceof ApiError && err.status === 400 && err.extensions?.['message']) {
+          setMessage(err.extensions['message'] as string)
+        } else {
+          setMessage('No se pudo verificar el email. El enlace puede haber expirado.')
+        }
         setStatus('error')
-        setMessage('No se pudo verificar el email. El enlace puede haber expirado.')
       })
   }, [token])
 

@@ -72,7 +72,7 @@ if ($LASTEXITCODE -ne 0) { throw 'No se pudo crear el rol de la aplicación.' }
 # Migraciones con el dueño de la base.
 $env:ConnectionStrings__Migrations = "Host=127.0.0.1;Port=$port;Database=$db;Username=$user;Password=$($cfg['POSTGRES_PASSWORD'])"
 dotnet tool restore | Out-Null
-dotnet ef database update --project src/TallerControl.Infrastructure --startup-project src/TallerControl.Api
+dotnet ef database update --project src/TallerControl.Infrastructure --startup-project src/TallerControl.Api --context AppDbContext
 if ($LASTEXITCODE -ne 0) { throw 'No se pudieron aplicar las migraciones.' }
 
 # La API corre con el rol de aplicación, no con el dueño.

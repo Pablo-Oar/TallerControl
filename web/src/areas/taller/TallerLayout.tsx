@@ -16,9 +16,9 @@ export function TallerLayout({ children }: { children: ReactNode }) {
     setLoggingOut(true)
     try {
       await logout()
-      navigate('/login', { replace: true })
     } finally {
       setLoggingOut(false)
+      navigate('/login', { replace: true })
     }
   }
 
