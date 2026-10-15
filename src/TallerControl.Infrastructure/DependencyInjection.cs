@@ -35,7 +35,15 @@ using TallerControl.Infrastructure.Storage;
 using TallerControl.Infrastructure.Tenancy;
 using TallerControl.Infrastructure.Users;
 using TallerControl.Infrastructure.Vehicles;
+using TallerControl.Infrastructure.Cash;
+using TallerControl.Infrastructure.CounterSales;
+using TallerControl.Infrastructure.Purchases;
+using TallerControl.Infrastructure.Suppliers;
 using TallerControl.Infrastructure.Work;
+using TallerControl.Application.Cash;
+using TallerControl.Application.CounterSales;
+using TallerControl.Application.Purchases;
+using TallerControl.Application.Suppliers;
 
 namespace TallerControl.Infrastructure;
 
@@ -193,6 +201,41 @@ public static class DependencyInjection
         services.AddScoped<StartOwnerChallengeHandler>();
         services.AddScoped<ValidateOwnerOtpHandler>();
         services.AddScoped<GetOwnerVehicleHandler>();
+
+        services.AddScoped<ICashRepository, EfCashRepository>();
+        services.AddScoped<CreateCashAccountHandler>();
+        services.AddScoped<GetCashAccountHandler>();
+        services.AddScoped<SearchCashAccountsHandler>();
+        services.AddScoped<UpdateCashAccountHandler>();
+        services.AddScoped<DeleteCashAccountHandler>();
+        services.AddScoped<OpenCashSessionHandler>();
+        services.AddScoped<CloseCashSessionHandler>();
+        services.AddScoped<ManualCashMovementHandler>();
+        services.AddScoped<GetCashMovementsHandler>();
+
+        services.AddScoped<ISupplierRepository, EfSupplierRepository>();
+        services.AddScoped<CreateSupplierHandler>();
+        services.AddScoped<GetSupplierHandler>();
+        services.AddScoped<SearchSuppliersHandler>();
+        services.AddScoped<UpdateSupplierHandler>();
+        services.AddScoped<DeleteSupplierHandler>();
+        services.AddScoped<RestoreSupplierHandler>();
+
+        services.AddScoped<IPurchaseRepository, EfPurchaseRepository>();
+        services.AddScoped<CreatePurchaseHandler>();
+        services.AddScoped<ConfirmPurchaseHandler>();
+        services.AddScoped<CancelPurchaseHandler>();
+        services.AddScoped<GetPurchaseHandler>();
+        services.AddScoped<SearchPurchasesHandler>();
+        services.AddScoped<DeletePurchaseHandler>();
+
+        services.AddScoped<ICounterSaleRepository, EfCounterSaleRepository>();
+        services.AddScoped<CreateCounterSaleHandler>();
+        services.AddScoped<ConfirmCounterSaleHandler>();
+        services.AddScoped<CancelCounterSaleHandler>();
+        services.AddScoped<GetCounterSaleHandler>();
+        services.AddScoped<SearchCounterSalesHandler>();
+        services.AddScoped<DeleteCounterSaleHandler>();
 
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddHostedService<OutboxDispatcher>();
