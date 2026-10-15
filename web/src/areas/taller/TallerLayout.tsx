@@ -50,6 +50,26 @@ export function TallerLayout({ children }: { children: ReactNode }) {
                 Tarjetas QR
               </NavLink>
             )}
+            {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
+              <NavLink to="/app/cash" className={navCls}>
+                Caja
+              </NavLink>
+            )}
+            {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
+              <NavLink to="/app/suppliers" className={navCls}>
+                Proveedores
+              </NavLink>
+            )}
+            {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
+              <NavLink to="/app/purchases" className={navCls}>
+                Compras
+              </NavLink>
+            )}
+            {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
+              <NavLink to="/app/counter-sales" className={navCls}>
+                Mostrador
+              </NavLink>
+            )}
             {user?.role === 'Owner' && (
               <NavLink to="/app/settings/general" className={navCls}>
                 General

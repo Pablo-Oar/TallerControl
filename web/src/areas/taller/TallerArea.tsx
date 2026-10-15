@@ -12,6 +12,10 @@ import { QuotesPage } from './quotes/QuotesPage'
 import { QuoteDetailPage } from './quotes/QuoteDetailPage'
 import { QrCardsPage } from './qr/QrCardsPage'
 import { DashboardPage } from './DashboardPage'
+import { CashPage } from './cash/CashPage'
+import { SuppliersPage } from './suppliers/SuppliersPage'
+import { PurchasesPage } from './purchases/PurchasesPage'
+import { CounterSalesPage } from './counter-sales/CounterSalesPage'
 
 /** Área del taller (`/app/*`): dueño y administrativo. Escritorio primero. */
 export function Component() {
@@ -28,6 +32,10 @@ export function Component() {
           <Route path="work-orders" element={<WorkOrdersPage />} />
           <Route path="work-orders/:id" element={<WorkOrderDetailPage />} />
           <Route path="qr" element={<QrCardsPage />} />
+          <Route path="cash" element={<CashPage />} />
+          <Route path="suppliers" element={<SuppliersPage />} />
+          <Route path="purchases" element={<PurchasesPage />} />
+          <Route path="counter-sales" element={<CounterSalesPage />} />
           <Route
             path="settings/general"
             element={
