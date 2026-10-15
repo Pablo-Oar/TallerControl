@@ -1,7 +1,10 @@
 using System.Net;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Serilog;
 using TallerControl.Api.Endpoints.Auth;
 using TallerControl.Api.Endpoints.Catalog;
@@ -37,6 +40,14 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Data Protection: claves persistidas en BD para sobrevivir reinicios y escala horizontal (E9).
+// Contexto separado para evitar dep transitiva vulnerable en Infrastructure (solo Web SDK la absorbe).
+builder.Services.AddDbContext<DataProtectionDbContext>((sp, options) =>
+    options.UseNpgsql(sp.GetRequiredService<NpgsqlDataSource>()));
+builder.Services.AddDataProtection()
+    .PersistKeysToDbContext<DataProtectionDbContext>();
+
 builder.Services.AddTallerControlAuthentication();
 builder.Services.AddApiErrorHandling();
 

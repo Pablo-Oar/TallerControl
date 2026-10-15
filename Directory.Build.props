@@ -6,4 +6,18 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
+
+  <!--
+    Suprimir vulnerabilidades conocidas en System.Security.Cryptography.Xml y .Pkcs 10.0.12.
+    Estas afectan operaciones de firma XML / PKCS que no usamos en nuestro flujo. Los mismos
+    paquetes están presentes en el runtime de ASP.NET Core 10.0.12 vía el shared framework.
+    Revisar al actualizar a 10.0.13+ para confirmar si fueron parcheados.
+  -->
+  <ItemGroup>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2fmv-rv2c-59x7" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-846f-f764-76mx" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-7hqp-7c5m-4vq6" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-c399-9853-6jmj" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-r955-8q5j-3h83" />
+  </ItemGroup>
 </Project>
