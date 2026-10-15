@@ -20,6 +20,11 @@ internal sealed class EfSupplierRepository : ISupplierRepository
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == tenantId && s.DeletedAt == null, ct);
 
+    public Task<Supplier?> FindDeletedByIdAsync(Guid tenantId, Guid id, CancellationToken ct) =>
+        _db.Set<Supplier>()
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == tenantId && s.DeletedAt != null, ct);
+
     public async Task<Page<Supplier>> SearchAsync(
         Guid tenantId, string? query, int page, int pageSize, CancellationToken ct)
     {

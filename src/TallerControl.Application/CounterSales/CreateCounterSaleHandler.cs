@@ -39,6 +39,8 @@ public sealed class CreateCounterSaleHandler
         if (request.Items.Count == 0)
             throw new BusinessRuleException("La venta debe tener al menos un ítem.");
 
+        await using var tx = await _repo.BeginTransactionAsync(ct);
+
         var number = await _numbers.NextAsync(DocumentKind.CounterSale, ct);
         var now = _clock.GetUtcNow();
 
@@ -69,6 +71,7 @@ public sealed class CreateCounterSaleHandler
 
         await _repo.AddAsync(sale, ct);
         await _repo.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
         return MapToDto(sale);
     }
 

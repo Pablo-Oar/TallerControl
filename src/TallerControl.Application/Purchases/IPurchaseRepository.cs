@@ -9,5 +9,6 @@ public interface IPurchaseRepository
     Task<Page<Purchase>> SearchAsync(Guid tenantId, string? query, int page, int pageSize, CancellationToken ct);
     Task AddAsync(Purchase purchase, CancellationToken ct);
     Task<Guid?> GetMainBranchIdAsync(Guid tenantId, CancellationToken ct);
+    Task<IPurchaseTransaction> BeginTransactionAsync(CancellationToken ct);
     Task SaveChangesAsync(CancellationToken ct);
 }

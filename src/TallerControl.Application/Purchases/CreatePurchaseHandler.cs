@@ -46,6 +46,8 @@ public sealed class CreatePurchaseHandler
         if (request.Items.Count == 0)
             throw new BusinessRuleException("La compra debe tener al menos un ítem.");
 
+        await using var tx = await _repo.BeginTransactionAsync(ct);
+
         var number = await _numbers.NextAsync(DocumentKind.Purchase, ct);
 
         Purchase purchase;
@@ -78,6 +80,7 @@ public sealed class CreatePurchaseHandler
 
         await _repo.AddAsync(purchase, ct);
         await _repo.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
         return MapToDto(purchase);
     }
 

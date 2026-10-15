@@ -63,7 +63,7 @@ internal static class CashEndpoints
         app.MapGet("/api/v1/cash/accounts/{id:guid}/movements",
                 (Guid id, GetCashMovementsHandler handler, CancellationToken ct,
                  DateTimeOffset? from = null, DateTimeOffset? to = null) =>
-                    handler.HandleAsync(id, from, to, ct))
+                    GetMovementsAsync(id, handler, from, to, ct))
             .RequirePermission(Permission.CashRead);
 
         app.MapPost("/api/v1/cash/accounts/{id:guid}/movements",
@@ -108,6 +108,14 @@ internal static class CashEndpoints
     {
         var dto = await handler.HandleAsync(id, request, ct);
         return Results.Ok(dto);
+    }
+
+    private static async Task<IResult> GetMovementsAsync(
+        Guid id, GetCashMovementsHandler handler,
+        DateTimeOffset? from, DateTimeOffset? to, CancellationToken ct)
+    {
+        var (movements, _) = await handler.HandleAsync(id, from, to, ct);
+        return Results.Ok(movements);
     }
 
     private static async Task<IResult> AddMovementAsync(

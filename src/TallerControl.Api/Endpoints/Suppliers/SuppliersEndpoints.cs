@@ -35,8 +35,9 @@ internal static class SuppliersEndpoints
             .RequirePermission(Permission.SuppliersRead);
 
         app.MapPut("/api/v1/suppliers/{id:guid}",
-                (Guid id, UpdateSupplierRequest request, UpdateSupplierHandler handler, CancellationToken ct) =>
-                    UpdateAsync(id, request, handler, ct))
+                (Guid id, UpdateSupplierRequest request, UpdateSupplierHandler handler,
+                 HttpRequest httpRequest, CancellationToken ct) =>
+                    UpdateAsync(id, request, handler, httpRequest, ct))
             .RequirePermission(Permission.SuppliersWrite)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
@@ -70,10 +71,28 @@ internal static class SuppliersEndpoints
     }
 
     private static async Task<IResult> UpdateAsync(
-        Guid id, UpdateSupplierRequest request, UpdateSupplierHandler handler, CancellationToken ct)
+        Guid id, UpdateSupplierRequest request, UpdateSupplierHandler handler,
+        HttpRequest httpRequest, CancellationToken ct)
     {
-        var dto = await handler.HandleAsync(id, request, ct);
+        var ifMatch = httpRequest.Headers.IfMatch.FirstOrDefault();
+        if (!TryParseETag(ifMatch, out var expectedVersion))
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status422UnprocessableEntity,
+                title: "Cabecera requerida",
+                detail: "Se requiere la cabecera If-Match con la versión del recurso.");
+        }
+
+        var requestWithVersion = request with { Version = expectedVersion };
+        var dto = await handler.HandleAsync(id, requestWithVersion, ct);
         return Results.Ok(dto);
+    }
+
+    private static bool TryParseETag(string? raw, out uint version)
+    {
+        version = 0;
+        if (string.IsNullOrWhiteSpace(raw)) return false;
+        return uint.TryParse(raw.Trim('"'), out version);
     }
 
     private static async Task<IResult> DeleteAsync(

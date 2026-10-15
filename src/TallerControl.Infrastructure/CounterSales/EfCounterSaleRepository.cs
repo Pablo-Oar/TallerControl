@@ -52,5 +52,22 @@ internal sealed class EfCounterSaleRepository : ICounterSaleRepository
             .Select(b => (Guid?)b.Id)
             .FirstOrDefaultAsync(ct);
 
+    public async Task<ICounterSaleTransaction> BeginTransactionAsync(CancellationToken ct)
+    {
+        var tx = await _db.Database.BeginTransactionAsync(ct);
+        return new EfCounterSaleTransaction(tx);
+    }
+
     public Task SaveChangesAsync(CancellationToken ct) => _db.SaveChangesAsync(ct);
+
+    private sealed class EfCounterSaleTransaction : ICounterSaleTransaction
+    {
+        private readonly Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction _tx;
+
+        public EfCounterSaleTransaction(Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction tx) => _tx = tx;
+
+        public Task CommitAsync(CancellationToken ct) => _tx.CommitAsync(ct);
+
+        public ValueTask DisposeAsync() => _tx.DisposeAsync();
+    }
 }

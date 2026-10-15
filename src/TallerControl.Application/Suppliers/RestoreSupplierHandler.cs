@@ -17,7 +17,7 @@ public sealed class RestoreSupplierHandler
     {
         var tenantId = _tenant.TenantId
             ?? throw new InvalidOperationException("No hay taller en la sesión.");
-        var supplier = await _repo.FindByIdAsync(tenantId, id, ct)
+        var supplier = await _repo.FindDeletedByIdAsync(tenantId, id, ct)
             ?? throw new NotFoundException("El proveedor no existe.");
 
         if (!supplier.IsDeleted)
