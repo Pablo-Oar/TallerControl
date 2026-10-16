@@ -179,8 +179,10 @@ public static class DependencyInjection
         services.AddScoped<GetPublicPaymentHandler>();
 
         services.AddScoped<IPublicLinkRepository, EfPublicLinkRepository>();
+        services.AddScoped<ISignatureEncryptor, SignatureEncryptor>();
         services.AddScoped<GetPublicQuoteHandler>();
         services.AddScoped<SubmitPublicResponseHandler>();
+        services.AddScoped<RequestSignatureUploadUrlHandler>();
         services.AddScoped<GetPublicWorkOrderHandler>();
 
         services.Configure<QrOptions>(configuration.GetSection(QrOptions.Section));

@@ -61,8 +61,18 @@ public sealed class QuoteResponse : Entity, ITenantOwned
     public bool IsCurrent { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
 
+    public string? SignatureFileKey { get; private set; }
+    public byte[]? SignerDocNumberEnc { get; private set; }
+
     public IReadOnlyList<QuoteResponseItem> Items => _items.AsReadOnly();
 
     /// <summary>Marca esta respuesta como histórica cuando llega una nueva.</summary>
     public void Supersede() => IsCurrent = false;
+
+    /// <summary>Adjunta la firma digital y el DNI cifrado al registro (RF-R4, F-16).</summary>
+    public void AttachSignature(string fileKey, byte[]? docNumberEnc)
+    {
+        SignatureFileKey = fileKey ?? throw new ArgumentNullException(nameof(fileKey));
+        SignerDocNumberEnc = docNumberEnc;
+    }
 }

@@ -2049,6 +2049,15 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(150)")
                         .HasColumnName("signer_name");
 
+                    b.Property<string>("SignatureFileKey")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("signature_file_key");
+
+                    b.Property<byte[]>("SignerDocNumberEnc")
+                        .HasColumnType("bytea")
+                        .HasColumnName("signer_doc_number_enc");
+
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
