@@ -2407,6 +2407,7 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasColumnName("created_by");
 
                     b.Property<string>("DayOfWeek")
+                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("day_of_week");
 
