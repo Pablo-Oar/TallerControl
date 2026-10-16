@@ -5,7 +5,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
 using TallerControl.Application.Auth;
 using TallerControl.Application.Reminders;
+using TallerControl.Application.Reports;
 using TallerControl.Infrastructure.Reminders;
+using TallerControl.Infrastructure.Reports;
 using TallerControl.Application.Cash;
 using TallerControl.Application.Catalog;
 using TallerControl.Application.Common;
@@ -266,6 +268,14 @@ public static class DependencyInjection
         services.AddScoped<SearchInvoicesHandler>();
         services.AddScoped<GetIvaBookHandler>();
         services.AddScoped<GetCitiExportHandler>();
+
+        // ── E13: Reportes ─────────────────────────────────────────────────────
+        services.AddScoped<IReportsRepository, EfReportsRepository>();
+        services.AddScoped<IReportExporter, ClosedXmlExporter>();
+        services.AddScoped<GetRevenueReportHandler>();
+        services.AddScoped<GetReceivablesReportHandler>();
+        services.AddScoped<GetStockReportHandler>();
+        services.AddScoped<GetPurchasesReportHandler>();
 
         // ── E13: Recordatorios automáticos ───────────────────────────────────
         services.AddScoped<IReminderRepository, EfReminderRepository>();

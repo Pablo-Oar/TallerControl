@@ -76,6 +76,11 @@ export function TallerLayout({ children }: { children: ReactNode }) {
                 Mostrador
               </NavLink>
             )}
+            {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
+              <NavLink to="/app/reports" className={navCls}>
+                Reportes
+              </NavLink>
+            )}
             {(user?.role === 'Owner' || user?.role === 'AdminStaff' || user?.role === 'Accountant') && (
               <NavLink to="/app/invoicing" className={navCls}>
                 Facturación
