@@ -2406,8 +2406,8 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
-                    b.Property<int>("DayOfWeek")
-                        .HasColumnType("integer")
+                    b.Property<string>("DayOfWeek")
+                        .HasColumnType("text")
                         .HasColumnName("day_of_week");
 
                     b.Property<TimeOnly>("EndTime")
