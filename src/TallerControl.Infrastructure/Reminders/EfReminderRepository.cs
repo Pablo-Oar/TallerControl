@@ -39,7 +39,7 @@ internal sealed class EfReminderRepository : IReminderRepository
                 x.Reminder.Id,
                 x.Reminder.VehicleId,
                 x.Plate,
-                x.Reminder.Kind.ToString(),
+                x.Reminder.Kind,
                 x.Reminder.Title,
                 x.Reminder.DueDate,
                 x.Reminder.DueKm,
@@ -65,7 +65,7 @@ internal sealed class EfReminderRepository : IReminderRepository
         var r = result.Reminder;
         return new ReminderDto(
             r.Id, r.VehicleId, result.Plate,
-            r.Kind.ToString(), r.Title, r.Notes,
+            r.Kind, r.Title, r.Notes,
             r.DueDate, r.DueKm, r.LastNotifiedAt, r.Version);
     }
 

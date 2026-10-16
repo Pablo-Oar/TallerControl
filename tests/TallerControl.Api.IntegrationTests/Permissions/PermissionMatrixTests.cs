@@ -195,7 +195,8 @@ public sealed class PermissionMatrixTests : IAsyncLifetime
                 e.RoutePattern.Contains("/counter-sales/", StringComparison.Ordinal) ||
                 e.RoutePattern.Contains("/invoicing/invoices/", StringComparison.Ordinal) ||
                 e.RoutePattern.Contains("/invoicing/certificates/", StringComparison.Ordinal) ||
-                e.RoutePattern.Contains("/invoicing/points-of-sale/", StringComparison.Ordinal)))
+                e.RoutePattern.Contains("/invoicing/points-of-sale/", StringComparison.Ordinal) ||
+                e.RoutePattern.Contains("/reminders/", StringComparison.Ordinal)))
             .ToList();
 
         var unresolved = all
