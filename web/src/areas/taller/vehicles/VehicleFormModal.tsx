@@ -3,10 +3,16 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
-import { vehiclesApi, type FuelType, type VehicleDto, type VehicleUpsertRequest } from '../../../lib/api/vehicles'
+import { vehiclesApi, type FuelType, type VehicleUsageProfile, type VehicleDto, type VehicleUpsertRequest } from '../../../lib/api/vehicles'
 import { customersApi } from '../../../lib/api/customers'
 import { Button } from '../../../components/ui/Button'
 import { ApiError } from '../../../lib/api/client'
+
+const USAGE_PROFILE_OPTIONS: { value: VehicleUsageProfile; label: string }[] = [
+  { value: 'regular', label: 'Regular' },
+  { value: 'low_usage', label: 'Uso reducido' },
+  { value: 'commercial', label: 'Comercial / Alta carga' },
+]
 
 const FUEL_OPTIONS: { value: FuelType; label: string }[] = [
   { value: 'gasoline', label: 'Nafta' },
@@ -30,6 +36,8 @@ const schema = z.object({
   vin: z.string().trim().max(17).optional(),
   fuel: z.string().optional(),
   odometerKm: z.coerce.number().int().min(0, 'El km no puede ser negativo'),
+  usageProfile: z.string().optional(),
+  engineNumber: z.string().trim().max(30).optional(),
 })
 
 type FormInput = z.input<typeof schema>
@@ -47,6 +55,8 @@ function toFormData(dto: VehicleDto): FormInput {
     vin: dto.vin ?? '',
     fuel: dto.fuel ?? '',
     odometerKm: dto.odometerKm,
+    usageProfile: dto.usageProfile ?? '',
+    engineNumber: dto.engineNumber ?? '',
   }
 }
 
@@ -86,6 +96,8 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose }: Props) {
         vin: (data.vin as string) || null,
         fuel: ((data.fuel as string) || null) as FuelType | null,
         odometerKm: data.odometerKm as number,
+        usageProfile: ((data.usageProfile as string) || null) as VehicleUsageProfile | null,
+        engineNumber: (data.engineNumber as string) || null,
       }
       const result = isEdit
         ? await vehiclesApi.update(vehicle.id, body, vehicle.version)
@@ -172,6 +184,20 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose }: Props) {
           <div>
             <label className="mb-1 block text-sm font-medium">VIN / Nro. de chasis</label>
             <input {...register('vin')} className={inputCls} placeholder="1HGBH41JXMN109186" maxLength={17} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium">Perfil de uso</label>
+              <select {...register('usageProfile')} className={inputCls}>
+                <option value="">Sin especificar</option>
+                {USAGE_PROFILE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium">Nro. de motor</label>
+              <input {...register('engineNumber')} className={inputCls} placeholder="ABC123456" maxLength={30} />
+            </div>
           </div>
 
           {serverError && (

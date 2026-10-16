@@ -63,6 +63,8 @@ public static class Permission
     public const string InvoicingWrite = "invoicing.write";
     public const string InvoicingEmit = "invoicing.emit";
 
+    public const string RemindersManage = "reminders.manage";
+
     /// <summary>Permisos base del owner: todos.</summary>
     public static IReadOnlySet<string> ForOwner { get; } = new HashSet<string>
     {
@@ -81,6 +83,7 @@ public static class Permission
         CounterSalesRead, CounterSalesWrite,
         AuditRead,
         InvoicingRead, InvoicingWrite, InvoicingEmit,
+        RemindersManage,
     };
 
     /// <summary>Permisos base del administrativo.</summary>
@@ -99,6 +102,7 @@ public static class Permission
         PurchasesRead, PurchasesWrite,
         CounterSalesRead, CounterSalesWrite,
         InvoicingRead, InvoicingEmit,
+        RemindersManage,
     };
 
     /// <summary>Permisos base del mecánico (sin finos adicionales).</summary>

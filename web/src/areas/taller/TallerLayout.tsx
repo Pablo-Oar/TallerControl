@@ -47,6 +47,11 @@ export function TallerLayout({ children }: { children: ReactNode }) {
               Órdenes
             </NavLink>
             {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
+              <NavLink to="/app/reminders" className={navCls}>
+                Recordatorios
+              </NavLink>
+            )}
+            {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
               <NavLink to="/app/qr" className={navCls}>
                 Tarjetas QR
               </NavLink>

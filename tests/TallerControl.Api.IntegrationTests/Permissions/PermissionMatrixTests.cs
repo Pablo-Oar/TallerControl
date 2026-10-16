@@ -316,6 +316,11 @@ public sealed class PermissionMatrixTests : IAsyncLifetime
             return RouteParam.Replace(pattern, _factory.ForeignPointOfSaleId.ToString());
         }
 
+        if (pattern.Contains("/reminders/", StringComparison.Ordinal))
+        {
+            return RouteParam.Replace(pattern, _factory.ForeignReminderId.ToString());
+        }
+
         // Fallback: no debería llegar aquí si resolvable está correctamente definido
         return RouteParam.Replace(pattern, Guid.NewGuid().ToString());
     }

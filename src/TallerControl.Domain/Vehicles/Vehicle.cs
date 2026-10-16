@@ -25,7 +25,9 @@ public sealed class Vehicle : Entity, ITenantOwned, IVersioned, IAudited, IAudit
         int? year = null,
         string? vin = null,
         string? fuel = null,
-        int odometerKm = 0)
+        int odometerKm = 0,
+        VehicleUsageProfile? usageProfile = null,
+        string? engineNumber = null)
     {
         TenantId = tenantId;
         CustomerId = customerId;
@@ -39,6 +41,8 @@ public sealed class Vehicle : Entity, ITenantOwned, IVersioned, IAudited, IAudit
         Fuel = fuel?.Trim();
         OdometerKm = odometerKm >= 0 ? odometerKm
             : throw new ArgumentOutOfRangeException(nameof(odometerKm), "El km no puede ser negativo.");
+        UsageProfile = usageProfile;
+        EngineNumber = engineNumber?.Trim().ToUpperInvariant();
     }
 
     public Guid TenantId { get; private set; }
@@ -52,6 +56,8 @@ public sealed class Vehicle : Entity, ITenantOwned, IVersioned, IAudited, IAudit
     public string? Vin { get; private set; }
     public string? Fuel { get; private set; }
     public int OdometerKm { get; private set; }
+    public VehicleUsageProfile? UsageProfile { get; private set; }
+    public string? EngineNumber { get; private set; }
     public uint Version { get; private set; }
 
     // IAuditable
@@ -75,7 +81,9 @@ public sealed class Vehicle : Entity, ITenantOwned, IVersioned, IAudited, IAudit
         string? color,
         int? year,
         string? vin,
-        string? fuel)
+        string? fuel,
+        VehicleUsageProfile? usageProfile = null,
+        string? engineNumber = null)
     {
         Brand = brand?.Trim();
         Model = model?.Trim();
@@ -84,6 +92,8 @@ public sealed class Vehicle : Entity, ITenantOwned, IVersioned, IAudited, IAudit
         Year = year;
         Vin = vin?.Trim().ToUpperInvariant();
         Fuel = fuel?.Trim();
+        UsageProfile = usageProfile;
+        EngineNumber = engineNumber?.Trim().ToUpperInvariant();
     }
 
     /// <summary>

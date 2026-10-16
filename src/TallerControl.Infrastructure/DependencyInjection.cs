@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
 using TallerControl.Application.Auth;
+using TallerControl.Application.Reminders;
+using TallerControl.Infrastructure.Reminders;
 using TallerControl.Application.Cash;
 using TallerControl.Application.Catalog;
 using TallerControl.Application.Common;
@@ -262,6 +264,15 @@ public static class DependencyInjection
         services.AddScoped<SearchInvoicesHandler>();
         services.AddScoped<GetIvaBookHandler>();
         services.AddScoped<GetCitiExportHandler>();
+
+        // ── E13: Recordatorios automáticos ───────────────────────────────────
+        services.AddScoped<IReminderRepository, EfReminderRepository>();
+        services.AddScoped<CreateReminderHandler>();
+        services.AddScoped<GetReminderHandler>();
+        services.AddScoped<SearchRemindersHandler>();
+        services.AddScoped<UpdateReminderHandler>();
+        services.AddScoped<DeleteReminderHandler>();
+        services.AddScoped<EvaluateDueRemindersHandler>();
 
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddHostedService<OutboxDispatcher>();

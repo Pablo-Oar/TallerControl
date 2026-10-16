@@ -19,6 +19,7 @@ import { CounterSalesPage } from './counter-sales/CounterSalesPage'
 import { InvoicingPage } from './invoicing/InvoicingPage'
 import { InvoicingSetupPage } from './invoicing/InvoicingSetupPage'
 import { IvaBookPage } from './invoicing/IvaBookPage'
+import { RemindersPage } from './reminders/RemindersPage'
 
 /** Área del taller (`/app/*`): dueño y administrativo. Escritorio primero. */
 export function Component() {
@@ -34,6 +35,7 @@ export function Component() {
           <Route path="quotes/:id" element={<QuoteDetailPage />} />
           <Route path="work-orders" element={<WorkOrdersPage />} />
           <Route path="work-orders/:id" element={<WorkOrderDetailPage />} />
+          <Route path="reminders" element={<RemindersPage />} />
           <Route path="qr" element={<QrCardsPage />} />
           <Route path="cash" element={<CashPage />} />
           <Route path="suppliers" element={<SuppliersPage />} />

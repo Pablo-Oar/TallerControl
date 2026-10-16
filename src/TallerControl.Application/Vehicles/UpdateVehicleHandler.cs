@@ -35,7 +35,9 @@ public sealed class UpdateVehicleHandler
                 request.Color,
                 request.Year,
                 request.Vin,
-                request.Fuel);
+                request.Fuel,
+                request.UsageProfile,
+                request.EngineNumber);
 
             if (request.OdometerKm != vehicle.OdometerKm)
                 vehicle.UpdateOdometer(request.OdometerKm, allowOdometerDecrease);
