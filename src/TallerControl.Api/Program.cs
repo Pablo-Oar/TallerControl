@@ -9,6 +9,7 @@ using Serilog;
 using TallerControl.Api.Endpoints.Auth;
 using TallerControl.Api.Endpoints.Cash;
 using TallerControl.Api.Endpoints.Catalog;
+using TallerControl.Api.Endpoints.Invoicing;
 using TallerControl.Api.Endpoints.CounterSales;
 using TallerControl.Api.Endpoints.Customers;
 using TallerControl.Api.Endpoints.Dashboard;
@@ -107,6 +108,7 @@ app.MapCashEndpoints();
 app.MapSuppliersEndpoints();
 app.MapPurchasesEndpoints();
 app.MapCounterSalesEndpoints();
+app.MapInvoicingEndpoints();
 app.MapRegistrationEndpoints(app.Configuration);
 app.MapPublicEndpoints();
 

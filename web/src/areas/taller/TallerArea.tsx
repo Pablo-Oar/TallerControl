@@ -16,6 +16,9 @@ import { CashPage } from './cash/CashPage'
 import { SuppliersPage } from './suppliers/SuppliersPage'
 import { PurchasesPage } from './purchases/PurchasesPage'
 import { CounterSalesPage } from './counter-sales/CounterSalesPage'
+import { InvoicingPage } from './invoicing/InvoicingPage'
+import { InvoicingSetupPage } from './invoicing/InvoicingSetupPage'
+import { IvaBookPage } from './invoicing/IvaBookPage'
 
 /** Área del taller (`/app/*`): dueño y administrativo. Escritorio primero. */
 export function Component() {
@@ -36,6 +39,9 @@ export function Component() {
           <Route path="suppliers" element={<SuppliersPage />} />
           <Route path="purchases" element={<PurchasesPage />} />
           <Route path="counter-sales" element={<CounterSalesPage />} />
+          <Route path="invoicing" element={<InvoicingPage />} />
+          <Route path="invoicing/setup" element={<InvoicingSetupPage />} />
+          <Route path="invoicing/iva-book" element={<IvaBookPage />} />
           <Route
             path="settings/general"
             element={

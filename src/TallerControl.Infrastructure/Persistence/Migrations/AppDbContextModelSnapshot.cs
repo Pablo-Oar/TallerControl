@@ -801,6 +801,289 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TallerControl.Domain.Invoicing.FiscalCertificate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CertificatePem")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("certificate_pem");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("CsrPem")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("csr_pem");
+
+                    b.Property<string>("Cuit")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("character varying(13)")
+                        .HasColumnName("cuit");
+
+                    b.Property<DateTimeOffset?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_primary");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<byte[]>("PrivateKeyEncrypted")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("private_key_encrypted");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_fiscal_certificates");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_fiscal_certificates_tenant_active")
+                        .HasFilter("status = 'active'");
+
+                    b.HasIndex("TenantId", "Cuit")
+                        .IsUnique()
+                        .HasDatabaseName("ix_fiscal_certificates_tenant_cuit");
+
+                    b.ToTable("fiscal_certificates", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_fiscal_certificates_status", "\"status\" IN ('active', 'expired', 'pending', 'revoked')");
+                        });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Invoicing.FiscalPointOfSale", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("FiscalCertificateId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("fiscal_certificate_id");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer")
+                        .HasColumnName("number");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_fiscal_points_of_sale");
+
+                    b.HasIndex("FiscalCertificateId")
+                        .HasDatabaseName("ix_fiscal_points_of_sale_fiscal_certificate_id");
+
+                    b.HasIndex("TenantId", "Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_fiscal_points_of_sale_tenant_number");
+
+                    b.ToTable("fiscal_points_of_sale", (string)null);
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Invoicing.Invoice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ArcaResponse")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("arca_response");
+
+                    b.Property<string>("Cae")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("cae");
+
+                    b.Property<DateTimeOffset?>("CaeExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cae_expires_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("FiscalPointOfSaleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("fiscal_point_of_sale_id");
+
+                    b.Property<string>("InvoiceType")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("invoice_type");
+
+                    b.Property<bool>("IsCredit")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_credit");
+
+                    b.Property<DateTimeOffset>("IssuedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("issued_at");
+
+                    b.Property<decimal>("NetAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("net_amount");
+
+                    b.Property<int?>("Number")
+                        .HasColumnType("integer")
+                        .HasColumnName("number");
+
+                    b.Property<Guid?>("OriginalInvoiceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("original_invoice_id");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("rejection_reason");
+
+                    b.Property<Guid>("SourceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_id");
+
+                    b.Property<string>("SourceType")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("source_type");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("total_amount");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<decimal>("VatAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("vat_amount");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_invoices");
+
+                    b.HasIndex("FiscalPointOfSaleId")
+                        .HasDatabaseName("ix_invoices_fiscal_point_of_sale_id");
+
+                    b.HasIndex("OriginalInvoiceId")
+                        .HasDatabaseName("ix_invoices_original_invoice_id");
+
+                    b.HasIndex("TenantId", "IssuedAt")
+                        .HasDatabaseName("ix_invoices_tenant_issued_at");
+
+                    b.HasIndex("TenantId", "SourceType", "SourceId")
+                        .HasDatabaseName("ix_invoices_tenant_source");
+
+                    b.ToTable("invoices", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_invoices_invoice_type", "\"invoice_type\" IN ('a', 'b', 'c', 'm')");
+
+                            t.HasCheckConstraint("ck_invoices_source_type", "\"source_type\" IN ('counter_sale', 'work_order')");
+
+                            t.HasCheckConstraint("ck_invoices_status", "\"status\" IN ('authorized', 'pending', 'rejected')");
+                        });
+                });
+
             modelBuilder.Entity("TallerControl.Domain.Notifications.Notification", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2207,7 +2490,7 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
 
                     b.ToTable("invitations", null, t =>
                         {
-                            t.HasCheckConstraint("ck_invitations_role", "\"role\" IN ('admin_staff', 'mechanic', 'owner')");
+                            t.HasCheckConstraint("ck_invitations_role", "\"role\" IN ('accountant', 'admin_staff', 'mechanic', 'owner')");
                         });
                 });
 
@@ -2263,7 +2546,7 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
 
                     b.ToTable("memberships", null, t =>
                         {
-                            t.HasCheckConstraint("ck_memberships_role", "\"role\" IN ('admin_staff', 'mechanic', 'owner')");
+                            t.HasCheckConstraint("ck_memberships_role", "\"role\" IN ('accountant', 'admin_staff', 'mechanic', 'owner')");
 
                             t.HasCheckConstraint("ck_memberships_status", "\"status\" IN ('active', 'disabled')");
                         });
@@ -3030,6 +3313,60 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_customers_tenant_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Invoicing.FiscalCertificate", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_fiscal_certificates_tenant_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Invoicing.FiscalPointOfSale", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Invoicing.FiscalCertificate", "FiscalCertificate")
+                        .WithMany()
+                        .HasForeignKey("FiscalCertificateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_fiscal_points_of_sale_fiscal_certificates_fiscal_certificat");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_fiscal_points_of_sale_tenant_tenant_id");
+
+                    b.Navigation("FiscalCertificate");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Invoicing.Invoice", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Invoicing.FiscalPointOfSale", "FiscalPointOfSale")
+                        .WithMany()
+                        .HasForeignKey("FiscalPointOfSaleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_invoices_fiscal_points_of_sale_fiscal_point_of_sale_id");
+
+                    b.HasOne("TallerControl.Domain.Invoicing.Invoice", null)
+                        .WithMany()
+                        .HasForeignKey("OriginalInvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_invoices_invoices_original_invoice_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_invoices_tenant_tenant_id");
+
+                    b.Navigation("FiscalPointOfSale");
                 });
 
             modelBuilder.Entity("TallerControl.Domain.Notifications.Notification", b =>

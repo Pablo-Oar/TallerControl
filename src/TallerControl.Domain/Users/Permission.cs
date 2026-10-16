@@ -59,6 +59,10 @@ public static class Permission
 
     public const string AuditRead = "audit.read";
 
+    public const string InvoicingRead = "invoicing.read";
+    public const string InvoicingWrite = "invoicing.write";
+    public const string InvoicingEmit = "invoicing.emit";
+
     /// <summary>Permisos base del owner: todos.</summary>
     public static IReadOnlySet<string> ForOwner { get; } = new HashSet<string>
     {
@@ -76,6 +80,7 @@ public static class Permission
         PurchasesRead, PurchasesWrite,
         CounterSalesRead, CounterSalesWrite,
         AuditRead,
+        InvoicingRead, InvoicingWrite, InvoicingEmit,
     };
 
     /// <summary>Permisos base del administrativo.</summary>
@@ -93,6 +98,7 @@ public static class Permission
         SuppliersRead, SuppliersWrite,
         PurchasesRead, PurchasesWrite,
         CounterSalesRead, CounterSalesWrite,
+        InvoicingRead, InvoicingEmit,
     };
 
     /// <summary>Permisos base del mecánico (sin finos adicionales).</summary>
@@ -112,11 +118,20 @@ public static class Permission
         ContactView,
     };
 
+    /// <summary>
+    /// Contador: solo lectura de facturación; no ocupa lugar del plan (doc 13 §4, E12).
+    /// </summary>
+    public static IReadOnlySet<string> ForAccountant { get; } = new HashSet<string>
+    {
+        InvoicingRead,
+    };
+
     public static IReadOnlySet<string> BaseFor(TenantRole role) => role switch
     {
         TenantRole.Owner => ForOwner,
         TenantRole.AdminStaff => ForAdminStaff,
         TenantRole.Mechanic => ForMechanic,
+        TenantRole.Accountant => ForAccountant,
         _ => throw new ArgumentOutOfRangeException(nameof(role)),
     };
 }

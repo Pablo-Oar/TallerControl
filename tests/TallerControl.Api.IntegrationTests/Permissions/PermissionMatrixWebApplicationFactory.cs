@@ -11,6 +11,7 @@ using TallerControl.Domain.Cash;
 using TallerControl.Domain.Catalog;
 using TallerControl.Domain.CounterSales;
 using TallerControl.Domain.Customers;
+using TallerControl.Domain.Invoicing;
 using TallerControl.Domain.Payments;
 using TallerControl.Domain.Purchases;
 using TallerControl.Domain.Qr;
@@ -78,6 +79,15 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
 
     /// <summary>Venta de mostrador del Taller A para probar T-ISO-ALL en rutas /counter-sales/{id}.</summary>
     public Guid ForeignCounterSaleId { get; private set; }
+
+    /// <summary>Factura del Taller A para probar T-ISO-ALL en rutas /invoicing/invoices/{id}.</summary>
+    public Guid ForeignInvoiceId { get; private set; }
+
+    /// <summary>Certificado fiscal del Taller A para probar T-ISO-ALL en rutas /invoicing/certificates/{id}.</summary>
+    public Guid ForeignCertificateId { get; private set; }
+
+    /// <summary>Punto de venta del Taller A para probar T-ISO-ALL en rutas /invoicing/points-of-sale/{id}.</summary>
+    public Guid ForeignPointOfSaleId { get; private set; }
 
     public string ConnectionString { get; }
 
@@ -346,6 +356,41 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
         }
 
         ForeignCounterSaleId = counterSaleA.Id;
+
+        // Siembra un certificado y una factura del Taller A para T-ISO-ALL en rutas /invoicing/invoices/{id}.
+        var certA = new FiscalCertificate(
+            tenantA.Id, "20000000001", "Cert T-ISO-ALL", isPrimary: true,
+            privateKeyEncrypted: [1, 2, 3], csrPem: "-----BEGIN CERTIFICATE REQUEST-----\nFAKE\n-----END CERTIFICATE REQUEST-----");
+        certA.MarkUploaded("-----BEGIN CERTIFICATE-----\nFAKE\n-----END CERTIFICATE-----", DateTimeOffset.UtcNow.AddYears(1));
+
+        var posA = new FiscalPointOfSale(tenantA.Id, certA.Id, 1, "Punto de Venta T-ISO-ALL");
+
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(certA);
+            db.Add(posA);
+            await db.SaveChangesAsync();
+        }
+
+        var invoiceA = new Invoice(
+            tenantA.Id, posA.Id,
+            InvoiceSourceType.WorkOrder, workOrderA.Id,
+            InvoiceType.B,
+            netAmount: 100m, vatAmount: 21m, totalAmount: 121m,
+            issuedAt: DateTimeOffset.UtcNow);
+        invoiceA.Authorize(1, "70417054367466", DateTimeOffset.UtcNow.AddDays(5), "<FakeResponse/>");
+
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(invoiceA);
+            await db.SaveChangesAsync();
+        }
+
+        ForeignInvoiceId = invoiceA.Id;
+        ForeignCertificateId = certA.Id;
+        ForeignPointOfSaleId = posA.Id;
     }
 
     private static DbContextOptions<AppDbContext> BuildOptions(string cs)
