@@ -60,8 +60,8 @@ internal static class AppointmentsEndpoints
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
         app.MapDelete("/api/v1/appointments/{id:guid}",
-                (Guid id, CancelAppointmentRequest request, CancelAppointmentHandler handler,
-                 CancellationToken ct) =>
+                (Guid id, [Microsoft.AspNetCore.Mvc.FromBody] CancelAppointmentRequest request,
+                 CancelAppointmentHandler handler, CancellationToken ct) =>
                     CancelAsync(id, request, handler, ct))
             .RequirePermission(Permission.AppointmentsCancel)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
