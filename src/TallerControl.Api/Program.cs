@@ -12,6 +12,7 @@ using TallerControl.Api.Endpoints.Catalog;
 using TallerControl.Api.Endpoints.CounterSales;
 using TallerControl.Api.Endpoints.Customers;
 using TallerControl.Api.Endpoints.Dashboard;
+using TallerControl.Api.Endpoints.Invoicing;
 using TallerControl.Api.Endpoints.Payments;
 using TallerControl.Api.Endpoints.Public;
 using TallerControl.Api.Endpoints.Purchases;
@@ -107,6 +108,7 @@ app.MapCashEndpoints();
 app.MapSuppliersEndpoints();
 app.MapPurchasesEndpoints();
 app.MapCounterSalesEndpoints();
+app.MapInvoicingEndpoints();
 app.MapRegistrationEndpoints(app.Configuration);
 app.MapPublicEndpoints();
 

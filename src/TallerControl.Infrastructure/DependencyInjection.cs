@@ -10,6 +10,7 @@ using TallerControl.Application.Common;
 using TallerControl.Application.CounterSales;
 using TallerControl.Application.Customers;
 using TallerControl.Application.Dashboard;
+using TallerControl.Application.Invoicing;
 using TallerControl.Application.Payments;
 using TallerControl.Application.PublicLinks;
 using TallerControl.Application.Purchases;
@@ -30,6 +31,7 @@ using TallerControl.Infrastructure.Dashboard;
 using TallerControl.Infrastructure.Email;
 using TallerControl.Infrastructure.Health;
 using TallerControl.Infrastructure.Identity;
+using TallerControl.Infrastructure.Invoicing;
 using TallerControl.Infrastructure.Outbox;
 using TallerControl.Infrastructure.Payments;
 using TallerControl.Infrastructure.Persistence;
@@ -236,6 +238,28 @@ public static class DependencyInjection
         services.AddScoped<GetCounterSaleHandler>();
         services.AddScoped<SearchCounterSalesHandler>();
         services.AddScoped<DeleteCounterSaleHandler>();
+
+        // ── E12: Facturación ARCA ──────────────────────────────────────────────
+        services.Configure<ArcaOptions>(configuration.GetSection(ArcaOptions.SectionName));
+        services.AddMemoryCache();
+        services.AddHttpClient<ArcaClient>();
+        services.AddScoped<IArcaClient>(sp => sp.GetRequiredService<ArcaClient>());
+        services.AddScoped<IFiscalCertificateEncryptor, FiscalCertificateEncryptor>();
+        services.AddScoped<IInvoicingRepository, EfInvoicingRepository>();
+        services.AddScoped<IIvaBookRepository, EfIvaBookRepository>();
+        services.AddScoped<CreateFiscalCertificateHandler>();
+        services.AddScoped<UploadFiscalCertificateHandler>();
+        services.AddScoped<TestFiscalConnectionHandler>();
+        services.AddScoped<ListFiscalCertificatesHandler>();
+        services.AddScoped<CreateFiscalPointOfSaleHandler>();
+        services.AddScoped<UpdateFiscalPointOfSaleHandler>();
+        services.AddScoped<ListFiscalPointsOfSaleHandler>();
+        services.AddScoped<EmitInvoiceHandler>();
+        services.AddScoped<VoidInvoiceHandler>();
+        services.AddScoped<GetInvoiceHandler>();
+        services.AddScoped<SearchInvoicesHandler>();
+        services.AddScoped<GetIvaBookHandler>();
+        services.AddScoped<GetCitiExportHandler>();
 
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddHostedService<OutboxDispatcher>();

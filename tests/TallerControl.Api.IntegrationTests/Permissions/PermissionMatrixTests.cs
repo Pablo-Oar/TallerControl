@@ -192,7 +192,10 @@ public sealed class PermissionMatrixTests : IAsyncLifetime
                 e.RoutePattern.Contains("/cash/accounts/", StringComparison.Ordinal) ||
                 e.RoutePattern.Contains("/suppliers/", StringComparison.Ordinal) ||
                 e.RoutePattern.Contains("/purchases/", StringComparison.Ordinal) ||
-                e.RoutePattern.Contains("/counter-sales/", StringComparison.Ordinal)))
+                e.RoutePattern.Contains("/counter-sales/", StringComparison.Ordinal) ||
+                e.RoutePattern.Contains("/invoicing/invoices/", StringComparison.Ordinal) ||
+                e.RoutePattern.Contains("/invoicing/certificates/", StringComparison.Ordinal) ||
+                e.RoutePattern.Contains("/invoicing/points-of-sale/", StringComparison.Ordinal)))
             .ToList();
 
         var unresolved = all
@@ -292,6 +295,25 @@ public sealed class PermissionMatrixTests : IAsyncLifetime
         if (pattern.Contains("/counter-sales/", StringComparison.Ordinal))
         {
             return RouteParam.Replace(pattern, _factory.ForeignCounterSaleId.ToString());
+        }
+
+        if (pattern.Contains("/invoicing/invoices/", StringComparison.Ordinal))
+        {
+            return RouteParam.Replace(pattern, _factory.ForeignInvoiceId.ToString());
+        }
+
+        if (pattern.Contains("/invoicing/certificates/", StringComparison.Ordinal))
+        {
+            var resolved = RouteParam.Replace(pattern, _factory.ForeignCertificateId.ToString());
+            // /test requiere pointOfSaleId; sin él el endpoint devuelve 400 antes del lookup de tenant
+            if (resolved.EndsWith("/test", StringComparison.Ordinal))
+                resolved += $"?pointOfSaleId={_factory.ForeignPointOfSaleId}";
+            return resolved;
+        }
+
+        if (pattern.Contains("/invoicing/points-of-sale/", StringComparison.Ordinal))
+        {
+            return RouteParam.Replace(pattern, _factory.ForeignPointOfSaleId.ToString());
         }
 
         // Fallback: no debería llegar aquí si resolvable está correctamente definido
