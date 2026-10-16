@@ -62,7 +62,7 @@ public sealed class AppointmentTests
         appt.Confirm();
 
         Assert.Equal(AppointmentStatus.Confirmed, appt.Status);
-        Assert.Null(appt.ConfirmationTokenHash);
+        Assert.NotNull(appt.ConfirmationTokenHash); // hash se conserva para detectar segundo uso (T-APT-03)
     }
 
     [Fact(DisplayName = "T-APT-03: confirmar un turno ya Confirmed lanza excepción")]
