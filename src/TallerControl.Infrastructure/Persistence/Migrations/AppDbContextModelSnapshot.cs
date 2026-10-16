@@ -1747,7 +1747,7 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
 
                     b.ToTable("qr_scan_events", null, t =>
                         {
-                            t.HasCheckConstraint("ck_qr_scan_events_event_type", "\"event_type\" IN ('otp_failed', 'otp_sent', 'owner_challenge', 'owner_session', 'scan')");
+                            t.HasCheckConstraint("ck_qr_scan_events_event_type", "\"event_type\" IN ('found_keys', 'otp_failed', 'otp_sent', 'owner_challenge', 'owner_session', 'scan')");
                         });
                 });
 

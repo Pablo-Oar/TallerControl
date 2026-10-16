@@ -138,6 +138,46 @@ internal sealed class EfQrRepository : IQrRepository
     public Task SaveChangesAsync(CancellationToken ct) =>
         _db.SaveChangesAsync(ct);
 
+    // --- Métodos autenticados ---
+
+    public async Task<QrVehicleSummaryDto?> GetVehicleSummaryByCodeAsync(string code, CancellationToken ct)
+    {
+        // Sin IgnoreQueryFilters: el HasQueryFilter filtra por tenant del contexto de sesión.
+        var card = await _db.Set<QrCard>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(q => q.Code == code, ct);
+
+        if (card is null) return null;
+
+        string? plate = null, brand = null, model = null, customerName = null;
+
+        if (card.VehicleId.HasValue)
+        {
+            var vehicle = await _db.Set<Vehicle>()
+                .AsNoTracking()
+                .Where(v => v.Id == card.VehicleId.Value)
+                .Select(v => new { v.Plate, v.Brand, v.Model, v.CustomerId })
+                .FirstOrDefaultAsync(ct);
+
+            if (vehicle is not null)
+            {
+                plate = vehicle.Plate;
+                brand = vehicle.Brand;
+                model = vehicle.Model;
+
+                customerName = await _db.Set<Customer>()
+                    .AsNoTracking()
+                    .Where(c => c.Id == vehicle.CustomerId)
+                    .Select(c => c.Name)
+                    .FirstOrDefaultAsync(ct);
+            }
+        }
+
+        return new QrVehicleSummaryDto(
+            card.Id, card.Code, card.Status.ToString().ToLowerInvariant(),
+            card.VehicleId, plate, brand, model, customerName);
+    }
+
     // --- Métodos públicos (IgnoreQueryFilters) ---
 
     public async Task<WorkshopInfoDto?> GetWorkshopInfoByCardIdAsync(Guid qrCardId, CancellationToken ct)

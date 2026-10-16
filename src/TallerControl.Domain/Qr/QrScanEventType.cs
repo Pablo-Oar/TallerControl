@@ -6,5 +6,6 @@ public enum QrScanEventType
     OwnerChallenge,
     OtpSent,
     OtpFailed,
-    OwnerSession
+    OwnerSession,
+    FoundKeys
 }

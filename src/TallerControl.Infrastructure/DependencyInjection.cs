@@ -203,6 +203,8 @@ public static class DependencyInjection
         services.AddScoped<StartOwnerChallengeHandler>();
         services.AddScoped<ValidateOwnerOtpHandler>();
         services.AddScoped<GetOwnerVehicleHandler>();
+        services.AddScoped<GetQrVehicleSummaryHandler>();
+        services.AddScoped<ReportFoundKeysHandler>();
 
         services.AddScoped<ICashRepository, EfCashRepository>();
         services.AddScoped<CreateCashAccountHandler>();

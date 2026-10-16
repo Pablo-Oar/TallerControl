@@ -679,6 +679,98 @@ public sealed class QrCardsEndpointsTests : IAsyncLifetime
         Assert.All(code, c => Assert.Contains(c, base32Alphabet));
     }
 
+    // ── T-QR-24: búsqueda rápida por código QR (panel) ───────────────────────
+
+    [Fact(DisplayName = "T-QR-24: GET /qr/cards/scan/{code} devuelve la ficha del vehículo asignado")]
+    public async Task Scan_autenticado_devuelve_ficha_vehiculo()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, QrWebApplicationFactory.OwnerEmail, QrWebApplicationFactory.Password);
+        var code = await CreateAssignedCardAsync(client);
+
+        var resp = await client.GetAsync($"/api/v1/qr/cards/scan/{code}");
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+
+        var json = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(code, json.GetProperty("code").GetString());
+        Assert.Equal("assigned", json.GetProperty("status").GetString());
+        Assert.True(json.GetProperty("vehicleId").GetString() is not null);
+        Assert.False(string.IsNullOrEmpty(json.GetProperty("vehiclePlate").GetString()));
+    }
+
+    [Fact(DisplayName = "T-QR-25: GET /qr/cards/scan/{code} sin autenticación devuelve 401")]
+    public async Task Scan_sin_autenticacion_devuelve_401()
+    {
+        using var ownerClient = CreateClient();
+        await LoginAsync(ownerClient, QrWebApplicationFactory.OwnerEmail, QrWebApplicationFactory.Password);
+        var code = await CreateAssignedCardAsync(ownerClient);
+
+        using var anonClient = CreateClient();
+        var resp = await anonClient.GetAsync($"/api/v1/qr/cards/scan/{code}");
+        Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
+    }
+
+    // ── T-QR-26: reportar llaves encontradas (público) ────────────────────────
+
+    [Fact(DisplayName = "T-QR-26: POST /qr/{code}/found-keys con tarjeta asignada devuelve 202")]
+    public async Task Found_keys_tarjeta_asignada_devuelve_202()
+    {
+        using var ownerClient = CreateClient();
+        await LoginAsync(ownerClient, QrWebApplicationFactory.OwnerEmail, QrWebApplicationFactory.Password);
+        var code = await CreateAssignedCardAsync(ownerClient);
+
+        using var publicClient = CreateClient();
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/public/v1/qr/{code}/found-keys")
+        {
+            Content = JsonContent.Create(new { reporterName = "Juan", reporterPhone = "+54911234" }),
+        };
+        var resp = await publicClient.SendAsync(req);
+        Assert.Equal(HttpStatusCode.Accepted, resp.StatusCode);
+    }
+
+    [Fact(DisplayName = "T-QR-27: POST /qr/{code}/found-keys con código inexistente devuelve 202 (respuesta uniforme)")]
+    public async Task Found_keys_codigo_inexistente_devuelve_202_uniforme()
+    {
+        using var client = CreateClient();
+        var req = new HttpRequestMessage(HttpMethod.Post, "/api/public/v1/qr/CODENOEXISTS/found-keys")
+        {
+            Content = JsonContent.Create(new { reporterName = (string?)null, reporterPhone = (string?)null }),
+        };
+        var resp = await client.SendAsync(req);
+        // Respuesta uniforme: no revela si el código existe
+        Assert.Equal(HttpStatusCode.Accepted, resp.StatusCode);
+    }
+
+    [Fact(DisplayName = "T-QR-28: POST /qr/{code}/found-keys registra QrScanEvent FoundKeys al reportar tarjeta asignada")]
+    public async Task Found_keys_registra_scan_event_found_keys()
+    {
+        using var ownerClient = CreateClient();
+        await LoginAsync(ownerClient, QrWebApplicationFactory.OwnerEmail, QrWebApplicationFactory.Password);
+        var code = await CreateAssignedCardAsync(ownerClient);
+
+        // Buscar el ID de la tarjeta
+        var listResp = await ownerClient.GetAsync("/api/v1/qr/cards?pageSize=100");
+        var list = await listResp.Content.ReadFromJsonAsync<JsonElement>();
+        var card = list.GetProperty("items").EnumerateArray()
+            .First(c => c.GetProperty("code").GetString() == code);
+        var cardId = card.GetProperty("id").GetString()!;
+
+        using var publicClient = CreateClient();
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/public/v1/qr/{code}/found-keys")
+        {
+            Content = JsonContent.Create(new { reporterName = "Ana", reporterPhone = (string?)null }),
+        };
+        await publicClient.SendAsync(req);
+
+        // Verificar que se registró el evento
+        var eventsResp = await ownerClient.GetAsync($"/api/v1/qr/cards/{cardId}/events");
+        Assert.Equal(HttpStatusCode.OK, eventsResp.StatusCode);
+        var events = await eventsResp.Content.ReadFromJsonAsync<JsonElement>();
+        var hasFoundKeysEvent = events.GetProperty("items").EnumerateArray()
+            .Any(e => e.GetProperty("eventType").GetString() == "found_keys");
+        Assert.True(hasFoundKeysEvent);
+    }
+
     // ── T-QR-31: página pública solo muestra marca del taller ────────────────
 
     [Fact(DisplayName = "T-QR-31: el escaneo público devuelve solo la marca del taller, sin datos del proveedor (doc 08, V2-delta)")]

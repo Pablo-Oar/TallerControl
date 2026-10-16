@@ -118,6 +118,17 @@ internal static class RateLimitingExtensions
                         QueueLimit = 0,
                     });
             });
+
+            // POST .../qr/{code}/found-keys — 2 req/10 min por IP (anti-spam de alertas)
+            options.AddPolicy(RateLimitPolicies.FoundKeys, ctx =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: $"fk:{GetIp(ctx)}",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 2,
+                        Window = TimeSpan.FromMinutes(10),
+                        QueueLimit = 0,
+                    }));
         });
 
         return services;
@@ -137,4 +148,5 @@ internal static class RateLimitPolicies
     public const string QrChallenge = "qr-challenge";
     public const string PublicQuote = "public-quote";
     public const string QuoteResponse = "quote-response";
+    public const string FoundKeys = "found-keys";
 }

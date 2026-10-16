@@ -16,6 +16,7 @@ namespace TallerControl.Api.Endpoints.Public;
 /// POST /api/public/v1/qr/{code}/owner-challenge       → inicio de verificación del dueño
 /// POST /api/public/v1/qr/{code}/owner-session         → validar OTP y obtener sesión
 /// GET  /api/public/v1/qr/{code}/owner-vehicle         → portal del dueño (cookie tc_qr)
+/// POST /api/public/v1/qr/{code}/found-keys            → alguien encontró llaves (anónimo, rate-limited)
 /// </summary>
 internal static class PublicEndpoints
 {
@@ -80,6 +81,14 @@ internal static class PublicEndpoints
                     GetOwnerVehicleAsync(code, handler, cookies, ctx, ct))
             .AllowAnonymous()
             .WithPublicSecurity();
+
+        app.MapPost("/api/public/v1/qr/{code}/found-keys",
+                (string code, ReportFoundKeysRequest request,
+                 ReportFoundKeysHandler handler, HttpContext ctx, CancellationToken ct) =>
+                    ReportFoundKeysAsync(code, request, handler, ctx, ct))
+            .AllowAnonymous()
+            .WithPublicSecurity()
+            .RequireRateLimiting(RateLimitPolicies.FoundKeys);
 
         return app;
     }
@@ -163,5 +172,14 @@ internal static class PublicEndpoints
 
         var dto = await handler.HandleAsync(session, ct);
         return Results.Ok(dto);
+    }
+
+    private static async Task<IResult> ReportFoundKeysAsync(
+        string code, ReportFoundKeysRequest request,
+        ReportFoundKeysHandler handler, HttpContext ctx, CancellationToken ct)
+    {
+        var ip = ctx.Connection.RemoteIpAddress?.ToString();
+        await handler.HandleAsync(code, request, ip, ct);
+        return Results.Accepted();
     }
 }
