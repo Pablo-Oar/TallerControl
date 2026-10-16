@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Serilog;
+using TallerControl.Api.Endpoints.Appointments;
 using TallerControl.Api.Endpoints.Auth;
 using TallerControl.Api.Endpoints.Cash;
 using TallerControl.Api.Endpoints.Catalog;
@@ -117,6 +118,7 @@ app.MapRemindersEndpoints();
 app.MapReportsEndpoints();
 app.MapOnboardingEndpoints();
 app.MapPushEndpoints();
+app.MapAppointmentsEndpoints();
 app.MapRegistrationEndpoints(app.Configuration);
 app.MapPublicEndpoints();
 

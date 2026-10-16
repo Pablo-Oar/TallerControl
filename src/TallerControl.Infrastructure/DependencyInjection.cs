@@ -21,6 +21,7 @@ using TallerControl.Application.Quotes;
 using TallerControl.Application.Registration;
 using TallerControl.Application.Reminders;
 using TallerControl.Application.Reports;
+using TallerControl.Application.Scheduling;
 using TallerControl.Application.Settings;
 using TallerControl.Application.Suppliers;
 using TallerControl.Application.Tenancy;
@@ -47,6 +48,7 @@ using TallerControl.Infrastructure.Qr;
 using TallerControl.Infrastructure.Quotes;
 using TallerControl.Infrastructure.Reminders;
 using TallerControl.Infrastructure.Reports;
+using TallerControl.Infrastructure.Scheduling;
 using TallerControl.Infrastructure.Settings;
 using TallerControl.Infrastructure.Storage;
 using TallerControl.Infrastructure.Suppliers;
@@ -298,6 +300,18 @@ public static class DependencyInjection
         services.AddScoped<UpdateReminderHandler>();
         services.AddScoped<DeleteReminderHandler>();
         services.AddScoped<EvaluateDueRemindersHandler>();
+
+        // ── E14: Agenda y turnos ──────────────────────────────────────────────
+        services.AddScoped<ISchedulingRepository, EfSchedulingRepository>();
+        services.AddScoped<GetAppointmentsHandler>();
+        services.AddScoped<GetAppointmentHandler>();
+        services.AddScoped<CreateAppointmentHandler>();
+        services.AddScoped<UpdateAppointmentHandler>();
+        services.AddScoped<CancelAppointmentHandler>();
+        services.AddScoped<ConvertAppointmentToWorkOrderHandler>();
+        services.AddScoped<ConfirmAppointmentPublicHandler>();
+        services.AddScoped<GetAvailabilitySlotsHandler>();
+        services.AddScoped<ManageAvailabilityHandler>();
 
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddHostedService<OutboxDispatcher>();

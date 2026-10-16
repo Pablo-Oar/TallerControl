@@ -65,6 +65,10 @@ public static class Permission
 
     public const string RemindersManage = "reminders.manage";
 
+    public const string AppointmentsRead = "appointments.read";
+    public const string AppointmentsWrite = "appointments.write";
+    public const string AppointmentsCancel = "appointments.cancel";
+
     /// <summary>Permisos base del owner: todos.</summary>
     public static IReadOnlySet<string> ForOwner { get; } = new HashSet<string>
     {
@@ -84,6 +88,7 @@ public static class Permission
         AuditRead,
         InvoicingRead, InvoicingWrite, InvoicingEmit,
         RemindersManage,
+        AppointmentsRead, AppointmentsWrite, AppointmentsCancel,
     };
 
     /// <summary>Permisos base del administrativo.</summary>
@@ -103,6 +108,7 @@ public static class Permission
         CounterSalesRead, CounterSalesWrite,
         InvoicingRead, InvoicingEmit,
         RemindersManage,
+        AppointmentsRead, AppointmentsWrite, AppointmentsCancel,
     };
 
     /// <summary>Permisos base del mecánico (sin finos adicionales).</summary>
@@ -113,6 +119,7 @@ public static class Permission
         WorkOrdersRead, WorkOrdersStatus,
         WorkOrdersAssignSelf,
         AttachmentsWrite,
+        AppointmentsRead, AppointmentsWrite,
     };
 
     /// <summary>Permisos finos que el dueño puede otorgar a un mecánico (doc 13 §4).</summary>
