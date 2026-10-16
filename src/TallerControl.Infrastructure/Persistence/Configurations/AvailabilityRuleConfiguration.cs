@@ -21,8 +21,7 @@ internal sealed class AvailabilityRuleConfiguration : IEntityTypeConfiguration<A
         builder.HasOne<Membership>().WithMany()
             .HasForeignKey(r => r.MechanicMembershipId).OnDelete(DeleteBehavior.Cascade);
 
-        builder.Property(r => r.DayOfWeek).IsRequired()
-            .HasConversion<string>();
+        builder.Property(r => r.DayOfWeek).IsRequired();
 
         builder.Property(r => r.StartTime).IsRequired()
             .HasColumnType("time");

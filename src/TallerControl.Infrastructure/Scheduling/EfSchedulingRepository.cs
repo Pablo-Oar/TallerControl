@@ -337,7 +337,7 @@ internal sealed class EfSchedulingRepository : ISchedulingRepository
     public async Task<CatalogItemInfo?> GetCatalogItemInfoAsync(Guid catalogItemId, CancellationToken ct)
     {
         var item = await _db.Set<CatalogItem>().AsNoTracking()
-            .Where(c => c.Id == catalogItemId && !c.IsDeleted)
+            .Where(c => c.Id == catalogItemId)
             .Select(c => new { c.Name, c.DurationMinutes, c.BufferMinutes })
             .FirstOrDefaultAsync(ct);
 
