@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { vehiclesApi, type VehicleDto, type VehicleListDto } from '../../../lib/api/vehicles'
 import { Button } from '../../../components/ui/Button'
@@ -6,8 +7,10 @@ import { VehicleFormModal } from './VehicleFormModal'
 
 export function VehiclesPage() {
   const queryClient = useQueryClient()
-  const [q, setQ] = useState('')
-  const [search, setSearch] = useState('')
+  const [searchParams] = useSearchParams()
+  const initialQ = searchParams.get('q') ?? ''
+  const [q, setQ] = useState(initialQ)
+  const [search, setSearch] = useState(initialQ)
   const [page, setPage] = useState(1)
   const [creating, setCreating] = useState(false)
   const [editing, setEditing] = useState<VehicleListDto | null>(null)

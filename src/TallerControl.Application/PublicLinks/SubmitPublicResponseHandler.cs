@@ -14,15 +14,18 @@ public sealed class SubmitPublicResponseHandler
 {
     private readonly IPublicLinkRepository _linkRepo;
     private readonly IQuoteRepository _quoteRepo;
+    private readonly ISignatureEncryptor _signatureEncryptor;
     private readonly TimeProvider _clock;
 
     public SubmitPublicResponseHandler(
         IPublicLinkRepository linkRepo,
         IQuoteRepository quoteRepo,
+        ISignatureEncryptor signatureEncryptor,
         TimeProvider clock)
     {
         _linkRepo = linkRepo;
         _quoteRepo = quoteRepo;
+        _signatureEncryptor = signatureEncryptor;
         _clock = clock;
     }
 
@@ -119,6 +122,19 @@ public sealed class SubmitPublicResponseHandler
             request.Comment,
             now,
             responseItems);
+
+        // Adjuntar firma y cifrar DNI si se enviaron (RF-R4, F-16).
+        if (!string.IsNullOrWhiteSpace(request.SignatureFileKey))
+        {
+            if (!SignaturePolicy.IsValidFileKey(request.SignatureFileKey))
+                throw new BusinessRuleException("La clave de firma no es válida.");
+
+            byte[]? docNumberEnc = null;
+            if (!string.IsNullOrWhiteSpace(request.SignerDocNumber))
+                docNumberEnc = _signatureEncryptor.Encrypt(request.SignerDocNumber.Trim());
+
+            response.AttachSignature(request.SignatureFileKey, docNumberEnc);
+        }
 
         quote.RecordResponse(response);
 

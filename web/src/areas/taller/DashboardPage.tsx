@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { getDashboard } from '../../lib/api/dashboard'
 import { Link } from 'react-router'
+import { useAuth } from '../../lib/auth/AuthContext'
+import { onboardingApi } from '../../lib/api/onboarding'
 
 function KpiCard({
   label,
@@ -31,9 +33,18 @@ function KpiCard({
 }
 
 export function DashboardPage() {
+  const { user } = useAuth()
+  const isOwner = user?.role === 'Owner'
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['dashboard'],
     queryFn: getDashboard,
+  })
+
+  const { data: onboarding } = useQuery({
+    queryKey: ['onboarding'],
+    queryFn: onboardingApi.get,
+    enabled: isOwner,
   })
 
   if (isLoading) {
@@ -65,6 +76,38 @@ export function DashboardPage() {
           alert={data!.lowStockItems > 0}
         />
       </div>
+
+      {/* Guía de inicio — solo para Owner cuando no está completa */}
+      {onboarding && !onboarding.isComplete && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50 p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-blue-800">
+              Guía de inicio — {onboarding.completedCount}/{onboarding.totalCount} completados
+            </h2>
+            <div className="text-xs text-blue-600 font-medium">
+              {Math.round((onboarding.completedCount / onboarding.totalCount) * 100)}%
+            </div>
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-blue-200">
+            <div
+              className="h-1.5 rounded-full bg-blue-600 transition-all"
+              style={{ width: `${(onboarding.completedCount / onboarding.totalCount) * 100}%` }}
+            />
+          </div>
+          <ul className="space-y-1.5">
+            {onboarding.steps.map(step => (
+              <li key={step.key} className="flex items-center gap-2 text-sm">
+                {step.completed
+                  ? <span className="text-green-600">✓</span>
+                  : <span className="text-blue-300">○</span>}
+                <span className={step.completed ? 'text-slate-500 line-through' : 'text-slate-700'}>
+                  {step.label}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }

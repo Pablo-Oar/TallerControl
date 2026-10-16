@@ -1,7 +1,7 @@
 import { api, ApiError } from './client'
 
 export type QrCardStatus = 'free' | 'assigned' | 'lost' | 'revoked'
-export type QrScanEventType = 'scan' | 'owner_challenge' | 'otp_sent' | 'otp_failed' | 'owner_session'
+export type QrScanEventType = 'scan' | 'owner_challenge' | 'otp_sent' | 'otp_failed' | 'owner_session' | 'found_keys'
 
 export interface QrCardListDto {
   id: string
@@ -184,3 +184,37 @@ export async function validateOwnerOtp(
 
 export const getOwnerVehicle = (code: string) =>
   api.get<OwnerVehicleDto>(`/api/public/v1/qr/${code}/owner-vehicle`)
+
+// ── Panel del taller: búsqueda rápida por código ──────────────────────────────
+
+export interface QrVehicleSummaryDto {
+  qrCardId: string
+  code: string
+  status: QrCardStatus
+  vehicleId: string | null
+  vehiclePlate: string | null
+  vehicleBrand: string | null
+  vehicleModel: string | null
+  customerName: string | null
+}
+
+export const getVehicleSummaryByCode = (code: string) =>
+  api.get<QrVehicleSummaryDto>(`/api/v1/qr/cards/scan/${encodeURIComponent(code)}`)
+
+// ── Público: reportar llaves encontradas ─────────────────────────────────────
+
+export async function reportFoundKeys(
+  code: string,
+  reporterName: string | null,
+  reporterPhone: string | null,
+): Promise<void> {
+  const res = await fetch(`/api/public/v1/qr/${code}/found-keys`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reporterName, reporterPhone }),
+  })
+  if (!res.ok && res.status !== 429) {
+    throw new Error('No se pudo enviar el aviso.')
+  }
+}

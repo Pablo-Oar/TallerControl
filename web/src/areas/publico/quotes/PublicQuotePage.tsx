@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useParams } from 'react-router'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
@@ -23,6 +23,20 @@ export function PublicQuotePage() {
   const { token } = useParams<{ token: string }>()
   const [submitted, setSubmitted] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
+  const [signerDocNumber, setSignerDocNumber] = useState('')
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [isDrawing, setIsDrawing] = useState(false)
+  const [hasSig, setHasSig] = useState(false)
+
+  // Inicializa el canvas con fondo blanco al montar.
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+  }, [])
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['public-quote', token],
@@ -84,14 +98,94 @@ export function PublicQuotePage() {
     )
   }
 
-  function onSubmit(values: FormData) {
+  function getCanvasPos(canvas: HTMLCanvasElement, e: React.MouseEvent | React.TouchEvent) {
+    const rect = canvas.getBoundingClientRect()
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    if ('touches' in e) {
+      const t = e.touches[0]
+      return { x: (t.clientX - rect.left) * scaleX, y: (t.clientY - rect.top) * scaleY }
+    }
+    return { x: ((e as React.MouseEvent).clientX - rect.left) * scaleX, y: ((e as React.MouseEvent).clientY - rect.top) * scaleY }
+  }
+
+  function startDraw(e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) {
+    e.preventDefault()
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    const { x, y } = getCanvasPos(canvas, e)
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+    setIsDrawing(true)
+    setHasSig(true)
+  }
+
+  function draw(e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) {
+    e.preventDefault()
+    if (!isDrawing) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    const { x, y } = getCanvasPos(canvas, e)
+    ctx.lineWidth = 2
+    ctx.lineCap = 'round'
+    ctx.strokeStyle = '#1e293b'
+    ctx.lineTo(x, y)
+    ctx.stroke()
+  }
+
+  function endDraw() {
+    setIsDrawing(false)
+  }
+
+  function clearCanvas() {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    setHasSig(false)
+  }
+
+  async function onSubmit(values: FormData) {
     if (!data) return
+
+    let sigKey: string | null = null
+    if (hasSig) {
+      const canvas = canvasRef.current
+      if (canvas) {
+        try {
+          const blob = await new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob(b => b ? resolve(b) : reject(new Error('canvas vacío')), 'image/png')
+          })
+          const urlResp = await publicApi.getSignatureUploadUrl(token!, {
+            contentType: 'image/png',
+            size: blob.size,
+          })
+          await fetch(urlResp.uploadUrl, {
+            method: 'PUT',
+            body: blob,
+            headers: { 'Content-Type': 'image/png' },
+          })
+          sigKey = urlResp.fileKey
+        } catch {
+          // Si falla la subida de firma, continuar sin ella
+        }
+      }
+    }
+
     const body: SubmitPublicResponseRequest = {
       decision: values.decision,
       signerName: values.signerName,
       contentHash: data.contentHash,
       comment: values.comment || null,
       items: data.items.map(item => ({ quoteItemId: item.id, approved: values.decision === 'approved' })),
+      signatureFileKey: sigKey,
+      signerDocNumber: signerDocNumber.trim() || null,
     }
     submitMutation.mutate(body)
   }
@@ -230,6 +324,57 @@ export function PublicQuotePage() {
                   className={inputCls}
                   placeholder="Puede agregar observaciones..."
                 />
+              </div>
+
+              {/* Firma digital */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  Firma (opcional)
+                </label>
+                <div className="rounded-md border border-slate-300 bg-white overflow-hidden touch-none select-none">
+                  <canvas
+                    ref={canvasRef}
+                    width={600}
+                    height={160}
+                    className="w-full"
+                    style={{ cursor: 'crosshair' }}
+                    onMouseDown={startDraw}
+                    onMouseMove={draw}
+                    onMouseUp={endDraw}
+                    onMouseLeave={endDraw}
+                    onTouchStart={startDraw}
+                    onTouchMove={draw}
+                    onTouchEnd={endDraw}
+                  />
+                </div>
+                <div className="mt-1 flex items-center justify-between">
+                  <p className="text-xs text-slate-400">Dibuje su firma con el dedo o el mouse</p>
+                  <button
+                    type="button"
+                    onClick={clearCanvas}
+                    className="text-xs text-slate-500 underline hover:text-slate-700"
+                  >
+                    Borrar firma
+                  </button>
+                </div>
+              </div>
+
+              {/* DNI */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  DNI / Documento (opcional)
+                </label>
+                <input
+                  type="text"
+                  value={signerDocNumber}
+                  onChange={e => setSignerDocNumber(e.target.value)}
+                  className={inputCls}
+                  placeholder="Ej: 30123456"
+                  maxLength={20}
+                />
+                <p className="mt-1 text-xs text-slate-400">
+                  Su documento se almacena cifrado y no es visible para terceros.
+                </p>
               </div>
 
               {serverError && (

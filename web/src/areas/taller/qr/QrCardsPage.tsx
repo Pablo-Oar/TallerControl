@@ -12,6 +12,7 @@ import {
   type QrCardStatus,
 } from '../../../lib/api/qrCards'
 import { Button } from '../../../components/ui/Button'
+import { QrScannerModal } from './QrScannerModal'
 
 const STATUS_LABELS: Record<QrCardStatus, string> = {
   free: 'Libre',
@@ -42,6 +43,7 @@ export function QrCardsPage() {
   const [page, setPage] = useState(1)
   const [showBatchModal, setShowBatchModal] = useState(false)
   const [showAssignByCodeModal, setShowAssignByCodeModal] = useState(false)
+  const [showScannerModal, setShowScannerModal] = useState(false)
   const [revokeCardId, setRevokeCardId] = useState<string | null>(null)
   const [revokeReason, setRevokeReason] = useState('')
   const [batchQty, setBatchQty] = useState(10)
@@ -106,6 +108,9 @@ export function QrCardsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Tarjetas QR</h1>
         <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => setShowScannerModal(true)}>
+            Escanear código
+          </Button>
           <Button variant="secondary" onClick={() => setShowAssignByCodeModal(true)}>
             Asignar por código
           </Button>
@@ -280,6 +285,11 @@ export function QrCardsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal escanear código */}
+      {showScannerModal && (
+        <QrScannerModal onClose={() => setShowScannerModal(false)} />
       )}
 
       {/* Modal revocar */}

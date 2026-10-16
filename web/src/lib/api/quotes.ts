@@ -186,6 +186,13 @@ export interface SubmitPublicResponseRequest {
   contentHash: string
   comment?: string | null
   items: { quoteItemId: string; approved: boolean }[]
+  signatureFileKey?: string | null
+  signerDocNumber?: string | null
+}
+
+export interface SignatureUploadUrlResponse {
+  uploadUrl: string
+  fileKey: string
 }
 
 export interface PublicWorkOrderDto {
@@ -261,6 +268,16 @@ export const publicApi = {
 
   submitResponse: (token: string, body: SubmitPublicResponseRequest) =>
     api.post<unknown>(`/api/public/v1/quotes/${token}/responses`, body, false),
+
+  getSignatureUploadUrl: (
+    token: string,
+    body: { contentType: string; size: number },
+  ) =>
+    api.post<SignatureUploadUrlResponse>(
+      `/api/public/v1/quotes/${token}/signature-upload-url`,
+      body,
+      false,
+    ),
 
   getWorkOrder: (token: string) =>
     api.get<PublicWorkOrderDto>(`/api/public/v1/work-orders/${token}`),

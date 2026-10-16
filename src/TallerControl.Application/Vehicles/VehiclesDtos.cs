@@ -23,6 +23,8 @@ public sealed record VehicleDto(
     string? Vin,
     string? Fuel,
     int OdometerKm,
+    string? UsageProfile,
+    string? EngineNumber,
     QrCardBasicDto? ActiveQrCard,
     uint Version);
 
@@ -52,7 +54,9 @@ public sealed record VehicleUpsertRequest(
     int? Year = null,
     string? Vin = null,
     string? Fuel = null,
-    int OdometerKm = 0);
+    int OdometerKm = 0,
+    TallerControl.Domain.Vehicles.VehicleUsageProfile? UsageProfile = null,
+    string? EngineNumber = null);
 
 /// <summary>Cuerpo de <c>DELETE /api/v1/vehicles/{id}</c>.</summary>
 public sealed record DeleteVehicleRequest(string Reason);

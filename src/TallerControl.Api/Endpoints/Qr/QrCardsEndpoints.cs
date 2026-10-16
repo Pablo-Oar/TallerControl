@@ -17,6 +17,7 @@ namespace TallerControl.Api.Endpoints.Qr;
 /// POST /api/v1/qr/cards/{id}/revoke                    → qr.revoke  (O)
 /// GET  /api/v1/qr/cards/{id}/print                     → qr.manage  (O, A)
 /// GET  /api/v1/qr/cards/{id}/events                    → qr.manage  (O, A)
+/// GET  /api/v1/qr/cards/scan/{code}                    → qr.manage  (O, A) [búsqueda rápida por código]
 /// </summary>
 internal static class QrCardsEndpoints
 {
@@ -82,6 +83,11 @@ internal static class QrCardsEndpoints
                 (Guid id, int page = 1, int pageSize = 25,
                  GetQrCardEventsHandler handler = default!, CancellationToken ct = default) =>
                     GetEventsAsync(id, page, pageSize, handler, ct))
+            .RequirePermission(Permission.QrManage);
+
+        app.MapGet("/api/v1/qr/cards/scan/{code}",
+                (string code, GetQrVehicleSummaryHandler handler, CancellationToken ct) =>
+                    GetVehicleSummaryAsync(code, handler, ct))
             .RequirePermission(Permission.QrManage);
 
         return app;
@@ -156,5 +162,12 @@ internal static class QrCardsEndpoints
     {
         var result = await handler.HandleAsync(id, page, pageSize, ct);
         return Results.Ok(result);
+    }
+
+    private static async Task<IResult> GetVehicleSummaryAsync(
+        string code, GetQrVehicleSummaryHandler handler, CancellationToken ct)
+    {
+        var dto = await handler.HandleAsync(code, ct);
+        return Results.Ok(dto);
     }
 }

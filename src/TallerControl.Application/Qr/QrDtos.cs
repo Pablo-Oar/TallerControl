@@ -71,3 +71,17 @@ public record OwnerQuoteDto(
     DateTimeOffset? ValidUntil);
 
 public record OwnerAccessCodeDto(string Code);
+
+// Panel: ficha rápida del vehículo al escanear un código QR (autenticado)
+public record QrVehicleSummaryDto(
+    Guid QrCardId,
+    string Code,
+    string Status,
+    Guid? VehicleId,
+    string? VehiclePlate,
+    string? VehicleBrand,
+    string? VehicleModel,
+    string? CustomerName);
+
+// Público: alguien encontró llaves con la tarjeta QR
+public record ReportFoundKeysRequest(string? ReporterName, string? ReporterPhone);

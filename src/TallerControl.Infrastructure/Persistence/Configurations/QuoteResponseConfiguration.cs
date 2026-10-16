@@ -24,6 +24,10 @@ internal sealed class QuoteResponseConfiguration : IEntityTypeConfiguration<Quot
         builder.Property(r => r.ContentHash).IsRequired().HasColumnType("bytea");
         builder.Property(r => r.UserAgent).HasMaxLength(500);
         builder.Property(r => r.Comment).HasMaxLength(QuoteResponse.CommentMaxLength);
+
+        // Firma digital y DNI cifrado (RF-R4, F-16 — P1, agregado en E13 bloque 4).
+        builder.Property(r => r.SignatureFileKey).HasMaxLength(500);
+        builder.Property(r => r.SignerDocNumberEnc).HasColumnType("bytea");
         builder.Property(r => r.IsCurrent).IsRequired().HasDefaultValue(true);
         builder.Property(r => r.CreatedAt).IsRequired();
 

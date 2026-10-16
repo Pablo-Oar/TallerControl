@@ -15,6 +15,9 @@ public interface IQrRepository
     Task AddScanEventAsync(QrScanEvent scanEvent, CancellationToken ct);
     Task SaveChangesAsync(CancellationToken ct);
 
+    // Autenticado: ficha rápida para el panel de gestión
+    Task<QrVehicleSummaryDto?> GetVehicleSummaryByCodeAsync(string code, CancellationToken ct);
+
     // Métodos para superficies públicas (IgnoreQueryFilters en la implementación)
     Task<QrCard?> FindByIdPublicAsync(Guid id, CancellationToken ct);
     Task<WorkshopInfoDto?> GetWorkshopInfoByCardIdAsync(Guid qrCardId, CancellationToken ct);

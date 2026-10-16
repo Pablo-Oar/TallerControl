@@ -80,6 +80,8 @@ internal sealed class EfVehicleRepository : IVehicleRepository
             v.Vin,
             v.Fuel,
             v.OdometerKm,
+            v.UsageProfile?.ToString(),
+            v.EngineNumber,
             ActiveQrCard: null, // E8
             v.Version);
     }

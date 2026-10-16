@@ -2,6 +2,7 @@ import { api } from './client'
 import type { Page } from './customers'
 
 export type FuelType = 'gasoline' | 'diesel' | 'electric' | 'hybrid' | 'gas' | 'other'
+export type VehicleUsageProfile = 'regular' | 'low_usage' | 'commercial'
 
 export interface VehicleListDto {
   id: string
@@ -25,6 +26,8 @@ export interface VehicleDto {
   vin: string | null
   fuel: FuelType | null
   odometerKm: number
+  usageProfile: VehicleUsageProfile | null
+  engineNumber: string | null
   activeQrCard: null
   version: number
 }
@@ -40,6 +43,8 @@ export interface VehicleUpsertRequest {
   vin?: string | null
   fuel?: FuelType | null
   odometerKm: number
+  usageProfile?: VehicleUsageProfile | null
+  engineNumber?: string | null
 }
 
 export const vehiclesApi = {

@@ -11,12 +11,16 @@ using TallerControl.Application.CounterSales;
 using TallerControl.Application.Customers;
 using TallerControl.Application.Dashboard;
 using TallerControl.Application.Invoicing;
+using TallerControl.Application.Onboarding;
 using TallerControl.Application.Payments;
 using TallerControl.Application.PublicLinks;
 using TallerControl.Application.Purchases;
+using TallerControl.Application.Push;
 using TallerControl.Application.Qr;
 using TallerControl.Application.Quotes;
 using TallerControl.Application.Registration;
+using TallerControl.Application.Reminders;
+using TallerControl.Application.Reports;
 using TallerControl.Application.Settings;
 using TallerControl.Application.Suppliers;
 using TallerControl.Application.Tenancy;
@@ -32,13 +36,17 @@ using TallerControl.Infrastructure.Email;
 using TallerControl.Infrastructure.Health;
 using TallerControl.Infrastructure.Identity;
 using TallerControl.Infrastructure.Invoicing;
+using TallerControl.Infrastructure.Onboarding;
 using TallerControl.Infrastructure.Outbox;
 using TallerControl.Infrastructure.Payments;
 using TallerControl.Infrastructure.Persistence;
 using TallerControl.Infrastructure.PublicLinks;
 using TallerControl.Infrastructure.Purchases;
+using TallerControl.Infrastructure.Push;
 using TallerControl.Infrastructure.Qr;
 using TallerControl.Infrastructure.Quotes;
+using TallerControl.Infrastructure.Reminders;
+using TallerControl.Infrastructure.Reports;
 using TallerControl.Infrastructure.Settings;
 using TallerControl.Infrastructure.Storage;
 using TallerControl.Infrastructure.Suppliers;
@@ -177,8 +185,10 @@ public static class DependencyInjection
         services.AddScoped<GetPublicPaymentHandler>();
 
         services.AddScoped<IPublicLinkRepository, EfPublicLinkRepository>();
+        services.AddScoped<ISignatureEncryptor, SignatureEncryptor>();
         services.AddScoped<GetPublicQuoteHandler>();
         services.AddScoped<SubmitPublicResponseHandler>();
+        services.AddScoped<RequestSignatureUploadUrlHandler>();
         services.AddScoped<GetPublicWorkOrderHandler>();
 
         services.Configure<QrOptions>(configuration.GetSection(QrOptions.Section));
@@ -203,6 +213,8 @@ public static class DependencyInjection
         services.AddScoped<StartOwnerChallengeHandler>();
         services.AddScoped<ValidateOwnerOtpHandler>();
         services.AddScoped<GetOwnerVehicleHandler>();
+        services.AddScoped<GetQrVehicleSummaryHandler>();
+        services.AddScoped<ReportFoundKeysHandler>();
 
         services.AddScoped<ICashRepository, EfCashRepository>();
         services.AddScoped<CreateCashAccountHandler>();
@@ -260,6 +272,32 @@ public static class DependencyInjection
         services.AddScoped<SearchInvoicesHandler>();
         services.AddScoped<GetIvaBookHandler>();
         services.AddScoped<GetCitiExportHandler>();
+
+        // ── E13: Push subscriptions (PWA) ─────────────────────────────────────
+        services.AddScoped<IPushSubscriptionRepository, EfPushSubscriptionRepository>();
+        services.AddScoped<SavePushSubscriptionHandler>();
+        services.AddScoped<DeletePushSubscriptionHandler>();
+
+        // ── E13: Onboarding ───────────────────────────────────────────────────
+        services.AddScoped<IOnboardingRepository, EfOnboardingRepository>();
+        services.AddScoped<GetOnboardingHandler>();
+
+        // ── E13: Reportes ─────────────────────────────────────────────────────
+        services.AddScoped<IReportsRepository, EfReportsRepository>();
+        services.AddScoped<IReportExporter, ClosedXmlExporter>();
+        services.AddScoped<GetRevenueReportHandler>();
+        services.AddScoped<GetReceivablesReportHandler>();
+        services.AddScoped<GetStockReportHandler>();
+        services.AddScoped<GetPurchasesReportHandler>();
+
+        // ── E13: Recordatorios automáticos ───────────────────────────────────
+        services.AddScoped<IReminderRepository, EfReminderRepository>();
+        services.AddScoped<CreateReminderHandler>();
+        services.AddScoped<GetReminderHandler>();
+        services.AddScoped<SearchRemindersHandler>();
+        services.AddScoped<UpdateReminderHandler>();
+        services.AddScoped<DeleteReminderHandler>();
+        services.AddScoped<EvaluateDueRemindersHandler>();
 
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddHostedService<OutboxDispatcher>();

@@ -3,6 +3,7 @@ using TallerControl.Application.Payments;
 using TallerControl.Application.PublicLinks;
 using TallerControl.Application.Qr;
 
+
 namespace TallerControl.Api.Endpoints.Public;
 
 /// <summary>
@@ -12,10 +13,12 @@ namespace TallerControl.Api.Endpoints.Public;
 /// POST /api/public/v1/quotes/{token}/responses        → enviar respuesta del cliente
 /// GET  /api/public/v1/work-orders/{token}             → vista pública de la OT
 /// GET  /api/public/v1/payments/{token}                → comprobante de pago
+/// POST /api/public/v1/quotes/{token}/signature-upload-url → URL prefirmada para subir firma
 /// GET  /api/public/v1/qr/{code}                       → escaneo de tarjeta QR
 /// POST /api/public/v1/qr/{code}/owner-challenge       → inicio de verificación del dueño
 /// POST /api/public/v1/qr/{code}/owner-session         → validar OTP y obtener sesión
 /// GET  /api/public/v1/qr/{code}/owner-vehicle         → portal del dueño (cookie tc_qr)
+/// POST /api/public/v1/qr/{code}/found-keys            → alguien encontró llaves (anónimo, rate-limited)
 /// </summary>
 internal static class PublicEndpoints
 {
@@ -34,6 +37,15 @@ internal static class PublicEndpoints
                 (string token, SubmitPublicResponseRequest request,
                  SubmitPublicResponseHandler handler, HttpContext ctx, CancellationToken ct) =>
                     SubmitResponseAsync(token, request, handler, ctx, ct))
+            .AllowAnonymous()
+            .WithPublicSecurity()
+            .RequireRateLimiting(RateLimitPolicies.QuoteResponse);
+
+        // Firma digital del presupuesto (RF-R4, F-16)
+        app.MapPost("/api/public/v1/quotes/{token}/signature-upload-url",
+                (string token, SignatureUploadUrlRequest request,
+                 RequestSignatureUploadUrlHandler handler, CancellationToken ct) =>
+                    GetSignatureUploadUrlAsync(token, request, handler, ct))
             .AllowAnonymous()
             .WithPublicSecurity()
             .RequireRateLimiting(RateLimitPolicies.QuoteResponse);
@@ -81,7 +93,23 @@ internal static class PublicEndpoints
             .AllowAnonymous()
             .WithPublicSecurity();
 
+        app.MapPost("/api/public/v1/qr/{code}/found-keys",
+                (string code, ReportFoundKeysRequest request,
+                 ReportFoundKeysHandler handler, HttpContext ctx, CancellationToken ct) =>
+                    ReportFoundKeysAsync(code, request, handler, ctx, ct))
+            .AllowAnonymous()
+            .WithPublicSecurity()
+            .RequireRateLimiting(RateLimitPolicies.FoundKeys);
+
         return app;
+    }
+
+    private static async Task<IResult> GetSignatureUploadUrlAsync(
+        string token, SignatureUploadUrlRequest request,
+        RequestSignatureUploadUrlHandler handler, CancellationToken ct)
+    {
+        var result = await handler.HandleAsync(token, request, ct);
+        return Results.Ok(result);
     }
 
     private static async Task<IResult> GetQuoteAsync(
@@ -163,5 +191,14 @@ internal static class PublicEndpoints
 
         var dto = await handler.HandleAsync(session, ct);
         return Results.Ok(dto);
+    }
+
+    private static async Task<IResult> ReportFoundKeysAsync(
+        string code, ReportFoundKeysRequest request,
+        ReportFoundKeysHandler handler, HttpContext ctx, CancellationToken ct)
+    {
+        var ip = ctx.Connection.RemoteIpAddress?.ToString();
+        await handler.HandleAsync(code, request, ip, ct);
+        return Results.Accepted();
     }
 }

@@ -1747,7 +1747,7 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
 
                     b.ToTable("qr_scan_events", null, t =>
                         {
-                            t.HasCheckConstraint("ck_qr_scan_events_event_type", "\"event_type\" IN ('otp_failed', 'otp_sent', 'owner_challenge', 'owner_session', 'scan')");
+                            t.HasCheckConstraint("ck_qr_scan_events_event_type", "\"event_type\" IN ('found_keys', 'otp_failed', 'otp_sent', 'owner_challenge', 'owner_session', 'scan')");
                         });
                 });
 
@@ -2049,6 +2049,15 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(150)")
                         .HasColumnName("signer_name");
 
+                    b.Property<string>("SignatureFileKey")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("signature_file_key");
+
+                    b.Property<byte[]>("SignerDocNumberEnc")
+                        .HasColumnType("bytea")
+                        .HasColumnName("signer_doc_number_enc");
+
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
@@ -2093,6 +2102,102 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_quote_response_items_quote_item_id");
 
                     b.ToTable("quote_response_items", (string)null);
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Reminders.Reminder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("text")
+                        .HasColumnName("delete_reason");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<DateTimeOffset?>("DueDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("due_date");
+
+                    b.Property<int?>("DueKm")
+                        .HasColumnType("integer")
+                        .HasColumnName("due_km");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("kind");
+
+                    b.Property<DateTimeOffset?>("LastNotifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_notified_at");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("VehicleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("vehicle_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_reminders");
+
+                    b.HasIndex("VehicleId")
+                        .HasDatabaseName("ix_reminders_vehicle_id");
+
+                    b.HasIndex("TenantId", "DueDate")
+                        .HasDatabaseName("ix_reminders_tenant_id_due_date")
+                        .HasFilter("deleted_at is null and due_date is not null");
+
+                    b.HasIndex("TenantId", "VehicleId")
+                        .HasDatabaseName("ix_reminders_tenant_id_vehicle_id")
+                        .HasFilter("deleted_at is null");
+
+                    b.ToTable("reminders", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_reminders_kind", "\"kind\" IN ('inspection_due', 'insurance_due', 'other_due', 'service_due')");
+                        });
                 });
 
             modelBuilder.Entity("TallerControl.Domain.Suppliers.Supplier", b =>
@@ -2695,6 +2800,10 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("deleted_by");
 
+                    b.Property<string>("EngineNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("engine_number");
+
                     b.Property<string>("Fuel")
                         .HasColumnType("text")
                         .HasColumnName("fuel");
@@ -2725,6 +2834,10 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("updated_by");
+
+                    b.Property<string>("UsageProfile")
+                        .HasColumnType("text")
+                        .HasColumnName("usage_profile");
 
                     b.Property<uint>("Version")
                         .IsConcurrencyToken()
@@ -2765,6 +2878,8 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
 
                     b.ToTable("vehicles", null, t =>
                         {
+                            t.HasCheckConstraint("ck_vehicles_usage_profile", "\"usage_profile\" IN ('commercial', 'low_usage', 'regular')");
+
                             t.HasCheckConstraint("ck_vehicles_year_range", "year IS NULL OR (year BETWEEN 1900 AND extract(year from now()) + 1)");
                         });
                 });
@@ -3564,6 +3679,23 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_quote_response_items_quote_responses_response_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Reminders.Reminder", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_reminders_tenant_tenant_id");
+
+                    b.HasOne("TallerControl.Domain.Vehicles.Vehicle", null)
+                        .WithMany()
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_reminders_vehicle_vehicle_id");
                 });
 
             modelBuilder.Entity("TallerControl.Domain.Suppliers.Supplier", b =>

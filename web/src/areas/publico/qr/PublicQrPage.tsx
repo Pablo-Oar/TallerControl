@@ -2,9 +2,14 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { useParams, useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { scanQrCode, startOwnerChallenge, validateOwnerOtp } from '../../../lib/api/qrCards'
+import {
+  scanQrCode,
+  startOwnerChallenge,
+  validateOwnerOtp,
+  reportFoundKeys,
+} from '../../../lib/api/qrCards'
 
-type Step = 'scan' | 'challenge' | 'otp' | 'done'
+type Step = 'scan' | 'challenge' | 'otp' | 'found-keys' | 'found-keys-done'
 
 export function PublicQrPage() {
   const { code } = useParams<{ code: string }>()
@@ -16,6 +21,8 @@ export function PublicQrPage() {
   const [otp, setOtp] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [reporterName, setReporterName] = useState('')
+  const [reporterPhone, setReporterPhone] = useState('')
 
   const { data: scanData, isLoading: scanLoading, isError } = useQuery({
     queryKey: ['qr-scan', code],
@@ -68,6 +75,24 @@ export function PublicQrPage() {
       setStep('otp')
     } catch {
       setError('No se pudo iniciar la verificación. Intentá nuevamente.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleFoundKeys(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+    try {
+      await reportFoundKeys(
+        code!,
+        reporterName.trim() || null,
+        reporterPhone.trim() || null,
+      )
+      setStep('found-keys-done')
+    } catch {
+      setError('No se pudo enviar el aviso. Intentá de nuevo.')
     } finally {
       setLoading(false)
     }
@@ -190,6 +215,75 @@ export function PublicQrPage() {
               ← Volver
             </button>
           </form>
+        )}
+
+        {/* Step: reportar llaves encontradas */}
+        {step === 'found-keys' && (
+          <form onSubmit={handleFoundKeys} className="space-y-4">
+            <div className="rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              Vas a avisar al taller que encontraste estas llaves. Podés dejar tus datos para que
+              puedan contactarte.
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">
+                Nombre <span className="font-normal text-slate-400">(opcional)</span>
+              </label>
+              <input
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                placeholder="Tu nombre"
+                value={reporterName}
+                onChange={(e) => setReporterName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">
+                Teléfono <span className="font-normal text-slate-400">(opcional)</span>
+              </label>
+              <input
+                type="tel"
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                placeholder="Ej. +54 9 11 1234-5678"
+                value={reporterPhone}
+                onChange={(e) => setReporterPhone(e.target.value)}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-md bg-amber-500 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
+            >
+              {loading ? 'Enviando…' : 'Enviar aviso al taller'}
+            </button>
+            <button
+              type="button"
+              className="w-full text-sm text-slate-500 hover:underline"
+              onClick={() => { setStep('scan'); setError(null) }}
+            >
+              ← Volver
+            </button>
+          </form>
+        )}
+
+        {step === 'found-keys-done' && (
+          <div className="rounded border border-green-200 bg-green-50 px-4 py-4 text-center">
+            <p className="font-medium text-green-800">Aviso enviado</p>
+            <p className="mt-1 text-sm text-green-700">
+              El taller fue notificado. Muchas gracias por tu ayuda.
+            </p>
+          </div>
+        )}
+
+        {/* Enlace para reportar llaves (solo en paso de verificación) */}
+        {(step === 'scan' || step === 'challenge') && (
+          <div className="pt-2 text-center">
+            <button
+              type="button"
+              className="text-xs text-slate-400 hover:text-amber-600 hover:underline"
+              onClick={() => { setStep('found-keys'); setError(null) }}
+            >
+              Encontré estas llaves — no soy el dueño
+            </button>
+          </div>
         )}
       </div>
       <p className="mt-6 text-center text-xs text-slate-400">

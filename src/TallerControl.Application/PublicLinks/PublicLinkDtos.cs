@@ -45,7 +45,11 @@ public sealed record SubmitPublicResponseRequest(
     string SignerName,
     string ContentHash,
     string? Comment = null,
-    IReadOnlyList<PublicResponseItemRequest>? Items = null);
+    IReadOnlyList<PublicResponseItemRequest>? Items = null,
+    /// <summary>Clave de objeto de la imagen de firma subida a R2 (RF-R4). Opcional.</summary>
+    string? SignatureFileKey = null,
+    /// <summary>DNI del firmante en texto plano; el servidor lo cifra antes de guardar (RF-R4). Opcional.</summary>
+    string? SignerDocNumber = null);
 
 /// <summary>Decisión por renglón dentro de la respuesta pública.</summary>
 public sealed record PublicResponseItemRequest(Guid QuoteItemId, bool Approved);

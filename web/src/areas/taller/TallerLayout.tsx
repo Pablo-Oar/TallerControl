@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { Button } from '../../components/ui/Button'
+import { PlateSearchBar } from '../../components/PlateSearchBar'
 import { useState } from 'react'
 
 const navCls = ({ isActive }: { isActive: boolean }) =>
@@ -46,6 +47,11 @@ export function TallerLayout({ children }: { children: ReactNode }) {
               Órdenes
             </NavLink>
             {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
+              <NavLink to="/app/reminders" className={navCls}>
+                Recordatorios
+              </NavLink>
+            )}
+            {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
               <NavLink to="/app/qr" className={navCls}>
                 Tarjetas QR
               </NavLink>
@@ -70,6 +76,11 @@ export function TallerLayout({ children }: { children: ReactNode }) {
                 Mostrador
               </NavLink>
             )}
+            {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
+              <NavLink to="/app/reports" className={navCls}>
+                Reportes
+              </NavLink>
+            )}
             {(user?.role === 'Owner' || user?.role === 'AdminStaff' || user?.role === 'Accountant') && (
               <NavLink to="/app/invoicing" className={navCls}>
                 Facturación
@@ -87,6 +98,7 @@ export function TallerLayout({ children }: { children: ReactNode }) {
             )}
           </nav>
           <div className="flex items-center gap-3 text-sm text-slate-500">
+            <PlateSearchBar />
             <span>{user?.user.displayName}</span>
             <Button variant="secondary" loading={loggingOut} onClick={handleLogout}>
               Salir

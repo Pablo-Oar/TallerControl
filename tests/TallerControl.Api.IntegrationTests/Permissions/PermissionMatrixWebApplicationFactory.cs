@@ -89,6 +89,9 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
     /// <summary>Punto de venta del Taller A para probar T-ISO-ALL en rutas /invoicing/points-of-sale/{id}.</summary>
     public Guid ForeignPointOfSaleId { get; private set; }
 
+    /// <summary>Recordatorio del Taller A para probar T-ISO-ALL en rutas /reminders/{id}.</summary>
+    public Guid ForeignReminderId { get; private set; }
+
     public string ConnectionString { get; }
 
     public PermissionMatrixWebApplicationFactory(string connectionString)
@@ -391,6 +394,22 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
         ForeignInvoiceId = invoiceA.Id;
         ForeignCertificateId = certA.Id;
         ForeignPointOfSaleId = posA.Id;
+
+        // Siembra un recordatorio del Taller A para T-ISO-ALL en rutas /reminders/{id}.
+        var reminderA = new TallerControl.Domain.Reminders.Reminder(
+            tenantA.Id, vehicleA.Id,
+            TallerControl.Domain.Reminders.ReminderKind.ServiceDue,
+            "Service T-ISO-ALL",
+            dueDate: DateTimeOffset.UtcNow.AddDays(30),
+            dueKm: null, notes: null);
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(reminderA);
+            await db.SaveChangesAsync();
+        }
+
+        ForeignReminderId = reminderA.Id;
     }
 
     private static DbContextOptions<AppDbContext> BuildOptions(string cs)
