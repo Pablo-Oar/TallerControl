@@ -196,7 +196,10 @@ public sealed class PermissionMatrixTests : IAsyncLifetime
                 e.RoutePattern.Contains("/invoicing/invoices/", StringComparison.Ordinal) ||
                 e.RoutePattern.Contains("/invoicing/certificates/", StringComparison.Ordinal) ||
                 e.RoutePattern.Contains("/invoicing/points-of-sale/", StringComparison.Ordinal) ||
-                e.RoutePattern.Contains("/reminders/", StringComparison.Ordinal)))
+                e.RoutePattern.Contains("/reminders/", StringComparison.Ordinal) ||
+                e.RoutePattern.Contains("/appointments/", StringComparison.Ordinal) ||
+                e.RoutePattern.Contains("/availability/rules/", StringComparison.Ordinal) ||
+                e.RoutePattern.Contains("/availability/exceptions/", StringComparison.Ordinal)))
             .ToList();
 
         var unresolved = all
@@ -320,6 +323,13 @@ public sealed class PermissionMatrixTests : IAsyncLifetime
         if (pattern.Contains("/reminders/", StringComparison.Ordinal))
         {
             return RouteParam.Replace(pattern, _factory.ForeignReminderId.ToString());
+        }
+
+        if (pattern.Contains("/appointments/", StringComparison.Ordinal) ||
+            pattern.Contains("/availability/rules/", StringComparison.Ordinal) ||
+            pattern.Contains("/availability/exceptions/", StringComparison.Ordinal))
+        {
+            return RouteParam.Replace(pattern, _factory.ForeignAppointmentId.ToString());
         }
 
         // Fallback: no debería llegar aquí si resolvable está correctamente definido

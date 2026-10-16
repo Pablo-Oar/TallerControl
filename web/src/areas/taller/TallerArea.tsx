@@ -21,6 +21,7 @@ import { InvoicingSetupPage } from './invoicing/InvoicingSetupPage'
 import { IvaBookPage } from './invoicing/IvaBookPage'
 import { RemindersPage } from './reminders/RemindersPage'
 import { ReportsPage } from './reports/ReportsPage'
+import { AppointmentsPage } from './appointments/AppointmentsPage'
 
 /** Área del taller (`/app/*`): dueño y administrativo. Escritorio primero. */
 export function Component() {
@@ -36,6 +37,7 @@ export function Component() {
           <Route path="quotes/:id" element={<QuoteDetailPage />} />
           <Route path="work-orders" element={<WorkOrdersPage />} />
           <Route path="work-orders/:id" element={<WorkOrderDetailPage />} />
+          <Route path="appointments" element={<AppointmentsPage />} />
           <Route path="reminders" element={<RemindersPage />} />
           <Route path="qr" element={<QrCardsPage />} />
           <Route path="cash" element={<CashPage />} />

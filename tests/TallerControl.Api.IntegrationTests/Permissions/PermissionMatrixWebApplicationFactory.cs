@@ -16,6 +16,7 @@ using TallerControl.Domain.Payments;
 using TallerControl.Domain.Purchases;
 using TallerControl.Domain.Qr;
 using TallerControl.Domain.Quotes;
+using TallerControl.Domain.Scheduling;
 using TallerControl.Domain.Suppliers;
 using TallerControl.Domain.Tenancy;
 using TallerControl.Domain.Users;
@@ -91,6 +92,9 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
 
     /// <summary>Recordatorio del Taller A para probar T-ISO-ALL en rutas /reminders/{id}.</summary>
     public Guid ForeignReminderId { get; private set; }
+
+    /// <summary>Turno del Taller A para probar T-ISO-ALL en rutas /appointments/{id}.</summary>
+    public Guid ForeignAppointmentId { get; private set; }
 
     public string ConnectionString { get; }
 
@@ -410,6 +414,25 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
         }
 
         ForeignReminderId = reminderA.Id;
+
+        // Siembra un turno del Taller A para T-ISO-ALL en rutas /appointments/{id}.
+        var fakeTokenHash = new byte[32];
+        fakeTokenHash[0] = 0xAB;
+        var appointmentA = new Appointment(
+            tenantA.Id, customerA.Id, vehicleA.Id,
+            mechanicMembershipId: null,
+            scheduledAt: DateTimeOffset.UtcNow.AddDays(7),
+            notes: null,
+            confirmationTokenHash: fakeTokenHash);
+
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(appointmentA);
+            await db.SaveChangesAsync();
+        }
+
+        ForeignAppointmentId = appointmentA.Id;
     }
 
     private static DbContextOptions<AppDbContext> BuildOptions(string cs)

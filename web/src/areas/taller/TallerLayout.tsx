@@ -46,6 +46,9 @@ export function TallerLayout({ children }: { children: ReactNode }) {
             <NavLink to="/app/work-orders" className={navCls}>
               Órdenes
             </NavLink>
+            <NavLink to="/app/appointments" className={navCls}>
+              Agenda
+            </NavLink>
             {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
               <NavLink to="/app/reminders" className={navCls}>
                 Recordatorios

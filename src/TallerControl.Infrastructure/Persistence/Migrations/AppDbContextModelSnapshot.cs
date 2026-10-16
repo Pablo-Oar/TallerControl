@@ -2043,12 +2043,6 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("quote_id");
 
-                    b.Property<string>("SignerName")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)")
-                        .HasColumnName("signer_name");
-
                     b.Property<string>("SignatureFileKey")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
@@ -2057,6 +2051,12 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                     b.Property<byte[]>("SignerDocNumberEnc")
                         .HasColumnType("bytea")
                         .HasColumnName("signer_doc_number_enc");
+
+                    b.Property<string>("SignerName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("signer_name");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -2197,6 +2197,256 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                     b.ToTable("reminders", null, t =>
                         {
                             t.HasCheckConstraint("ck_reminders_kind", "\"kind\" IN ('inspection_due', 'insurance_due', 'other_due', 'service_due')");
+                        });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Scheduling.Appointment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("cancellation_reason");
+
+                    b.Property<byte[]>("ConfirmationTokenHash")
+                        .HasColumnType("bytea")
+                        .HasColumnName("confirmation_token_hash");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
+
+                    b.Property<Guid?>("MechanicMembershipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("mechanic_membership_id");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<DateTimeOffset>("ScheduledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("scheduled_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<int>("TotalDurationMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("total_duration_minutes");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("VehicleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("vehicle_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_appointments");
+
+                    b.HasIndex("ConfirmationTokenHash")
+                        .HasDatabaseName("ix_appointments_confirmation_token_hash")
+                        .HasFilter("confirmation_token_hash IS NOT NULL");
+
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("ix_appointments_customer_id");
+
+                    b.HasIndex("VehicleId")
+                        .HasDatabaseName("ix_appointments_vehicle_id");
+
+                    b.HasIndex("TenantId", "VehicleId", "ScheduledAt")
+                        .IsUnique()
+                        .HasDatabaseName("ix_appointments_tenant_id_vehicle_id_scheduled_at")
+                        .HasFilter("status NOT IN ('cancelled', 'completed')");
+
+                    b.ToTable("appointments", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_appointments_status", "\"status\" IN ('cancelled', 'completed', 'confirmed', 'pending')");
+                        });
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Scheduling.AppointmentService", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AppointmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("appointment_id");
+
+                    b.Property<int>("BufferMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("buffer_minutes");
+
+                    b.Property<Guid>("CatalogItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("catalog_item_id");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("duration_minutes");
+
+                    b.HasKey("Id")
+                        .HasName("pk_appointment_services");
+
+                    b.HasIndex("AppointmentId")
+                        .HasDatabaseName("ix_appointment_services_appointment_id");
+
+                    b.HasIndex("CatalogItemId")
+                        .HasDatabaseName("ix_appointment_services_catalog_item_id");
+
+                    b.ToTable("appointment_services", (string)null);
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Scheduling.AvailabilityException", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<TimeOnly?>("EndTime")
+                        .HasColumnType("time")
+                        .HasColumnName("end_time");
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_blocked");
+
+                    b.Property<Guid?>("MechanicMembershipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("mechanic_membership_id");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("reason");
+
+                    b.Property<TimeOnly?>("StartTime")
+                        .HasColumnType("time")
+                        .HasColumnName("start_time");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_availability_exceptions");
+
+                    b.HasIndex("MechanicMembershipId")
+                        .HasDatabaseName("ix_availability_exceptions_mechanic_membership_id");
+
+                    b.HasIndex("TenantId", "Date")
+                        .HasDatabaseName("ix_availability_exceptions_tenant_id_date");
+
+                    b.ToTable("availability_exceptions", (string)null);
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Scheduling.AvailabilityRule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("integer")
+                        .HasColumnName("day_of_week");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time")
+                        .HasColumnName("end_time");
+
+                    b.Property<Guid>("MechanicMembershipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("mechanic_membership_id");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time")
+                        .HasColumnName("start_time");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_availability_rules");
+
+                    b.HasIndex("MechanicMembershipId")
+                        .HasDatabaseName("ix_availability_rules_mechanic_membership_id");
+
+                    b.HasIndex("TenantId", "MechanicMembershipId", "DayOfWeek")
+                        .IsUnique()
+                        .HasDatabaseName("ix_availability_rules_tenant_id_mechanic_membership_id_day_of_");
+
+                    b.ToTable("availability_rules", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_availability_rules_day_of_week", "\"day_of_week\" IN ('friday', 'monday', 'saturday', 'sunday', 'thursday', 'tuesday', 'wednesday')");
                         });
                 });
 
@@ -3698,6 +3948,80 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_reminders_vehicle_vehicle_id");
                 });
 
+            modelBuilder.Entity("TallerControl.Domain.Scheduling.Appointment", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Customers.Customer", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_appointments_customer_customer_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_appointments_tenant_tenant_id");
+
+                    b.HasOne("TallerControl.Domain.Vehicles.Vehicle", null)
+                        .WithMany()
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_appointments_vehicle_vehicle_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Scheduling.AppointmentService", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Scheduling.Appointment", null)
+                        .WithMany("Services")
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_appointment_services_appointments_appointment_id");
+
+                    b.HasOne("TallerControl.Domain.Catalog.CatalogItem", null)
+                        .WithMany()
+                        .HasForeignKey("CatalogItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_appointment_services_catalog_item_catalog_item_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Scheduling.AvailabilityException", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Users.Membership", null)
+                        .WithMany()
+                        .HasForeignKey("MechanicMembershipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_availability_exceptions_membership_mechanic_membership_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_availability_exceptions_tenant_tenant_id");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Scheduling.AvailabilityRule", b =>
+                {
+                    b.HasOne("TallerControl.Domain.Users.Membership", null)
+                        .WithMany()
+                        .HasForeignKey("MechanicMembershipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_availability_rules_membership_mechanic_membership_id");
+
+                    b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_availability_rules_tenant_tenant_id");
+                });
+
             modelBuilder.Entity("TallerControl.Domain.Suppliers.Supplier", b =>
                 {
                     b.HasOne("TallerControl.Domain.Tenancy.Tenant", null)
@@ -3886,6 +4210,11 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("TallerControl.Domain.Quotes.QuoteResponse", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("TallerControl.Domain.Scheduling.Appointment", b =>
+                {
+                    b.Navigation("Services");
                 });
 
             modelBuilder.Entity("TallerControl.Domain.Work.WorkOrder", b =>
