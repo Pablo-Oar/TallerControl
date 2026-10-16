@@ -97,7 +97,7 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     tenant_id = table.Column<Guid>(type: "uuid", nullable: false),
                     mechanic_membership_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    day_of_week = table.Column<int>(type: "integer", nullable: false),
+                    day_of_week = table.Column<string>(type: "text", nullable: false),
                     start_time = table.Column<TimeOnly>(type: "time", nullable: false),
                     end_time = table.Column<TimeOnly>(type: "time", nullable: false),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),

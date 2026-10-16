@@ -22,7 +22,7 @@ internal sealed class AvailabilityRuleConfiguration : IEntityTypeConfiguration<A
             .HasForeignKey(r => r.MechanicMembershipId).OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(r => r.DayOfWeek).IsRequired()
-            .HasConversion<int>();
+            .HasConversion<string>();
 
         builder.Property(r => r.StartTime).IsRequired()
             .HasColumnType("time");
