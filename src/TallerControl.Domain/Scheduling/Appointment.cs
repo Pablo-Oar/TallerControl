@@ -122,7 +122,6 @@ public sealed class Appointment : Entity, ITenantOwned, IVersioned, IAuditable
             throw new InvalidOperationException($"No se puede confirmar un turno en estado {Status}.");
 
         Status = AppointmentStatus.Confirmed;
-        ConfirmationTokenHash = null;
     }
 
     /// <summary>
