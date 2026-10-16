@@ -4,8 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
 using TallerControl.Application.Auth;
+using TallerControl.Application.Onboarding;
 using TallerControl.Application.Reminders;
 using TallerControl.Application.Reports;
+using TallerControl.Infrastructure.Onboarding;
 using TallerControl.Infrastructure.Reminders;
 using TallerControl.Infrastructure.Reports;
 using TallerControl.Application.Cash;
@@ -268,6 +270,10 @@ public static class DependencyInjection
         services.AddScoped<SearchInvoicesHandler>();
         services.AddScoped<GetIvaBookHandler>();
         services.AddScoped<GetCitiExportHandler>();
+
+        // ── E13: Onboarding ───────────────────────────────────────────────────
+        services.AddScoped<IOnboardingRepository, EfOnboardingRepository>();
+        services.AddScoped<GetOnboardingHandler>();
 
         // ── E13: Reportes ─────────────────────────────────────────────────────
         services.AddScoped<IReportsRepository, EfReportsRepository>();
