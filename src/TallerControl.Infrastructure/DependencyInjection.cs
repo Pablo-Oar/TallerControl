@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
 using TallerControl.Application.Auth;
 using TallerControl.Application.Onboarding;
+using TallerControl.Application.Push;
+using TallerControl.Infrastructure.Push;
 using TallerControl.Application.Reminders;
 using TallerControl.Application.Reports;
 using TallerControl.Infrastructure.Onboarding;
@@ -270,6 +272,11 @@ public static class DependencyInjection
         services.AddScoped<SearchInvoicesHandler>();
         services.AddScoped<GetIvaBookHandler>();
         services.AddScoped<GetCitiExportHandler>();
+
+        // ── E13: Push subscriptions (PWA) ─────────────────────────────────────
+        services.AddScoped<IPushSubscriptionRepository, EfPushSubscriptionRepository>();
+        services.AddScoped<SavePushSubscriptionHandler>();
+        services.AddScoped<DeletePushSubscriptionHandler>();
 
         // ── E13: Onboarding ───────────────────────────────────────────────────
         services.AddScoped<IOnboardingRepository, EfOnboardingRepository>();

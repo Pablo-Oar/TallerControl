@@ -19,6 +19,7 @@ using TallerControl.Api.Endpoints.Purchases;
 using TallerControl.Api.Endpoints.Qr;
 using TallerControl.Api.Endpoints.Quotes;
 using TallerControl.Api.Endpoints.Onboarding;
+using TallerControl.Api.Endpoints.Push;
 using TallerControl.Api.Endpoints.Registration;
 using TallerControl.Api.Endpoints.Reminders;
 using TallerControl.Api.Endpoints.Reports;
@@ -115,6 +116,7 @@ app.MapInvoicingEndpoints();
 app.MapRemindersEndpoints();
 app.MapReportsEndpoints();
 app.MapOnboardingEndpoints();
+app.MapPushEndpoints();
 app.MapRegistrationEndpoints(app.Configuration);
 app.MapPublicEndpoints();
 
