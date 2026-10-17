@@ -177,7 +177,7 @@ export const workOrdersApi = {
     api.post<void>(`/api/v1/work-orders/${id}/assign`, { mechanicId }, true),
 
   updateMechanicNotes: (id: string, mechanicNotes: string | null) =>
-    api.post<void>(`/api/v1/work-orders/${id}/mechanic-notes`, { mechanicNotes }, true),
+    api.patchJson<void>(`/api/v1/work-orders/${id}/mechanic-notes`, { mechanicNotes }, true),
 
   getHistory: (id: string) =>
     api.get<StatusChangeDto[]>(`/api/v1/work-orders/${id}/history`),

@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { remindersApi } from '../../../lib/api/reminders'
 import { Button } from '../../../components/ui/Button'
+import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
 const schema = z
@@ -22,6 +23,10 @@ const schema = z
   })
 
 type FormValues = z.infer<typeof schema>
+
+const inputCls =
+  'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
+const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 interface Props {
   id: string | null
@@ -76,8 +81,7 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
       }),
     onSuccess: onSaved,
     onError: (e) => {
-      if (e instanceof ApiError)
-        setError('root', { message: e.detail })
+      if (e instanceof ApiError) setError('root', { message: e.detail })
     },
   })
 
@@ -93,8 +97,7 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
       }),
     onSuccess: onSaved,
     onError: (e) => {
-      if (e instanceof ApiError)
-        setError('root', { message: e.detail })
+      if (e instanceof ApiError) setError('root', { message: e.detail })
     },
   })
 
@@ -104,103 +107,104 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
   })
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-        <h2 className="mb-4 text-lg font-semibold">
-          {isEdit ? 'Editar recordatorio' : 'Nuevo recordatorio'}
-        </h2>
+    <Modal
+      title={isEdit ? 'Editar recordatorio' : 'Nuevo recordatorio'}
+      onClose={onClose}
+      className="max-w-md"
+    >
+      {errors.root && (
+        <div className="mb-3 border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {errors.root.message}
+        </div>
+      )}
 
-        {errors.root && (
-          <div className="mb-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {errors.root.message}
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div>
+          <label className={labelCls}>ID del vehículo</label>
+          <input
+            {...register('vehicleId')}
+            className={`${inputCls} font-mono text-xs`}
+            placeholder="UUID del vehículo"
+          />
+          {errors.vehicleId && (
+            <p className="mt-1 text-xs text-tc-stamp-red">{errors.vehicleId.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label className={labelCls}>Tipo</label>
+          <select
+            {...register('kind')}
+            className="w-full border border-tc-border bg-white px-3 py-2 text-sm outline-none focus:border-tc-border-mid transition-colors"
+          >
+            <option value="service_due">Service / Mantenimiento</option>
+            <option value="inspection_due">VTV / Inspección</option>
+            <option value="insurance_due">Seguro</option>
+            <option value="other_due">Otro vencimiento</option>
+          </select>
+        </div>
+
+        <div>
+          <label className={labelCls}>Título</label>
+          <input
+            {...register('title')}
+            className={inputCls}
+            placeholder="Ej. Cambio de aceite"
+          />
+          {errors.title && (
+            <p className="mt-1 text-xs text-tc-stamp-red">{errors.title.message}</p>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>
+              Fecha límite <span className="font-normal normal-case text-slate-400">(opcional)</span>
+            </label>
+            <input
+              type="date"
+              {...register('dueDate')}
+              className={inputCls}
+            />
           </div>
+          <div>
+            <label className={labelCls}>
+              Km límite <span className="font-normal normal-case text-slate-400">(opcional)</span>
+            </label>
+            <input
+              type="number"
+              min={0}
+              {...register('dueKm', { valueAsNumber: true })}
+              className={inputCls}
+              placeholder="Ej. 50000"
+            />
+          </div>
+        </div>
+        {errors.dueDate && (
+          <p className="text-xs text-tc-stamp-red">{errors.dueDate.message}</p>
         )}
 
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium">ID del vehículo</label>
-            <input
-              {...register('vehicleId')}
-              className="w-full rounded border border-slate-300 px-3 py-2 font-mono text-xs"
-              placeholder="UUID del vehículo"
-            />
-            {errors.vehicleId && (
-              <p className="mt-1 text-xs text-red-600">{errors.vehicleId.message}</p>
-            )}
-          </div>
+        <div>
+          <label className={labelCls}>
+            Notas <span className="font-normal normal-case text-slate-400">(opcional)</span>
+          </label>
+          <textarea
+            rows={2}
+            {...register('notes')}
+            className={inputCls}
+            placeholder="Observaciones adicionales"
+          />
+        </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium">Tipo</label>
-            <select {...register('kind')} className="w-full rounded border border-slate-300 px-3 py-2 text-sm">
-              <option value="service_due">Service / Mantenimiento</option>
-              <option value="inspection_due">VTV / Inspección</option>
-              <option value="insurance_due">Seguro</option>
-              <option value="other_due">Otro vencimiento</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium">Título</label>
-            <input
-              {...register('title')}
-              className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-              placeholder="Ej. Cambio de aceite"
-            />
-            {errors.title && (
-              <p className="mt-1 text-xs text-red-600">{errors.title.message}</p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-sm font-medium">
-                Fecha límite <span className="font-normal text-slate-400">(opcional)</span>
-              </label>
-              <input
-                type="date"
-                {...register('dueDate')}
-                className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium">
-                Km límite <span className="font-normal text-slate-400">(opcional)</span>
-              </label>
-              <input
-                type="number"
-                min={0}
-                {...register('dueKm', { valueAsNumber: true })}
-                className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-                placeholder="Ej. 50000"
-              />
-            </div>
-          </div>
-          {errors.dueDate && (
-            <p className="text-xs text-red-600">{errors.dueDate.message}</p>
-          )}
-
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Notas <span className="font-normal text-slate-400">(opcional)</span>
-            </label>
-            <textarea
-              rows={2}
-              {...register('notes')}
-              className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-              placeholder="Observaciones adicionales"
-            />
-          </div>
-
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="secondary" type="button" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button type="submit" loading={isSubmitting}>
-              {isEdit ? 'Guardar cambios' : 'Crear recordatorio'}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="flex justify-end gap-2 pt-2">
+          <Button variant="secondary" type="button" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" loading={isSubmitting}>
+            {isEdit ? 'Guardar cambios' : 'Crear recordatorio'}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   )
 }

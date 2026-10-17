@@ -1,1 +1,99 @@
 @import 'tailwindcss';
+
+@theme {
+  /* Jet-Age Ticket Wallet — TallerControl design tokens */
+
+  /* Carrier shell */
+  --color-tc-navy: #0a1628;
+  --color-tc-navy-mid: #1e3a5f;
+  --color-tc-navy-surface: #0d1f38;
+  --color-tc-navy-deep: #05101f;
+  --color-tc-navy-text: #4b6fa5;
+  --color-tc-navy-text-dim: #2d4f7c;
+
+  /* Content surface */
+  --color-tc-white: #ffffff;
+  --color-tc-surface: #f8fafc;
+  --color-tc-border: #e2e8f0;
+  --color-tc-border-mid: #cbd5e1;
+
+  /* Monetary amounts — carbon purple */
+  --color-tc-purple: #7c3aed;
+  --color-tc-purple-light: #ede9fe;
+  --color-tc-purple-mid: #5b21b6;
+
+  /* Status stamps */
+  --color-tc-pending-bg: #fef3c7;
+  --color-tc-pending-text: #92400e;
+  --color-tc-pending-border: #fcd34d;
+  --color-tc-inprog-bg: #dbeafe;
+  --color-tc-inprog-text: #1e40af;
+  --color-tc-inprog-border: #93c5fd;
+  --color-tc-done-bg: #d1fae5;
+  --color-tc-done-text: #065f46;
+  --color-tc-done-border: #6ee7b7;
+  --color-tc-void-text: #6b7280;
+  --color-tc-void-border: #d1d5db;
+  --color-tc-stamp-red: #d32f2f;
+
+  /* Coupon perforation */
+  --color-tc-perf: #c7d3e8;
+
+  /* Stub column */
+  --color-tc-stub-bg: #f0f4fb;
+
+  /* Typography */
+  --font-family-sans: ui-sans-serif, system-ui, Arial, Helvetica, sans-serif;
+  --font-family-mono: ui-monospace, 'Courier New', monospace;
+}
+
+/* Browser surface theming */
+::selection {
+  background-color: #7c3aed;
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
+}
+
+/* Tabular numerals on monetary data — applied via utility class */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* Coupon perforation line */
+.perf-line {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #c7d3e8 0,
+    #c7d3e8 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  width: 1px;
+}
+
+/* Status stamp rotation for void (only on standalone stamp chips, not inline badges) */
+.stamp-void-rotate {
+  transform: rotate(-8deg);
+  display: inline-block;
+}
+
+/* Custom scrollbar — themed to world */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f0f4fb;
+}
+::-webkit-scrollbar-thumb {
+  background: #c7d3e8;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4b6fa5;
+}

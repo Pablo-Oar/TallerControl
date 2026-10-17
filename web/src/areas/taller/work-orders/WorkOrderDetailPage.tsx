@@ -5,7 +5,6 @@ import {
   workOrdersApi,
   type WorkOrderStatus,
   STATUS_LABELS,
-  STATUS_COLORS,
   PRIORITY_LABELS,
 } from '../../../lib/api/workOrders'
 import {
@@ -16,8 +15,13 @@ import {
   STATUS_LABELS as PAYMENT_STATUS_LABELS,
 } from '../../../lib/api/payments'
 import { Button } from '../../../components/ui/Button'
+import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { Modal } from '../../../components/ui/Modal'
 import { ChangeStatusModal } from './ChangeStatusModal'
 import { CreatePaymentModal } from './CreatePaymentModal'
+
+const fmtARS = (n: number) =>
+  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
 
 export function WorkOrderDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -69,203 +73,212 @@ export function WorkOrderDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-12">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+      <div className="flex justify-center py-16">
+        <div className="h-6 w-6 animate-spin border-2 border-tc-purple border-t-transparent" />
       </div>
     )
   }
 
   if (error || !order) {
-    return <p className="text-sm text-red-600">No se pudo cargar la orden.</p>
+    return <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">No se pudo cargar la orden.</p>
   }
 
   const vehicleLabel = [order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ')
+  const canAct = order.status !== 'cancelled' && order.status !== 'delivered'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Encabezado */}
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">Orden #{order.number}</h1>
-            <span className={`rounded-full px-2.5 py-0.5 text-sm font-medium ${STATUS_COLORS[order.status]}`}>
-              {STATUS_LABELS[order.status]}
-            </span>
-          </div>
-          <p className="mt-1 text-sm text-slate-500">
-            Prioridad: {PRIORITY_LABELS[order.priority]}
-            {' · '}Creada: {new Date(order.createdAt ?? '').toLocaleDateString('es-AR')}
-          </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-lg font-bold tracking-wide text-slate-800 uppercase">
+            Orden #{order.number}
+          </h1>
+          <StatusBadge status={order.status} />
+          <span className="text-xs text-slate-400 uppercase tracking-wider">
+            {PRIORITY_LABELS[order.priority]}
+          </span>
         </div>
         <div className="flex gap-2">
           <Link to="/app/work-orders">
-            <Button variant="secondary">Volver</Button>
+            <Button variant="secondary" size="sm">← Volver</Button>
           </Link>
-          {order.status !== 'cancelled' && order.status !== 'delivered' && (
-            <Button onClick={() => setChangingStatus(true)}>Cambiar estado</Button>
+          {canAct && (
+            <Button size="sm" onClick={() => setChangingStatus(true)}>Cambiar estado</Button>
           )}
         </div>
       </div>
 
-      {/* Grid de info */}
+      {/* Info principal: coupon anatomy */}
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Cliente y vehículo */}
-        <InfoCard title="Cliente y vehículo">
-          <Row label="Cliente">
-            <Link to={`/app/customers`} className="text-blue-600 hover:underline">
-              {order.customerName}
-            </Link>
-          </Row>
+        <Section title="Cliente y vehículo">
+          <Row label="Cliente">{order.customerName}</Row>
           <Row label="Vehículo">
-            <span className="font-mono">{order.vehiclePlate}</span>
+            <span className="font-mono font-bold tracking-widest">{order.vehiclePlate}</span>
             {vehicleLabel && <span className="ml-1 text-slate-500">— {vehicleLabel}</span>}
           </Row>
-          <Row label="Odómetro">{order.odometerKm.toLocaleString('es-AR')} km</Row>
+          <Row label="Odómetro">
+            <span className="tabular-nums">{order.odometerKm.toLocaleString('es-AR')} km</span>
+          </Row>
           {order.fuelLevel != null && (
-            <Row label="Combustible">{order.fuelLevel}%</Row>
+            <Row label="Combustible"><span className="tabular-nums">{order.fuelLevel}%</span></Row>
           )}
-        </InfoCard>
+        </Section>
 
-        {/* Estado y mecánico */}
-        <InfoCard title="Asignación">
-          <Row label="Mecánico">{order.assignedMechanicName ?? <span className="text-slate-400">Sin asignar</span>}</Row>
-          {order.completedAt && <Row label="Completada">{new Date(order.completedAt).toLocaleDateString('es-AR')}</Row>}
-          {order.deliveredAt && <Row label="Entregada">{new Date(order.deliveredAt).toLocaleDateString('es-AR')}</Row>}
+        <Section title="Asignación">
+          <Row label="Mecánico">
+            {order.assignedMechanicName ?? <span className="text-slate-400">Sin asignar</span>}
+          </Row>
+          <Row label="Creada">
+            {new Date(order.createdAt ?? '').toLocaleDateString('es-AR')}
+          </Row>
+          {order.completedAt && (
+            <Row label="Completada">{new Date(order.completedAt).toLocaleDateString('es-AR')}</Row>
+          )}
+          {order.deliveredAt && (
+            <Row label="Entregada">{new Date(order.deliveredAt).toLocaleDateString('es-AR')}</Row>
+          )}
           {order.cancelledAt && (
             <>
               <Row label="Cancelada">{new Date(order.cancelledAt).toLocaleDateString('es-AR')}</Row>
               {order.cancelReason && <Row label="Motivo">{order.cancelReason}</Row>}
             </>
           )}
-        </InfoCard>
+        </Section>
       </div>
 
       {/* Problema reportado */}
       {order.reportedIssue && (
-        <InfoCard title="Problema reportado">
-          <p className="text-sm">{order.reportedIssue}</p>
-        </InfoCard>
+        <Section title="Problema reportado">
+          <p className="text-sm text-slate-700">{order.reportedIssue}</p>
+        </Section>
       )}
 
       {/* Renglones */}
       {order.items.length > 0 && (
-        <InfoCard title="Renglones">
-          <table className="w-full text-sm">
-            <thead className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-              <tr>
-                <th className="pb-2 pr-3 text-left">Descripción</th>
-                <th className="pb-2 px-3 text-right">Cant.</th>
-                <th className="pb-2 px-3 text-right">P. neto</th>
-                <th className="pb-2 px-3 text-right">IVA %</th>
-                <th className="pb-2 pl-3 text-right">Total línea</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {order.items.map(item => (
-                <tr key={item.id}>
-                  <td className="py-2 pr-3">{item.description}</td>
-                  <td className="py-2 px-3 text-right tabular-nums">{item.quantity}</td>
-                  <td className="py-2 px-3 text-right tabular-nums">
-                    {order.subtotalNet != null ? `$${item.unitNetPrice.toFixed(2)}` : '—'}
-                  </td>
-                  <td className="py-2 px-3 text-right">{item.vatRate}%</td>
-                  <td className="py-2 pl-3 text-right tabular-nums font-medium">
-                    {order.total != null ? `$${item.lineTotal.toFixed(2)}` : '—'}
-                  </td>
+        <Section title="Renglones">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-tc-border bg-tc-stub-bg">
+                  {['Descripción', 'Cant.', 'P. neto', 'IVA', 'Total línea'].map((h, i) => (
+                    <th key={i} className={`px-3 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${i > 0 ? 'text-right' : 'text-left'}`}>
+                      {h}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-tc-border">
+                {order.items.map(item => (
+                  <tr key={item.id}>
+                    <td className="px-3 py-2.5">{item.description}</td>
+                    <td className="px-3 py-2.5 text-right tabular-nums">{item.quantity}</td>
+                    <td className="px-3 py-2.5 text-right tabular-nums text-tc-purple">
+                      {order.subtotalNet != null ? fmtARS(item.unitNetPrice) : '—'}
+                    </td>
+                    <td className="px-3 py-2.5 text-right text-slate-500">{item.vatRate}%</td>
+                    <td className="px-3 py-2.5 text-right tabular-nums font-semibold text-tc-purple">
+                      {order.total != null ? fmtARS(item.lineTotal) : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           {order.total != null && (
-            <div className="mt-3 border-t border-slate-100 pt-3 text-right text-sm">
-              <span className="text-slate-500">Subtotal neto: </span>
-              <span className="tabular-nums">${order.subtotalNet?.toFixed(2)}</span>
-              <span className="ml-4 text-slate-500">IVA: </span>
-              <span className="tabular-nums">${order.vatAmount?.toFixed(2)}</span>
-              <span className="ml-4 font-semibold">Total: ${order.total.toFixed(2)}</span>
-              {order.balance != null && order.balance > 0 && (
-                <span className="ml-4 text-amber-600 font-medium">Saldo: ${order.balance.toFixed(2)}</span>
+            <div className="mt-3 border-t border-tc-perf pt-3 flex justify-end gap-6 text-sm">
+              <span className="text-slate-500">
+                Subtotal neto <span className="tabular-nums text-slate-800">{fmtARS(order.subtotalNet ?? 0)}</span>
+              </span>
+              <span className="text-slate-500">
+                IVA <span className="tabular-nums text-slate-800">{fmtARS(order.vatAmount ?? 0)}</span>
+              </span>
+              <span className="font-bold text-tc-purple tabular-nums">
+                Total {fmtARS(order.total)}
+              </span>
+              {(order.balance ?? 0) > 0 && (
+                <span className="font-semibold text-amber-600 tabular-nums">
+                  Saldo {fmtARS(order.balance!)}
+                </span>
               )}
             </div>
           )}
-        </InfoCard>
+        </Section>
       )}
 
       {/* Notas */}
       {(order.internalNotes || order.mechanicNotes) && (
-        <InfoCard title="Notas">
+        <Section title="Notas">
           {order.internalNotes && (
             <div>
-              <p className="mb-1 text-xs font-medium text-slate-400 uppercase tracking-wide">Internas</p>
-              <p className="text-sm">{order.internalNotes}</p>
+              <p className="mb-1 text-[10px] font-bold tracking-wider uppercase text-slate-400">Internas</p>
+              <p className="text-sm text-slate-700">{order.internalNotes}</p>
             </div>
           )}
           {order.mechanicNotes && (
             <div className={order.internalNotes ? 'mt-3' : ''}>
-              <p className="mb-1 text-xs font-medium text-slate-400 uppercase tracking-wide">Del mecánico</p>
-              <p className="text-sm">{order.mechanicNotes}</p>
+              <p className="mb-1 text-[10px] font-bold tracking-wider uppercase text-slate-400">Del mecánico</p>
+              <p className="text-sm text-slate-700">{order.mechanicNotes}</p>
             </div>
           )}
-        </InfoCard>
+        </Section>
       )}
 
-      {/* Pagos */}
-      <InfoCard title="Cobros">
+      {/* Cobros */}
+      <Section title="Cobros">
         {payments && (
-          <div className="mb-3 flex items-center gap-6 text-sm">
+          <div className="mb-3 flex flex-wrap gap-6 text-sm border-b border-tc-perf pb-3">
             <span className="text-slate-500">
-              Total: <strong>${payments.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</strong>
+              Total <span className="tabular-nums font-semibold text-slate-800">{fmtARS(payments.total)}</span>
             </span>
             <span className="text-slate-500">
-              Cobrado: <strong>${payments.paid.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</strong>
+              Cobrado <span className="tabular-nums font-semibold text-tc-done-text">{fmtARS(payments.paid)}</span>
             </span>
-            <span className={payments.balance > 0 ? 'text-amber-600' : 'text-green-600'}>
-              Saldo: <strong>${payments.balance.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</strong>
+            <span className={payments.balance > 0 ? 'text-amber-600' : 'text-tc-done-text'}>
+              Saldo <span className="tabular-nums font-bold">{fmtARS(payments.balance)}</span>
             </span>
           </div>
         )}
+
         {payments && payments.payments.length > 0 && (
           <table className="mb-3 w-full text-sm">
-            <thead className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-              <tr>
-                <th className="pb-1 pr-3 text-left">#</th>
-                <th className="pb-1 px-3 text-left">Método</th>
-                <th className="pb-1 px-3 text-right">Monto</th>
-                <th className="pb-1 px-3 text-left">Fecha</th>
-                <th className="pb-1 px-3 text-left">Estado</th>
-                <th className="pb-1" />
+            <thead>
+              <tr className="border-b border-tc-border">
+                {['#', 'Método', 'Monto', 'Fecha', 'Estado', ''].map((h, i) => (
+                  <th key={i} className={`pb-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${i === 2 ? 'text-right px-3' : i > 0 ? 'px-3 text-left' : 'text-left'}`}>
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-tc-border">
               {payments.payments.map(pay => (
-                <tr key={pay.id}>
-                  <td className="py-1.5 pr-3 text-slate-500">{String(pay.number).padStart(4, '0')}</td>
-                  <td className="py-1.5 px-3">{METHOD_LABELS[pay.method]}</td>
-                  <td className="py-1.5 px-3 text-right tabular-nums font-medium">
-                    ${pay.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                <tr key={pay.id} className={pay.status === 'voided' ? 'opacity-60' : ''}>
+                  <td className="py-2 text-slate-400 tabular-nums">{String(pay.number).padStart(4, '0')}</td>
+                  <td className="py-2 px-3">{METHOD_LABELS[pay.method]}</td>
+                  <td className={`py-2 px-3 text-right tabular-nums font-semibold ${pay.status === 'voided' ? 'line-through text-slate-400' : 'text-tc-purple'}`}>
+                    {fmtARS(pay.amount)}
                   </td>
-                  <td className="py-1.5 px-3 text-slate-500">
+                  <td className="py-2 px-3 text-slate-500 text-xs">
                     {new Date(pay.paidAt).toLocaleDateString('es-AR')}
                   </td>
-                  <td className="py-1.5 px-3">
-                    <span className={`text-xs font-medium ${pay.status === 'voided' ? 'text-red-600' : 'text-green-600'}`}>
-                      {PAYMENT_STATUS_LABELS[pay.status]}
-                    </span>
+                  <td className="py-2 px-3">
+                    <StatusBadge status={pay.status} label={PAYMENT_STATUS_LABELS[pay.status]} />
                   </td>
-                  <td className="py-1.5">
-                    <div className="flex justify-end gap-2">
+                  <td className="py-2 text-right">
+                    <div className="flex justify-end gap-3">
                       <a
                         href={getPaymentPdfUrl(id!, pay.id)}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-xs text-blue-600 hover:underline"
+                        className="text-[10px] font-bold tracking-wider uppercase text-tc-navy-text-dim hover:text-tc-purple transition-colors"
                       >
                         PDF
                       </a>
                       {pay.status === 'valid' && (
                         <button
                           onClick={() => setVoidingPaymentId(pay.id)}
-                          className="text-xs text-red-500 hover:underline"
+                          className="text-[10px] font-bold tracking-wider uppercase text-tc-stamp-red hover:text-red-700 transition-colors"
                         >
                           Anular
                         </button>
@@ -277,29 +290,31 @@ export function WorkOrderDetailPage() {
             </tbody>
           </table>
         )}
+
         {!payments?.payments.length && (
           <p className="mb-3 text-sm text-slate-400">Sin cobros registrados.</p>
         )}
-        {order.status !== 'cancelled' && order.status !== 'delivered' && (payments?.balance ?? 0) > 0 && (
-          <Button variant="secondary" onClick={() => setCreatingPayment(true)}>
+
+        {canAct && (payments?.balance ?? 0) > 0 && (
+          <Button variant="secondary" size="sm" onClick={() => setCreatingPayment(true)}>
             + Registrar cobro
           </Button>
         )}
-      </InfoCard>
+      </Section>
 
       {/* Historial */}
       {history && history.length > 0 && (
-        <InfoCard title="Historial de estados">
+        <Section title="Historial de estados">
           <ol className="space-y-2">
             {history.map(change => (
               <li key={change.id} className="flex items-start gap-3 text-sm">
                 <span className="mt-0.5 text-xs text-slate-400 tabular-nums whitespace-nowrap">
                   {new Date(change.changedAt).toLocaleString('es-AR')}
                 </span>
-                <span>
-                  {change.fromStatus
-                    ? <>{STATUS_LABELS[change.fromStatus as WorkOrderStatus]} → </>
-                    : null}
+                <span className="text-slate-700">
+                  {change.fromStatus && (
+                    <>{STATUS_LABELS[change.fromStatus as WorkOrderStatus]} → </>
+                  )}
                   <strong>{STATUS_LABELS[change.toStatus as WorkOrderStatus]}</strong>
                   {change.note && <span className="ml-1 text-slate-500">— {change.note}</span>}
                   {change.changedByName && (
@@ -309,9 +324,10 @@ export function WorkOrderDetailPage() {
               </li>
             ))}
           </ol>
-        </InfoCard>
+        </Section>
       )}
 
+      {/* Modales */}
       {changingStatus && (
         <ChangeStatusModal
           orderId={order.id}
@@ -340,70 +356,57 @@ export function WorkOrderDetailPage() {
   )
 }
 
-// ── Helpers de layout ──────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────────
 
-function InfoCard({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">{title}</h2>
-      {children}
+    <div className="border border-tc-border bg-white overflow-hidden">
+      <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
+        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">{title}</span>
+      </div>
+      <div className="p-4">{children}</div>
     </div>
   )
 }
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-baseline justify-between py-1 text-sm">
-      <span className="text-slate-500">{label}</span>
-      <span>{children}</span>
+    <div className="flex items-baseline justify-between py-1.5 text-sm border-b border-tc-border last:border-0">
+      <span className="text-xs font-bold tracking-wider uppercase text-slate-400">{label}</span>
+      <span className="text-slate-800">{children}</span>
     </div>
   )
 }
 
-function VoidPaymentDialog({
-  onConfirm,
-  onClose,
-}: {
-  onConfirm: (reason: string) => void
-  onClose: () => void
-}) {
+function VoidPaymentDialog({ onConfirm, onClose }: { onConfirm: (r: string) => void; onClose: () => void }) {
   const [reason, setReason] = useState('')
   const [loading, setLoading] = useState(false)
 
   async function handleConfirm() {
     if (!reason.trim()) return
     setLoading(true)
-    try {
-      await onConfirm(reason.trim())
-    } finally {
-      setLoading(false)
-    }
+    try { await onConfirm(reason.trim()) } finally { setLoading(false) }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
-        <h2 className="mb-3 text-base font-semibold text-slate-800">Anular cobro</h2>
-        <p className="mb-3 text-sm text-slate-500">Ingrese el motivo de la anulación:</p>
+    <Modal title="Anular cobro" onClose={onClose} className="max-w-sm">
+      <div className="space-y-4">
+        <p className="text-sm text-slate-600">Ingresá el motivo de la anulación:</p>
         <textarea
           value={reason}
           onChange={e => setReason(e.target.value)}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors"
           rows={3}
-          placeholder="Motivo..."
+          placeholder="Motivo…"
           autoFocus
         />
-        <div className="mt-4 flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose} disabled={loading}>Cancelar</Button>
-          <Button
-            onClick={handleConfirm}
-            disabled={loading || !reason.trim()}
-            className="bg-red-600 hover:bg-red-700"
-          >
-            {loading ? 'Anulando…' : 'Anular'}
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" size="sm" onClick={onClose} disabled={loading}>Cancelar</Button>
+          <Button variant="danger" size="sm" onClick={handleConfirm} disabled={loading || !reason.trim()} loading={loading}>
+            Anular cobro
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }

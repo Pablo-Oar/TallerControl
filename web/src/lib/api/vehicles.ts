@@ -11,6 +11,7 @@ export interface VehicleListDto {
   model: string | null
   year: number | null
   customerName: string
+  isDeleted?: boolean
 }
 
 export interface VehicleDto {
@@ -48,9 +49,10 @@ export interface VehicleUpsertRequest {
 }
 
 export const vehiclesApi = {
-  search: (q?: string | null, page = 1, pageSize = 25) => {
+  search: (q?: string | null, page = 1, pageSize = 25, includeDeleted = false) => {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
     if (q) params.set('q', q)
+    if (includeDeleted) params.set('includeDeleted', 'true')
     return api.get<Page<VehicleListDto>>(`/api/v1/vehicles?${params}`)
   },
   get: (id: string) => api.get<VehicleDto>(`/api/v1/vehicles/${id}`),
@@ -59,4 +61,5 @@ export const vehiclesApi = {
     api.put<VehicleDto>(`/api/v1/vehicles/${id}`, body, String(version)),
   delete: (id: string, reason: string) =>
     api.delete<void>(`/api/v1/vehicles/${id}`, { reason }, true),
+  restore: (id: string) => api.post<VehicleDto>(`/api/v1/vehicles/${id}/restore`, undefined, true),
 }

@@ -2,7 +2,10 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { purchasesApi, type PurchaseDto, type PurchaseStatus } from '../../../lib/api/purchases'
 import { Button } from '../../../components/ui/Button'
+import { Modal } from '../../../components/ui/Modal'
+import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { ApiError } from '../../../lib/api/client'
+import { PurchaseFormModal } from './PurchaseFormModal'
 
 const STATUS_LABELS: Record<PurchaseStatus, string> = {
   draft: 'Borrador',
@@ -10,15 +13,8 @@ const STATUS_LABELS: Record<PurchaseStatus, string> = {
   cancelled: 'Cancelada',
 }
 
-const STATUS_COLORS: Record<PurchaseStatus, string> = {
-  draft: 'bg-yellow-100 text-yellow-700',
-  confirmed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-slate-100 text-slate-500',
-}
-
-function formatMoney(n: number) {
-  return n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })
-}
+const fmtARS = (n: number) =>
+  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
 
 export function PurchasesPage() {
   const queryClient = useQueryClient()
@@ -26,6 +22,7 @@ export function PurchasesPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<PurchaseDto | null>(null)
+  const [creating, setCreating] = useState(false)
 
   const { data, isLoading } = useQuery({
     queryKey: ['purchases', search, page],
@@ -77,71 +74,73 @@ export function PurchasesPage() {
     }
   }
 
+  const totalPages = data ? Math.ceil(data.total / data.pageSize) : 1
+
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Compras</h1>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold tracking-tight text-slate-900">Compras</h1>
+        <Button onClick={() => setCreating(true)} size="sm">Nueva compra</Button>
       </div>
 
-      <form onSubmit={handleSearch} className="mb-4 flex gap-2">
+      <form onSubmit={handleSearch} className="flex gap-1">
         <input
           type="search"
           value={q}
           onChange={e => setQ(e.target.value)}
           placeholder="Buscar compras…"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-border-mid transition-colors"
         />
-        <Button type="submit" variant="secondary">Buscar</Button>
+        <Button type="submit" variant="secondary" size="sm">Buscar</Button>
       </form>
 
       {isLoading && (
-        <div className="flex justify-center py-12">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+        <div className="border border-tc-border bg-white">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-10 animate-pulse border-b border-tc-border bg-tc-surface last:border-0" />
+          ))}
         </div>
       )}
 
       {!isLoading && data && data.items.length === 0 && (
-        <p className="py-8 text-center text-sm text-slate-500">No hay compras registradas.</p>
+        <div className="border border-dashed border-tc-border px-4 py-10 text-center text-sm text-slate-400">
+          No hay compras registradas.
+        </div>
       )}
 
       {!isLoading && data && data.items.length > 0 && (
-        <div className="overflow-x-auto">
+        <div className="border border-tc-border bg-white overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-left text-xs font-medium uppercase text-slate-500">
-                <th className="pb-2 pr-4">Nº</th>
-                <th className="pb-2 pr-4">Fecha</th>
-                <th className="pb-2 pr-4">Total</th>
-                <th className="pb-2 pr-4">Estado</th>
-                <th className="pb-2 pr-4">CITI</th>
-                <th className="pb-2" />
+              <tr className="bg-tc-stub-bg border-b border-tc-border">
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Nº</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Fecha</th>
+                <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Total</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">CITI</th>
+                <th className="px-4 py-2" />
               </tr>
             </thead>
             <tbody>
               {data.items.map(p => (
-                <tr key={p.id} className="border-b border-slate-100">
-                  <td className="py-2 pr-4 font-medium">#{p.documentNumber}</td>
-                  <td className="py-2 pr-4 text-slate-600">
+                <tr key={p.id} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
+                  <td className="px-4 py-2.5 font-mono font-bold text-slate-800 tabular-nums">#{p.documentNumber}</td>
+                  <td className="px-4 py-2.5 text-slate-600 tabular-nums">
                     {new Date(p.invoiceDate).toLocaleDateString('es-AR')}
                   </td>
-                  <td className="py-2 pr-4 font-medium">{formatMoney(p.total)}</td>
-                  <td className="py-2 pr-4">
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[p.status]}`}>
-                      {STATUS_LABELS[p.status]}
-                    </span>
+                  <td className="px-4 py-2.5 text-right font-bold text-tc-purple tabular-nums">{fmtARS(p.total)}</td>
+                  <td className="px-4 py-2.5">
+                    <StatusBadge status={p.status} label={STATUS_LABELS[p.status]} />
                   </td>
-                  <td className="py-2 pr-4">
+                  <td className="px-4 py-2.5">
                     {p.isExcludedFromCiti ? (
-                      <span className="text-xs text-amber-600">Excluida</span>
+                      <span className="text-[10px] font-bold tracking-wider uppercase text-amber-600">Excluida</span>
                     ) : (
-                      <span className="text-xs text-green-600">Incluida</span>
+                      <span className="text-[10px] font-bold tracking-wider uppercase text-green-700">Incluida</span>
                     )}
                   </td>
-                  <td className="py-2 text-right">
-                    <button
-                      onClick={() => setSelected(p)}
-                      className="text-blue-600 hover:underline"
-                    >
+                  <td className="px-4 py-2.5 text-right">
+                    <button onClick={() => setSelected(p)} className="text-xs text-tc-purple hover:opacity-70">
                       Ver
                     </button>
                   </td>
@@ -151,77 +150,102 @@ export function PurchasesPage() {
           </table>
 
           {data.total > data.pageSize && (
-            <div className="mt-4 flex justify-center gap-2">
-              <Button variant="secondary" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
-                Anterior
-              </Button>
-              <span className="flex items-center text-sm text-slate-500">
-                {page} / {Math.ceil(data.total / data.pageSize)}
+            <div className="flex items-center gap-1 border-t border-tc-border px-4 py-2">
+              <button
+                className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
+                disabled={page <= 1}
+                onClick={() => setPage(p => p - 1)}
+              >
+                ← Anterior
+              </button>
+              <span className="border border-tc-border bg-tc-stub-bg px-3 py-1 text-xs tabular-nums">
+                {page} / {totalPages}
               </span>
-              <Button variant="secondary" disabled={page * data.pageSize >= data.total} onClick={() => setPage(p => p + 1)}>
-                Siguiente
-              </Button>
+              <button
+                className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
+                disabled={page * data.pageSize >= data.total}
+                onClick={() => setPage(p => p + 1)}
+              >
+                Siguiente →
+              </button>
             </div>
           )}
         </div>
       )}
 
-      {/* Panel de detalle */}
+      {creating && (
+        <PurchaseFormModal
+          onSuccess={(dto) => {
+            setCreating(false)
+            queryClient.invalidateQueries({ queryKey: ['purchases'] })
+            setSelected(dto)
+          }}
+          onClose={() => setCreating(false)}
+        />
+      )}
+
       {selected && detail && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Compra #{detail.documentNumber}</h2>
-              <button onClick={() => setSelected(null)} className="text-slate-400 hover:text-slate-700">✕</button>
+        <Modal title={`Compra #${detail.documentNumber}`} onClose={() => setSelected(null)} className="max-w-lg">
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-2 border border-tc-border bg-tc-stub-bg p-3">
+              <div>
+                <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Estado</p>
+                <StatusBadge status={detail.status} label={STATUS_LABELS[detail.status]} />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Fecha</p>
+                <p className="text-sm text-slate-800 tabular-nums">{new Date(detail.invoiceDate).toLocaleDateString('es-AR')}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Total</p>
+                <p className="text-sm font-bold text-tc-purple tabular-nums">{fmtARS(detail.total)}</p>
+              </div>
             </div>
 
-            <div className="mb-4 space-y-1 text-sm">
-              <p>
-                <span className="font-medium">Estado:</span>{' '}
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[detail.status]}`}>
-                  {STATUS_LABELS[detail.status]}
-                </span>
+            {detail.isExcludedFromCiti && (
+              <p className="border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                ⚠ Sin datos fiscales completos — excluida del CITI
               </p>
-              <p><span className="font-medium">Fecha:</span> {new Date(detail.invoiceDate).toLocaleDateString('es-AR')}</p>
-              <p><span className="font-medium">Total:</span> {formatMoney(detail.total)}</p>
-              {detail.isExcludedFromCiti && (
-                <p className="text-amber-600 text-xs">⚠ Sin datos fiscales completos — excluida del CITI</p>
-              )}
-            </div>
+            )}
 
             {detail.items.length > 0 && (
-              <table className="mb-4 w-full text-sm">
-                <thead>
-                  <tr className="border-b text-xs text-slate-500">
-                    <th className="pb-1 text-left">Descripción</th>
-                    <th className="pb-1 text-right">Cant.</th>
-                    <th className="pb-1 text-right">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {detail.items.map(i => (
-                    <tr key={i.id} className="border-b border-slate-50">
-                      <td className="py-1">{i.description}</td>
-                      <td className="py-1 text-right">{i.quantity}</td>
-                      <td className="py-1 text-right">{formatMoney(i.total)}</td>
+              <div className="border border-tc-border bg-white overflow-hidden">
+                <div className="bg-tc-stub-bg border-b border-tc-border px-3 py-1.5">
+                  <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Ítems</span>
+                </div>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-tc-border">
+                      <th className="px-3 py-1.5 text-left text-[10px] font-bold tracking-wider uppercase text-slate-400">Descripción</th>
+                      <th className="px-3 py-1.5 text-right text-[10px] font-bold tracking-wider uppercase text-slate-400">Cant.</th>
+                      <th className="px-3 py-1.5 text-right text-[10px] font-bold tracking-wider uppercase text-slate-400">Total</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {detail.items.map(i => (
+                      <tr key={i.id} className="border-b border-tc-border last:border-0">
+                        <td className="px-3 py-2 text-slate-700">{i.description}</td>
+                        <td className="px-3 py-2 text-right tabular-nums text-slate-600">{i.quantity}</td>
+                        <td className="px-3 py-2 text-right tabular-nums font-medium text-tc-purple">{fmtARS(i.total)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
 
             <div className="flex justify-end gap-2">
               {detail.status === 'draft' && (
                 <>
-                  <Button onClick={() => handleConfirm(detail)}>Confirmar</Button>
-                  <Button variant="secondary" onClick={() => handleCancel(detail)}>Cancelar</Button>
-                  <Button variant="secondary" onClick={() => handleDelete(detail)}>Eliminar</Button>
+                  <Button size="sm" onClick={() => handleConfirm(detail)}>Confirmar</Button>
+                  <Button size="sm" variant="secondary" onClick={() => handleCancel(detail)}>Cancelar</Button>
+                  <Button size="sm" variant="danger" onClick={() => handleDelete(detail)}>Eliminar</Button>
                 </>
               )}
-              <Button variant="secondary" onClick={() => setSelected(null)}>Cerrar</Button>
+              <Button size="sm" variant="secondary" onClick={() => setSelected(null)}>Cerrar</Button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   )

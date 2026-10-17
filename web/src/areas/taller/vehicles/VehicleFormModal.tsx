@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import { vehiclesApi, type FuelType, type VehicleUsageProfile, type VehicleDto, type VehicleUpsertRequest } from '../../../lib/api/vehicles'
 import { customersApi } from '../../../lib/api/customers'
 import { Button } from '../../../components/ui/Button'
+import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
 const USAGE_PROFILE_OPTIONS: { value: VehicleUsageProfile; label: string }[] = [
@@ -23,7 +24,8 @@ const FUEL_OPTIONS: { value: FuelType; label: string }[] = [
   { value: 'other', label: 'Otro' },
 ]
 
-const inputCls = 'w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500'
+const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
+const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const schema = z.object({
   plate: z.string().trim().min(5, 'Mínimo 5 caracteres').max(10, 'Máximo 10 caracteres'),
@@ -64,10 +66,14 @@ interface Props {
   vehicle?: VehicleDto
   onSuccess: (dto: VehicleDto) => void
   onClose: () => void
+  onDelete?: () => void
 }
 
-export function VehicleFormModal({ vehicle, onSuccess, onClose }: Props) {
+export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Props) {
   const [serverError, setServerError] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteReason, setDeleteReason] = useState('')
+  const [deleteLoading, setDeleteLoading] = useState(false)
   const isEdit = !!vehicle
 
   const { data: customersPage } = useQuery({
@@ -77,9 +83,7 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose }: Props) {
 
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
-    defaultValues: vehicle
-      ? toFormData(vehicle)
-      : { odometerKm: 0, customerId: '' },
+    defaultValues: vehicle ? toFormData(vehicle) : { odometerKm: 0, customerId: '' },
   })
 
   async function onSubmit(data: FormData) {
@@ -109,107 +113,148 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
-        <h2 className="mb-5 text-lg font-semibold">
-          {isEdit ? 'Editar vehículo' : 'Nuevo vehículo'}
-        </h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium">Patente *</label>
-              <input
-                {...register('plate')}
-                className={inputCls}
-                placeholder="ABC123"
-                style={{ textTransform: 'uppercase' }}
-                onChange={e => setValue('plate', e.target.value.toUpperCase().replace(/[\s-]/g, ''))}
-              />
-              {errors.plate && <p className="mt-1 text-xs text-red-600">{errors.plate.message}</p>}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium">Cliente *</label>
-              <select {...register('customerId')} className={inputCls}>
-                <option value="">Seleccioná un cliente</option>
-                {customersPage?.items.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-              {errors.customerId && <p className="mt-1 text-xs text-red-600">{errors.customerId.message}</p>}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium">Marca</label>
-              <input {...register('brand')} className={inputCls} placeholder="Toyota" />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium">Modelo</label>
-              <input {...register('model')} className={inputCls} placeholder="Corolla" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium">Versión</label>
-              <input {...register('version')} className={inputCls} placeholder="XEI CVT" />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium">Color</label>
-              <input {...register('color')} className={inputCls} placeholder="Blanco" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium">Año</label>
-              <input type="number" {...register('year')} className={inputCls} placeholder="2020" min={1900} max={new Date().getFullYear() + 1} />
-              {errors.year && <p className="mt-1 text-xs text-red-600">{errors.year.message}</p>}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium">Combustible</label>
-              <select {...register('fuel')} className={inputCls}>
-                <option value="">Sin especificar</option>
-                {FUEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium">Km actuales *</label>
-              <input type="number" {...register('odometerKm')} className={inputCls} placeholder="0" min={0} />
-              {errors.odometerKm && <p className="mt-1 text-xs text-red-600">{errors.odometerKm.message}</p>}
-            </div>
-          </div>
-
+    <Modal title={isEdit ? 'Editar vehículo' : 'Nuevo vehículo'} onClose={onClose} className="max-w-lg">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium">VIN / Nro. de chasis</label>
-            <input {...register('vin')} className={inputCls} placeholder="1HGBH41JXMN109186" maxLength={17} />
+            <label className={labelCls}>Patente *</label>
+            <input
+              {...register('plate')}
+              className={`${inputCls} font-mono tracking-widest uppercase`}
+              placeholder="ABC123"
+              onChange={e => setValue('plate', e.target.value.toUpperCase().replace(/[\s-]/g, ''))}
+            />
+            {errors.plate && <p className="mt-1 text-xs text-tc-stamp-red">{errors.plate.message}</p>}
           </div>
+          <div>
+            <label className={labelCls}>Cliente *</label>
+            <select {...register('customerId')} className={inputCls}>
+              <option value="">Seleccioná un cliente</option>
+              {customersPage?.items.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            {errors.customerId && <p className="mt-1 text-xs text-tc-stamp-red">{errors.customerId.message}</p>}
+          </div>
+        </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium">Perfil de uso</label>
-              <select {...register('usageProfile')} className={inputCls}>
-                <option value="">Sin especificar</option>
-                {USAGE_PROFILE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Marca</label>
+            <input {...register('brand')} className={inputCls} placeholder="Toyota" />
+          </div>
+          <div>
+            <label className={labelCls}>Modelo</label>
+            <input {...register('model')} className={inputCls} placeholder="Corolla" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Versión</label>
+            <input {...register('version')} className={inputCls} placeholder="XEI CVT" />
+          </div>
+          <div>
+            <label className={labelCls}>Color</label>
+            <input {...register('color')} className={inputCls} placeholder="Blanco" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className={labelCls}>Año</label>
+            <input type="number" {...register('year')} className={inputCls} placeholder="2020" min={1900} max={new Date().getFullYear() + 1} />
+            {errors.year && <p className="mt-1 text-xs text-tc-stamp-red">{errors.year.message}</p>}
+          </div>
+          <div>
+            <label className={labelCls}>Combustible</label>
+            <select {...register('fuel')} className={inputCls}>
+              <option value="">Sin especificar</option>
+              {FUEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Km actuales *</label>
+            <input type="number" {...register('odometerKm')} className={`${inputCls} tabular-nums`} placeholder="0" min={0} />
+            {errors.odometerKm && <p className="mt-1 text-xs text-tc-stamp-red">{errors.odometerKm.message}</p>}
+          </div>
+        </div>
+
+        <div>
+          <label className={labelCls}>VIN / Nro. de chasis</label>
+          <input {...register('vin')} className={`${inputCls} font-mono`} placeholder="1HGBH41JXMN109186" maxLength={17} />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Perfil de uso</label>
+            <select {...register('usageProfile')} className={inputCls}>
+              <option value="">Sin especificar</option>
+              {USAGE_PROFILE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Nro. de motor</label>
+            <input {...register('engineNumber')} className={`${inputCls} font-mono`} placeholder="ABC123456" maxLength={30} />
+          </div>
+        </div>
+
+        {serverError && (
+          <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
+        )}
+
+        {deleting && (
+          <div className="space-y-2 border border-red-200 bg-red-50 p-3">
+            <p className="text-xs font-bold tracking-wider uppercase text-red-700">Confirmar eliminación</p>
+            <input
+              className="w-full border border-red-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-red-400"
+              placeholder="Motivo de eliminación (requerido)"
+              value={deleteReason}
+              onChange={e => setDeleteReason(e.target.value)}
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="danger"
+                size="sm"
+                loading={deleteLoading}
+                disabled={!deleteReason.trim()}
+                onClick={async () => {
+                  setDeleteLoading(true)
+                  try {
+                    await vehiclesApi.delete(vehicle!.id, deleteReason.trim())
+                    onDelete?.()
+                    onClose()
+                  } catch (e) {
+                    setServerError(e instanceof ApiError ? e.detail : 'Error al eliminar')
+                    setDeleting(false)
+                  } finally {
+                    setDeleteLoading(false)
+                  }
+                }}
+              >
+                Eliminar definitivamente
+              </Button>
+              <Button type="button" variant="secondary" size="sm" onClick={() => setDeleting(false)}>Cancelar</Button>
             </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium">Nro. de motor</label>
-              <input {...register('engineNumber')} className={inputCls} placeholder="ABC123456" maxLength={30} />
-            </div>
           </div>
+        )}
 
-          {serverError && (
-            <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
-          )}
-
-          <div className="flex justify-end gap-3 pt-2">
-            <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" loading={isSubmitting}>Guardar</Button>
+        <div className="flex items-center justify-between pt-2">
+          <div>
+            {isEdit && onDelete && !deleting && (
+              <Button type="button" variant="danger" size="sm" onClick={() => setDeleting(true)}>
+                Eliminar
+              </Button>
+            )}
           </div>
-        </form>
-      </div>
-    </div>
+          <div className="flex gap-3">
+            <Button type="button" variant="secondary" size="sm" onClick={onClose}>Cancelar</Button>
+            <Button type="submit" size="sm" loading={isSubmitting}>Guardar</Button>
+          </div>
+        </div>
+      </form>
+    </Modal>
   )
 }

@@ -4,27 +4,48 @@ import { Link } from 'react-router'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { onboardingApi } from '../../lib/api/onboarding'
 
-function KpiCard({
-  label,
-  value,
-  to,
-  alert,
-}: {
+interface KpiStubProps {
   label: string
   value: string | number
   to?: string
   alert?: boolean
-}) {
+  money?: boolean
+}
+
+function KpiStub({ label, value, to, alert, money }: KpiStubProps) {
   const inner = (
-    <div
-      className={`rounded-xl border bg-white p-5 shadow-sm flex flex-col gap-1 ${alert ? 'border-amber-400' : 'border-slate-200'}`}
-    >
-      <span className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</span>
-      <span className={`text-3xl font-bold ${alert ? 'text-amber-600' : 'text-slate-800'}`}>{value}</span>
+    <div className="flex overflow-hidden border border-tc-border bg-white hover:border-tc-border-mid transition-colors group">
+      {/* Stub column */}
+      <div className="w-2 flex-none bg-tc-stub-bg" />
+      {/* Perforation */}
+      <div className="perf-line flex-none self-stretch" />
+      {/* Body */}
+      <div className="flex flex-1 flex-col gap-2 px-4 py-4">
+        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">
+          {label}
+        </span>
+        <span
+          className={[
+            'tabular-nums text-2xl font-bold leading-none',
+            money ? 'text-tc-purple' : alert ? 'text-amber-600' : 'text-slate-800',
+          ].join(' ')}
+        >
+          {value}
+        </span>
+      </div>
+      {/* Right corner tab */}
+      {to && (
+        <div className="flex w-8 flex-none items-center justify-center self-stretch bg-tc-stub-bg border-l border-tc-border text-tc-navy-text-dim group-hover:text-tc-navy-text transition-colors">
+          <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+            <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      )}
     </div>
   )
+
   return to ? (
-    <Link to={to} className="hover:opacity-80 transition-opacity">
+    <Link to={to} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tc-purple focus-visible:ring-offset-1">
       {inner}
     </Link>
   ) : (
@@ -48,11 +69,24 @@ export function DashboardPage() {
   })
 
   if (isLoading) {
-    return <p className="text-slate-500 text-sm">Cargando resumen…</p>
+    return (
+      <div className="space-y-6">
+        <div className="h-6 w-32 animate-pulse bg-slate-100" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[0, 1, 2, 3].map(i => (
+            <div key={i} className="h-24 animate-pulse bg-slate-50 border border-tc-border" />
+          ))}
+        </div>
+      </div>
+    )
   }
 
   if (error) {
-    return <p className="text-red-600 text-sm">No se pudo cargar el resumen del taller.</p>
+    return (
+      <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        No se pudo cargar el resumen del taller.
+      </p>
+    )
   }
 
   const totalFormatted = new Intl.NumberFormat('es-AR', {
@@ -61,15 +95,20 @@ export function DashboardPage() {
     maximumFractionDigits: 0,
   }).format(data!.totalReceivable)
 
-  return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-slate-800">Inicio</h1>
+  const pct = onboarding
+    ? Math.round((onboarding.completedCount / onboarding.totalCount) * 100)
+    : 0
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <KpiCard label="Por cobrar" value={totalFormatted} />
-        <KpiCard label="OTs abiertas" value={data!.openWorkOrders} to="/app/work-orders" />
-        <KpiCard label="Presupuestos pendientes" value={data!.pendingQuotes} to="/app/quotes" />
-        <KpiCard
+  return (
+    <div className="space-y-8">
+      <h1 className="text-lg font-bold tracking-wide text-slate-800 uppercase">Inicio</h1>
+
+      {/* KPI row — coupon stubs */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <KpiStub label="Por cobrar" value={totalFormatted} money />
+        <KpiStub label="OTs abiertas" value={data!.openWorkOrders} to="/app/work-orders" />
+        <KpiStub label="Presupuestos pendientes" value={data!.pendingQuotes} to="/app/quotes" />
+        <KpiStub
           label="Stock bajo"
           value={data!.lowStockItems}
           to="/app/catalog"
@@ -77,30 +116,42 @@ export function DashboardPage() {
         />
       </div>
 
-      {/* Guía de inicio — solo para Owner cuando no está completa */}
+      {/* Onboarding checklist — owner only, while incomplete */}
       {onboarding && !onboarding.isComplete && (
-        <div className="rounded-xl border border-blue-200 bg-blue-50 p-5 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-blue-800">
-              Guía de inicio — {onboarding.completedCount}/{onboarding.totalCount} completados
-            </h2>
-            <div className="text-xs text-blue-600 font-medium">
-              {Math.round((onboarding.completedCount / onboarding.totalCount) * 100)}%
-            </div>
+        <div className="border border-tc-border bg-white overflow-hidden">
+          {/* Header stub */}
+          <div className="flex items-center justify-between border-b border-tc-border bg-tc-stub-bg px-4 py-3">
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-500">
+              Guía de inicio
+            </span>
+            <span className="text-[10px] font-bold tracking-wider text-tc-purple tabular-nums">
+              {onboarding.completedCount}/{onboarding.totalCount} · {pct}%
+            </span>
           </div>
-          <div className="h-1.5 w-full rounded-full bg-blue-200">
+
+          {/* Progress bar */}
+          <div className="h-0.5 w-full bg-tc-border">
             <div
-              className="h-1.5 rounded-full bg-blue-600 transition-all"
-              style={{ width: `${(onboarding.completedCount / onboarding.totalCount) * 100}%` }}
+              className="h-0.5 bg-tc-purple transition-all"
+              style={{ width: `${pct}%` }}
             />
           </div>
-          <ul className="space-y-1.5">
+
+          {/* Steps */}
+          <ul className="divide-y divide-tc-border">
             {onboarding.steps.map(step => (
-              <li key={step.key} className="flex items-center gap-2 text-sm">
-                {step.completed
-                  ? <span className="text-green-600">✓</span>
-                  : <span className="text-blue-300">○</span>}
-                <span className={step.completed ? 'text-slate-500 line-through' : 'text-slate-700'}>
+              <li key={step.key} className="flex items-center gap-3 px-4 py-2.5">
+                {step.completed ? (
+                  <svg className="h-4 w-4 flex-none text-tc-done-text" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                    <path d="M3 8l3.5 3.5L13 5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ) : (
+                  <span className="h-4 w-4 flex-none rounded-full border-2 border-tc-border-mid" aria-hidden />
+                )}
+                <span className={[
+                  'text-sm',
+                  step.completed ? 'text-slate-400 line-through' : 'text-slate-700',
+                ].join(' ')}>
                   {step.label}
                 </span>
               </li>

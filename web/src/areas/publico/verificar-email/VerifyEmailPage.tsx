@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, Link } from 'react-router'
 import { registrationApi } from '../../../lib/api/registration'
 import { ApiError } from '../../../lib/api/client'
+import { Button } from '../../../components/ui/Button'
 
 type Status = 'loading' | 'success' | 'error'
 
@@ -30,7 +31,6 @@ export function VerifyEmailPage() {
         }
       })
       .catch((err) => {
-        // El endpoint devuelve 400 con { success: false, message } para tokens inválidos/expirados.
         if (err instanceof ApiError && err.status === 400 && err.extensions?.['message']) {
           setMessage(err.extensions['message'] as string)
         } else {
@@ -41,41 +41,48 @@ export function VerifyEmailPage() {
   }, [token])
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm text-center">
-        {status === 'loading' && (
-          <>
-            <div className="mb-4 text-4xl animate-spin">⏳</div>
-            <p className="text-slate-600">Verificando tu email...</p>
-          </>
-        )}
+    <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4">
+      <div className="w-full max-w-sm border border-tc-border bg-white">
+        <div className="border-b border-tc-border bg-tc-stub-bg px-6 py-3">
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">TallerControl</span>
+        </div>
+        <div className="px-6 py-8 text-center">
+          {status === 'loading' && (
+            <>
+              <div className="mb-4 space-y-2">
+                <div className="mx-auto h-3 w-3/4 animate-pulse bg-tc-border" />
+                <div className="mx-auto h-3 w-1/2 animate-pulse bg-tc-border" />
+              </div>
+              <p className="text-sm text-slate-500">Verificando tu email...</p>
+            </>
+          )}
 
-        {status === 'success' && (
-          <>
-            <div className="mb-4 text-4xl">✅</div>
-            <h1 className="mb-2 text-xl font-semibold text-slate-900">Email verificado</h1>
-            <p className="text-slate-600 text-sm">{message}</p>
-            <Link
-              to="/login"
-              className="mt-6 inline-block rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
-            >
-              Iniciar sesión
-            </Link>
-          </>
-        )}
+          {status === 'success' && (
+            <>
+              <p className="mb-3 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Verificación exitosa</p>
+              <h1 className="mb-3 text-xl font-bold text-slate-900">Email verificado</h1>
+              <p className="text-sm text-slate-600">{message}</p>
+              <div className="mt-6">
+                <Link to="/login">
+                  <Button className="w-full">Iniciar sesión</Button>
+                </Link>
+              </div>
+            </>
+          )}
 
-        {status === 'error' && (
-          <>
-            <div className="mb-4 text-4xl">❌</div>
-            <h1 className="mb-2 text-xl font-semibold text-slate-900">Error de verificación</h1>
-            <p className="text-slate-600 text-sm">{message}</p>
-            <p className="mt-6 text-sm text-slate-500">
-              <Link to="/registro" className="text-blue-600 hover:underline">
-                Volver al registro
-              </Link>
-            </p>
-          </>
-        )}
+          {status === 'error' && (
+            <>
+              <p className="mb-3 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-stamp-red">Error</p>
+              <h1 className="mb-3 text-xl font-bold text-slate-900">Error de verificación</h1>
+              <p className="text-sm text-slate-600">{message}</p>
+              <p className="mt-6 text-sm text-slate-500">
+                <Link to="/registro" className="text-tc-purple hover:opacity-70">
+                  Volver al registro
+                </Link>
+              </p>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )

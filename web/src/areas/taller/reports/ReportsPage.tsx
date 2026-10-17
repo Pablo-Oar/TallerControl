@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { reportsApi } from '../../../lib/api/reports'
 import { Button } from '../../../components/ui/Button'
+import { StatusBadge } from '../../../components/ui/StatusBadge'
 
 type Tab = 'revenue' | 'receivables' | 'stock' | 'purchases'
 
@@ -21,7 +22,10 @@ function monthAgoStr() {
   return d.toISOString().slice(0, 10)
 }
 
-const inputCls = 'rounded-md border border-slate-300 px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500'
+const fmtARS = (n: number) =>
+  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
+
+const inputCls = 'border border-tc-border bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-border-mid transition-colors'
 
 function downloadExcel(url: string, filename: string) {
   const a = document.createElement('a')
@@ -59,21 +63,19 @@ export function ReportsPage() {
   const isDateRange = tab === 'revenue' || tab === 'purchases'
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Reportes</h1>
-      </div>
+    <div className="space-y-4">
+      <h1 className="text-xl font-bold tracking-tight text-slate-900">Reportes</h1>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-slate-200">
+      <div className="flex border-b border-tc-border">
         {(Object.keys(TAB_LABELS) as Tab[]).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            className={`px-4 py-2 text-xs font-bold tracking-wider uppercase transition-colors border-b-2 -mb-px ${
               tab === t
-                ? 'border-blue-600 text-blue-700'
-                : 'border-transparent text-slate-600 hover:text-slate-800'
+                ? 'border-tc-purple text-tc-purple'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             {TAB_LABELS[t]}
@@ -81,43 +83,39 @@ export function ReportsPage() {
         ))}
       </div>
 
-      {/* Filtros de fecha */}
       {isDateRange && (
-        <div className="flex items-center gap-3 flex-wrap">
-          <label className="text-sm font-medium text-slate-700">Desde</label>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Desde</span>
           <input type="date" value={from} onChange={e => setFrom(e.target.value)} className={inputCls} />
-          <label className="text-sm font-medium text-slate-700">Hasta</label>
+          <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Hasta</span>
           <input type="date" value={to} onChange={e => setTo(e.target.value)} className={inputCls} />
         </div>
       )}
 
-      {/* Revenue */}
       {tab === 'revenue' && (
         <ReportSection
           loading={revenueQuery.isLoading}
           exportUrl={reportsApi.exportUrl('revenue', from, to)}
           exportName={`ingresos_${from}_${to}.xlsx`}
           summary={revenueQuery.data
-            ? `Total: $${revenueQuery.data.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })} (${revenueQuery.data.count} cobros)`
+            ? `Total: ${fmtARS(revenueQuery.data.total)} (${revenueQuery.data.count} cobros)`
             : undefined}
         >
           {revenueQuery.data && (
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                <tr>
-                  <th className="px-4 py-2">Fecha</th>
-                  <th className="px-4 py-2 text-right">Cobros</th>
-                  <th className="px-4 py-2 text-right">Monto</th>
+              <thead>
+                <tr className="bg-tc-stub-bg border-b border-tc-border">
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Fecha</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Cobros</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Monto</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {revenueQuery.data.rows.map(r => (
-                  <tr key={r.date}>
-                    <td className="px-4 py-2">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</td>
-                    <td className="px-4 py-2 text-right">{r.paymentCount}</td>
-                    <td className="px-4 py-2 text-right font-medium">
-                      ${r.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                    </td>
+                  <tr key={r.date} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
+                    <td className="px-4 py-2 text-slate-700 tabular-nums">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</td>
+                    <td className="px-4 py-2 text-right tabular-nums text-slate-600">{r.paymentCount}</td>
+                    <td className="px-4 py-2 text-right font-bold text-tc-purple tabular-nums">{fmtARS(r.amount)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -126,39 +124,34 @@ export function ReportsPage() {
         </ReportSection>
       )}
 
-      {/* Receivables */}
       {tab === 'receivables' && (
         <ReportSection
           loading={receivablesQuery.isLoading}
           exportUrl={reportsApi.exportUrl('receivables')}
           exportName="cuentas_por_cobrar.xlsx"
           summary={receivablesQuery.data
-            ? `Total por cobrar: $${receivablesQuery.data.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`
+            ? `Total por cobrar: ${fmtARS(receivablesQuery.data.total)}`
             : undefined}
         >
           {receivablesQuery.data && (
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                <tr>
-                  <th className="px-4 py-2">N° OT</th>
-                  <th className="px-4 py-2">Cliente</th>
-                  <th className="px-4 py-2">Vehículo</th>
-                  <th className="px-4 py-2 text-right">Saldo</th>
-                  <th className="px-4 py-2">Fecha</th>
+              <thead>
+                <tr className="bg-tc-stub-bg border-b border-tc-border">
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">N° OT</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Cliente</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Vehículo</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Saldo</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Fecha</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {receivablesQuery.data.rows.map(r => (
-                  <tr key={r.workOrderId}>
-                    <td className="px-4 py-2">#{r.workOrderNumber}</td>
-                    <td className="px-4 py-2">{r.customerName}</td>
-                    <td className="px-4 py-2">{r.vehiclePlate}</td>
-                    <td className="px-4 py-2 text-right font-medium text-red-600">
-                      ${r.balance.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="px-4 py-2 text-slate-500">
-                      {new Date(r.createdAt).toLocaleDateString('es-AR')}
-                    </td>
+                  <tr key={r.workOrderId} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
+                    <td className="px-4 py-2 font-mono font-bold tabular-nums text-slate-800">#{r.workOrderNumber}</td>
+                    <td className="px-4 py-2 text-slate-700">{r.customerName}</td>
+                    <td className="px-4 py-2 font-mono tracking-widest text-sm text-slate-600">{r.vehiclePlate}</td>
+                    <td className="px-4 py-2 text-right font-bold text-tc-stamp-red tabular-nums">{fmtARS(r.balance)}</td>
+                    <td className="px-4 py-2 text-slate-500 tabular-nums">{new Date(r.createdAt).toLocaleDateString('es-AR')}</td>
                   </tr>
                 ))}
               </tbody>
@@ -167,7 +160,6 @@ export function ReportsPage() {
         </ReportSection>
       )}
 
-      {/* Stock */}
       {tab === 'stock' && (
         <ReportSection
           loading={stockQuery.isLoading}
@@ -179,32 +171,28 @@ export function ReportsPage() {
         >
           {stockQuery.data && (
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                <tr>
-                  <th className="px-4 py-2">Nombre</th>
-                  <th className="px-4 py-2">SKU</th>
-                  <th className="px-4 py-2">Tipo</th>
-                  <th className="px-4 py-2 text-right">Stock actual</th>
-                  <th className="px-4 py-2 text-right">Mín.</th>
-                  <th className="px-4 py-2 text-right">Costo unit.</th>
-                  <th className="px-4 py-2">Estado</th>
+              <thead>
+                <tr className="bg-tc-stub-bg border-b border-tc-border">
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Nombre</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">SKU</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Tipo</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Stock</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Mín.</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Costo unit.</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {stockQuery.data.rows.map(r => (
-                  <tr key={r.catalogItemId}>
-                    <td className="px-4 py-2 font-medium">{r.name}</td>
-                    <td className="px-4 py-2 text-slate-500">{r.sku ?? '—'}</td>
-                    <td className="px-4 py-2 text-slate-500">{r.kind}</td>
-                    <td className="px-4 py-2 text-right">{r.stockQty}</td>
-                    <td className="px-4 py-2 text-right text-slate-400">{r.stockMin ?? '—'}</td>
-                    <td className="px-4 py-2 text-right">
-                      ${r.unitCost.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                    </td>
+                  <tr key={r.catalogItemId} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
+                    <td className="px-4 py-2 font-medium text-slate-800">{r.name}</td>
+                    <td className="px-4 py-2 font-mono text-slate-500 text-xs">{r.sku ?? '—'}</td>
+                    <td className="px-4 py-2 text-slate-500 text-xs">{r.kind}</td>
+                    <td className="px-4 py-2 text-right tabular-nums text-slate-700">{r.stockQty}</td>
+                    <td className="px-4 py-2 text-right tabular-nums text-slate-400">{r.stockMin ?? '—'}</td>
+                    <td className="px-4 py-2 text-right tabular-nums text-tc-purple font-medium">{fmtARS(r.unitCost)}</td>
                     <td className="px-4 py-2">
-                      {r.isLowStock
-                        ? <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Bajo</span>
-                        : <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">OK</span>}
+                      <StatusBadge status={r.isLowStock ? 'low_stock' : 'ok'} label={r.isLowStock ? 'Bajo' : 'OK'} />
                     </td>
                   </tr>
                 ))}
@@ -214,37 +202,34 @@ export function ReportsPage() {
         </ReportSection>
       )}
 
-      {/* Purchases */}
       {tab === 'purchases' && (
         <ReportSection
           loading={purchasesQuery.isLoading}
           exportUrl={reportsApi.exportUrl('purchases', from, to)}
           exportName={`compras_${from}_${to}.xlsx`}
           summary={purchasesQuery.data
-            ? `Total: $${purchasesQuery.data.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })} (${purchasesQuery.data.count} compras)`
+            ? `Total: ${fmtARS(purchasesQuery.data.total)} (${purchasesQuery.data.count} compras)`
             : undefined}
         >
           {purchasesQuery.data && (
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                <tr>
-                  <th className="px-4 py-2">N°</th>
-                  <th className="px-4 py-2">Proveedor</th>
-                  <th className="px-4 py-2">Fecha</th>
-                  <th className="px-4 py-2 text-right">Total</th>
-                  <th className="px-4 py-2">Estado</th>
+              <thead>
+                <tr className="bg-tc-stub-bg border-b border-tc-border">
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Nº</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Proveedor</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Fecha</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Total</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {purchasesQuery.data.rows.map(r => (
-                  <tr key={r.purchaseId}>
-                    <td className="px-4 py-2">#{r.purchaseNumber}</td>
-                    <td className="px-4 py-2">{r.supplierName ?? '—'}</td>
-                    <td className="px-4 py-2">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</td>
-                    <td className="px-4 py-2 text-right font-medium">
-                      ${r.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="px-4 py-2 text-slate-500">{r.status}</td>
+                  <tr key={r.purchaseId} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
+                    <td className="px-4 py-2 font-mono font-bold tabular-nums text-slate-800">#{r.purchaseNumber}</td>
+                    <td className="px-4 py-2 text-slate-700">{r.supplierName ?? '—'}</td>
+                    <td className="px-4 py-2 tabular-nums text-slate-600">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</td>
+                    <td className="px-4 py-2 text-right font-bold text-tc-purple tabular-nums">{fmtARS(r.total)}</td>
+                    <td className="px-4 py-2 text-xs text-slate-500">{r.status}</td>
                   </tr>
                 ))}
               </tbody>
@@ -267,20 +252,25 @@ function ReportSection({
 }) {
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        {summary && <p className="text-sm font-medium text-slate-700">{summary}</p>}
+      <div className="flex items-center justify-between gap-4">
+        {summary && (
+          <p className="text-sm font-bold text-slate-700">{summary}</p>
+        )}
         <Button
           variant="secondary"
+          size="sm"
           onClick={() => downloadExcel(exportUrl, exportName)}
           className="ml-auto"
         >
           Exportar Excel
         </Button>
       </div>
-      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+      <div className="border border-tc-border bg-white overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-10">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+          <div className="space-y-0">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-10 animate-pulse border-b border-tc-border bg-tc-surface last:border-0" />
+            ))}
           </div>
         ) : (
           children

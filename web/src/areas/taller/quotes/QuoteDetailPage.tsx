@@ -5,11 +5,25 @@ import {
   quotesApi,
   type ConvertQuoteRequest,
   QUOTE_STATUS_LABELS,
-  QUOTE_STATUS_COLORS,
 } from '../../../lib/api/quotes'
 import { Button } from '../../../components/ui/Button'
+import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { ApiError } from '../../../lib/api/client'
 import { QuoteFormModal } from './QuoteFormModal'
+
+const fmtARS = (n: number) =>
+  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
+
+const KIND_LABELS: Record<string, string> = {
+  service: 'Servicio',
+  product: 'Producto',
+}
+
+const DECISION_LABEL: Record<string, string> = {
+  approved: 'Aprobado',
+  partially_approved: 'Parcial',
+  rejected: 'Rechazado',
+}
 
 export function QuoteDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -44,7 +58,7 @@ export function QuoteDetailPage() {
 
   const reopenMutation = useMutation({
     mutationFn: () => quotesApi.reopen(id!),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['quote', id] }) },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['quote', id] }),
     onError: (err) => setError(err instanceof ApiError ? err.detail : 'Error al reabrir.'),
   })
 
@@ -79,8 +93,7 @@ export function QuoteDetailPage() {
     setSendingLink(true)
     try {
       const result = await quotesApi.getPublicLink(quote.workOrderId)
-      const url = `${window.location.origin}/o/${result.tokenBase64Url}`
-      setPublicLink(url)
+      setPublicLink(`${window.location.origin}/o/${result.tokenBase64Url}`)
     } catch (err) {
       setError(err instanceof ApiError ? err.detail : 'Error al generar el enlace.')
     } finally {
@@ -97,13 +110,13 @@ export function QuoteDetailPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+        <div className="h-6 w-6 animate-spin border-2 border-tc-purple border-t-transparent" />
       </div>
     )
   }
 
   if (!quote) {
-    return <p className="text-sm text-red-600 py-8">Presupuesto no encontrado.</p>
+    return <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">Presupuesto no encontrado.</p>
   }
 
   const canEdit = quote.status === 'draft'
@@ -114,143 +127,126 @@ export function QuoteDetailPage() {
   const canDelete = quote.status === 'draft'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Encabezado */}
-      <div className="flex items-start justify-between">
-        <div>
-          <Link to="/app/quotes" className="text-sm text-blue-600 hover:underline">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Link to="/app/quotes" className="text-xs font-bold tracking-wider uppercase text-tc-navy-text hover:text-tc-purple transition-colors">
             ← Presupuestos
           </Link>
-          <h1 className="mt-1 text-2xl font-semibold text-slate-800">
+          <h1 className="text-lg font-bold tracking-wide text-slate-800 uppercase">
             Presupuesto #{quote.number}
           </h1>
+          <StatusBadge status={quote.status} label={QUOTE_STATUS_LABELS[quote.status]} />
         </div>
-        <span className={`rounded-full px-3 py-1 text-sm font-medium ${QUOTE_STATUS_COLORS[quote.status]}`}>
-          {QUOTE_STATUS_LABELS[quote.status]}
-        </span>
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-center justify-between">
           {error}
-          <button onClick={() => setError(null)} className="ml-2 underline">Cerrar</button>
+          <button onClick={() => setError(null)} className="ml-3 text-xs underline">Cerrar</button>
         </div>
       )}
 
       {/* Datos principales */}
-      <div className="rounded-lg border border-slate-200 bg-white p-5">
-        <dl className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
-          <div>
-            <dt className="font-medium text-slate-500">Cliente</dt>
-            <dd className="mt-1 text-slate-800">{quote.customerName}</dd>
-          </div>
-          <div>
-            <dt className="font-medium text-slate-500">Vehículo</dt>
-            <dd className="mt-1 text-slate-800">
-              {[quote.vehicleBrand, quote.vehicleModel, quote.vehiclePlate].filter(Boolean).join(' · ')}
-            </dd>
-          </div>
-          <div>
-            <dt className="font-medium text-slate-500">Válido hasta</dt>
-            <dd className="mt-1 text-slate-800">
-              {new Date(quote.validUntil).toLocaleDateString('es-AR')}
-            </dd>
-          </div>
+      <div className="border border-tc-border bg-white overflow-hidden">
+        <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Datos del presupuesto</span>
+        </div>
+        <div className="grid grid-cols-2 gap-0 sm:grid-cols-3 divide-x divide-tc-border">
+          <DataCell label="Cliente">{quote.customerName}</DataCell>
+          <DataCell label="Vehículo">
+            <span className="font-mono font-bold tracking-wider">{quote.vehiclePlate}</span>
+            {(quote.vehicleBrand || quote.vehicleModel) && (
+              <span className="ml-1 text-slate-500">— {[quote.vehicleBrand, quote.vehicleModel].filter(Boolean).join(' ')}</span>
+            )}
+          </DataCell>
+          <DataCell label="Válido hasta">
+            {new Date(quote.validUntil).toLocaleDateString('es-AR')}
+          </DataCell>
           {quote.globalDiscountPct > 0 && (
-            <div>
-              <dt className="font-medium text-slate-500">Descuento</dt>
-              <dd className="mt-1 text-slate-800">{quote.globalDiscountPct}%</dd>
-            </div>
+            <DataCell label="Descuento">{quote.globalDiscountPct}%</DataCell>
           )}
           {quote.workOrderId && (
-            <div>
-              <dt className="font-medium text-slate-500">OT generada</dt>
-              <dd className="mt-1">
-                <Link to={`/app/work-orders/${quote.workOrderId}`} className="text-blue-600 hover:underline">
-                  Ver OT
-                </Link>
-              </dd>
-            </div>
+            <DataCell label="OT generada">
+              <Link to={`/app/work-orders/${quote.workOrderId}`} className="text-tc-purple hover:text-tc-purple-mid font-medium transition-colors">
+                Ver OT →
+              </Link>
+            </DataCell>
           )}
-        </dl>
-        {quote.customerNotes && (
-          <div className="mt-4 text-sm">
-            <p className="font-medium text-slate-500">Notas para el cliente</p>
-            <p className="mt-1 text-slate-700">{quote.customerNotes}</p>
-          </div>
-        )}
-        {quote.internalNotes && (
-          <div className="mt-3 text-sm">
-            <p className="font-medium text-slate-500">Notas internas</p>
-            <p className="mt-1 text-slate-600 italic">{quote.internalNotes}</p>
+        </div>
+        {(quote.customerNotes || quote.internalNotes) && (
+          <div className="border-t border-tc-perf p-4 space-y-3">
+            {quote.customerNotes && (
+              <div>
+                <p className="mb-1 text-[10px] font-bold tracking-wider uppercase text-slate-400">Notas para el cliente</p>
+                <p className="text-sm text-slate-700">{quote.customerNotes}</p>
+              </div>
+            )}
+            {quote.internalNotes && (
+              <div>
+                <p className="mb-1 text-[10px] font-bold tracking-wider uppercase text-slate-400">Notas internas</p>
+                <p className="text-sm text-slate-500 italic">{quote.internalNotes}</p>
+              </div>
+            )}
           </div>
         )}
       </div>
 
       {/* Ítems */}
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-            <tr>
-              <th className="px-4 py-3">Descripción</th>
-              <th className="px-4 py-3">Tipo</th>
-              <th className="px-4 py-3 text-right">Cant.</th>
-              <th className="px-4 py-3 text-right">Precio neto</th>
-              <th className="px-4 py-3 text-right">IVA%</th>
-              <th className="px-4 py-3 text-right">Total</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {quote.items.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-slate-400">Sin ítems</td>
+      <div className="border border-tc-border bg-white overflow-hidden">
+        <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Ítems</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-tc-border">
+                {['Descripción', 'Tipo', 'Cant.', 'Precio neto', 'IVA%', 'Total'].map((h, i) => (
+                  <th key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${i > 1 ? 'text-right' : 'text-left'}`}>
+                    {h}
+                  </th>
+                ))}
               </tr>
-            ) : (
-              quote.items.map(item => (
-                <tr key={item.id}>
-                  <td className="px-4 py-3 text-slate-800">{item.description}</td>
-                  <td className="px-4 py-3 text-slate-500 capitalize">{item.kind}</td>
-                  <td className="px-4 py-3 text-right text-slate-600">{item.quantity}</td>
-                  <td className="px-4 py-3 text-right text-slate-600">
-                    ${item.unitNetPrice.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                  </td>
-                  <td className="px-4 py-3 text-right text-slate-500">{item.vatRate}%</td>
-                  <td className="px-4 py-3 text-right font-medium text-slate-800">
-                    ${item.lineTotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                  </td>
+            </thead>
+            <tbody className="divide-y divide-tc-border">
+              {quote.items.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-6 text-center text-sm text-slate-400">Sin ítems</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-
+              ) : (
+                quote.items.map(item => (
+                  <tr key={item.id}>
+                    <td className="px-4 py-2.5 text-slate-800">{item.description}</td>
+                    <td className="px-4 py-2.5 text-xs text-slate-500">{KIND_LABELS[item.kind] ?? item.kind}</td>
+                    <td className="px-4 py-2.5 text-right tabular-nums text-slate-600">{item.quantity}</td>
+                    <td className="px-4 py-2.5 text-right tabular-nums text-tc-purple">{fmtARS(item.unitNetPrice)}</td>
+                    <td className="px-4 py-2.5 text-right text-slate-500">{item.vatRate}%</td>
+                    <td className="px-4 py-2.5 text-right tabular-nums font-semibold text-tc-purple">{fmtARS(item.lineTotal)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
         {/* Totales */}
-        <div className="border-t border-slate-100 px-4 py-3 space-y-1 text-sm text-right">
+        <div className="border-t border-tc-perf px-4 py-3 space-y-1 text-sm">
           {quote.globalDiscountPct > 0 && (
             <>
-              <div className="flex justify-end gap-8 text-slate-500">
-                <span>Subtotal</span>
-                <span>${quote.subtotalNet.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
-              </div>
-              <div className="flex justify-end gap-8 text-slate-500">
-                <span>Descuento ({quote.globalDiscountPct}%)</span>
-                <span>−${quote.discountAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
-              </div>
+              <TotalRow label="Subtotal">{fmtARS(quote.subtotalNet)}</TotalRow>
+              <TotalRow label={`Descuento (${quote.globalDiscountPct}%)`}>
+                <span className="text-tc-stamp-red">−{fmtARS(quote.discountAmount)}</span>
+              </TotalRow>
             </>
           )}
-          <div className="flex justify-end gap-8 text-slate-500">
-            <span>IVA</span>
-            <span>${quote.vatAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
-          </div>
-          <div className="flex justify-end gap-8 text-base font-bold text-slate-800">
-            <span>Total</span>
-            <span>${quote.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
-          </div>
+          <TotalRow label="IVA">{fmtARS(quote.vatAmount)}</TotalRow>
+          <TotalRow label="Total" bold>
+            <span className="text-tc-purple">{fmtARS(quote.total)}</span>
+          </TotalRow>
           {quote.approvedTotal !== null && (
-            <div className="flex justify-end gap-8 text-green-700 font-semibold">
-              <span>Total aprobado</span>
-              <span>${quote.approvedTotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
-            </div>
+            <TotalRow label="Total aprobado">
+              <span className="text-tc-done-text font-bold">{fmtARS(quote.approvedTotal)}</span>
+            </TotalRow>
           )}
         </div>
       </div>
@@ -258,68 +254,59 @@ export function QuoteDetailPage() {
       {/* Acciones */}
       <div className="flex flex-wrap gap-2">
         {canEdit && (
-          <Button variant="secondary" onClick={() => setEditing(true)}>Editar</Button>
+          <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>Editar</Button>
         )}
         {canSend && (
-          <Button onClick={() => sendMutation.mutate()} loading={sendMutation.isPending}>
+          <Button size="sm" onClick={() => sendMutation.mutate()} loading={sendMutation.isPending}>
             Enviar al cliente
           </Button>
         )}
         {canReopen && (
-          <Button variant="secondary" onClick={() => reopenMutation.mutate()} loading={reopenMutation.isPending}>
+          <Button variant="secondary" size="sm" onClick={() => reopenMutation.mutate()} loading={reopenMutation.isPending}>
             Reabrir
           </Button>
         )}
         {canConvert && (
-          <Button
-            onClick={() => convertMutation.mutate({ odometerKm: 0 })}
-            loading={convertMutation.isPending}
-          >
+          <Button size="sm" onClick={() => convertMutation.mutate({ odometerKm: 0 })} loading={convertMutation.isPending}>
             Convertir a OT
           </Button>
         )}
         {quote.workOrderId && (
-          <Button variant="secondary" onClick={handleGetPublicLink} loading={sendingLink}>
-            Enlace público OT
+          <Button variant="secondary" size="sm" onClick={handleGetPublicLink} loading={sendingLink}>
+            Enlace OT
           </Button>
         )}
         <a
           href={quotesApi.getPdfUrl(quote.id)}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="inline-flex items-center border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-slate-700 hover:bg-tc-surface transition-colors"
         >
-          Descargar PDF
+          PDF
         </a>
         {canCancel && !confirmCancel && (
-          <Button variant="secondary" onClick={() => setConfirmCancel(true)}>
-            Cancelar
-          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setConfirmCancel(true)}>Cancelar</Button>
         )}
         {canDelete && (
-          <Button
-            variant="secondary"
-            onClick={() => deleteMutation.mutate()}
-            loading={deleteMutation.isPending}
-          >
+          <Button variant="danger" size="sm" onClick={() => deleteMutation.mutate()} loading={deleteMutation.isPending}>
             Eliminar
           </Button>
         )}
       </div>
 
-      {/* Enlace público copiado */}
+      {/* Enlace público de OT */}
       {publicLink && (
-        <div className="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
-          <p className="text-slate-600 mb-1">Enlace público de la OT:</p>
+        <div className="border border-tc-border bg-tc-stub-bg px-4 py-3">
+          <p className="mb-2 text-[10px] font-bold tracking-wider uppercase text-slate-400">Enlace público de la OT</p>
           <div className="flex gap-2">
             <input
               readOnly
               value={publicLink}
-              className="flex-1 rounded border border-slate-300 px-2 py-1 text-xs text-slate-700 bg-white"
+              className="flex-1 border border-tc-border bg-white px-2 py-1 text-xs text-slate-700 outline-none"
             />
             <button
               onClick={() => navigator.clipboard.writeText(publicLink)}
-              className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100"
+              className="border border-tc-border bg-white px-3 py-1 text-xs font-bold tracking-wider uppercase text-slate-700 hover:bg-tc-surface transition-colors"
             >
               Copiar
             </button>
@@ -329,46 +316,59 @@ export function QuoteDetailPage() {
 
       {/* Confirmación de cancelación */}
       {confirmCancel && (
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <p className="text-sm font-medium text-slate-700 mb-2">Motivo de cancelación</p>
-          <input
-            value={cancelReason}
-            onChange={e => setCancelReason(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Motivo (obligatorio)"
-          />
-          <div className="mt-3 flex gap-2">
-            <Button
-              onClick={() => cancelMutation.mutate(cancelReason)}
-              loading={cancelMutation.isPending}
-              disabled={!cancelReason.trim()}
-            >
-              Confirmar cancelación
-            </Button>
-            <Button variant="secondary" onClick={() => setConfirmCancel(false)}>
-              No cancelar
-            </Button>
+        <div className="border border-tc-border bg-white overflow-hidden">
+          <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Cancelar presupuesto</span>
+          </div>
+          <div className="p-4 space-y-3">
+            <input
+              value={cancelReason}
+              onChange={e => setCancelReason(e.target.value)}
+              className="w-full border border-tc-border bg-white px-3 py-2 text-sm outline-none focus:border-tc-border-mid transition-colors"
+              placeholder="Motivo de cancelación (obligatorio)"
+            />
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="danger"
+                onClick={() => cancelMutation.mutate(cancelReason)}
+                loading={cancelMutation.isPending}
+                disabled={!cancelReason.trim()}
+              >
+                Confirmar cancelación
+              </Button>
+              <Button size="sm" variant="secondary" onClick={() => setConfirmCancel(false)}>
+                No cancelar
+              </Button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Respuestas del cliente */}
       {responses && responses.length > 0 && (
-        <div className="rounded-lg border border-slate-200 bg-white p-5">
-          <h2 className="text-sm font-semibold text-slate-700 mb-3">Respuestas del cliente</h2>
-          <div className="space-y-3">
+        <div className="border border-tc-border bg-white overflow-hidden">
+          <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Respuestas del cliente</span>
+          </div>
+          <div className="divide-y divide-tc-border">
             {responses.map(r => (
-              <div key={r.id} className={`rounded-md p-3 text-sm ${r.isCurrent ? 'bg-green-50 border border-green-200' : 'bg-slate-50'}`}>
+              <div key={r.id} className={`px-4 py-3 ${r.isCurrent ? 'bg-tc-done-bg' : ''}`}>
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-slate-800">{r.signerName}</span>
-                  <span className={`font-medium ${r.decision === 'approved' || r.decision === 'partially_approved' ? 'text-green-700' : 'text-red-600'}`}>
-                    {r.decision === 'approved' ? 'Aprobado' : r.decision === 'partially_approved' ? 'Aprobado parcialmente' : 'Rechazado'}
-                  </span>
+                  <span className="text-sm font-semibold text-slate-800">{r.signerName}</span>
+                  <div className="flex items-center gap-2">
+                    <StatusBadge
+                      status={r.decision}
+                      label={DECISION_LABEL[r.decision] ?? r.decision}
+                    />
+                    {r.isCurrent && (
+                      <span className="text-[10px] font-bold tracking-wider uppercase text-tc-done-text">Vigente</span>
+                    )}
+                  </div>
                 </div>
-                {r.comment && <p className="mt-1 text-slate-600">{r.comment}</p>}
+                {r.comment && <p className="mt-1 text-sm text-slate-600">{r.comment}</p>}
                 <p className="mt-1 text-xs text-slate-400">
                   {new Date(r.createdAt).toLocaleString('es-AR')}
-                  {r.isCurrent && <span className="ml-2 text-green-600 font-medium">· vigente</span>}
                 </p>
               </div>
             ))}
@@ -377,12 +377,28 @@ export function QuoteDetailPage() {
       )}
 
       {editing && quote && (
-        <QuoteFormModal
-          quote={quote}
-          onSuccess={handleEditSuccess}
-          onClose={() => setEditing(false)}
-        />
+        <QuoteFormModal quote={quote} onSuccess={handleEditSuccess} onClose={() => setEditing(false)} />
       )}
+    </div>
+  )
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function DataCell({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="px-4 py-3">
+      <p className="mb-0.5 text-[10px] font-bold tracking-wider uppercase text-slate-400">{label}</p>
+      <p className="text-sm text-slate-800">{children}</p>
+    </div>
+  )
+}
+
+function TotalRow({ label, children, bold }: { label: string; children: React.ReactNode; bold?: boolean }) {
+  return (
+    <div className={`flex items-baseline justify-end gap-8 ${bold ? 'font-bold text-base' : 'text-slate-600'}`}>
+      <span className={bold ? 'text-slate-800' : 'text-slate-500'}>{label}</span>
+      <span className="tabular-nums">{children}</span>
     </div>
   )
 }

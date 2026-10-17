@@ -5,9 +5,9 @@ import {
   workOrdersApi,
   type WorkOrderStatus,
   STATUS_LABELS,
-  STATUS_COLORS,
   PRIORITY_LABELS,
 } from '../../lib/api/workOrders'
+import { StatusBadge } from '../../components/ui/StatusBadge'
 
 const MECHANIC_STATUSES: WorkOrderStatus[] = ['pending', 'in_progress', 'waiting_parts']
 
@@ -22,14 +22,17 @@ export function MechanicWorkOrdersPage() {
   })
 
   return (
-    <div>
-      <h1 className="mb-4 text-xl font-semibold">Mis trabajos</h1>
+    <div className="space-y-4 px-4 pb-6">
+      <h1 className="text-lg font-bold tracking-tight text-slate-900">Mis trabajos</h1>
 
-      <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
+      {/* Filtros de estado — chips horizontales */}
+      <div className="flex gap-2 overflow-x-auto pb-1">
         <button
           onClick={() => { setStatusFilter(''); setPage(1) }}
-          className={`whitespace-nowrap rounded-full px-3 py-1 text-sm font-medium ${
-            statusFilter === '' ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'
+          className={`whitespace-nowrap border px-3 py-1 text-xs font-bold tracking-wider uppercase transition-colors ${
+            statusFilter === ''
+              ? 'border-tc-navy bg-tc-navy text-white'
+              : 'border-tc-border bg-white text-slate-600 hover:bg-tc-surface'
           }`}
         >
           Todos
@@ -38,8 +41,10 @@ export function MechanicWorkOrdersPage() {
           <button
             key={s}
             onClick={() => { setStatusFilter(s); setPage(1) }}
-            className={`whitespace-nowrap rounded-full px-3 py-1 text-sm font-medium ${
-              statusFilter === s ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'
+            className={`whitespace-nowrap border px-3 py-1 text-xs font-bold tracking-wider uppercase transition-colors ${
+              statusFilter === s
+                ? 'border-tc-navy bg-tc-navy text-white'
+                : 'border-tc-border bg-white text-slate-600 hover:bg-tc-surface'
             }`}
           >
             {STATUS_LABELS[s]}
@@ -48,62 +53,74 @@ export function MechanicWorkOrdersPage() {
       </div>
 
       {isLoading && (
-        <div className="flex justify-center py-8">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+        <div className="space-y-2">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-20 animate-pulse border border-tc-border bg-tc-surface" />
+          ))}
         </div>
       )}
 
-      {error && <p className="text-sm text-red-600">No se pudo cargar los trabajos.</p>}
+      {error && (
+        <p className="border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+          No se pudo cargar los trabajos.
+        </p>
+      )}
 
       {data && (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {data.items.length === 0 && (
-            <p className="py-6 text-center text-slate-400">No hay órdenes asignadas.</p>
+            <p className="border border-dashed border-tc-border px-4 py-8 text-center text-sm text-slate-400">
+              No hay órdenes asignadas.
+            </p>
           )}
           {data.items.map(order => (
             <Link
               key={order.id}
               to={`/m/work-orders/${order.id}`}
-              className="block rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:border-blue-200"
+              className="flex items-stretch border border-tc-border bg-white hover:bg-tc-surface transition-colors"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <span className="font-mono font-medium">#{order.number}</span>
-                  <span className={`ml-2 rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[order.status]}`}>
-                    {STATUS_LABELS[order.status]}
-                  </span>
+              {/* Stub lateral */}
+              <div className="w-1.5 shrink-0 bg-tc-stub-bg border-r border-tc-border" />
+              <div className="flex-1 px-4 py-3">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-sm text-slate-800">#{order.number}</span>
+                    <StatusBadge status={order.status} label={STATUS_LABELS[order.status]} />
+                  </div>
+                  <span className="text-xs text-slate-400 shrink-0">{PRIORITY_LABELS[order.priority]}</span>
                 </div>
-                <span className="text-xs text-slate-400">{PRIORITY_LABELS[order.priority]}</span>
+                <p className="font-medium text-sm text-slate-800">{order.customerName}</p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  <span className="font-mono tracking-widest">{order.vehiclePlate}</span>
+                  {order.vehicleBrand && <> — {order.vehicleBrand} {order.vehicleModel}</>}
+                </p>
+                {order.assignedMechanicName == null && (
+                  <p className="mt-1 text-[10px] font-bold tracking-wider uppercase text-amber-600">Sin asignar</p>
+                )}
               </div>
-              <p className="mt-1 font-medium">{order.customerName}</p>
-              <p className="text-sm text-slate-500">
-                <span className="font-mono">{order.vehiclePlate}</span>
-                {order.vehicleBrand && <> — {order.vehicleBrand} {order.vehicleModel}</>}
-              </p>
-              {order.assignedMechanicName == null && (
-                <p className="mt-1 text-xs text-amber-600">Sin asignar</p>
-              )}
             </Link>
           ))}
         </div>
       )}
 
       {data && data.total > data.pageSize && (
-        <div className="mt-4 flex items-center justify-center gap-4 text-sm">
+        <div className="flex items-center gap-1">
           <button
             onClick={() => setPage(p => p - 1)}
             disabled={page === 1}
-            className="rounded-lg border border-slate-200 bg-white px-4 py-2 disabled:opacity-40"
+            className="border border-tc-border bg-white px-3 py-1.5 text-xs disabled:opacity-40 hover:bg-tc-surface"
           >
-            Anterior
+            ← Anterior
           </button>
-          <span className="text-slate-500">Pág. {page}</span>
+          <span className="border border-tc-border bg-tc-stub-bg px-3 py-1.5 text-xs tabular-nums">
+            Pág. {page}
+          </span>
           <button
             onClick={() => setPage(p => p + 1)}
             disabled={page * data.pageSize >= data.total}
-            className="rounded-lg border border-slate-200 bg-white px-4 py-2 disabled:opacity-40"
+            className="border border-tc-border bg-white px-3 py-1.5 text-xs disabled:opacity-40 hover:bg-tc-surface"
           >
-            Siguiente
+            Siguiente →
           </button>
         </div>
       )}

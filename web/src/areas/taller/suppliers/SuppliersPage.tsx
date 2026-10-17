@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { suppliersApi, type SupplierDto, type VatCondition } from '../../../lib/api/suppliers'
 import { Button } from '../../../components/ui/Button'
+import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
 const VAT_LABELS: Record<VatCondition, string> = {
@@ -11,6 +12,10 @@ const VAT_LABELS: Record<VatCondition, string> = {
   consumidor_final: 'Consumidor Final',
   no_categorizado: 'No categorizado',
 }
+
+const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
+const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
+const filterInputCls = 'border border-tc-border bg-white px-3 py-1.5 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors flex-1'
 
 export function SuppliersPage() {
   const queryClient = useQueryClient()
@@ -91,114 +96,116 @@ export function SuppliersPage() {
   }
 
   const showForm = creating || editing !== null
+  const totalPages = data ? Math.ceil(data.total / data.pageSize) : 1
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Proveedores</h1>
-        <Button onClick={openCreate}>Nuevo proveedor</Button>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold tracking-tight text-slate-900">Proveedores</h1>
+        <Button size="sm" onClick={openCreate}>Nuevo proveedor</Button>
       </div>
 
-      <form onSubmit={handleSearch} className="mb-4 flex gap-2">
+      <form onSubmit={handleSearch} className="flex gap-1">
         <input
           type="search"
           value={q}
           onChange={e => setQ(e.target.value)}
           placeholder="Buscar por nombre o CUIT…"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          className={filterInputCls}
         />
-        <Button type="submit" variant="secondary">Buscar</Button>
+        <Button type="submit" variant="secondary" size="sm">Buscar</Button>
       </form>
 
       {showForm && (
-        <form onSubmit={handleSave} className="mb-6 rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="mb-4 text-sm font-semibold text-slate-700">
-            {editing ? 'Editar proveedor' : 'Nuevo proveedor'}
-          </h2>
-          {formError && <p className="mb-3 text-sm text-red-600">{formError}</p>}
-          <div className="mb-3 grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600">Nombre *</label>
-              <input
-                type="text"
-                value={formName}
-                onChange={e => setFormName(e.target.value)}
-                required
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              />
+        <Modal
+          title={editing ? 'Editar proveedor' : 'Nuevo proveedor'}
+          onClose={() => { setCreating(false); setEditing(null) }}
+          className="max-w-md"
+        >
+          <form onSubmit={handleSave} className="space-y-4">
+            {formError && (
+              <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{formError}</p>
+            )}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelCls}>Nombre *</label>
+                <input
+                  type="text"
+                  value={formName}
+                  onChange={e => setFormName(e.target.value)}
+                  required
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>CUIT</label>
+                <input
+                  type="text"
+                  value={formCuit}
+                  onChange={e => setFormCuit(e.target.value)}
+                  placeholder="xx-xxxxxxxx-x"
+                  className={`${inputCls} font-mono tabular-nums`}
+                />
+              </div>
+              <div className="col-span-2">
+                <label className={labelCls}>Condición IVA *</label>
+                <select
+                  value={formVat}
+                  onChange={e => setFormVat(e.target.value as VatCondition)}
+                  className={inputCls}
+                >
+                  {(Object.entries(VAT_LABELS) as [VatCondition, string][]).map(([k, v]) => (
+                    <option key={k} value={k}>{v}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600">CUIT</label>
-              <input
-                type="text"
-                value={formCuit}
-                onChange={e => setFormCuit(e.target.value)}
-                placeholder="xx-xxxxxxxx-x"
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              />
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="secondary" size="sm" onClick={() => { setCreating(false); setEditing(null) }}>
+                Cancelar
+              </Button>
+              <Button type="submit" size="sm" loading={saving}>Guardar</Button>
             </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600">Condición IVA *</label>
-              <select
-                value={formVat}
-                onChange={e => setFormVat(e.target.value as VatCondition)}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {(Object.entries(VAT_LABELS) as [VatCondition, string][]).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button type="submit" loading={saving}>Guardar</Button>
-            <Button type="button" variant="secondary" onClick={() => { setCreating(false); setEditing(null) }}>
-              Cancelar
-            </Button>
-          </div>
-        </form>
+          </form>
+        </Modal>
       )}
 
       {isLoading && (
-        <div className="flex justify-center py-12">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+        <div className="border border-tc-border bg-white">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-10 animate-pulse border-b border-tc-border bg-tc-surface last:border-0" />
+          ))}
         </div>
       )}
 
       {!isLoading && data && data.items.length === 0 && (
-        <p className="py-8 text-center text-sm text-slate-500">No hay proveedores.</p>
+        <div className="border border-dashed border-tc-border px-4 py-10 text-center text-sm text-slate-400">
+          No hay proveedores.
+        </div>
       )}
 
       {!isLoading && data && data.items.length > 0 && (
-        <div className="overflow-x-auto">
+        <div className="border border-tc-border bg-white overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-left text-xs font-medium uppercase text-slate-500">
-                <th className="pb-2 pr-4">Nombre</th>
-                <th className="pb-2 pr-4">CUIT</th>
-                <th className="pb-2 pr-4">Condición IVA</th>
-                <th className="pb-2" />
+              <tr className="bg-tc-stub-bg border-b border-tc-border">
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Nombre</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">CUIT</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Condición IVA</th>
+                <th className="px-4 py-2" />
               </tr>
             </thead>
             <tbody>
               {data.items.map(s => (
-                <tr key={s.id} className="border-b border-slate-100">
-                  <td className="py-2 pr-4 font-medium">{s.name}</td>
-                  <td className="py-2 pr-4 text-slate-600">{s.cuit ?? '—'}</td>
-                  <td className="py-2 pr-4 text-slate-600">{VAT_LABELS[s.vatCondition]}</td>
-                  <td className="py-2 text-right">
-                    <button
-                      onClick={() => openEdit(s)}
-                      className="mr-3 text-blue-600 hover:underline"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(s)}
-                      className="text-red-500 hover:underline"
-                    >
-                      Baja
-                    </button>
+                <tr key={s.id} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
+                  <td className="px-4 py-2.5 font-medium text-slate-800">{s.name}</td>
+                  <td className="px-4 py-2.5 font-mono tabular-nums text-slate-600">{s.cuit ?? '—'}</td>
+                  <td className="px-4 py-2.5 text-slate-600 text-xs">{VAT_LABELS[s.vatCondition]}</td>
+                  <td className="px-4 py-2.5 text-right">
+                    <div className="flex items-center justify-end gap-3 text-xs">
+                      <button onClick={() => openEdit(s)} className="text-tc-purple hover:opacity-70">Editar</button>
+                      <button onClick={() => handleDelete(s)} className="text-tc-stamp-red hover:opacity-70">Baja</button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -206,24 +213,24 @@ export function SuppliersPage() {
           </table>
 
           {data.total > data.pageSize && (
-            <div className="mt-4 flex justify-center gap-2">
-              <Button
-                variant="secondary"
+            <div className="flex items-center gap-1 border-t border-tc-border px-4 py-2">
+              <button
+                className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
                 disabled={page <= 1}
                 onClick={() => setPage(p => p - 1)}
               >
-                Anterior
-              </Button>
-              <span className="flex items-center text-sm text-slate-500">
-                {page} / {Math.ceil(data.total / data.pageSize)}
+                ← Anterior
+              </button>
+              <span className="border border-tc-border bg-tc-stub-bg px-3 py-1 text-xs tabular-nums">
+                {page} / {totalPages}
               </span>
-              <Button
-                variant="secondary"
+              <button
+                className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
                 disabled={page * data.pageSize >= data.total}
                 onClick={() => setPage(p => p + 1)}
               >
-                Siguiente
-              </Button>
+                Siguiente →
+              </button>
             </div>
           )}
         </div>

@@ -12,6 +12,8 @@ import {
   type QrCardStatus,
 } from '../../../lib/api/qrCards'
 import { Button } from '../../../components/ui/Button'
+import { Modal } from '../../../components/ui/Modal'
+import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { QrScannerModal } from './QrScannerModal'
 
 const STATUS_LABELS: Record<QrCardStatus, string> = {
@@ -21,20 +23,9 @@ const STATUS_LABELS: Record<QrCardStatus, string> = {
   revoked: 'Revocada',
 }
 
-const STATUS_COLORS: Record<QrCardStatus, string> = {
-  free: 'bg-slate-100 text-slate-700',
-  assigned: 'bg-green-100 text-green-800',
-  lost: 'bg-amber-100 text-amber-800',
-  revoked: 'bg-red-100 text-red-700',
-}
-
-function StatusBadge({ status }: { status: QrCardStatus }) {
-  return (
-    <span className={`rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[status]}`}>
-      {STATUS_LABELS[status]}
-    </span>
-  )
-}
+const inputCls = 'border border-tc-border bg-white px-3 py-1.5 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
+const inputFullCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
+const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 export function QrCardsPage() {
   const qc = useQueryClient()
@@ -103,40 +94,39 @@ export function QrCardsPage() {
     onError: (e: Error) => setError(e.message),
   })
 
+  const totalPages = data ? Math.ceil(data.total / data.pageSize) : 1
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Tarjetas QR</h1>
+        <h1 className="text-xl font-bold tracking-tight text-slate-900">Tarjetas QR</h1>
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => setShowScannerModal(true)}>
+          <Button variant="secondary" size="sm" onClick={() => setShowScannerModal(true)}>
             Escanear código
           </Button>
-          <Button variant="secondary" onClick={() => setShowAssignByCodeModal(true)}>
+          <Button variant="secondary" size="sm" onClick={() => setShowAssignByCodeModal(true)}>
             Asignar por código
           </Button>
-          <Button onClick={() => setShowBatchModal(true)}>Generar lote</Button>
+          <Button size="sm" onClick={() => setShowBatchModal(true)}>Generar lote</Button>
         </div>
       </div>
 
       {error && (
-        <div className="rounded border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-          {error}
-          <button className="ml-2 underline" onClick={() => setError(null)}>
-            Cerrar
-          </button>
+        <div className="border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 flex items-center justify-between">
+          <span>{error}</span>
+          <button className="text-xs underline" onClick={() => setError(null)}>Cerrar</button>
         </div>
       )}
 
-      {/* Filtros */}
       <div className="flex flex-wrap gap-2">
         <input
-          className="rounded border border-slate-300 px-3 py-1.5 text-sm"
-          placeholder="Buscar código..."
+          className={inputCls}
+          placeholder="Buscar código…"
           value={q}
           onChange={(e) => { setQ(e.target.value); setPage(1) }}
         />
         <select
-          className="rounded border border-slate-300 px-3 py-1.5 text-sm"
+          className={inputCls}
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value as QrCardStatus | ''); setPage(1) }}
         >
@@ -148,24 +138,21 @@ export function QrCardsPage() {
         </select>
       </div>
 
-      {/* Tabla */}
-      <div className="overflow-x-auto rounded border border-slate-200 bg-white">
+      <div className="border border-tc-border bg-white overflow-x-auto">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs text-slate-500 uppercase">
-            <tr>
-              <th className="px-4 py-2">Código</th>
-              <th className="px-4 py-2">Estado</th>
-              <th className="px-4 py-2">Vehículo</th>
-              <th className="px-4 py-2">Asignada</th>
-              <th className="px-4 py-2">Acciones</th>
+          <thead>
+            <tr className="bg-tc-stub-bg border-b border-tc-border">
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Código</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Vehículo</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Asignada</th>
+              <th className="px-4 py-2" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-slate-400">
-                  Cargando…
-                </td>
+                <td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-400">Cargando…</td>
               </tr>
             )}
             {data?.items.map((card) => (
@@ -180,7 +167,7 @@ export function QrCardsPage() {
             ))}
             {data?.items.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-slate-400">
+                <td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-400">
                   No hay tarjetas.
                 </td>
               </tr>
@@ -189,22 +176,21 @@ export function QrCardsPage() {
         </table>
       </div>
 
-      {/* Paginación */}
       {data && data.total > data.pageSize && (
-        <div className="flex items-center gap-3 text-sm">
+        <div className="flex items-center gap-1 text-sm">
           <button
-            className="rounded border px-3 py-1 disabled:opacity-50"
+            className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
             disabled={page === 1}
             onClick={() => setPage((p) => p - 1)}
           >
             ← Anterior
           </button>
-          <span className="text-slate-500">
-            Página {page} de {Math.ceil(data.total / data.pageSize)}
+          <span className="border border-tc-border bg-tc-stub-bg px-3 py-1 text-xs tabular-nums">
+            {page} / {totalPages}
           </span>
           <button
-            className="rounded border px-3 py-1 disabled:opacity-50"
-            disabled={page >= Math.ceil(data.total / data.pageSize)}
+            className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
+            disabled={page >= totalPages}
             onClick={() => setPage((p) => p + 1)}
           >
             Siguiente →
@@ -212,70 +198,59 @@ export function QrCardsPage() {
         </div>
       )}
 
-      {/* Modal generar lote */}
       {showBatchModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-80 rounded-lg bg-white p-6 shadow-xl">
-            <h2 className="mb-4 text-lg font-semibold">Generar lote de tarjetas</h2>
-            <label className="mb-1 block text-sm font-medium">Cantidad</label>
-            <input
-              type="number"
-              min={1}
-              max={500}
-              value={batchQty}
-              onChange={(e) => setBatchQty(Number(e.target.value))}
-              className="mb-4 w-full rounded border border-slate-300 px-3 py-2 text-sm"
-            />
+        <Modal title="Generar lote de tarjetas" onClose={() => setShowBatchModal(false)} className="max-w-xs">
+          <div className="space-y-4">
+            <div>
+              <label className={labelCls}>Cantidad</label>
+              <input
+                type="number"
+                min={1}
+                max={500}
+                value={batchQty}
+                onChange={(e) => setBatchQty(Number(e.target.value))}
+                className={`${inputFullCls} tabular-nums`}
+              />
+            </div>
             <div className="flex justify-end gap-2">
-              <Button variant="secondary" onClick={() => setShowBatchModal(false)}>
+              <Button variant="secondary" size="sm" onClick={() => setShowBatchModal(false)}>
                 Cancelar
               </Button>
-              <Button
-                loading={batchMut.isPending}
-                onClick={() => batchMut.mutate()}
-              >
+              <Button size="sm" loading={batchMut.isPending} onClick={() => batchMut.mutate()}>
                 Generar
               </Button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
 
-      {/* Modal asignar por código */}
       {showAssignByCodeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-96 rounded-lg bg-white p-6 shadow-xl">
-            <h2 className="mb-4 text-lg font-semibold">Asignar tarjeta por código</h2>
-            <div className="space-y-3">
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Código de la tarjeta
-                </label>
-                <input
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm uppercase"
-                  placeholder="Ej. ABC12345"
-                  value={assignCode}
-                  onChange={(e) => setAssignCode(e.target.value.toUpperCase())}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">ID del vehículo</label>
-                <input
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm font-mono text-xs"
-                  placeholder="UUID del vehículo"
-                  value={assignVehicleId}
-                  onChange={(e) => setAssignVehicleId(e.target.value)}
-                />
-              </div>
+        <Modal title="Asignar tarjeta por código" onClose={() => setShowAssignByCodeModal(false)} className="max-w-sm">
+          <div className="space-y-4">
+            <div>
+              <label className={labelCls}>Código de la tarjeta</label>
+              <input
+                className={`${inputFullCls} font-mono tracking-widest uppercase`}
+                placeholder="Ej. ABC12345"
+                value={assignCode}
+                onChange={(e) => setAssignCode(e.target.value.toUpperCase())}
+              />
             </div>
-            <div className="mt-4 flex justify-end gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => setShowAssignByCodeModal(false)}
-              >
+            <div>
+              <label className={labelCls}>ID del vehículo</label>
+              <input
+                className={`${inputFullCls} font-mono text-xs`}
+                placeholder="UUID del vehículo"
+                value={assignVehicleId}
+                onChange={(e) => setAssignVehicleId(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" size="sm" onClick={() => setShowAssignByCodeModal(false)}>
                 Cancelar
               </Button>
               <Button
+                size="sm"
                 loading={assignByCodeMut.isPending}
                 disabled={!assignCode || !assignVehicleId}
                 onClick={() => assignByCodeMut.mutate()}
@@ -284,46 +259,42 @@ export function QrCardsPage() {
               </Button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
 
-      {/* Modal escanear código */}
       {showScannerModal && (
         <QrScannerModal onClose={() => setShowScannerModal(false)} />
       )}
 
-      {/* Modal revocar */}
       {revokeCardId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-96 rounded-lg bg-white p-6 shadow-xl">
-            <h2 className="mb-1 text-lg font-semibold">Revocar tarjeta</h2>
-            <p className="mb-4 text-sm text-slate-500">
+        <Modal title="Revocar tarjeta" onClose={() => setRevokeCardId(null)} className="max-w-sm">
+          <div className="space-y-4">
+            <p className="text-sm text-slate-500">
               Esta acción es irreversible. Ingresá el motivo.
             </p>
             <textarea
               rows={3}
-              className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+              className={`${inputFullCls}`}
               placeholder="Motivo de revocación"
               value={revokeReason}
               onChange={(e) => setRevokeReason(e.target.value)}
             />
-            <div className="mt-4 flex justify-end gap-2">
-              <Button variant="secondary" onClick={() => setRevokeCardId(null)}>
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" size="sm" onClick={() => setRevokeCardId(null)}>
                 Cancelar
               </Button>
               <Button
                 variant="danger"
+                size="sm"
                 loading={revokeMut.isPending}
                 disabled={!revokeReason.trim()}
-                onClick={() =>
-                  revokeMut.mutate({ id: revokeCardId, reason: revokeReason })
-                }
+                onClick={() => revokeMut.mutate({ id: revokeCardId, reason: revokeReason })}
               >
                 Revocar
               </Button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   )
@@ -343,42 +314,36 @@ function QrCardRow({
   onRevoke: () => void
 }) {
   return (
-    <tr className="hover:bg-slate-50">
-      <td className="px-4 py-2 font-mono text-sm font-medium tracking-wider">
+    <tr className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
+      <td className="px-4 py-2.5 font-mono text-sm font-bold tracking-widest text-slate-800">
         {card.code}
       </td>
-      <td className="px-4 py-2">
-        <StatusBadge status={card.status} />
+      <td className="px-4 py-2.5">
+        <StatusBadge status={card.status} label={STATUS_LABELS[card.status]} />
       </td>
-      <td className="px-4 py-2 text-slate-600">
-        {card.vehiclePlate ?? <span className="text-slate-400">—</span>}
+      <td className="px-4 py-2.5 font-mono tracking-widest text-sm text-slate-600">
+        {card.vehiclePlate ?? <span className="text-slate-400 font-sans tracking-normal">—</span>}
       </td>
-      <td className="px-4 py-2 text-slate-500">
+      <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums">
         {card.assignedAt
           ? new Date(card.assignedAt).toLocaleDateString('es-AR')
           : <span className="text-slate-400">—</span>}
       </td>
-      <td className="px-4 py-2">
-        <div className="flex items-center gap-2 text-xs">
+      <td className="px-4 py-2.5 text-right">
+        <div className="flex items-center justify-end gap-3 text-xs">
           {card.status === 'assigned' && (
             <>
-              <button
-                className="text-amber-600 hover:underline"
-                onClick={onMarkLost}
-              >
+              <button className="text-amber-600 hover:opacity-70" onClick={onMarkLost}>
                 Marcar perdida
               </button>
-              <button
-                className="text-slate-500 hover:underline"
-                onClick={onUnassign}
-              >
+              <button className="text-slate-500 hover:opacity-70" onClick={onUnassign}>
                 Desasignar
               </button>
               <a
                 href={getQrCardPrintUrl(card.id)}
                 target="_blank"
                 rel="noreferrer"
-                className="text-blue-600 hover:underline"
+                className="text-tc-purple hover:opacity-70"
               >
                 PDF
               </a>
@@ -386,22 +351,16 @@ function QrCardRow({
           )}
           {card.status === 'lost' && (
             <>
-              <button
-                className="text-green-600 hover:underline"
-                onClick={onUnmarkLost}
-              >
+              <button className="text-green-700 hover:opacity-70" onClick={onUnmarkLost}>
                 Desmarcar perdida
               </button>
-              <button
-                className="text-slate-500 hover:underline"
-                onClick={onUnassign}
-              >
+              <button className="text-slate-500 hover:opacity-70" onClick={onUnassign}>
                 Desasignar
               </button>
             </>
           )}
           {card.status !== 'revoked' && (
-            <button className="text-red-600 hover:underline" onClick={onRevoke}>
+            <button className="text-tc-stamp-red hover:opacity-70" onClick={onRevoke}>
               Revocar
             </button>
           )}

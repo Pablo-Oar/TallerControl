@@ -11,8 +11,12 @@ import {
   type FiscalPointOfSaleDto,
 } from '../../../lib/api/invoicing'
 import { Button } from '../../../components/ui/Button'
-import { Input } from '../../../components/ui/Input'
+import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
+
+const inputCls =
+  'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
+const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 export function InvoicingSetupPage() {
   const queryClient = useQueryClient()
@@ -29,7 +33,7 @@ export function InvoicingSetupPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-xl font-semibold">Configuración ARCA</h1>
+      <h1 className="text-xl font-bold tracking-tight text-slate-900">Configuración ARCA</h1>
 
       <CertificatesSection
         certs={certs ?? []}
@@ -134,195 +138,210 @@ function CertificatesSection({
   }
 
   return (
-    <section>
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-base font-semibold">Certificados ARCA</h2>
-        {certs.length < 3 && (
-          <Button variant="primary" onClick={() => setShowForm(true)}>
-            Nuevo certificado
-          </Button>
-        )}
-      </div>
-
-      {loading ? (
-        <p className="text-sm text-slate-500">Cargando...</p>
-      ) : certs.length === 0 ? (
-        <p className="text-sm text-slate-500">No hay certificados registrados.</p>
-      ) : (
-        <div className="space-y-3">
-          {certs.map(cert => (
-            <div key={cert.id} className="rounded border border-slate-200 p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="font-medium">{cert.name}</span>
-                  <span className="ml-2 text-sm text-slate-500">{cert.cuit}</span>
-                  {cert.isPrimary && (
-                    <span className="ml-2 rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700">
-                      Principal
-                    </span>
-                  )}
-                  <span
-                    className={`ml-2 rounded px-1.5 py-0.5 text-xs font-medium ${
-                      cert.status === 'active'
-                        ? 'bg-green-100 text-green-700'
-                        : cert.status === 'pending'
-                          ? 'bg-yellow-100 text-yellow-700'
-                          : 'bg-red-100 text-red-700'
-                    }`}
-                  >
-                    {cert.status}
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  {cert.status === 'pending' && (
-                    <Button variant="secondary" onClick={() => setUploadId(cert.id)}>
-                      Subir cert.
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              {cert.status === 'pending' && (
-                <details className="mt-3">
-                  <summary className="cursor-pointer text-sm text-blue-600">
-                    Ver CSR para presentar en ARCA
-                  </summary>
-                  <pre className="mt-2 max-h-40 overflow-auto rounded bg-slate-100 p-3 text-xs">
-                    {cert.csrPem}
-                  </pre>
-                </details>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Test de conexión */}
-      {certs.some(c => c.isActive) && (
-        <div className="mt-4 rounded border border-slate-200 p-4">
-          <h3 className="mb-2 text-sm font-medium">Probar conexión ARCA</h3>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="ID del punto de venta"
-              value={testPosId}
-              onChange={e => setTestPosId(e.target.value)}
-              className="flex-1 rounded border border-slate-300 px-3 py-1.5 text-sm"
-            />
-            <Button
-              variant="secondary"
-              loading={testingId !== null}
-              disabled={!testPosId}
-              onClick={() => {
-                const activeCert = certs.find(c => c.isActive)
-                if (activeCert) handleTest(activeCert.id)
-              }}
-            >
-              Probar
+    <div className="space-y-4">
+      <div className="border border-tc-border bg-white overflow-hidden">
+        <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2 flex items-center justify-between">
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Certificados ARCA</span>
+          {certs.length < 3 && (
+            <Button size="sm" onClick={() => setShowForm(true)}>
+              Nuevo certificado
             </Button>
-          </div>
-          {testResult && (
-            <p className={`mt-2 text-sm ${testResult.startsWith('✓') ? 'text-green-600' : 'text-red-600'}`}>
-              {testResult}
-            </p>
           )}
         </div>
-      )}
 
-      {/* Modal nuevo certificado */}
-      {showForm && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-            <h3 className="mb-4 text-base font-semibold">Nuevo certificado ARCA</h3>
-            <form onSubmit={handleCreate} className="space-y-3">
-              <Input
-                label="CUIT (sin guiones)"
-                value={cuit}
-                onChange={e => setCuit(e.target.value)}
-                placeholder="20123456789"
-                required
-              />
-              <Input
-                label="Nombre identificador"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                required
-              />
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={isPrimary}
-                  onChange={e => setIsPrimary(e.target.checked)}
-                />
-                Certificado principal
-              </label>
-              {error && <p className="text-sm text-red-600">{error}</p>}
-              <div className="flex justify-end gap-2">
-                <Button variant="secondary" type="button" onClick={() => setShowForm(false)}>
-                  Cancelar
-                </Button>
-                <Button variant="primary" type="submit" loading={saving}>
-                  Generar CSR
-                </Button>
-              </div>
-            </form>
-          </div>
+        <div className="p-4 space-y-3">
+          {loading ? (
+            <div className="space-y-2">
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="h-14 animate-pulse border border-tc-border bg-tc-surface" />
+              ))}
+            </div>
+          ) : certs.length === 0 ? (
+            <p className="text-sm text-slate-400">No hay certificados registrados.</p>
+          ) : (
+            <div className="space-y-2">
+              {certs.map(cert => (
+                <div key={cert.id} className="border border-tc-border bg-white overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-sm text-slate-800">{cert.name}</span>
+                      <span className="font-mono text-xs text-slate-500">{cert.cuit}</span>
+                      {cert.isPrimary && (
+                        <span className="border border-blue-300 px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-blue-700">
+                          Principal
+                        </span>
+                      )}
+                      <span
+                        className={`border px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
+                          cert.status === 'active'
+                            ? 'border-green-300 text-green-700'
+                            : cert.status === 'pending'
+                              ? 'border-amber-300 text-amber-700'
+                              : 'border-red-300 text-red-700'
+                        }`}
+                      >
+                        {cert.status === 'active' ? 'Activo' : cert.status === 'pending' ? 'Pendiente' : 'Inactivo'}
+                      </span>
+                    </div>
+                    {cert.status === 'pending' && (
+                      <Button size="sm" variant="secondary" onClick={() => setUploadId(cert.id)}>
+                        Subir cert.
+                      </Button>
+                    )}
+                  </div>
+
+                  {cert.status === 'pending' && (
+                    <details className="border-t border-tc-border">
+                      <summary className="cursor-pointer px-4 py-2 text-xs font-bold tracking-wider uppercase text-tc-purple hover:bg-tc-surface">
+                        Ver CSR para presentar en ARCA
+                      </summary>
+                      <pre className="border-t border-tc-border bg-tc-stub-bg px-4 py-3 text-xs font-mono max-h-40 overflow-auto">
+                        {cert.csrPem}
+                      </pre>
+                    </details>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* Modal subir PEM */}
-      {uploadId && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-          <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
-            <h3 className="mb-4 text-base font-semibold">Subir certificado PEM</h3>
-            <form onSubmit={handleUpload} className="space-y-3">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
-                  Certificado PEM (obtenido de ARCA)
-                </label>
-                <textarea
-                  value={certPem}
-                  onChange={e => setCertPem(e.target.value)}
-                  className="h-32 w-full rounded border border-slate-300 p-2 font-mono text-xs"
-                  placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"
-                  required
-                />
-              </div>
-              <Input
-                label="Fecha de vencimiento"
-                type="date"
-                value={expiresAt}
-                onChange={e => setExpiresAt(e.target.value)}
-                required
+      {certs.some(c => c.isActive) && (
+        <div className="border border-tc-border bg-white overflow-hidden">
+          <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Probar conexión ARCA</span>
+          </div>
+          <div className="p-4 space-y-2">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="ID del punto de venta"
+                value={testPosId}
+                onChange={e => setTestPosId(e.target.value)}
+                className="flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-border-mid transition-colors"
               />
-              {uploadError && <p className="text-sm text-red-600">{uploadError}</p>}
-              <div className="flex justify-end gap-2">
-                <Button variant="secondary" type="button" onClick={() => setUploadId(null)}>
-                  Cancelar
-                </Button>
-                <Button variant="primary" type="submit" loading={uploading}>
-                  Activar certificado
-                </Button>
-              </div>
-            </form>
+              <Button
+                variant="secondary"
+                size="sm"
+                loading={testingId !== null}
+                disabled={!testPosId}
+                onClick={() => {
+                  const activeCert = certs.find(c => c.isActive)
+                  if (activeCert) handleTest(activeCert.id)
+                }}
+              >
+                Probar
+              </Button>
+            </div>
+            {testResult && (
+              <p className={`text-sm ${testResult.startsWith('✓') ? 'text-green-700' : 'text-tc-stamp-red'}`}>
+                {testResult}
+              </p>
+            )}
           </div>
         </div>
       )}
 
       {csrResult && (
-        <div className="mt-4 rounded border border-blue-200 bg-blue-50 p-4">
-          <p className="mb-2 text-sm font-medium text-blue-800">
-            Certificado creado. Presentá este CSR en el portal ARCA para obtener el certificado firmado:
-          </p>
-          <pre className="max-h-40 overflow-auto rounded bg-white p-3 text-xs">
-            {csrResult}
-          </pre>
-          <Button variant="secondary" className="mt-2" onClick={() => setCsrResult(null)}>
-            Entendido
-          </Button>
+        <div className="border border-tc-border bg-white overflow-hidden">
+          <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">CSR generado</span>
+          </div>
+          <div className="p-4 space-y-2">
+            <p className="text-sm text-slate-700">
+              Presentá este CSR en el portal ARCA para obtener el certificado firmado:
+            </p>
+            <pre className="border border-tc-border bg-tc-stub-bg px-3 py-2 text-xs font-mono max-h-40 overflow-auto">
+              {csrResult}
+            </pre>
+            <Button size="sm" variant="secondary" onClick={() => setCsrResult(null)}>
+              Entendido
+            </Button>
+          </div>
         </div>
       )}
-    </section>
+
+      {showForm && (
+        <Modal title="Nuevo certificado ARCA" onClose={() => setShowForm(false)} className="max-w-md">
+          <form onSubmit={handleCreate} className="space-y-3">
+            <div>
+              <label className={labelCls}>CUIT (sin guiones)</label>
+              <input
+                value={cuit}
+                onChange={e => setCuit(e.target.value)}
+                placeholder="20123456789"
+                required
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Nombre identificador</label>
+              <input
+                value={name}
+                onChange={e => setName(e.target.value)}
+                required
+                className={inputCls}
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={isPrimary}
+                onChange={e => setIsPrimary(e.target.checked)}
+                className="accent-tc-purple"
+              />
+              Certificado principal
+            </label>
+            {error && <p className="text-sm text-tc-stamp-red">{error}</p>}
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" type="button" onClick={() => setShowForm(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" loading={saving}>
+                Generar CSR
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {uploadId && (
+        <Modal title="Subir certificado PEM" onClose={() => setUploadId(null)} className="max-w-lg">
+          <form onSubmit={handleUpload} className="space-y-3">
+            <div>
+              <label className={labelCls}>Certificado PEM (obtenido de ARCA)</label>
+              <textarea
+                value={certPem}
+                onChange={e => setCertPem(e.target.value)}
+                className="h-32 w-full border border-tc-border bg-white p-2 font-mono text-xs outline-none focus:border-tc-border-mid transition-colors"
+                placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"
+                required
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Fecha de vencimiento</label>
+              <input
+                type="date"
+                value={expiresAt}
+                onChange={e => setExpiresAt(e.target.value)}
+                required
+                className={inputCls}
+              />
+            </div>
+            {uploadError && <p className="text-sm text-tc-stamp-red">{uploadError}</p>}
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" type="button" onClick={() => setUploadId(null)}>
+                Cancelar
+              </Button>
+              <Button type="submit" loading={uploading}>
+                Activar certificado
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+    </div>
   )
 }
 
@@ -363,95 +382,104 @@ function PointsOfSaleSection({
   }
 
   return (
-    <section>
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-base font-semibold">Puntos de Venta</h2>
-        <Button variant="primary" onClick={() => setShowForm(true)}>
+    <div className="border border-tc-border bg-white overflow-hidden">
+      <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2 flex items-center justify-between">
+        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Puntos de Venta</span>
+        <Button size="sm" onClick={() => setShowForm(true)}>
           Nuevo punto de venta
         </Button>
       </div>
 
-      {loading ? (
-        <p className="text-sm text-slate-500">Cargando...</p>
-      ) : points.length === 0 ? (
-        <p className="text-sm text-slate-500">No hay puntos de venta registrados.</p>
-      ) : (
-        <table className="min-w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs font-medium uppercase text-slate-500">
-            <tr>
-              <th className="px-4 py-3">Nº</th>
-              <th className="px-4 py-3">Nombre</th>
-              <th className="px-4 py-3">Estado</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {points.map(pos => (
-              <tr key={pos.id}>
-                <td className="px-4 py-3 font-mono">{String(pos.number).padStart(5, '0')}</td>
-                <td className="px-4 py-3">{pos.name}</td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`rounded px-1.5 py-0.5 text-xs font-medium ${
-                      pos.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
-                    }`}
-                  >
-                    {pos.isActive ? 'Activo' : 'Inactivo'}
-                  </span>
-                </td>
-              </tr>
+      <div className="p-4">
+        {loading ? (
+          <div>
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-10 animate-pulse border-b border-tc-border bg-tc-surface last:border-0" />
             ))}
-          </tbody>
-        </table>
-      )}
+          </div>
+        ) : points.length === 0 ? (
+          <p className="text-sm text-slate-400">No hay puntos de venta registrados.</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-tc-border">
+                <th className="pb-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Nº</th>
+                <th className="pb-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Nombre</th>
+                <th className="pb-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {points.map(pos => (
+                <tr key={pos.id} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
+                  <td className="py-2.5 pr-4 font-mono text-slate-800 tabular-nums">{String(pos.number).padStart(5, '0')}</td>
+                  <td className="py-2.5 pr-4 text-slate-700">{pos.name}</td>
+                  <td className="py-2.5">
+                    <span
+                      className={`border px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
+                        pos.isActive ? 'border-green-300 text-green-700' : 'border-tc-border text-slate-400'
+                      }`}
+                    >
+                      {pos.isActive ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
 
       {showForm && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-            <h3 className="mb-4 text-base font-semibold">Nuevo punto de venta</h3>
-            <form onSubmit={handleCreate} className="space-y-3">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Certificado</label>
-                <select
-                  value={certId}
-                  onChange={e => setCertId(e.target.value)}
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-                  required
-                >
-                  <option value="">Seleccionar certificado...</option>
-                  {certs.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.cuit})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <Input
-                label="Número de punto de venta"
+        <Modal title="Nuevo punto de venta" onClose={() => setShowForm(false)} className="max-w-md">
+          <form onSubmit={handleCreate} className="space-y-3">
+            <div>
+              <label className={labelCls}>Certificado</label>
+              <select
+                value={certId}
+                onChange={e => setCertId(e.target.value)}
+                className="w-full border border-tc-border bg-white px-3 py-2 text-sm outline-none focus:border-tc-border-mid transition-colors"
+                required
+              >
+                <option value="">Seleccionar certificado...</option>
+                {certs.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} ({c.cuit})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Número de punto de venta</label>
+              <input
                 type="number"
                 min="1"
                 value={number}
                 onChange={e => setNumber(e.target.value)}
                 required
+                className={inputCls}
               />
-              <Input
-                label="Nombre"
+            </div>
+            <div>
+              <label className={labelCls}>Nombre</label>
+              <input
                 value={name}
                 onChange={e => setName(e.target.value)}
                 required
+                className={inputCls}
               />
-              {error && <p className="text-sm text-red-600">{error}</p>}
-              <div className="flex justify-end gap-2">
-                <Button variant="secondary" type="button" onClick={() => setShowForm(false)}>
-                  Cancelar
-                </Button>
-                <Button variant="primary" type="submit" loading={saving}>
-                  Crear
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
+            </div>
+            {error && <p className="text-sm text-tc-stamp-red">{error}</p>}
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" type="button" onClick={() => setShowForm(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" loading={saving}>
+                Crear
+              </Button>
+            </div>
+          </form>
+        </Modal>
       )}
-    </section>
+    </div>
   )
 }

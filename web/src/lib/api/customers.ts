@@ -16,6 +16,7 @@ export interface CustomerListDto {
   phone: string | null
   docNumber: string | null
   balance: number
+  isDeleted?: boolean
 }
 
 export interface VehicleBasicDto {
@@ -54,9 +55,10 @@ export interface CustomerUpsertRequest {
 }
 
 export const customersApi = {
-  search: (q?: string | null, page = 1, pageSize = 25) => {
+  search: (q?: string | null, page = 1, pageSize = 25, includeDeleted = false) => {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
     if (q) params.set('q', q)
+    if (includeDeleted) params.set('includeDeleted', 'true')
     return api.get<Page<CustomerListDto>>(`/api/v1/customers?${params}`)
   },
   get: (id: string) => api.get<CustomerDto>(`/api/v1/customers/${id}`),

@@ -79,3 +79,7 @@ $RECYCLE.BIN/
 
 # ---- Claude Code (config local) ----
 .claude/settings.local.json
+
+# ---- Impeccable / Claude skill artifacts ----
+.impeccable/
+.playwright-mcp/

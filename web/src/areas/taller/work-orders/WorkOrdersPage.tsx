@@ -6,15 +6,18 @@ import {
   type WorkOrderListDto,
   type WorkOrderStatus,
   STATUS_LABELS,
-  STATUS_COLORS,
   PRIORITY_LABELS,
 } from '../../../lib/api/workOrders'
 import { Button } from '../../../components/ui/Button'
+import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { WorkOrderFormModal } from './WorkOrderFormModal'
 
 const STATUS_OPTIONS: WorkOrderStatus[] = [
   'pending', 'in_progress', 'waiting_parts', 'completed', 'delivered', 'cancelled',
 ]
+
+const fmtARS = (n: number) =>
+  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
 
 export function WorkOrdersPage() {
   const queryClient = useQueryClient()
@@ -25,11 +28,7 @@ export function WorkOrdersPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['work-orders', statusFilter, page],
     queryFn: () =>
-      workOrdersApi.search(
-        statusFilter || null,
-        null, null, null, null, null,
-        page,
-      ),
+      workOrdersApi.search(statusFilter || null, null, null, null, null, null, page),
   })
 
   function handleSuccess() {
@@ -38,17 +37,21 @@ export function WorkOrdersPage() {
   }
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Órdenes de trabajo</h1>
-        <Button onClick={() => setCreating(true)}>Nueva orden</Button>
+    <div className="space-y-5">
+      {/* Page header */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-bold tracking-wide text-slate-800 uppercase">
+          Órdenes de trabajo
+        </h1>
+        <Button onClick={() => setCreating(true)} size="sm">Nueva orden</Button>
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
+      {/* Filter bar */}
+      <div className="flex flex-wrap gap-2">
         <select
           value={statusFilter}
           onChange={e => { setStatusFilter(e.target.value as WorkOrderStatus | ''); setPage(1) }}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          className="border border-tc-border bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-tc-border-mid"
         >
           <option value="">Todos los estados</option>
           {STATUS_OPTIONS.map(s => (
@@ -57,64 +60,67 @@ export function WorkOrdersPage() {
         </select>
       </div>
 
+      {/* Loading skeleton */}
       {isLoading && (
-        <div className="flex justify-center py-12">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+        <div className="space-y-1">
+          {[0, 1, 2, 3, 4].map(i => (
+            <div key={i} className="h-14 animate-pulse bg-slate-50 border border-tc-border" />
+          ))}
         </div>
       )}
 
       {error && (
-        <p className="text-sm text-red-600">No se pudo cargar las órdenes.</p>
+        <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          No se pudo cargar las órdenes.
+        </p>
       )}
 
       {data && (
         <>
-          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                <tr>
-                  <th className="px-4 py-3">#</th>
-                  <th className="px-4 py-3">Estado</th>
-                  <th className="px-4 py-3">Prioridad</th>
-                  <th className="px-4 py-3">Cliente</th>
-                  <th className="px-4 py-3">Vehículo</th>
-                  <th className="px-4 py-3">Mecánico</th>
-                  <th className="px-4 py-3 text-right">Total</th>
-                  <th className="px-4 py-3 text-right">Saldo</th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {data.items.length === 0 && (
-                  <tr>
-                    <td colSpan={9} className="px-4 py-8 text-center text-slate-400">
-                      No hay órdenes{statusFilter ? ' con ese estado' : ''}.
-                    </td>
-                  </tr>
-                )}
+          {/* Coupon stack */}
+          <div className="border border-tc-border bg-white overflow-hidden">
+            {/* Column header */}
+            <div className="grid grid-cols-[3rem_1fr_6rem_6rem_5rem_5rem_2.5rem] items-center gap-0 border-b border-tc-border bg-tc-stub-bg px-0">
+              <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">#</div>
+              <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Cliente / Vehículo</div>
+              <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</div>
+              <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 text-right">Total</div>
+              <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 text-right">Saldo</div>
+              <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Mecánico</div>
+              <div />
+            </div>
+
+            {/* Rows */}
+            {data.items.length === 0 ? (
+              <p className="px-4 py-8 text-center text-sm text-slate-400">
+                No hay órdenes{statusFilter ? ' con ese estado' : ''}.
+              </p>
+            ) : (
+              <ul className="divide-y divide-tc-border">
                 {data.items.map(order => (
                   <WorkOrderRow key={order.id} order={order} />
                 ))}
-              </tbody>
-            </table>
+              </ul>
+            )}
           </div>
 
+          {/* Pagination */}
           {data.total > data.pageSize && (
-            <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
-              <span>{data.total} órdenes</span>
-              <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between text-sm text-slate-500">
+              <span className="tabular-nums">{data.total} órdenes</span>
+              <div className="flex items-center gap-1">
                 <button
                   onClick={() => setPage(p => p - 1)}
                   disabled={page === 1}
-                  className="rounded px-3 py-1 hover:bg-slate-100 disabled:opacity-40"
+                  className="border border-tc-border px-3 py-1 text-xs hover:bg-tc-surface disabled:opacity-40 transition-colors"
                 >
                   Anterior
                 </button>
-                <span>Pág. {page}</span>
+                <span className="px-2 text-xs tabular-nums">Pág. {page}</span>
                 <button
                   onClick={() => setPage(p => p + 1)}
                   disabled={page * data.pageSize >= data.total}
-                  className="rounded px-3 py-1 hover:bg-slate-100 disabled:opacity-40"
+                  className="border border-tc-border px-3 py-1 text-xs hover:bg-tc-surface disabled:opacity-40 transition-colors"
                 >
                   Siguiente
                 </button>
@@ -125,54 +131,74 @@ export function WorkOrdersPage() {
       )}
 
       {creating && (
-        <WorkOrderFormModal
-          onSuccess={handleSuccess}
-          onClose={() => setCreating(false)}
-        />
+        <WorkOrderFormModal onSuccess={handleSuccess} onClose={() => setCreating(false)} />
       )}
     </div>
   )
 }
 
 function WorkOrderRow({ order }: { order: WorkOrderListDto }) {
-  const vehicleLabel = [order.vehicleBrand, order.vehicleModel]
-    .filter(Boolean).join(' ') || order.vehiclePlate
+  const vehicleLabel = [order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ') || order.vehiclePlate
 
   return (
-    <tr className="hover:bg-slate-50">
-      <td className="px-4 py-3 font-mono font-medium">#{order.number}</td>
-      <td className="px-4 py-3">
-        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[order.status]}`}>
-          {STATUS_LABELS[order.status]}
+    <li className="grid grid-cols-[3rem_1fr_6rem_6rem_5rem_5rem_2.5rem] items-center gap-0 hover:bg-tc-surface group transition-colors">
+      {/* Stub: number */}
+      <div className="flex h-full items-center border-r border-tc-border bg-tc-stub-bg px-3 py-3">
+        <span className="text-xs font-bold tabular-nums text-slate-500">#{order.number}</span>
+      </div>
+
+      {/* Body: customer + vehicle */}
+      <div className="px-4 py-3">
+        <p className="text-sm font-medium text-slate-800 truncate">{order.customerName}</p>
+        <div className="mt-0.5 flex items-center gap-1.5">
+          <span className="text-[11px] font-bold tracking-widest text-slate-400 font-mono">{order.vehiclePlate}</span>
+          {vehicleLabel !== order.vehiclePlate && (
+            <span className="text-xs text-slate-400 truncate">— {vehicleLabel}</span>
+          )}
+          <span className="text-[10px] text-slate-300">· {PRIORITY_LABELS[order.priority]}</span>
+        </div>
+      </div>
+
+      {/* Status stamp */}
+      <div className="px-2 py-3">
+        <StatusBadge status={order.status} />
+      </div>
+
+      {/* Total */}
+      <div className="px-4 py-3 text-right">
+        <span className="tabular-nums text-sm text-tc-purple font-medium">
+          {order.total != null ? fmtARS(order.total) : '—'}
         </span>
-      </td>
-      <td className="px-4 py-3 text-slate-500">{PRIORITY_LABELS[order.priority]}</td>
-      <td className="px-4 py-3">{order.customerName}</td>
-      <td className="px-4 py-3">
-        <span className="font-mono text-xs">{order.vehiclePlate}</span>
-        {vehicleLabel !== order.vehiclePlate && (
-          <span className="ml-1 text-slate-400 text-xs">— {vehicleLabel}</span>
-        )}
-      </td>
-      <td className="px-4 py-3 text-slate-500">{order.assignedMechanicName ?? '—'}</td>
-      <td className="px-4 py-3 text-right tabular-nums">
-        {order.total != null ? `$${order.total.toFixed(2)}` : '—'}
-      </td>
-      <td className="px-4 py-3 text-right tabular-nums">
+      </div>
+
+      {/* Balance */}
+      <div className="px-4 py-3 text-right">
         {order.balance != null ? (
-          <span className={order.balance > 0 ? 'text-amber-600 font-medium' : ''}>
-            ${order.balance.toFixed(2)}
+          <span className={['tabular-nums text-sm', order.balance > 0 ? 'font-semibold text-amber-600' : 'text-slate-400'].join(' ')}>
+            {fmtARS(order.balance)}
           </span>
-        ) : '—'}
-      </td>
-      <td className="px-4 py-3">
+        ) : (
+          <span className="text-slate-300">—</span>
+        )}
+      </div>
+
+      {/* Mechanic */}
+      <div className="px-3 py-3">
+        <span className="text-xs text-slate-400 truncate">{order.assignedMechanicName ?? '—'}</span>
+      </div>
+
+      {/* Nav arrow */}
+      <div className="flex h-full items-center justify-center border-l border-tc-border bg-tc-stub-bg px-1">
         <Link
           to={`/app/work-orders/${order.id}`}
-          className="text-xs text-blue-600 hover:underline"
+          className="flex h-full w-full items-center justify-center text-tc-navy-text-dim hover:text-tc-purple transition-colors"
+          aria-label={`Ver orden #${order.number}`}
         >
-          Ver
+          <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+            <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </Link>
-      </td>
-    </tr>
+      </div>
+    </li>
   )
 }
