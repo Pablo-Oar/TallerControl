@@ -56,90 +56,96 @@ export function RegisterPage() {
 
   if (submitted) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm text-center">
-          <div className="mb-4 text-4xl">📧</div>
-          <h1 className="mb-2 text-xl font-semibold text-slate-900">Verificá tu email</h1>
-          <p className="text-slate-600 text-sm">
-            Te enviamos un enlace de verificación a{' '}
-            <span className="font-medium text-slate-800">{submittedEmail}</span>.
-            Hacé clic en el enlace para activar tu cuenta.
-          </p>
-          <p className="mt-4 text-xs text-slate-400">
-            ¿No llegó? Revisá la carpeta de spam.
-          </p>
-          <p className="mt-6 text-sm text-slate-500">
-            <Link to="/login" className="text-blue-600 hover:underline">
-              Volver al inicio de sesión
-            </Link>
-          </p>
+      <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4">
+        <div className="w-full max-w-sm border border-tc-border bg-white">
+          <div className="border-b border-tc-border bg-tc-stub-bg px-6 py-3">
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">TallerControl</span>
+          </div>
+          <div className="px-6 py-8 text-center">
+            <p className="mb-3 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Verificación pendiente</p>
+            <h1 className="mb-3 text-xl font-bold text-slate-900">Verificá tu email</h1>
+            <p className="text-sm text-slate-600">
+              Te enviamos un enlace de verificación a{' '}
+              <span className="font-bold text-slate-800">{submittedEmail}</span>.
+              Hacé clic en el enlace para activar tu cuenta.
+            </p>
+            <p className="mt-4 text-xs text-slate-400">¿No llegó? Revisá la carpeta de spam.</p>
+            <p className="mt-6 text-sm text-slate-500">
+              <Link to="/login" className="text-tc-purple hover:opacity-70">
+                Volver al inicio de sesión
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
-      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="mb-1 text-2xl font-semibold text-slate-900">Crear cuenta</h1>
-        <p className="mb-6 text-sm text-slate-500">
-          Empezá gratis — sin tarjeta de crédito.
-        </p>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-          <Input
-            label="Nombre del taller"
-            type="text"
-            autoComplete="organization"
-            placeholder="Ej: Taller Rodríguez"
-            error={errors.workshopName?.message}
-            {...register('workshopName')}
-          />
-          <Input
-            label="Tu nombre"
-            type="text"
-            autoComplete="name"
-            placeholder="Ej: Carlos Rodríguez"
-            error={errors.displayName?.message}
-            {...register('displayName')}
-          />
-          <Input
-            label="Email"
-            type="email"
-            autoComplete="email"
-            error={errors.email?.message}
-            {...register('email')}
-          />
-          <Input
-            label="Contraseña"
-            type="password"
-            autoComplete="new-password"
-            error={errors.password?.message}
-            {...register('password')}
-          />
-          <Input
-            label="Confirmar contraseña"
-            type="password"
-            autoComplete="new-password"
-            error={errors.confirmPassword?.message}
-            {...register('confirmPassword')}
-          />
+    <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4 py-8">
+      <div className="w-full max-w-md border border-tc-border bg-white">
+        <div className="border-b border-tc-border bg-tc-stub-bg px-6 py-3">
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">TallerControl</span>
+        </div>
+        <div className="px-6 py-8">
+          <h1 className="mb-1 text-xl font-bold tracking-tight text-slate-900">Crear cuenta</h1>
+          <p className="mb-6 text-sm text-slate-500">Empezá gratis — sin tarjeta de crédito.</p>
+          <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
+            <Input
+              label="Nombre del taller"
+              type="text"
+              autoComplete="organization"
+              placeholder="Ej: Taller Rodríguez"
+              error={errors.workshopName?.message}
+              {...register('workshopName')}
+            />
+            <Input
+              label="Tu nombre"
+              type="text"
+              autoComplete="name"
+              placeholder="Ej: Carlos Rodríguez"
+              error={errors.displayName?.message}
+              {...register('displayName')}
+            />
+            <Input
+              label="Email"
+              type="email"
+              autoComplete="email"
+              error={errors.email?.message}
+              {...register('email')}
+            />
+            <Input
+              label="Contraseña"
+              type="password"
+              autoComplete="new-password"
+              error={errors.password?.message}
+              {...register('password')}
+            />
+            <Input
+              label="Confirmar contraseña"
+              type="password"
+              autoComplete="new-password"
+              error={errors.confirmPassword?.message}
+              {...register('confirmPassword')}
+            />
 
-          {serverError && (
-            <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-              {serverError}
-            </p>
-          )}
+            {serverError && (
+              <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {serverError}
+              </p>
+            )}
 
-          <Button type="submit" loading={isSubmitting} className="mt-2 w-full">
-            Crear cuenta
-          </Button>
-        </form>
-        <p className="mt-4 text-center text-sm text-slate-500">
-          ¿Ya tenés cuenta?{' '}
-          <Link to="/login" className="text-blue-600 hover:underline">
-            Iniciá sesión
-          </Link>
-        </p>
+            <Button type="submit" loading={isSubmitting} className="mt-2 w-full">
+              Crear cuenta
+            </Button>
+          </form>
+          <p className="mt-4 text-center text-sm text-slate-500">
+            ¿Ya tenés cuenta?{' '}
+            <Link to="/login" className="text-tc-purple hover:opacity-70">
+              Iniciá sesión
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )

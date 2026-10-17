@@ -34,48 +34,51 @@ export function RemindersPage() {
     onError: (e: Error) => setError(e.message),
   })
 
+  const totalPages = data ? Math.ceil(data.total / data.pageSize) : 1
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Recordatorios</h1>
+        <h1 className="text-xl font-bold tracking-tight text-slate-900">Recordatorios</h1>
         <div className="flex gap-2">
           <Button
             variant="secondary"
+            size="sm"
             loading={evaluateMut.isPending}
             onClick={() => evaluateMut.mutate()}
           >
             Evaluar vencidos
           </Button>
-          <Button onClick={() => { setEditId(null); setShowModal(true) }}>
+          <Button size="sm" onClick={() => { setEditId(null); setShowModal(true) }}>
             Nuevo recordatorio
           </Button>
         </div>
       </div>
 
       {error && (
-        <div className="rounded border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-          {error}
-          <button className="ml-2 underline" onClick={() => setError(null)}>Cerrar</button>
+        <div className="border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 flex items-center justify-between">
+          <span>{error}</span>
+          <button className="text-xs underline" onClick={() => setError(null)}>Cerrar</button>
         </div>
       )}
 
-      <div className="overflow-x-auto rounded border border-slate-200 bg-white">
+      <div className="border border-tc-border bg-white overflow-x-auto">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs text-slate-500 uppercase">
-            <tr>
-              <th className="px-4 py-2">Vehículo</th>
-              <th className="px-4 py-2">Tipo</th>
-              <th className="px-4 py-2">Título</th>
-              <th className="px-4 py-2">Fecha límite</th>
-              <th className="px-4 py-2">Km límite</th>
-              <th className="px-4 py-2">Último aviso</th>
-              <th className="px-4 py-2">Acciones</th>
+          <thead>
+            <tr className="bg-tc-stub-bg border-b border-tc-border">
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Vehículo</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Tipo</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Título</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Fecha límite</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Km límite</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Último aviso</th>
+              <th className="px-4 py-2" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-slate-400">Cargando…</td>
+                <td colSpan={7} className="px-4 py-10 text-center text-sm text-slate-400">Cargando…</td>
               </tr>
             )}
             {data?.items.map((r) => (
@@ -88,7 +91,7 @@ export function RemindersPage() {
             ))}
             {data?.items.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-slate-400">
+                <td colSpan={7} className="px-4 py-10 text-center text-sm text-slate-400">
                   No hay recordatorios.
                 </td>
               </tr>
@@ -98,20 +101,20 @@ export function RemindersPage() {
       </div>
 
       {data && data.total > data.pageSize && (
-        <div className="flex items-center gap-3 text-sm">
+        <div className="flex items-center gap-1 text-sm">
           <button
-            className="rounded border px-3 py-1 disabled:opacity-50"
+            className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
             disabled={page === 1}
             onClick={() => setPage((p) => p - 1)}
           >
             ← Anterior
           </button>
-          <span className="text-slate-500">
-            Página {page} de {Math.ceil(data.total / data.pageSize)}
+          <span className="border border-tc-border bg-tc-stub-bg px-3 py-1 text-xs tabular-nums">
+            {page} / {totalPages}
           </span>
           <button
-            className="rounded border px-3 py-1 disabled:opacity-50"
-            disabled={page >= Math.ceil(data.total / data.pageSize)}
+            className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
+            disabled={page >= totalPages}
             onClick={() => setPage((p) => p + 1)}
           >
             Siguiente →
@@ -144,36 +147,36 @@ function ReminderRow({
     : false
 
   return (
-    <tr className="hover:bg-slate-50">
-      <td className="px-4 py-2 font-mono text-sm">{reminder.vehiclePlate}</td>
-      <td className="px-4 py-2 text-slate-600">{getReminderKindLabel(reminder.kind)}</td>
-      <td className="px-4 py-2">
+    <tr className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
+      <td className="px-4 py-2.5 font-mono tracking-widest text-sm text-slate-800">{reminder.vehiclePlate}</td>
+      <td className="px-4 py-2.5 text-slate-600 text-xs">{getReminderKindLabel(reminder.kind)}</td>
+      <td className="px-4 py-2.5">
         {isDueSoon && (
-          <span className="mr-1 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-700">
+          <span className="mr-1.5 inline-block border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-amber-700">
             Próximo
           </span>
         )}
-        {reminder.title}
+        <span className="text-sm text-slate-800">{reminder.title}</span>
       </td>
-      <td className="px-4 py-2 text-slate-600">
+      <td className="px-4 py-2.5 text-sm text-slate-600 tabular-nums">
         {reminder.dueDate
           ? new Date(reminder.dueDate).toLocaleDateString('es-AR')
           : <span className="text-slate-400">—</span>}
       </td>
-      <td className="px-4 py-2 text-slate-600">
+      <td className="px-4 py-2.5 text-sm text-slate-600 tabular-nums">
         {reminder.dueKm != null
           ? `${reminder.dueKm.toLocaleString('es-AR')} km`
           : <span className="text-slate-400">—</span>}
       </td>
-      <td className="px-4 py-2 text-slate-500">
+      <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums">
         {reminder.lastNotifiedAt
           ? new Date(reminder.lastNotifiedAt).toLocaleDateString('es-AR')
           : <span className="text-slate-400">—</span>}
       </td>
-      <td className="px-4 py-2">
-        <div className="flex items-center gap-2 text-xs">
-          <button className="text-blue-600 hover:underline" onClick={onEdit}>Editar</button>
-          <button className="text-red-600 hover:underline" onClick={onDelete}>Eliminar</button>
+      <td className="px-4 py-2.5 text-right">
+        <div className="flex items-center justify-end gap-3 text-xs">
+          <button className="text-tc-purple hover:opacity-70" onClick={onEdit}>Editar</button>
+          <button className="text-tc-stamp-red hover:opacity-70" onClick={onDelete}>Eliminar</button>
         </div>
       </td>
     </tr>

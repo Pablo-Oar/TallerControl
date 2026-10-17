@@ -26,44 +26,49 @@ export function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="mb-2 text-2xl font-semibold text-slate-900">Recuperar contraseña</h1>
+    <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4">
+      <div className="w-full max-w-sm border border-tc-border bg-white">
+        <div className="border-b border-tc-border bg-tc-stub-bg px-6 py-3">
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">TallerControl</span>
+        </div>
+        <div className="px-6 py-8">
+          <h1 className="mb-2 text-xl font-bold tracking-tight text-slate-900">Recuperar contraseña</h1>
 
-        {sent ? (
-          <div className="mt-4">
-            <p className="text-sm text-slate-600">
-              Si el email está registrado, te enviamos un enlace para restablecer tu contraseña.
-              Revisá también tu carpeta de spam.
-            </p>
-            <Link to="/login" className="mt-4 block text-center text-sm text-blue-600 hover:underline">
-              Volver al inicio
-            </Link>
-          </div>
-        ) : (
-          <>
-            <p className="mb-6 text-sm text-slate-500">
-              Ingresá tu email y te enviaremos un enlace para restablecer la contraseña.
-            </p>
-            <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-              <Input
-                label="Email"
-                type="email"
-                autoComplete="email"
-                error={errors.email?.message}
-                {...register('email')}
-              />
-              <Button type="submit" loading={isSubmitting} className="w-full">
-                Enviar enlace
-              </Button>
-            </form>
-            <p className="mt-4 text-center text-sm text-slate-500">
-              <Link to="/login" className="text-blue-600 hover:underline">
+          {sent ? (
+            <div className="mt-4">
+              <p className="text-sm text-slate-600">
+                Si el email está registrado, te enviamos un enlace para restablecer tu contraseña.
+                Revisá también tu carpeta de spam.
+              </p>
+              <Link to="/login" className="mt-4 block text-center text-sm text-tc-purple hover:opacity-70">
                 Volver al inicio
               </Link>
-            </p>
-          </>
-        )}
+            </div>
+          ) : (
+            <>
+              <p className="mb-6 text-sm text-slate-500">
+                Ingresá tu email y te enviaremos un enlace para restablecer la contraseña.
+              </p>
+              <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
+                <Input
+                  label="Email"
+                  type="email"
+                  autoComplete="email"
+                  error={errors.email?.message}
+                  {...register('email')}
+                />
+                <Button type="submit" loading={isSubmitting} className="w-full">
+                  Enviar enlace
+                </Button>
+              </form>
+              <p className="mt-4 text-center text-sm text-slate-500">
+                <Link to="/login" className="text-tc-purple hover:opacity-70">
+                  Volver al inicio
+                </Link>
+              </p>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )

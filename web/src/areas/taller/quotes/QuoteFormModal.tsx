@@ -7,10 +7,12 @@ import { quotesApi, type QuoteDto } from '../../../lib/api/quotes'
 import { customersApi } from '../../../lib/api/customers'
 import { catalogApi } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
+import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
 const inputCls =
-  'w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500'
+  'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
+const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const itemSchema = z.object({
   kind: z.enum(['service', 'product', 'manual']),
@@ -118,7 +120,6 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
     }
   }
 
-  // Default validUntil to 15 days from now when creating
   useEffect(() => {
     if (!isEditing) {
       const d = new Date()
@@ -130,167 +131,162 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
   const vehicles = customerDetail?.vehicles ?? []
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 pt-8 pb-8">
-      <div className="mx-4 w-full max-w-2xl rounded-xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-800">
-            {isEditing ? 'Editar presupuesto' : 'Nuevo presupuesto'}
-          </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-lg leading-none">
-            ×
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
-          {/* Cliente */}
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              Cliente <span className="text-red-500">*</span>
-            </label>
-            {!selectedCustomerId && (
-              <div className="relative">
-                <input
-                  type="search"
-                  value={customerSearch}
-                  onChange={e => setCustomerSearch(e.target.value)}
-                  className={inputCls}
-                  placeholder="Escribir nombre o DNI para buscar…"
-                  autoComplete="off"
-                />
-                {customerSearch.length >= 1 && (
-                  <ul className="absolute z-10 mt-1 w-full max-h-52 overflow-y-auto rounded-md border border-slate-200 bg-white shadow-lg">
-                    {!customersData && (
-                      <li className="px-3 py-2 text-sm text-slate-400">Buscando…</li>
-                    )}
-                    {customersData && customersData.items.length === 0 && (
-                      <li className="px-3 py-2 text-sm text-slate-400">Sin resultados</li>
-                    )}
-                    {customersData && customersData.items.map(c => (
-                      <li key={c.id}>
-                        <button
-                          type="button"
-                          onClick={() => handleSelectCustomer(c.id)}
-                          className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50"
-                        >
-                          <span className="font-medium">{c.name}</span>
-                          {c.docNumber && <span className="ml-2 text-xs text-slate-400">{c.docNumber}</span>}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-            {selectedCustomerId && customerDetail && (
-              <div className="mt-1 flex items-center gap-2 rounded-md bg-blue-50 px-3 py-2 text-sm">
-                <span className="font-medium">{customerDetail.name}</span>
-                <button
-                  type="button"
-                  onClick={() => { setValue('customerId', ''); setValue('vehicleId', ''); setCustomerSearch('') }}
-                  className="ml-auto text-xs text-slate-400 hover:text-red-500"
-                >
-                  Cambiar
-                </button>
-              </div>
-            )}
-            {errors.customerId && (
-              <p className="mt-1 text-xs text-red-600">{errors.customerId.message}</p>
-            )}
-          </div>
-
-          {/* Vehículo */}
-          {selectedCustomerId && (
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
-                Vehículo <span className="text-red-500">*</span>
-              </label>
-              <select {...register('vehicleId')} className={inputCls}>
-                <option value="">Seleccionar vehículo</option>
-                {vehicles.map(v => (
-                  <option key={v.id} value={v.id}>
-                    {[v.brand, v.model, v.plate].filter(Boolean).join(' · ')}
-                  </option>
-                ))}
-              </select>
-              {errors.vehicleId && (
-                <p className="mt-1 text-xs text-red-600">{errors.vehicleId.message}</p>
+    <Modal
+      title={isEditing ? 'Editar presupuesto' : 'Nuevo presupuesto'}
+      onClose={onClose}
+      className="max-w-2xl"
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {/* Cliente */}
+        <div>
+          <label className={labelCls}>Cliente <span className="text-tc-stamp-red">*</span></label>
+          {!selectedCustomerId && (
+            <div className="relative">
+              <input
+                type="search"
+                value={customerSearch}
+                onChange={e => setCustomerSearch(e.target.value)}
+                className={inputCls}
+                placeholder="Escribir nombre o DNI para buscar…"
+                autoComplete="off"
+              />
+              {customerSearch.length >= 1 && (
+                <ul className="absolute z-10 mt-px w-full max-h-52 overflow-y-auto border border-tc-border bg-white shadow-lg">
+                  {!customersData && (
+                    <li className="px-3 py-2 text-sm text-slate-400">Buscando…</li>
+                  )}
+                  {customersData && customersData.items.length === 0 && (
+                    <li className="px-3 py-2 text-sm text-slate-400">Sin resultados</li>
+                  )}
+                  {customersData && customersData.items.map(c => (
+                    <li key={c.id}>
+                      <button
+                        type="button"
+                        onClick={() => handleSelectCustomer(c.id)}
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-tc-surface"
+                      >
+                        <span className="font-medium">{c.name}</span>
+                        {c.docNumber && <span className="ml-2 text-xs text-slate-400">{c.docNumber}</span>}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
           )}
-
-          <div className="grid grid-cols-2 gap-4">
-            {/* Válido hasta */}
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
-                Válido hasta <span className="text-red-500">*</span>
-              </label>
-              <input type="date" {...register('validUntil')} className={inputCls} />
-              {errors.validUntil && (
-                <p className="mt-1 text-xs text-red-600">{errors.validUntil.message}</p>
-              )}
-            </div>
-            {/* Descuento */}
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Descuento global (%)</label>
-              <input
-                type="number"
-                step="1"
-                min="0"
-                max="100"
-                {...register('globalDiscountPct', { valueAsNumber: true })}
-                className={inputCls}
-              />
-            </div>
-          </div>
-
-          {/* Notas */}
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              Notas para el cliente
-            </label>
-            <textarea {...register('customerNotes')} rows={2} className={inputCls} />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              Notas internas
-            </label>
-            <textarea {...register('internalNotes')} rows={2} className={inputCls} />
-          </div>
-
-          {/* Ítems */}
-          <div>
-            <div className="mb-2 flex items-center justify-between">
-              <label className="text-sm font-medium text-slate-700">Ítems</label>
+          {selectedCustomerId && customerDetail && (
+            <div className="flex items-center gap-2 border border-tc-border bg-tc-surface px-3 py-2 text-sm">
+              <span className="font-medium text-slate-800">{customerDetail.name}</span>
               <button
                 type="button"
-                onClick={() =>
-                  append({
-                    kind: 'service',
-                    description: '',
-                    catalogItemId: null,
-                    quantity: 1,
-                    unitNetPrice: 0,
-                    vatRate: 21,
-                    requiredForApproval: true,
-                  })
-                }
-                className="text-sm text-blue-600 hover:underline"
+                onClick={() => { setValue('customerId', ''); setValue('vehicleId', ''); setCustomerSearch('') }}
+                className="ml-auto text-xs text-slate-400 hover:text-tc-stamp-red"
               >
-                + Agregar ítem
+                Cambiar
               </button>
             </div>
+          )}
+          {errors.customerId && (
+            <p className="mt-1 text-xs text-tc-stamp-red">{errors.customerId.message}</p>
+          )}
+        </div>
 
-            {fields.length === 0 && (
-              <p className="text-xs text-slate-400">Sin ítems todavía.</p>
+        {/* Vehículo */}
+        {selectedCustomerId && (
+          <div>
+            <label className={labelCls}>Vehículo <span className="text-tc-stamp-red">*</span></label>
+            <select {...register('vehicleId')} className={inputCls}>
+              <option value="">Seleccionar vehículo</option>
+              {vehicles.map(v => (
+                <option key={v.id} value={v.id}>
+                  {[v.brand, v.model, v.plate].filter(Boolean).join(' · ')}
+                </option>
+              ))}
+            </select>
+            {errors.vehicleId && (
+              <p className="mt-1 text-xs text-tc-stamp-red">{errors.vehicleId.message}</p>
             )}
+          </div>
+        )}
 
-            <div className="space-y-3">
-              {fields.map((field, index) => (
-                <div key={field.id} className="rounded-lg border border-slate-200 p-3 space-y-2">
-                  {/* Selección del catálogo */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Válido hasta <span className="text-tc-stamp-red">*</span></label>
+            <input type="date" {...register('validUntil')} className={inputCls} />
+            {errors.validUntil && (
+              <p className="mt-1 text-xs text-tc-stamp-red">{errors.validUntil.message}</p>
+            )}
+          </div>
+          <div>
+            <label className={labelCls}>Descuento global (%)</label>
+            <input
+              type="number"
+              step="1"
+              min="0"
+              max="100"
+              {...register('globalDiscountPct', { valueAsNumber: true })}
+              className={`${inputCls} tabular-nums`}
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className={labelCls}>Notas para el cliente</label>
+          <textarea {...register('customerNotes')} rows={2} className={inputCls} />
+        </div>
+        <div>
+          <label className={labelCls}>Notas internas</label>
+          <textarea {...register('internalNotes')} rows={2} className={inputCls} />
+        </div>
+
+        {/* Ítems */}
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <span className={labelCls.replace('mb-1 ', '')}>Ítems</span>
+            <button
+              type="button"
+              onClick={() =>
+                append({
+                  kind: 'service',
+                  description: '',
+                  catalogItemId: null,
+                  quantity: 1,
+                  unitNetPrice: 0,
+                  vatRate: 21,
+                  requiredForApproval: true,
+                })
+              }
+              className="text-xs font-bold tracking-wider uppercase text-tc-purple hover:text-tc-purple-mid"
+            >
+              + Agregar ítem
+            </button>
+          </div>
+
+          {fields.length === 0 && (
+            <p className="border border-dashed border-tc-border px-4 py-3 text-xs text-slate-400">
+              Sin ítems todavía. Agregá al menos uno.
+            </p>
+          )}
+
+          <div className="space-y-2">
+            {fields.map((field, index) => (
+              <div key={field.id} className="border border-tc-border bg-white">
+                <div className="bg-tc-stub-bg border-b border-tc-border px-3 py-1.5 flex items-center justify-between">
+                  <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">
+                    Ítem {index + 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => remove(index)}
+                    className="text-xs text-tc-stamp-red hover:opacity-70"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+                <div className="p-3 space-y-2">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="mb-1 block text-xs text-slate-500">Del catálogo</label>
+                      <label className={labelCls}>Del catálogo</label>
                       <select
                         className={inputCls}
                         onChange={e => handleSelectCatalogItem(index, e.target.value)}
@@ -303,7 +299,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                       </select>
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs text-slate-500">Tipo</label>
+                      <label className={labelCls}>Tipo</label>
                       <select {...register(`items.${index}.kind`)} className={inputCls}>
                         <option value="service">Servicio</option>
                         <option value="product">Producto</option>
@@ -313,79 +309,72 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs text-slate-500">Descripción *</label>
+                    <label className={labelCls}>Descripción *</label>
                     <input {...register(`items.${index}.description`)} className={inputCls} />
                     {errors.items?.[index]?.description && (
-                      <p className="text-xs text-red-600">{errors.items[index]?.description?.message}</p>
+                      <p className="text-xs text-tc-stamp-red">{errors.items[index]?.description?.message}</p>
                     )}
                   </div>
 
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="mb-1 block text-xs text-slate-500">Cantidad</label>
+                      <label className={labelCls}>Cantidad</label>
                       <input
                         type="number"
                         step="1"
                         min="0"
                         {...register(`items.${index}.quantity`, { valueAsNumber: true })}
-                        className={inputCls}
+                        className={`${inputCls} tabular-nums`}
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs text-slate-500">Precio neto</label>
+                      <label className={labelCls}>Precio neto</label>
                       <input
                         type="number"
                         step="1"
                         min="0"
                         {...register(`items.${index}.unitNetPrice`, { valueAsNumber: true })}
-                        className={inputCls}
+                        className={`${inputCls} tabular-nums`}
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs text-slate-500">IVA (%)</label>
+                      <label className={labelCls}>IVA (%)</label>
                       <input
                         type="number"
                         step="1"
                         min="0"
                         max="100"
                         {...register(`items.${index}.vatRate`, { valueAsNumber: true })}
-                        className={inputCls}
+                        className={`${inputCls} tabular-nums`}
                       />
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-2 text-xs text-slate-600">
-                      <input type="checkbox" {...register(`items.${index}.requiredForApproval`)} />
-                      Requerido para aprobación
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => remove(index)}
-                      className="text-xs text-red-500 hover:underline"
-                    >
-                      Eliminar
-                    </button>
-                  </div>
+                  <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                    <input type="checkbox" {...register(`items.${index}.requiredForApproval`)} className="accent-tc-purple" />
+                    Requerido para aprobación
+                  </label>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
+        </div>
 
-          {serverError && (
-            <p className="text-sm text-red-600">{serverError}</p>
-          )}
+        {serverError && (
+          <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {serverError}
+          </p>
+        )}
 
-          <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
-            <Button type="button" variant="secondary" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button type="submit" loading={isSubmitting}>
-              {isEditing ? 'Guardar cambios' : 'Crear presupuesto'}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="flex justify-end gap-3 pt-2 border-t border-tc-border">
+          <Button type="button" variant="secondary" size="sm" onClick={onClose} disabled={isSubmitting}>
+            Cancelar
+          </Button>
+          <Button type="submit" size="sm" loading={isSubmitting}>
+            {isEditing ? 'Guardar cambios' : 'Crear presupuesto'}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   )
 }

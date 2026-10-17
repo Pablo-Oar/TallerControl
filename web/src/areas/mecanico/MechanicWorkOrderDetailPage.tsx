@@ -5,16 +5,29 @@ import {
   workOrdersApi,
   type WorkOrderStatus,
   STATUS_LABELS,
-  STATUS_COLORS,
   PRIORITY_LABELS,
 } from '../../lib/api/workOrders'
+import { StatusBadge } from '../../components/ui/StatusBadge'
+import { Button } from '../../components/ui/Button'
 import { ApiError } from '../../lib/api/client'
 
-// Estados a los que un mecánico puede transicionar
 const MECHANIC_TRANSITIONS: Partial<Record<WorkOrderStatus, WorkOrderStatus[]>> = {
   pending: ['in_progress'],
   in_progress: ['waiting_parts', 'completed'],
   waiting_parts: ['in_progress'],
+}
+
+const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="border border-tc-border bg-white overflow-hidden">
+      <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
+        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">{title}</span>
+      </div>
+      <div className="p-4">{children}</div>
+    </div>
+  )
 }
 
 export function MechanicWorkOrderDetailPage() {
@@ -69,87 +82,77 @@ export function MechanicWorkOrderDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-8">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+      <div className="space-y-2 px-4 pt-4">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="h-20 animate-pulse border border-tc-border bg-tc-surface" />
+        ))}
       </div>
     )
   }
 
   if (error || !order) {
-    return <p className="text-sm text-red-600">No se pudo cargar la orden.</p>
+    return (
+      <div className="px-4 pt-4">
+        <p className="border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+          No se pudo cargar la orden.
+        </p>
+      </div>
+    )
   }
 
   const transitions = MECHANIC_TRANSITIONS[order.status] ?? []
   const vehicleLabel = [order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ')
 
   return (
-    <div className="space-y-4">
-      {/* Encabezado */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">Orden #{order.number}</h1>
-          <span className={`mt-1 inline-block rounded-full px-2.5 py-0.5 text-sm font-medium ${STATUS_COLORS[order.status]}`}>
-            {STATUS_LABELS[order.status]}
-          </span>
+    <div className="space-y-3 px-4 pb-6">
+      <div className="flex items-center justify-between py-2">
+        <div className="flex items-center gap-3">
+          <span className="font-mono font-bold text-lg text-slate-900">#{order.number}</span>
+          <StatusBadge status={order.status} label={STATUS_LABELS[order.status]} />
         </div>
-        <Link to="/m" className="text-sm text-blue-600 hover:underline">← Volver</Link>
+        <Link to="/m" className="text-xs font-bold tracking-wider uppercase text-tc-purple hover:opacity-70">
+          ← Volver
+        </Link>
       </div>
 
-      {/* Info del vehículo */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Vehículo</h2>
-        <p className="font-mono font-medium">{order.vehiclePlate}</p>
-        {vehicleLabel && <p className="text-sm text-slate-500">{vehicleLabel}</p>}
-        <p className="mt-1 text-sm">Odómetro: <strong>{order.odometerKm.toLocaleString('es-AR')} km</strong></p>
-        {order.fuelLevel != null && (
-          <p className="text-sm">Combustible: <strong>{order.fuelLevel}%</strong></p>
-        )}
-      </div>
+      <Section title="Vehículo">
+        <div className="space-y-1">
+          <p className="font-mono font-bold tracking-widest text-slate-800">{order.vehiclePlate}</p>
+          {vehicleLabel && <p className="text-sm text-slate-500">{vehicleLabel}</p>}
+          <p className="text-sm text-slate-600">
+            Odómetro: <strong className="tabular-nums">{order.odometerKm.toLocaleString('es-AR')} km</strong>
+          </p>
+          {order.fuelLevel != null && (
+            <p className="text-sm text-slate-600">
+              Combustible: <strong>{order.fuelLevel}%</strong>
+            </p>
+          )}
+          <p className="text-sm text-slate-600">
+            Prioridad: <strong>{PRIORITY_LABELS[order.priority]}</strong>
+          </p>
+        </div>
+      </Section>
 
-      {/* Prioridad */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
-        <p className="text-sm">
-          <span className="text-slate-500">Prioridad: </span>
-          <strong>{PRIORITY_LABELS[order.priority]}</strong>
-        </p>
-      </div>
-
-      {/* Problema reportado */}
       {order.reportedIssue && (
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Problema reportado</h2>
-          <p className="text-sm">{order.reportedIssue}</p>
-        </div>
+        <Section title="Problema reportado">
+          <p className="text-sm text-slate-700">{order.reportedIssue}</p>
+        </Section>
       )}
 
-      {/* Renglones */}
       {order.items.length > 0 && (
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Trabajos / repuestos</h2>
-          <ul className="space-y-1">
+        <Section title="Trabajos / repuestos">
+          <ul className="space-y-1.5">
             {order.items.map(item => (
-              <li key={item.id} className="flex items-baseline justify-between text-sm">
-                <span>{item.description}</span>
-                <span className="text-slate-400 tabular-nums">× {item.quantity}</span>
+              <li key={item.id} className="flex items-baseline justify-between text-sm border-b border-tc-border pb-1.5 last:border-0 last:pb-0">
+                <span className="text-slate-700">{item.description}</span>
+                <span className="text-slate-400 tabular-nums text-xs ml-3 shrink-0">× {item.quantity}</span>
               </li>
             ))}
           </ul>
-        </div>
+        </Section>
       )}
 
-      {/* Notas del mecánico */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Mis notas</h2>
-          {!editingNotes && (
-            <button
-              onClick={() => { setMechanicNotes(order.mechanicNotes ?? ''); setEditingNotes(true) }}
-              className="text-xs text-blue-600 hover:underline"
-            >
-              {order.mechanicNotes ? 'Editar' : 'Agregar'}
-            </button>
-          )}
-        </div>
+      <Section title="Mis notas">
         {editingNotes ? (
           <div className="space-y-2">
             <textarea
@@ -157,80 +160,77 @@ export function MechanicWorkOrderDetailPage() {
               onChange={e => setMechanicNotes(e.target.value)}
               rows={3}
               maxLength={2000}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputCls}
               placeholder="Notas del trabajo…"
             />
-            {notesError && <p className="text-xs text-red-600">{notesError}</p>}
+            {notesError && <p className="text-xs text-tc-stamp-red">{notesError}</p>}
             <div className="flex gap-2">
-              <button
-                onClick={handleSaveNotes}
-                disabled={savingNotes}
-                className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white disabled:opacity-60"
-              >
-                {savingNotes ? 'Guardando…' : 'Guardar'}
-              </button>
-              <button
-                onClick={() => setEditingNotes(false)}
-                className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
-              >
-                Cancelar
-              </button>
+              <Button size="sm" loading={savingNotes} onClick={handleSaveNotes}>Guardar</Button>
+              <Button size="sm" variant="secondary" onClick={() => setEditingNotes(false)}>Cancelar</Button>
             </div>
           </div>
         ) : (
-          order.mechanicNotes
-            ? <p className="text-sm">{order.mechanicNotes}</p>
-            : <p className="text-sm text-slate-400">Sin notas</p>
+          <div className="flex items-start justify-between gap-3">
+            {order.mechanicNotes
+              ? <p className="text-sm text-slate-700">{order.mechanicNotes}</p>
+              : <p className="text-sm text-slate-400">Sin notas</p>
+            }
+            <button
+              onClick={() => { setMechanicNotes(order.mechanicNotes ?? ''); setEditingNotes(true) }}
+              className="text-xs font-bold tracking-wider uppercase text-tc-purple hover:opacity-70 shrink-0"
+            >
+              {order.mechanicNotes ? 'Editar' : 'Agregar'}
+            </button>
+          </div>
         )}
-      </div>
+      </Section>
 
-      {/* Cambio de estado */}
       {transitions.length > 0 && (
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Cambiar estado</h2>
+        <Section title="Cambiar estado">
           <div className="flex flex-wrap gap-2">
             {transitions.map(toStatus => (
               <button
                 key={toStatus}
                 onClick={() => setChangingStatus(toStatus)}
-                className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm text-blue-700 hover:bg-blue-100"
+                className="border border-tc-border bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-tc-surface transition-colors"
               >
                 → {STATUS_LABELS[toStatus]}
               </button>
             ))}
           </div>
-        </div>
+        </Section>
       )}
 
-      {/* Confirmación de cambio de estado */}
       {changingStatus && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4">
-          <div className="w-full max-w-sm rounded-xl bg-white p-5 shadow-xl">
-            <p className="mb-3 font-medium">
-              Cambiar a: <strong>{STATUS_LABELS[changingStatus]}</strong>
-            </p>
-            <textarea
-              value={note}
-              onChange={e => setNote(e.target.value)}
-              rows={2}
-              placeholder="Nota (opcional)…"
-              className="mb-3 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none"
-            />
-            {statusError && <p className="mb-2 text-xs text-red-600">{statusError}</p>}
-            <div className="flex gap-2">
-              <button
-                onClick={handleChangeStatus}
-                disabled={savingStatus}
-                className="flex-1 rounded-md bg-blue-600 py-2 text-sm font-medium text-white disabled:opacity-60"
-              >
-                {savingStatus ? 'Guardando…' : 'Confirmar'}
-              </button>
-              <button
-                onClick={() => { setChangingStatus(null); setNote('') }}
-                className="flex-1 rounded-md border border-slate-300 py-2 text-sm"
-              >
-                Cancelar
-              </button>
+          <div className="w-full max-w-sm border border-tc-border bg-white shadow-xl">
+            <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
+              <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">
+                Cambiar a: <span className="text-slate-700">{STATUS_LABELS[changingStatus]}</span>
+              </span>
+            </div>
+            <div className="p-4 space-y-3">
+              <textarea
+                value={note}
+                onChange={e => setNote(e.target.value)}
+                rows={2}
+                placeholder="Nota (opcional)…"
+                className={inputCls}
+              />
+              {statusError && <p className="text-xs text-tc-stamp-red">{statusError}</p>}
+              <div className="flex gap-2">
+                <Button size="sm" loading={savingStatus} onClick={handleChangeStatus} className="flex-1">
+                  Confirmar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => { setChangingStatus(null); setNote('') }}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+              </div>
             </div>
           </div>
         </div>

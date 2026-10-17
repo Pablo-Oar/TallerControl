@@ -1,6 +1,7 @@
 import { useParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { publicApi } from '../../../lib/api/quotes'
+import { StatusBadge } from '../../../components/ui/StatusBadge'
 
 const WO_STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
@@ -23,20 +24,22 @@ export function PublicWorkOrderPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-tc-navy">
+        <div className="space-y-2 w-48">
+          <div className="h-2 animate-pulse bg-tc-navy-mid" />
+          <div className="h-2 w-3/4 animate-pulse bg-tc-navy-mid" />
+        </div>
       </div>
     )
   }
 
   if (error || !data) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white px-4">
-        <div className="max-w-sm text-center">
-          <p className="text-lg font-medium text-slate-800">Orden no encontrada</p>
-          <p className="mt-1 text-sm text-slate-500">
-            El enlace puede haber expirado o ser incorrecto.
-          </p>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-tc-navy px-4 text-center">
+        <div className="border border-tc-border bg-white p-8 max-w-sm w-full">
+          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 mb-2">Error</p>
+          <p className="font-bold text-slate-900">Orden no encontrada</p>
+          <p className="mt-2 text-sm text-slate-500">El enlace puede haber expirado o ser incorrecto.</p>
         </div>
       </div>
     )
@@ -45,53 +48,51 @@ export function PublicWorkOrderPage() {
   const statusLabel = WO_STATUS_LABELS[data.status] ?? data.status
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-tc-surface">
       <div className="mx-auto max-w-2xl px-4 py-10">
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-6 flex items-start justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Orden de trabajo
-              </p>
-              <h1 className="text-2xl font-bold text-slate-800">#{data.number}</h1>
-            </div>
-            <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
-              {statusLabel}
-            </span>
+        <div className="border border-tc-border bg-white overflow-hidden">
+          <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3 flex items-center justify-between">
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Orden de trabajo</span>
+            <StatusBadge status={data.status} label={statusLabel} />
           </div>
-
-          <dl className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <dt className="font-medium text-slate-500">Cliente</dt>
-              <dd className="mt-1 text-slate-800">{data.customerName}</dd>
-            </div>
-            <div>
-              <dt className="font-medium text-slate-500">Vehículo</dt>
-              <dd className="mt-1 text-slate-800">
-                {[data.vehicleBrand, data.vehicleModel, data.vehiclePlate]
-                  .filter(Boolean)
-                  .join(' · ')}
-              </dd>
-            </div>
-            {data.assignedMechanicName && (
+          <div className="px-6 py-5">
+            <p className="font-mono font-bold text-2xl text-slate-900 mb-4">#{data.number}</p>
+            <dl className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <dt className="font-medium text-slate-500">Mecánico asignado</dt>
-                <dd className="mt-1 text-slate-800">{data.assignedMechanicName}</dd>
+                <dt className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">Cliente</dt>
+                <dd className="text-slate-800">{data.customerName}</dd>
               </div>
-            )}
-            {data.reportedIssue && (
-              <div className="col-span-2">
-                <dt className="font-medium text-slate-500">Problema reportado</dt>
-                <dd className="mt-1 text-slate-800">{data.reportedIssue}</dd>
+              <div>
+                <dt className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">Vehículo</dt>
+                <dd className="text-slate-800 font-mono">
+                  {[data.vehicleBrand, data.vehicleModel, data.vehiclePlate]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </dd>
               </div>
-            )}
-            {data.mechanicNotes && (
-              <div className="col-span-2">
-                <dt className="font-medium text-slate-500">Notas del mecánico</dt>
-                <dd className="mt-1 text-slate-800">{data.mechanicNotes}</dd>
-              </div>
-            )}
-          </dl>
+              {data.assignedMechanicName && (
+                <div>
+                  <dt className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">Mecánico asignado</dt>
+                  <dd className="text-slate-800">{data.assignedMechanicName}</dd>
+                </div>
+              )}
+              {data.reportedIssue && (
+                <div className="col-span-2">
+                  <dt className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">Problema reportado</dt>
+                  <dd className="text-slate-800">{data.reportedIssue}</dd>
+                </div>
+              )}
+              {data.mechanicNotes && (
+                <div className="col-span-2">
+                  <dt className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">Notas del mecánico</dt>
+                  <dd className="text-slate-800">{data.mechanicNotes}</dd>
+                </div>
+              )}
+            </dl>
+          </div>
+          <div className="border-t border-tc-border bg-tc-stub-bg px-6 py-2 text-center">
+            <span className="text-xs text-slate-400">TallerControl</span>
+          </div>
         </div>
       </div>
     </div>

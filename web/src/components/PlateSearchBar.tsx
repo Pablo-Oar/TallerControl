@@ -22,11 +22,11 @@ export function PlateSearchBar() {
         onChange={e => setValue(e.target.value)}
         placeholder="Buscar patente…"
         aria-label="Buscar patente"
-        className="w-36 rounded-md border border-slate-300 bg-slate-50 px-2 py-1 text-sm outline-none focus:w-48 focus:ring-2 focus:ring-blue-500 transition-all"
+        className="w-36 border border-tc-navy-mid bg-tc-navy-surface px-2 py-1 text-sm text-white placeholder:text-tc-navy-text outline-none focus:w-48 focus:border-tc-navy-text transition-all"
       />
       <button
         type="submit"
-        className="rounded-md bg-slate-100 px-2 py-1 text-sm text-slate-600 hover:bg-slate-200 disabled:opacity-40"
+        className="border border-tc-navy-mid bg-transparent px-2 py-1 text-sm text-tc-navy-text hover:text-white hover:border-tc-navy-text transition-colors disabled:opacity-40"
         disabled={!value.trim()}
       >
         Ir

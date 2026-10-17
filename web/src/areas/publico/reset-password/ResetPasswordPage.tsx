@@ -46,10 +46,10 @@ export function ResetPasswordPage() {
 
   if (!token) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <p className="text-sm text-slate-600">
+      <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4">
+        <p className="text-sm text-white">
           Enlace inválido.{' '}
-          <Link to="/forgot-password" className="text-blue-600 hover:underline">
+          <Link to="/forgot-password" className="text-tc-purple hover:opacity-70">
             Pedí uno nuevo.
           </Link>
         </p>
@@ -58,35 +58,40 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="mb-6 text-2xl font-semibold text-slate-900">Nueva contraseña</h1>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-          <Input
-            label="Contraseña"
-            type="password"
-            autoComplete="new-password"
-            error={errors.password?.message}
-            {...register('password')}
-          />
-          <Input
-            label="Confirmar contraseña"
-            type="password"
-            autoComplete="new-password"
-            error={errors.confirm?.message}
-            {...register('confirm')}
-          />
+    <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4">
+      <div className="w-full max-w-sm border border-tc-border bg-white">
+        <div className="border-b border-tc-border bg-tc-stub-bg px-6 py-3">
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">TallerControl</span>
+        </div>
+        <div className="px-6 py-8">
+          <h1 className="mb-6 text-xl font-bold tracking-tight text-slate-900">Nueva contraseña</h1>
+          <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
+            <Input
+              label="Contraseña"
+              type="password"
+              autoComplete="new-password"
+              error={errors.password?.message}
+              {...register('password')}
+            />
+            <Input
+              label="Confirmar contraseña"
+              type="password"
+              autoComplete="new-password"
+              error={errors.confirm?.message}
+              {...register('confirm')}
+            />
 
-          {serverError && (
-            <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-              {serverError}
-            </p>
-          )}
+            {serverError && (
+              <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {serverError}
+              </p>
+            )}
 
-          <Button type="submit" loading={isSubmitting} className="mt-2 w-full">
-            Guardar contraseña
-          </Button>
-        </form>
+            <Button type="submit" loading={isSubmitting} className="mt-2 w-full">
+              Guardar contraseña
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   )

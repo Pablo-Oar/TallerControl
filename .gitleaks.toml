@@ -1,0 +1,8 @@
+title = "TallerControl gitleaks config"
+
+[allowlist]
+description = "Ignore placeholder values in skill documentation files"
+paths = [
+  '''.agents/''',
+  '''.claude/skills/''',
+]

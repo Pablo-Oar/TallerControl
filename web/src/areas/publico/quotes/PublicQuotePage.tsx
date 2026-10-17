@@ -7,9 +7,14 @@ import { z } from 'zod'
 import { publicApi, type SubmitPublicResponseRequest, QUOTE_STATUS_LABELS } from '../../../lib/api/quotes'
 import { ApiError } from '../../../lib/api/client'
 import { Button } from '../../../components/ui/Button'
+import { StatusBadge } from '../../../components/ui/StatusBadge'
 
 const inputCls =
-  'w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500'
+  'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
+const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
+
+const fmtARS = (n: number) =>
+  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
 
 const schema = z.object({
   decision: z.enum(['approved', 'rejected']),
@@ -28,7 +33,6 @@ export function PublicQuotePage() {
   const [isDrawing, setIsDrawing] = useState(false)
   const [hasSig, setHasSig] = useState(false)
 
-  // Inicializa el canvas con fondo blanco al montar.
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -60,20 +64,22 @@ export function PublicQuotePage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-tc-navy">
+        <div className="space-y-2 w-48">
+          <div className="h-2 animate-pulse bg-tc-navy-mid" />
+          <div className="h-2 w-3/4 animate-pulse bg-tc-navy-mid" />
+        </div>
       </div>
     )
   }
 
   if (error || !data) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white px-4">
-        <div className="max-w-sm text-center">
-          <p className="text-lg font-medium text-slate-800">Presupuesto no encontrado</p>
-          <p className="mt-1 text-sm text-slate-500">
-            El enlace puede haber expirado o ser incorrecto.
-          </p>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-tc-navy px-4 text-center">
+        <div className="border border-tc-border bg-white p-8 max-w-sm w-full">
+          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 mb-2">Error</p>
+          <p className="font-bold text-slate-900">Presupuesto no encontrado</p>
+          <p className="mt-2 text-sm text-slate-500">El enlace puede haber expirado o ser incorrecto.</p>
         </div>
       </div>
     )
@@ -84,15 +90,13 @@ export function PublicQuotePage() {
 
   if (submitted) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white px-4">
-        <div className="max-w-sm text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-            <span className="text-2xl">✓</span>
+      <div className="flex min-h-screen items-center justify-center bg-tc-surface px-4">
+        <div className="border border-tc-border bg-white p-10 max-w-sm w-full text-center">
+          <div className="bg-tc-stub-bg border border-tc-border w-10 h-10 flex items-center justify-center mx-auto mb-4 text-lg font-bold text-slate-600">
+            ✓
           </div>
-          <p className="text-lg font-semibold text-slate-800">Respuesta enviada</p>
-          <p className="mt-1 text-sm text-slate-500">
-            Tu respuesta fue registrada correctamente.
-          </p>
+          <p className="font-bold text-slate-900">Respuesta enviada</p>
+          <p className="mt-2 text-sm text-slate-500">Tu respuesta fue registrada correctamente.</p>
         </div>
       </div>
     )
@@ -106,7 +110,10 @@ export function PublicQuotePage() {
       const t = e.touches[0]
       return { x: (t.clientX - rect.left) * scaleX, y: (t.clientY - rect.top) * scaleY }
     }
-    return { x: ((e as React.MouseEvent).clientX - rect.left) * scaleX, y: ((e as React.MouseEvent).clientY - rect.top) * scaleY }
+    return {
+      x: ((e as React.MouseEvent).clientX - rect.left) * scaleX,
+      y: ((e as React.MouseEvent).clientY - rect.top) * scaleY,
+    }
   }
 
   function startDraw(e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) {
@@ -137,9 +144,7 @@ export function PublicQuotePage() {
     ctx.stroke()
   }
 
-  function endDraw() {
-    setIsDrawing(false)
-  }
+  function endDraw() { setIsDrawing(false) }
 
   function clearCanvas() {
     const canvas = canvasRef.current
@@ -153,7 +158,6 @@ export function PublicQuotePage() {
 
   async function onSubmit(values: FormData) {
     if (!data) return
-
     let sigKey: string | null = null
     if (hasSig) {
       const canvas = canvasRef.current
@@ -177,7 +181,6 @@ export function PublicQuotePage() {
         }
       }
     }
-
     const body: SubmitPublicResponseRequest = {
       decision: values.decision,
       signerName: values.signerName,
@@ -191,214 +194,210 @@ export function PublicQuotePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-2xl px-4 py-10 space-y-6">
+    <div className="min-h-screen bg-tc-surface">
+      <div className="mx-auto max-w-2xl px-4 py-10 space-y-5">
 
         {/* Encabezado del presupuesto */}
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-4 flex items-start justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Presupuesto</p>
-              <h1 className="text-2xl font-bold text-slate-800">#{data.number}</h1>
-            </div>
-            <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
-              {QUOTE_STATUS_LABELS[data.status]}
-            </span>
+        <div className="border border-tc-border bg-white overflow-hidden">
+          <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3 flex items-center justify-between">
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Presupuesto</span>
+            <StatusBadge status={data.status} label={QUOTE_STATUS_LABELS[data.status] ?? data.status} />
           </div>
-
-          <dl className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <dt className="font-medium text-slate-500">Cliente</dt>
-              <dd className="mt-1 text-slate-800">{data.customerName}</dd>
-            </div>
-            <div>
-              <dt className="font-medium text-slate-500">Vehículo</dt>
-              <dd className="mt-1 text-slate-800">
-                {[data.vehicleBrand, data.vehicleModel, data.vehiclePlate].filter(Boolean).join(' · ')}
-              </dd>
-            </div>
-            <div>
-              <dt className="font-medium text-slate-500">Válido hasta</dt>
-              <dd className={`mt-1 ${isExpired ? 'text-red-600' : 'text-slate-800'}`}>
-                {new Date(data.validUntil).toLocaleDateString('es-AR')}
-                {isExpired && ' (vencido)'}
-              </dd>
-            </div>
-          </dl>
-
-          {data.customerNotes && (
-            <div className="mt-4 rounded-md bg-slate-50 p-3 text-sm text-slate-700">
-              <p className="mb-1 font-medium text-slate-500">Notas</p>
-              {data.customerNotes}
-            </div>
-          )}
+          <div className="px-6 py-5">
+            <p className="font-mono font-bold text-2xl text-slate-900 mb-4">#{data.number}</p>
+            <dl className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <dt className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">Cliente</dt>
+                <dd className="text-slate-800">{data.customerName}</dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">Vehículo</dt>
+                <dd className="text-slate-800 font-mono">
+                  {[data.vehicleBrand, data.vehicleModel, data.vehiclePlate].filter(Boolean).join(' · ')}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">Válido hasta</dt>
+                <dd className={isExpired ? 'text-tc-stamp-red font-bold' : 'text-slate-800'}>
+                  {new Date(data.validUntil).toLocaleDateString('es-AR')}
+                  {isExpired && ' — vencido'}
+                </dd>
+              </div>
+            </dl>
+            {data.customerNotes && (
+              <div className="mt-4 border-t border-tc-border pt-3 text-sm text-slate-700">
+                <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">Notas</p>
+                {data.customerNotes}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Ítems del presupuesto */}
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-              <tr>
-                <th className="px-4 py-3">Descripción</th>
-                <th className="px-4 py-3 text-right">Cantidad</th>
-                <th className="px-4 py-3 text-right">Precio unit.</th>
-                <th className="px-4 py-3 text-right">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {data.items.map(item => (
-                <tr key={item.id}>
-                  <td className="px-4 py-3 text-slate-800">{item.description}</td>
-                  <td className="px-4 py-3 text-right text-slate-600">{item.quantity}</td>
-                  <td className="px-4 py-3 text-right text-slate-600">
-                    ${item.unitNetPrice.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                  </td>
-                  <td className="px-4 py-3 text-right font-medium text-slate-800">
-                    ${item.lineTotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                  </td>
+        <div className="border border-tc-border bg-white overflow-hidden">
+          <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Ítems</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-tc-border">
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Descripción</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Cant.</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Precio unit.</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Subtotal</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className="border-t border-slate-100 px-4 py-3 space-y-1 text-sm">
+              </thead>
+              <tbody className="divide-y divide-tc-border">
+                {data.items.map(item => (
+                  <tr key={item.id} className="hover:bg-tc-surface transition-colors">
+                    <td className="px-4 py-3 text-slate-800">{item.description}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-slate-600">{item.quantity}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-slate-600">{fmtARS(item.unitNetPrice)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums font-bold text-slate-800">{fmtARS(item.lineTotal)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="border-t border-tc-border px-4 py-3 space-y-1 text-sm bg-tc-stub-bg">
             {data.globalDiscountPct > 0 && (
               <>
                 <div className="flex justify-between text-slate-600">
-                  <span>Subtotal</span>
-                  <span>${data.subtotalNet.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
+                  <span className="text-xs font-bold tracking-wider uppercase">Subtotal</span>
+                  <span className="tabular-nums">{fmtARS(data.subtotalNet)}</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
-                  <span>Descuento ({data.globalDiscountPct}%)</span>
-                  <span>−${data.discountAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
+                  <span className="text-xs font-bold tracking-wider uppercase">Descuento ({data.globalDiscountPct}%)</span>
+                  <span className="tabular-nums text-tc-stamp-red">−{fmtARS(data.discountAmount)}</span>
                 </div>
               </>
             )}
             <div className="flex justify-between text-slate-600">
-              <span>IVA</span>
-              <span>${data.vatAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
+              <span className="text-xs font-bold tracking-wider uppercase">IVA</span>
+              <span className="tabular-nums">{fmtARS(data.vatAmount)}</span>
             </div>
-            <div className="flex justify-between text-base font-bold text-slate-800 pt-1 border-t border-slate-200">
-              <span>Total</span>
-              <span>${data.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
+            <div className="flex justify-between border-t border-tc-border pt-2 text-base font-bold text-slate-800">
+              <span className="text-xs font-bold tracking-wider uppercase">Total</span>
+              <span className="tabular-nums text-tc-purple">{fmtARS(data.total)}</span>
             </div>
           </div>
         </div>
 
         {/* Formulario de respuesta */}
         {canRespond && !isExpired && (
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-base font-semibold text-slate-800 mb-4">Su respuesta</h2>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
-                  Nombre completo <span className="text-red-500">*</span>
-                </label>
-                <input {...register('signerName')} className={inputCls} placeholder="Juan García" />
-                {errors.signerName && (
-                  <p className="mt-1 text-xs text-red-600">{errors.signerName.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Decisión</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 text-sm">
-                    <input type="radio" value="approved" {...register('decision')} />
-                    <span className="text-green-700 font-medium">Apruebo</span>
+          <div className="border border-tc-border bg-white overflow-hidden">
+            <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3">
+              <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Su respuesta</span>
+            </div>
+            <div className="px-6 py-5">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                <div>
+                  <label className={labelCls}>
+                    Nombre completo <span className="text-tc-stamp-red">*</span>
                   </label>
-                  <label className="flex items-center gap-2 text-sm">
-                    <input type="radio" value="rejected" {...register('decision')} />
-                    <span className="text-red-700 font-medium">Rechazo</span>
-                  </label>
+                  <input {...register('signerName')} className={inputCls} placeholder="Juan García" />
+                  {errors.signerName && (
+                    <p className="mt-1 text-xs text-tc-stamp-red">{errors.signerName.message}</p>
+                  )}
                 </div>
-              </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
-                  Comentario (opcional)
-                </label>
-                <textarea
-                  {...register('comment')}
-                  rows={3}
-                  className={inputCls}
-                  placeholder="Puede agregar observaciones..."
-                />
-              </div>
+                <div>
+                  <label className={labelCls}>Decisión</label>
+                  <div className="flex gap-6 mt-1">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" value="approved" {...register('decision')} className="accent-tc-purple" />
+                      <span className="text-sm font-bold tracking-wide text-green-700">Apruebo</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" value="rejected" {...register('decision')} className="accent-tc-purple" />
+                      <span className="text-sm font-bold tracking-wide text-tc-stamp-red">Rechazo</span>
+                    </label>
+                  </div>
+                </div>
 
-              {/* Firma digital */}
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
-                  Firma (opcional)
-                </label>
-                <div className="rounded-md border border-slate-300 bg-white overflow-hidden touch-none select-none">
-                  <canvas
-                    ref={canvasRef}
-                    width={600}
-                    height={160}
-                    className="w-full"
-                    style={{ cursor: 'crosshair' }}
-                    onMouseDown={startDraw}
-                    onMouseMove={draw}
-                    onMouseUp={endDraw}
-                    onMouseLeave={endDraw}
-                    onTouchStart={startDraw}
-                    onTouchMove={draw}
-                    onTouchEnd={endDraw}
+                <div>
+                  <label className={labelCls}>Comentario <span className="font-normal normal-case text-slate-400">(opcional)</span></label>
+                  <textarea
+                    {...register('comment')}
+                    rows={3}
+                    className={inputCls}
+                    placeholder="Puede agregar observaciones..."
                   />
                 </div>
-                <div className="mt-1 flex items-center justify-between">
-                  <p className="text-xs text-slate-400">Dibuje su firma con el dedo o el mouse</p>
-                  <button
-                    type="button"
-                    onClick={clearCanvas}
-                    className="text-xs text-slate-500 underline hover:text-slate-700"
-                  >
-                    Borrar firma
-                  </button>
+
+                {/* Firma digital */}
+                <div>
+                  <label className={labelCls}>Firma <span className="font-normal normal-case text-slate-400">(opcional)</span></label>
+                  <div className="border border-tc-border bg-white overflow-hidden touch-none select-none">
+                    <canvas
+                      ref={canvasRef}
+                      width={600}
+                      height={160}
+                      className="w-full"
+                      style={{ cursor: 'crosshair' }}
+                      onMouseDown={startDraw}
+                      onMouseMove={draw}
+                      onMouseUp={endDraw}
+                      onMouseLeave={endDraw}
+                      onTouchStart={startDraw}
+                      onTouchMove={draw}
+                      onTouchEnd={endDraw}
+                    />
+                  </div>
+                  <div className="mt-1 flex items-center justify-between">
+                    <p className="text-xs text-slate-400">Dibuje su firma con el dedo o el mouse</p>
+                    <button
+                      type="button"
+                      onClick={clearCanvas}
+                      className="text-xs font-bold tracking-wider uppercase text-slate-400 hover:text-tc-stamp-red transition-colors"
+                    >
+                      Borrar firma
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              {/* DNI */}
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
-                  DNI / Documento (opcional)
-                </label>
-                <input
-                  type="text"
-                  value={signerDocNumber}
-                  onChange={e => setSignerDocNumber(e.target.value)}
-                  className={inputCls}
-                  placeholder="Ej: 30123456"
-                  maxLength={20}
-                />
-                <p className="mt-1 text-xs text-slate-400">
-                  Su documento se almacena cifrado y no es visible para terceros.
-                </p>
-              </div>
+                {/* DNI */}
+                <div>
+                  <label className={labelCls}>DNI / Documento <span className="font-normal normal-case text-slate-400">(opcional)</span></label>
+                  <input
+                    type="text"
+                    value={signerDocNumber}
+                    onChange={e => setSignerDocNumber(e.target.value)}
+                    className={inputCls}
+                    placeholder="Ej: 30123456"
+                    maxLength={20}
+                  />
+                  <p className="mt-1 text-xs text-slate-400">
+                    Su documento se almacena cifrado y no es visible para terceros.
+                  </p>
+                </div>
 
-              {serverError && (
-                <p className="text-sm text-red-600">{serverError}</p>
-              )}
+                {serverError && (
+                  <div className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    {serverError}
+                  </div>
+                )}
 
-              <Button type="submit" loading={isSubmitting} className="w-full">
-                Enviar respuesta
-              </Button>
-            </form>
+                <Button type="submit" loading={isSubmitting} className="w-full">
+                  Enviar respuesta
+                </Button>
+              </form>
+            </div>
           </div>
         )}
 
         {canRespond && isExpired && (
-          <div className="rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm text-orange-800">
+          <div className="border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
             Este presupuesto venció el {new Date(data.validUntil).toLocaleDateString('es-AR')}.
             Contacte al taller para obtener un nuevo presupuesto.
           </div>
         )}
 
         {!canRespond && data.status !== 'sent' && (
-          <div className="rounded-xl border border-slate-200 bg-white p-4 text-center text-sm text-slate-500">
+          <div className="border border-tc-border bg-white px-4 py-4 text-center text-sm text-slate-500">
             Este presupuesto está en estado{' '}
-            <span className="font-medium text-slate-700">{QUOTE_STATUS_LABELS[data.status]}</span>{' '}
+            <span className="font-bold text-slate-700">{QUOTE_STATUS_LABELS[data.status]}</span>{' '}
             y ya no acepta respuestas.
           </div>
         )}

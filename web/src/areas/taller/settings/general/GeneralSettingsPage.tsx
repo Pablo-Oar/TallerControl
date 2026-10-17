@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState } from 'react' // useRef: limpiar value del input tras subir
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -11,7 +11,6 @@ import {
   type SettingsDto,
   type UpdateSettingsRequest,
 } from '../../../../lib/api/settings'
-import { Button } from '../../../../components/ui/Button'
 import { ApiError } from '../../../../lib/api/client'
 
 const schema = z.object({
@@ -25,8 +24,6 @@ const schema = z.object({
   quoteValidityDays: z.coerce.number().int().min(1, 'Mínimo 1 día').max(180, 'Máximo 180 días'),
 })
 
-// z.coerce.number() hace que el tipo de entrada (antes de validar) difiera del de salida: React
-// Hook Form necesita los dos por separado para tipar bien register() y el callback de submit.
 type FormInput = z.input<typeof schema>
 type FormData = z.output<typeof schema>
 
@@ -56,18 +53,40 @@ function toRequest(data: FormData): UpdateSettingsRequest {
   }
 }
 
+const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
+const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
+
+const LOGO_PICKER_TYPES = [{ description: 'Imágenes', accept: { 'image/png': ['.png'], 'image/jpeg': ['.jpg', '.jpeg'], 'image/webp': ['.webp'] } }]
+
 export function GeneralSettingsPage() {
   const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [logoError, setLogoError] = useState<string | null>(null)
   const [uploadingLogo, setUploadingLogo] = useState(false)
 
+  async function handlePickLogo() {
+    if ('showOpenFilePicker' in window) {
+      try {
+        const [handle] = await (window as Window & { showOpenFilePicker: (o: unknown) => Promise<FileSystemFileHandle[]> })
+          .showOpenFilePicker({ types: LOGO_PICKER_TYPES, multiple: false })
+        const file = await handle.getFile()
+        void uploadLogo(file)
+        return
+      } catch (e) {
+        if (e instanceof DOMException && e.name === 'AbortError') return // usuario canceló
+        // Si la API fue bloqueada (SecurityError, NotAllowedError, etc.) → fallback
+        console.warn('[TallerControl] showOpenFilePicker bloqueado, usando <input>:', e)
+      }
+    }
+    fileInputRef.current?.click()
+  }
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['settings'],
     queryFn: () => settingsApi.get(),
   })
 
-  const { register, handleSubmit, reset, formState: { isDirty } } = useForm<FormInput, unknown, FormData>({
+  const { register, handleSubmit, reset, formState: { isDirty, errors } } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     values: data ? toFormData(data) : undefined,
   })
@@ -100,9 +119,7 @@ export function GeneralSettingsPage() {
         headers: { 'Content-Type': file.type },
         body: file,
       })
-      if (!putResp.ok) {
-        throw new Error('No se pudo subir el archivo.')
-      }
+      if (!putResp.ok) throw new Error('No se pudo subir el archivo.')
 
       const dto = await settingsApi.confirmLogo()
       queryClient.setQueryData(['settings'], dto)
@@ -115,141 +132,172 @@ export function GeneralSettingsPage() {
   }
 
   if (isLoading) {
-    return <div className="flex justify-center py-12"><div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" /></div>
+    return (
+      <div className="flex justify-center py-16">
+        <div className="h-6 w-6 animate-spin border-2 border-tc-purple border-t-transparent" />
+      </div>
+    )
   }
 
   if (error || !data) {
-    return <p className="text-sm text-red-600">No se pudo cargar la configuración del taller.</p>
+    return (
+      <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        No se pudo cargar la configuración del taller.
+      </p>
+    )
   }
 
   const saveError = saveMutation.error instanceof ApiError ? saveMutation.error.detail : null
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="mb-6 text-2xl font-semibold">Configuración general</h1>
+    <div className="max-w-2xl space-y-6">
+      <h1 className="text-lg font-bold tracking-wide text-slate-800 uppercase">Configuración general</h1>
 
-      <section className="mb-8 rounded-lg border border-slate-200 bg-white p-6">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Logo</h2>
-        <div className="flex items-center gap-4">
-          <div className="flex h-20 w-36 items-center justify-center overflow-hidden rounded-md border border-dashed border-slate-300 bg-slate-50">
+      {/* Logo */}
+      <section className="border border-tc-border bg-white">
+        <div className="bg-tc-stub-bg border-b border-tc-border px-5 py-2.5">
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Logo del taller</span>
+        </div>
+        <div className="flex items-center gap-5 p-5">
+          <div className="flex h-20 w-36 shrink-0 items-center justify-center border border-dashed border-tc-border-mid bg-tc-stub-bg">
             {data.logoUrl ? (
               <img src={data.logoUrl} alt="Logo del taller" className="h-full w-full object-contain" />
             ) : (
               <span className="text-xs text-slate-400">Sin logo</span>
             )}
           </div>
-          <div>
+          <div className="space-y-2">
+            {/* input oculto: fallback para browsers sin showOpenFilePicker */}
             <input
               ref={fileInputRef}
               type="file"
               accept={ALLOWED_LOGO_CONTENT_TYPES.join(',')}
-              className="hidden"
+              className="sr-only"
               onChange={(e) => {
                 const file = e.target.files?.[0]
                 if (file) void uploadLogo(file)
               }}
             />
-            <Button
+            <button
               type="button"
-              variant="secondary"
-              loading={uploadingLogo}
-              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingLogo}
+              onClick={handlePickLogo}
+              title="Seleccionar archivo de imagen"
+              className="inline-flex cursor-pointer items-center gap-2 border border-tc-border bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-tc-surface disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Cambiar logo
-            </Button>
-            <p className="mt-2 text-xs text-slate-500">PNG, JPG o WebP. Máximo 5 MB.</p>
-            {logoError && <p role="alert" className="mt-2 text-xs text-red-600">{logoError}</p>}
+              {uploadingLogo ? (
+                <>
+                  <span className="h-3.5 w-3.5 animate-spin border border-slate-400 border-t-transparent" />
+                  Subiendo…
+                </>
+              ) : 'Cambiar logo'}
+            </button>
+            <p className="text-xs text-slate-400">PNG, JPG o WebP · máx. 5 MB</p>
+            {logoError && <p role="alert" className="text-xs text-tc-stamp-red">{logoError}</p>}
           </div>
         </div>
       </section>
 
+      {/* Datos del taller */}
       <form
         onSubmit={handleSubmit((formData) => saveMutation.mutate(formData))}
-        className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-6"
+        className="border border-tc-border bg-white overflow-hidden"
       >
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-slate-700">Nombre del taller *</label>
-          <input
-            {...register('name')}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-          />
+        <div className="bg-tc-stub-bg border-b border-tc-border px-5 py-2.5">
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Datos del taller</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700">Razón social</label>
-            <input
-              {...register('legalName')}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        <div className="space-y-4 p-5">
+          <div>
+            <label className={labelCls}>Nombre del taller *</label>
+            <input {...register('name')} className={inputCls} />
+            {errors.name && <p className="mt-1 text-xs text-tc-stamp-red">{errors.name.message}</p>}
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700">CUIT</label>
-            <input
-              {...register('taxId')}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700">Dirección</label>
-            <input
-              {...register('address')}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>Razón social</label>
+              <input {...register('legalName')} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>CUIT</label>
+              <input {...register('taxId')} className={inputCls} placeholder="20-12345678-9" />
+            </div>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700">Teléfono</label>
-            <input
-              {...register('phone')}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-            />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>Dirección</label>
+              <input {...register('address')} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Teléfono</label>
+              <input {...register('phone')} className={inputCls} />
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700">Zona horaria</label>
-            <input
-              {...register('timeZone')}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        <div className="h-px bg-tc-perf" />
+
+        <div className="bg-tc-stub-bg border-b border-tc-border px-5 py-2.5">
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Parámetros operativos</span>
+        </div>
+
+        <div className="space-y-4 p-5">
+          <div>
+            <label className={labelCls}>Zona horaria</label>
+            <input {...register('timeZone')} className={inputCls} placeholder="America/Argentina/Buenos_Aires" />
+            {errors.timeZone && <p className="mt-1 text-xs text-tc-stamp-red">{errors.timeZone.message}</p>}
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700">IVA por defecto</label>
-            <select
-              {...register('defaultVatRate')}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {ALLOWED_VAT_RATES.map((rate) => (
-                <option key={rate} value={rate}>{rate}%</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700">Vigencia del presupuesto (días)</label>
-            <input
-              type="number"
-              min={1}
-              max={180}
-              {...register('quoteValidityDays')}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-            />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>IVA por defecto</label>
+              <select {...register('defaultVatRate')} className={inputCls}>
+                {ALLOWED_VAT_RATES.map((rate) => (
+                  <option key={rate} value={rate}>{rate}%</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Vigencia del presupuesto (días)</label>
+              <input
+                type="number"
+                min={1}
+                max={180}
+                {...register('quoteValidityDays')}
+                className={inputCls}
+              />
+              {errors.quoteValidityDays && (
+                <p className="mt-1 text-xs text-tc-stamp-red">{errors.quoteValidityDays.message}</p>
+              )}
+            </div>
           </div>
         </div>
 
         {saveError && (
-          <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="mx-5 mb-4 border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {saveError}
-          </p>
+          </div>
         )}
 
-        <div className="flex justify-end pt-2">
-          <Button type="submit" loading={saveMutation.isPending} disabled={!isDirty}>
-            Guardar cambios
-          </Button>
+        <div className="flex items-center justify-between border-t border-tc-border bg-tc-stub-bg px-5 py-3">
+          {saveMutation.isSuccess && !isDirty && (
+            <span className="text-xs font-bold tracking-wider uppercase text-tc-done-text">Guardado</span>
+          )}
+          {!saveMutation.isSuccess && <span />}
+          <button
+            type="submit"
+            disabled={!isDirty || saveMutation.isPending}
+            className="inline-flex items-center gap-2 border border-tc-purple bg-tc-purple px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-tc-purple-mid disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {saveMutation.isPending ? (
+              <>
+                <span className="h-3.5 w-3.5 animate-spin border border-white border-t-transparent" />
+                Guardando…
+              </>
+            ) : 'Guardar cambios'}
+          </button>
         </div>
       </form>
     </div>

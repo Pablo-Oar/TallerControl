@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { customersApi, type CustomerDto, type CustomerUpsertRequest, type DocType, type VatCondition } from '../../../lib/api/customers'
 import { Button } from '../../../components/ui/Button'
+import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
 const VAT_OPTIONS: { value: VatCondition; label: string }[] = [
@@ -22,7 +23,7 @@ const DOC_OPTIONS: { value: DocType; label: string }[] = [
   { value: 'otro', label: 'Otro' },
 ]
 
-const inputCls = 'w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500'
+const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
 
 const schema = z.object({
   name: z.string().trim().min(1, 'Requerido').max(150),
@@ -56,10 +57,14 @@ interface Props {
   customer?: CustomerDto
   onSuccess: (dto: CustomerDto) => void
   onClose: () => void
+  onDelete?: () => void
 }
 
-export function CustomerFormModal({ customer, onSuccess, onClose }: Props) {
+export function CustomerFormModal({ customer, onSuccess, onClose, onDelete }: Props) {
   const [serverError, setServerError] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteReason, setDeleteReason] = useState('')
+  const [deleteLoading, setDeleteLoading] = useState(false)
   const isEdit = !!customer
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
@@ -93,80 +98,117 @@ export function CustomerFormModal({ customer, onSuccess, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
-        <h2 className="mb-5 text-lg font-semibold">
-          {isEdit ? 'Editar cliente' : 'Nuevo cliente'}
-        </h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <Modal title={isEdit ? 'Editar cliente' : 'Nuevo cliente'} onClose={onClose}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div>
+          <label className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Nombre *</label>
+          <input {...register('name')} className={inputCls} placeholder="Nombre completo o razón social" />
+          {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium">Nombre *</label>
-            <input {...register('name')} className={inputCls} placeholder="Nombre completo o razón social" />
-            {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
+            <label className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Email</label>
+            <input {...register('email')} type="email" className={inputCls} placeholder="email@ejemplo.com" />
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium">Email</label>
-              <input {...register('email')} type="email" className={inputCls} placeholder="email@ejemplo.com" />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium">Teléfono</label>
-              <input {...register('phone')} className={inputCls} placeholder="011 15-0000-0000" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium">Tipo de documento</label>
-              <select {...register('docType')} className={inputCls}>
-                <option value="">Sin documento</option>
-                {DOC_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium">Número</label>
-              <input {...register('docNumber')} className={inputCls} placeholder="20-12345678-9" />
-            </div>
-          </div>
-
           <div>
-            <label className="mb-1 block text-sm font-medium">Condición IVA</label>
-            <select {...register('vatCondition')} className={inputCls}>
-              {VAT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            <label className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Teléfono</label>
+            <input {...register('phone')} className={inputCls} placeholder="011 15-0000-0000" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Tipo de documento</label>
+            <select {...register('docType')} className={inputCls}>
+              <option value="">Sin documento</option>
+              {DOC_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
-
           <div>
-            <label className="mb-1 block text-sm font-medium">Dirección</label>
-            <input {...register('address')} className={inputCls} placeholder="Av. Ejemplo 1234, CABA" />
+            <label className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Número</label>
+            <input {...register('docNumber')} className={inputCls} placeholder="20-12345678-9" />
           </div>
+        </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium">Notas</label>
-            <textarea
-              {...register('notes')}
-              rows={2}
-              className={inputCls}
-              placeholder="Observaciones internas…"
+        <div>
+          <label className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Condición IVA</label>
+          <select {...register('vatCondition')} className={inputCls}>
+            {VAT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Dirección</label>
+          <input {...register('address')} className={inputCls} placeholder="Av. Ejemplo 1234, CABA" />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Notas</label>
+          <textarea {...register('notes')} rows={2} className={inputCls} placeholder="Observaciones internas…" />
+        </div>
+
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          <input type="checkbox" {...register('doNotContact')} className="h-4 w-4" />
+          No contactar
+        </label>
+
+        {serverError && (
+          <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
+        )}
+
+        {deleting && (
+          <div className="space-y-2 border border-red-200 bg-red-50 p-3">
+            <p className="text-xs font-bold tracking-wider uppercase text-red-700">Confirmar eliminación</p>
+            <input
+              className="w-full border border-red-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-red-400"
+              placeholder="Motivo de eliminación (requerido)"
+              value={deleteReason}
+              onChange={e => setDeleteReason(e.target.value)}
+              autoFocus
             />
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="danger"
+                size="sm"
+                loading={deleteLoading}
+                disabled={!deleteReason.trim()}
+                onClick={async () => {
+                  setDeleteLoading(true)
+                  try {
+                    await customersApi.delete(customer!.id, deleteReason.trim())
+                    onDelete?.()
+                    onClose()
+                  } catch (e) {
+                    setServerError(e instanceof ApiError ? e.detail : 'Error al eliminar')
+                    setDeleting(false)
+                  } finally {
+                    setDeleteLoading(false)
+                  }
+                }}
+              >
+                Eliminar definitivamente
+              </Button>
+              <Button type="button" variant="secondary" size="sm" onClick={() => setDeleting(false)}>Cancelar</Button>
+            </div>
           </div>
+        )}
 
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" {...register('doNotContact')} className="h-4 w-4 rounded" />
-            No contactar
-          </label>
-
-          {serverError && (
-            <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
-          )}
-
-          <div className="flex justify-end gap-3 pt-2">
-            <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" loading={isSubmitting}>Guardar</Button>
+        <div className="flex items-center justify-between pt-2">
+          <div>
+            {isEdit && onDelete && !deleting && (
+              <Button type="button" variant="danger" size="sm" onClick={() => setDeleting(true)}>
+                Eliminar
+              </Button>
+            )}
           </div>
-        </form>
-      </div>
-    </div>
+          <div className="flex gap-3">
+            <Button type="button" variant="secondary" size="sm" onClick={onClose}>Cancelar</Button>
+            <Button type="submit" size="sm" loading={isSubmitting}>Guardar</Button>
+          </div>
+        </div>
+      </form>
+    </Modal>
   )
 }

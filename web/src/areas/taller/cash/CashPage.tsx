@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { cashApi, type CashAccountDto, type CreateCashAccountRequest, type CashAccountKind } from '../../../lib/api/cash'
 import { Button } from '../../../components/ui/Button'
+import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
 const KIND_LABELS: Record<CashAccountKind, string> = {
@@ -9,6 +10,9 @@ const KIND_LABELS: Record<CashAccountKind, string> = {
   bank: 'Banco',
   digital: 'Digital',
 }
+
+const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
+const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 export function CashPage() {
   const queryClient = useQueryClient()
@@ -69,75 +73,90 @@ export function CashPage() {
   }
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Cuentas de Caja</h1>
-        <Button onClick={() => setCreating(true)}>Nueva cuenta</Button>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold tracking-tight text-slate-900">Cuentas de Caja</h1>
+        <Button size="sm" onClick={() => setCreating(true)}>Nueva cuenta</Button>
       </div>
 
       {creating && (
-        <form onSubmit={handleCreate} className="mb-6 rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="mb-4 text-sm font-semibold text-slate-700">Nueva cuenta de caja</h2>
-          {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
-          <div className="mb-3 flex gap-3">
-            <input
-              type="text"
-              value={newName}
-              onChange={e => setNewName(e.target.value)}
-              placeholder="Nombre de la cuenta"
-              required
-              className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <select
-              value={newKind}
-              onChange={e => setNewKind(e.target.value as CashAccountKind)}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="cash">Efectivo</option>
-              <option value="bank">Banco</option>
-              <option value="digital">Digital</option>
-            </select>
-          </div>
-          <div className="flex gap-2">
-            <Button type="submit" loading={saving}>Crear</Button>
-            <Button type="button" variant="secondary" onClick={() => setCreating(false)}>Cancelar</Button>
-          </div>
-        </form>
+        <Modal title="Nueva cuenta de caja" onClose={() => setCreating(false)} className="max-w-sm">
+          <form onSubmit={handleCreate} className="space-y-4">
+            {error && (
+              <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+            )}
+            <div>
+              <label className={labelCls}>Nombre *</label>
+              <input
+                type="text"
+                value={newName}
+                onChange={e => setNewName(e.target.value)}
+                placeholder="Nombre de la cuenta"
+                required
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Tipo</label>
+              <select
+                value={newKind}
+                onChange={e => setNewKind(e.target.value as CashAccountKind)}
+                className={inputCls}
+              >
+                <option value="cash">Efectivo</option>
+                <option value="bank">Banco</option>
+                <option value="digital">Digital</option>
+              </select>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="secondary" size="sm" onClick={() => setCreating(false)}>Cancelar</Button>
+              <Button type="submit" size="sm" loading={saving}>Crear</Button>
+            </div>
+          </form>
+        </Modal>
       )}
 
       {isLoading && (
-        <div className="flex justify-center py-12">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+        <div className="border border-tc-border bg-white">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-14 animate-pulse border-b border-tc-border bg-tc-surface last:border-0" />
+          ))}
         </div>
       )}
 
       {!isLoading && accounts && accounts.length === 0 && (
-        <p className="py-8 text-center text-sm text-slate-500">No hay cuentas de caja creadas.</p>
+        <div className="border border-dashed border-tc-border px-4 py-10 text-center text-sm text-slate-400">
+          No hay cuentas de caja creadas.
+        </div>
       )}
 
       {!isLoading && accounts && accounts.length > 0 && (
-        <div className="space-y-3">
-          {accounts.map(account => (
+        <div className="border border-tc-border bg-white overflow-hidden">
+          {accounts.map((account, idx) => (
             <div
               key={account.id}
-              className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3"
+              className={`flex items-center justify-between px-4 py-3 ${idx < accounts.length - 1 ? 'border-b border-tc-border' : ''} hover:bg-tc-surface`}
             >
-              <div>
-                <p className="font-medium">{account.name}</p>
-                <p className="text-sm text-slate-500">{KIND_LABELS[account.kind]}</p>
+              <div className="flex items-center gap-3">
+                <div className="w-1.5 h-8 bg-tc-stub-bg border border-tc-border" />
+                <div>
+                  <p className="font-medium text-slate-800">{account.name}</p>
+                  <p className="text-xs text-slate-500">{KIND_LABELS[account.kind]}</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                  className={`border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
                     account.isActive
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-slate-100 text-slate-500'
+                      ? 'border-green-300 bg-green-50 text-green-700'
+                      : 'border-tc-border bg-tc-stub-bg text-slate-500'
                   }`}
                 >
                   {account.isActive ? 'Activa' : 'Inactiva'}
                 </span>
                 <Button
                   variant="secondary"
+                  size="sm"
                   loading={openingId === account.id}
                   onClick={() => handleOpen(account)}
                 >
@@ -145,6 +164,7 @@ export function CashPage() {
                 </Button>
                 <Button
                   variant="secondary"
+                  size="sm"
                   loading={closingId === account.id}
                   onClick={() => handleClose(account)}
                 >

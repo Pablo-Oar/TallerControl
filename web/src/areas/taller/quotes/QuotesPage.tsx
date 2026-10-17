@@ -6,14 +6,17 @@ import {
   type QuoteListDto,
   type QuoteStatus,
   QUOTE_STATUS_LABELS,
-  QUOTE_STATUS_COLORS,
 } from '../../../lib/api/quotes'
 import { Button } from '../../../components/ui/Button'
+import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { QuoteFormModal } from './QuoteFormModal'
 
 const STATUS_OPTIONS: QuoteStatus[] = [
   'draft', 'sent', 'approved', 'partially_approved', 'rejected', 'expired', 'converted', 'cancelled',
 ]
+
+const fmtARS = (n: number) =>
+  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
 
 export function QuotesPage() {
   const queryClient = useQueryClient()
@@ -32,17 +35,17 @@ export function QuotesPage() {
   }
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Presupuestos</h1>
-        <Button onClick={() => setCreating(true)}>Nuevo presupuesto</Button>
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-bold tracking-wide text-slate-800 uppercase">Presupuestos</h1>
+        <Button onClick={() => setCreating(true)} size="sm">Nuevo presupuesto</Button>
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
         <select
           value={statusFilter}
           onChange={e => { setStatusFilter(e.target.value as QuoteStatus | ''); setPage(1) }}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          className="border border-tc-border bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-tc-border-mid"
         >
           <option value="">Todos los estados</option>
           {STATUS_OPTIONS.map(s => (
@@ -52,106 +55,114 @@ export function QuotesPage() {
       </div>
 
       {isLoading && (
-        <div className="flex justify-center py-12">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+        <div className="space-y-1">
+          {[0, 1, 2, 3].map(i => (
+            <div key={i} className="h-14 animate-pulse bg-slate-50 border border-tc-border" />
+          ))}
         </div>
       )}
 
       {error && (
-        <p className="text-sm text-red-600">No se pudo cargar los presupuestos.</p>
+        <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          No se pudo cargar los presupuestos.
+        </p>
       )}
 
       {data && (
         <>
-          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                <tr>
-                  <th className="w-12 px-4 py-3">#</th>
-                  <th className="px-4 py-3">Estado</th>
-                  <th className="px-4 py-3">Cliente</th>
-                  <th className="w-28 px-4 py-3">Vehículo</th>
-                  <th className="w-32 px-4 py-3 text-right">Total</th>
-                  <th className="w-28 px-4 py-3 whitespace-nowrap">Válido hasta</th>
-                  <th className="w-24 px-4 py-3 whitespace-nowrap">Creado</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {data.items.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-slate-400">
-                      No hay presupuestos
-                    </td>
-                  </tr>
-                ) : (
-                  data.items.map((q: QuoteListDto) => (
-                    <tr key={q.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3 font-medium">
-                        <Link to={`/app/quotes/${q.id}`} className="text-blue-600 hover:underline">
-                          #{q.number}
-                        </Link>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${QUOTE_STATUS_COLORS[q.status]}`}>
-                          {QUOTE_STATUS_LABELS[q.status]}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-slate-700">{q.customerName}</td>
-                      <td className="px-4 py-3 text-slate-600">{q.vehiclePlate}</td>
-                      <td className="px-4 py-3 text-right font-medium tabular-nums text-slate-800">
-                        ${q.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-slate-600">
+          <div className="border border-tc-border bg-white overflow-hidden">
+            {/* Header */}
+            <div className="grid grid-cols-[3rem_1fr_7rem_6rem_7rem_7rem] border-b border-tc-border bg-tc-stub-bg">
+              {[['#', ''], ['Cliente / Vehículo', ''], ['Estado', ''], ['Total', 'text-right'], ['Válido hasta', ''], ['Creado', '']].map(([h, cls], i) => (
+                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${cls}`}>
+                  {h}
+                </div>
+              ))}
+            </div>
+
+            {data.items.length === 0 ? (
+              <p className="px-4 py-8 text-center text-sm text-slate-400">No hay presupuestos.</p>
+            ) : (
+              <ul className="divide-y divide-tc-border">
+                {data.items.map((q: QuoteListDto) => (
+                  <li
+                    key={q.id}
+                    className="grid grid-cols-[3rem_1fr_7rem_6rem_7rem_7rem] items-center hover:bg-tc-surface transition-colors"
+                  >
+                    {/* Stub: number */}
+                    <div className="flex h-full items-center border-r border-tc-border bg-tc-stub-bg px-3 py-3">
+                      <Link
+                        to={`/app/quotes/${q.id}`}
+                        className="text-xs font-bold tabular-nums text-tc-purple hover:text-tc-purple-mid"
+                      >
+                        #{q.number}
+                      </Link>
+                    </div>
+
+                    {/* Customer + vehicle */}
+                    <div className="px-4 py-3">
+                      <p className="text-sm font-medium text-slate-800 truncate">{q.customerName}</p>
+                      <p className="mt-0.5 text-[11px] font-bold tracking-widest text-slate-400 font-mono">{q.vehiclePlate}</p>
+                    </div>
+
+                    {/* Status */}
+                    <div className="px-2 py-3">
+                      <StatusBadge status={q.status} />
+                    </div>
+
+                    {/* Total */}
+                    <div className="px-4 py-3 text-right">
+                      <span className="tabular-nums text-sm font-medium text-tc-purple">
+                        {fmtARS(q.total)}
+                      </span>
+                    </div>
+
+                    {/* Valid until */}
+                    <div className="px-4 py-3">
+                      <span className="text-xs text-slate-500">
                         {new Date(q.validUntil).toLocaleDateString('es-AR')}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-slate-500">
+                      </span>
+                    </div>
+
+                    {/* Created */}
+                    <div className="px-4 py-3">
+                      <span className="text-xs text-slate-400">
                         {new Date(q.createdAt).toLocaleDateString('es-AR')}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
-          {/* Paginación */}
-          {(() => {
-            const totalPages = Math.ceil(data.total / (data.pageSize || 25))
-            return totalPages > 1 ? (
-              <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
-                <p>
-                  {data.total} presupuesto{data.total !== 1 ? 's' : ''}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="secondary"
-                    disabled={page === 1}
-                    onClick={() => setPage(p => p - 1)}
-                  >
-                    Anterior
-                  </Button>
-                  <span className="self-center">
-                    Pág. {page} / {totalPages}
-                  </span>
-                  <Button
-                    variant="secondary"
-                    disabled={page >= totalPages}
-                    onClick={() => setPage(p => p + 1)}
-                  >
-                    Siguiente
-                  </Button>
-                </div>
+          {data.total > data.pageSize && (
+            <div className="flex items-center justify-between text-sm text-slate-500">
+              <span className="tabular-nums">{data.total} presupuesto{data.total !== 1 ? 's' : ''}</span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage(p => p - 1)}
+                  disabled={page === 1}
+                  className="border border-tc-border px-3 py-1 text-xs hover:bg-tc-surface disabled:opacity-40 transition-colors"
+                >
+                  Anterior
+                </button>
+                <span className="px-2 text-xs tabular-nums">Pág. {page} / {Math.ceil(data.total / (data.pageSize || 25))}</span>
+                <button
+                  onClick={() => setPage(p => p + 1)}
+                  disabled={page * (data.pageSize || 25) >= data.total}
+                  className="border border-tc-border px-3 py-1 text-xs hover:bg-tc-surface disabled:opacity-40 transition-colors"
+                >
+                  Siguiente
+                </button>
               </div>
-            ) : null
-          })()}
+            </div>
+          )}
         </>
       )}
 
       {creating && (
-        <QuoteFormModal
-          onSuccess={handleSuccess}
-          onClose={() => setCreating(false)}
-        />
+        <QuoteFormModal onSuccess={handleSuccess} onClose={() => setCreating(false)} />
       )}
     </div>
   )

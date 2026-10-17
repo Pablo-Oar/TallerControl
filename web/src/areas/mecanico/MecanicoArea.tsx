@@ -7,8 +7,11 @@ import { PwaInstallBanner } from './PwaInstallBanner'
 /** Área del mecánico (`/m/*`): celular primero. */
 export function Component() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white px-4 py-2 flex items-center justify-end">
+    <div className="min-h-screen bg-tc-surface text-slate-900">
+      <header className="bg-tc-navy px-4 h-[52px] flex items-center justify-between border-b border-tc-navy-mid">
+        <span className="select-none text-sm font-bold tracking-widest text-white uppercase">
+          TALLER<span className="text-tc-purple">CONTROL</span>
+        </span>
         <PlateSearchBar />
       </header>
       <PwaInstallBanner />
