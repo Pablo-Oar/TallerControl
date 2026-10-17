@@ -31,6 +31,7 @@ Los IDs de V2 (`REQ-xx`, `T-*`, `D-xx`) siguen siendo válidos y están referenc
 Los `.md` de la carpeta `V2/` sirven solo como atajo de búsqueda de los IDs originales.
 
 Skill `plan-ref` para consultar un REQ, T-* o decisión por ID.
+Skills UI/UX instaladas (16/10/2026): `impeccable` (auditoría/pulido de pantallas `/app/*` y `/m/*`), `ui-ux-pro-max` (diseño general + paletas/fuentes), `design-taste-frontend` (solo páginas públicas/landing), `huashu-design` (prototipos HTML y slides). Usar `/impeccable init` al iniciar una sesión de diseño.
 
 ## Stack
 

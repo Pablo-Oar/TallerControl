@@ -51,7 +51,7 @@ export function Component() {
           <Route
             path="settings/general"
             element={
-              <RequireAuth role="Owner">
+              <RequireAuth role="owner">
                 <GeneralSettingsPage />
               </RequireAuth>
             }
@@ -59,7 +59,7 @@ export function Component() {
           <Route
             path="settings/users"
             element={
-              <RequireAuth role="Owner">
+              <RequireAuth role="owner">
                 <UsersSettingsPage />
               </RequireAuth>
             }

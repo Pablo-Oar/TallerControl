@@ -25,15 +25,20 @@ internal sealed class EfReportsRepository : IReportsRepository
         var fromUtc = new DateTimeOffset(from.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var toUtc = new DateTimeOffset(to.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
 
-        var rows = await _db.Set<Payment>()
+        // DateOnly.FromDateTime no es traducible por Npgsql; se agrupa en memoria.
+        var payments = await _db.Set<Payment>()
             .AsNoTracking()
             .Where(p => p.Status == PaymentStatus.Valid
                      && p.PaidAt >= fromUtc
                      && p.PaidAt <= toUtc)
+            .Select(p => new { p.PaidAt, p.Amount })
+            .ToListAsync(ct);
+
+        var rows = payments
             .GroupBy(p => DateOnly.FromDateTime(p.PaidAt.UtcDateTime))
             .Select(g => new RevenueReportRow(g.Key, g.Sum(p => p.Amount), g.Count()))
             .OrderBy(r => r.Date)
-            .ToListAsync(ct);
+            .ToList();
 
         return new RevenueReportDto(rows, rows.Sum(r => r.Amount), rows.Sum(r => r.PaymentCount));
     }
@@ -112,6 +117,7 @@ internal sealed class EfReportsRepository : IReportsRepository
         var fromUtc = new DateTimeOffset(from.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var toUtc = new DateTimeOffset(to.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
 
+        // DateOnly.FromDateTime no es traducible por Npgsql; se convierte en memoria.
         var raw = await _db.Set<Purchase>()
             .AsNoTracking()
             .Where(p => p.CreatedAt >= fromUtc && p.CreatedAt <= toUtc
@@ -121,11 +127,11 @@ internal sealed class EfReportsRepository : IReportsRepository
                 Id = p.Id.ToString(),
                 Number = p.DocumentNumber,
                 p.SupplierId,
-                Date = DateOnly.FromDateTime(p.CreatedAt.UtcDateTime),
+                p.CreatedAt,
                 p.Total,
                 Status = p.Status.ToString(),
             })
-            .OrderByDescending(r => r.Date)
+            .OrderByDescending(r => r.CreatedAt)
             .ToListAsync(ct);
 
         if (raw.Count == 0)
@@ -144,7 +150,7 @@ internal sealed class EfReportsRepository : IReportsRepository
             r.Id,
             r.Number,
             suppliers.TryGetValue(r.SupplierId, out var sn) ? sn : null,
-            r.Date,
+            DateOnly.FromDateTime(r.CreatedAt.UtcDateTime),
             r.Total,
             r.Status)).ToList();
 

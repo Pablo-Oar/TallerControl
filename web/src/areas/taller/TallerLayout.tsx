@@ -49,52 +49,52 @@ export function TallerLayout({ children }: { children: ReactNode }) {
             <NavLink to="/app/appointments" className={navCls}>
               Agenda
             </NavLink>
-            {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
+            {(user?.role === 'owner' || user?.role === 'admin_staff') && (
               <NavLink to="/app/reminders" className={navCls}>
                 Recordatorios
               </NavLink>
             )}
-            {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
+            {(user?.role === 'owner' || user?.role === 'admin_staff') && (
               <NavLink to="/app/qr" className={navCls}>
                 Tarjetas QR
               </NavLink>
             )}
-            {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
+            {(user?.role === 'owner' || user?.role === 'admin_staff') && (
               <NavLink to="/app/cash" className={navCls}>
                 Caja
               </NavLink>
             )}
-            {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
+            {(user?.role === 'owner' || user?.role === 'admin_staff') && (
               <NavLink to="/app/suppliers" className={navCls}>
                 Proveedores
               </NavLink>
             )}
-            {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
+            {(user?.role === 'owner' || user?.role === 'admin_staff') && (
               <NavLink to="/app/purchases" className={navCls}>
                 Compras
               </NavLink>
             )}
-            {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
+            {(user?.role === 'owner' || user?.role === 'admin_staff') && (
               <NavLink to="/app/counter-sales" className={navCls}>
                 Mostrador
               </NavLink>
             )}
-            {(user?.role === 'Owner' || user?.role === 'AdminStaff') && (
+            {(user?.role === 'owner' || user?.role === 'admin_staff') && (
               <NavLink to="/app/reports" className={navCls}>
                 Reportes
               </NavLink>
             )}
-            {(user?.role === 'Owner' || user?.role === 'AdminStaff' || user?.role === 'Accountant') && (
+            {(user?.role === 'owner' || user?.role === 'admin_staff' || user?.role === 'accountant') && (
               <NavLink to="/app/invoicing" className={navCls}>
                 Facturación
               </NavLink>
             )}
-            {user?.role === 'Owner' && (
+            {user?.role === 'owner' && (
               <NavLink to="/app/settings/general" className={navCls}>
                 General
               </NavLink>
             )}
-            {user?.role === 'Owner' && (
+            {user?.role === 'owner' && (
               <NavLink to="/app/settings/users" className={navCls}>
                 Usuarios
               </NavLink>

@@ -3,7 +3,7 @@ import { api } from './client'
 export interface MeResponse {
   user: { id: string; email: string; displayName: string }
   tenant: { id: string; name: string }
-  role: 'Owner' | 'AdminStaff' | 'Mechanic' | 'Accountant'
+  role: 'owner' | 'admin_staff' | 'mechanic' | 'accountant'
   permissions: string[]
   timeZone: string
   home: string

@@ -5,8 +5,8 @@ import type { MemberDto, UpdateMembershipRequest, TenantRole, MembershipStatus }
 import { Button } from '../../../../components/ui/Button'
 
 const schema = z.object({
-  role: z.enum(['Owner', 'AdminStaff', 'Mechanic']),
-  status: z.enum(['Active', 'Inactive']),
+  role: z.enum(['owner', 'admin_staff', 'mechanic']),
+  status: z.enum(['active', 'inactive']),
 })
 
 type FormData = z.infer<typeof schema>
@@ -43,9 +43,9 @@ export function EditMemberModal({ member, saving, error, onSave, onClose }: Prop
               {...register('role')}
               className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="Owner">Dueño</option>
-              <option value="AdminStaff">Administrativo</option>
-              <option value="Mechanic">Mecánico</option>
+              <option value="owner">Dueño</option>
+              <option value="admin_staff">Administrativo</option>
+              <option value="mechanic">Mecánico</option>
             </select>
           </div>
           <div className="flex flex-col gap-1">
@@ -54,8 +54,8 @@ export function EditMemberModal({ member, saving, error, onSave, onClose }: Prop
               {...register('status')}
               className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="Active">Activo</option>
-              <option value="Inactive">Inactivo</option>
+              <option value="active">Activo</option>
+              <option value="inactive">Inactivo</option>
             </select>
           </div>
 

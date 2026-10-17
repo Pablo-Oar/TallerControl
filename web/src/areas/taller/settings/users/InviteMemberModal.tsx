@@ -10,7 +10,7 @@ import { ApiError } from '../../../../lib/api/client'
 const schema = z.object({
   email: z.string().email('Email inválido'),
   displayName: z.string().min(1, 'Ingresá el nombre'),
-  role: z.enum(['Owner', 'AdminStaff', 'Mechanic']),
+  role: z.enum(['owner', 'admin_staff', 'mechanic']),
 })
 
 type FormData = z.infer<typeof schema>
@@ -24,7 +24,7 @@ export function InviteMemberModal({ onSuccess, onClose }: Props) {
   const [serverError, setServerError] = useState<string | null>(null)
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { role: 'Mechanic' },
+    defaultValues: { role: 'mechanic' },
   })
 
   async function onSubmit(data: FormData) {
@@ -54,9 +54,9 @@ export function InviteMemberModal({ onSuccess, onClose }: Props) {
               {...register('role')}
               className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="Owner">Dueño</option>
-              <option value="AdminStaff">Administrativo</option>
-              <option value="Mechanic">Mecánico</option>
+              <option value="owner">Dueño</option>
+              <option value="admin_staff">Administrativo</option>
+              <option value="mechanic">Mecánico</option>
             </select>
           </div>
 

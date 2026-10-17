@@ -34,7 +34,7 @@ function KpiCard({
 
 export function DashboardPage() {
   const { user } = useAuth()
-  const isOwner = user?.role === 'Owner'
+  const isOwner = user?.role === 'owner'
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['dashboard'],

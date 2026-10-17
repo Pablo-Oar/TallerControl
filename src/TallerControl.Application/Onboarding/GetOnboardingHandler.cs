@@ -11,13 +11,14 @@ public sealed class GetOnboardingHandler
 
     public async Task<OnboardingDto> HandleAsync(CancellationToken ct)
     {
-        var tasks = await Task.WhenAll(
-            _repository.HasLogoAsync(ct),
-            _repository.HasCustomersAsync(ct),
-            _repository.HasVehiclesAsync(ct),
-            _repository.HasCatalogItemsAsync(ct),
-            _repository.HasWorkOrdersAsync(ct),
-            _repository.HasPaymentsAsync(ct));
+        // EF Core no es thread-safe: las queries deben ser secuenciales.
+        var hasLogo = await _repository.HasLogoAsync(ct);
+        var hasCustomers = await _repository.HasCustomersAsync(ct);
+        var hasVehicles = await _repository.HasVehiclesAsync(ct);
+        var hasCatalog = await _repository.HasCatalogItemsAsync(ct);
+        var hasWorkOrders = await _repository.HasWorkOrdersAsync(ct);
+        var hasPayments = await _repository.HasPaymentsAsync(ct);
+        bool[] tasks = [hasLogo, hasCustomers, hasVehicles, hasCatalog, hasWorkOrders, hasPayments];
 
         var steps = new List<OnboardingStepDto>
         {

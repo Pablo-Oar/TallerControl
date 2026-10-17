@@ -8,14 +8,14 @@ import { EditMemberModal } from './EditMemberModal'
 import { useAuth } from '../../../../lib/auth/AuthContext'
 
 const ROLE_LABEL: Record<TenantRole, string> = {
-  Owner: 'Dueño',
-  AdminStaff: 'Administrativo',
-  Mechanic: 'Mecánico',
+  owner: 'Dueño',
+  admin_staff: 'Administrativo',
+  mechanic: 'Mecánico',
 }
 
 const STATUS_LABEL: Record<MembershipStatus, string> = {
-  Active: 'Activo',
-  Inactive: 'Inactivo',
+  active: 'Activo',
+  inactive: 'Inactivo',
 }
 
 export function UsersSettingsPage() {
@@ -71,7 +71,7 @@ export function UsersSettingsPage() {
                 <td className="px-4 py-3 text-slate-500">{m.email}</td>
                 <td className="px-4 py-3">{ROLE_LABEL[m.role]}</td>
                 <td className="px-4 py-3">
-                  <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${m.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                  <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${m.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
                     {STATUS_LABEL[m.status]}
                   </span>
                 </td>

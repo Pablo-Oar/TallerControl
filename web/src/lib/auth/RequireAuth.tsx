@@ -1,4 +1,4 @@
-import { Navigate, useLocation } from 'react-router'
+﻿import { Navigate, useLocation } from 'react-router'
 import type { ReactNode } from 'react'
 import { useAuth } from './AuthContext'
 import type { MeResponse } from '../api/auth'
@@ -10,7 +10,7 @@ interface RequireAuthProps {
 }
 
 /**
- * Guard de ruta: redirige a /login si no hay sesión activa.
+ * Guard de ruta: redirige a /login si no hay sesiÃ³n activa.
  * Si se pasa `role`, redirige a /app si el rol no coincide (403 silencioso).
  */
 export function RequireAuth({ children, role }: RequireAuthProps) {
@@ -35,3 +35,4 @@ export function RequireAuth({ children, role }: RequireAuthProps) {
 
   return <>{children}</>
 }
+

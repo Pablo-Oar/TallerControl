@@ -1,7 +1,7 @@
 import { api } from './client'
 
-export type TenantRole = 'Owner' | 'AdminStaff' | 'Mechanic'
-export type MembershipStatus = 'Active' | 'Inactive'
+export type TenantRole = 'owner' | 'admin_staff' | 'mechanic'
+export type MembershipStatus = 'active' | 'inactive'
 
 export interface MemberDto {
   membershipId: string
