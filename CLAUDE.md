@@ -193,6 +193,16 @@ La API usa `ConnectionStrings:Default` con el rol **`tallercontrol_app`** (sin `
 - Frontend: `appointments.ts` API client; `AppointmentsPage` (`/app/appointments`) con filtros de fecha/estado, tabla, diálogo de cancelación; `AppointmentFormModal` (create/update, servicios con `useFieldArray`); ruta `/app/appointments` en `TallerArea`; link "Agenda" en `TallerLayout` (todos los roles).
 - Migraciones totales: 20 (`AppointmentsAndAvailability` nueva).
 
+**UI-Redesign — rediseño completo del frontend (PR #33, 17/10/2026, mergeado a Develop):**
+- Design system: tokens CSS en `web/src/styles/index.css` — `tc-purple`, `tc-border`, `tc-surface`, `tc-stub-bg`, `tc-navy-text-dim`, `tc-stamp-red`, `tc-border-mid`, `tc-border-mid`, `tc-purple-mid`. Header `/app` y `/m` en dark navy (`#0a0e1a`), área de contenido en blanco.
+- Nuevos componentes compartidos: `Modal.tsx` (overlay genérico), `StatusBadge.tsx` (badge de estado con color semántico por valor), `Button.tsx` renovado con prop `loading` + spinner, variantes `primary/secondary/danger/ghost`, sizes `sm/md`.
+- 53 archivos `.tsx` rediseñados: todas las páginas de `/app` (TallerLayout, Dashboard, Clientes, Vehículos, Catálogo, Órdenes, Presupuestos, Agenda, Caja, Compras, Proveedores, Mostrador, Reportes, Facturación, QR, Recordatorios, Configuración), área `/m` (mecánico), y todas las páginas públicas (Landing, Login, Register, ForgotPassword, ResetPassword, VerifyEmail, AcceptInvitation, PublicQr, OwnerVehicle, PublicQuote, PublicWorkOrder, PublicPayment).
+- MVP gap fixes incluidos en el PR: M-13 (soft delete/restore en Clientes y Vehículos — panel de confirmación inline con motivo obligatorio, toggle "Ver eliminados", botón "Restaurar" en filas), M-29 (`PurchaseFormModal` nuevo con selector de proveedor, ítems del catálogo, campos CITI opcionales), M-26 (Turnstile bypass key en `appsettings.Development.json`).
+- API client: `patchJson` en `client.ts` (PATCH sin If-Match); `customers.ts` + `vehicles.ts` agregan `includeDeleted` param y `restore()`; `workOrders.ts` usa `patchJson` para `updateMechanicNotes`.
+- `PRODUCT.md` agregado al repo: contexto de producto para las skills Impeccable en próximas sesiones de diseño.
+- `.gitleaks.toml` agregado: allowlist para rutas `.agents/` y `.claude/skills/` (falsos positivos en archivos de skill con placeholders).
+- Estado actual: **E0–E14 + UI-Redesign completos, mergeados a Develop. MVP completo con frontend rediseñado.**
+
 **Post-E8 — bugfixes en Develop (14–15/10/2026, commits `27d0d01` / `3395d74` / `b87f7a7` / `ab4dee8` / `a229bcb` / `e46bd2c` / `09a8c7d`):**
 - fix(api): `CatalogItemKind`, `WorkOrderStatus` y `QuoteStatus` como `string?` + `Enum.TryParse(ignoreCase: true)` en todos los endpoints de búsqueda — ASP.NET Core 10 minimal APIs son case-sensitive para enum query params.
 - fix(api): `DevelopmentSeeder` crea `Branch.CreateMain` para tenants que no la tenían; middleware `ForwardedHeaders` para Cloudflare tunnel; defaults en `appsettings.Development.json`.
