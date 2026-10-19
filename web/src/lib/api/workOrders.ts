@@ -5,6 +5,11 @@ export type WorkOrderStatus = 'pending' | 'in_progress' | 'waiting_parts' | 'com
 export type WorkOrderPriority = 'low' | 'normal' | 'high'
 export type WorkOrderItemKind = 'service' | 'product' | 'manual'
 
+export interface AssignableMechanic {
+  membershipId: string
+  displayName: string
+}
+
 export const STATUS_LABELS: Record<WorkOrderStatus, string> = {
   pending: 'Pendiente',
   in_progress: 'En proceso',
@@ -173,8 +178,12 @@ export const workOrdersApi = {
   changeStatus: (id: string, body: ChangeStatusRequest) =>
     api.post<WorkOrderDto>(`/api/v1/work-orders/${id}/status`, body, true),
 
-  assign: (id: string, mechanicId: string) =>
-    api.post<void>(`/api/v1/work-orders/${id}/assign`, { mechanicId }, true),
+  /** Dueño/administrativo indican el mecánico; el mecánico omite el id y se asigna a sí mismo. */
+  assign: (id: string, mechanicId?: string) =>
+    api.post<void>(`/api/v1/work-orders/${id}/assign`, mechanicId ? { mechanicId } : {}, true),
+
+  /** Mecánicos activos a los que se puede asignar una orden (dueño y administrativo). */
+  listMechanics: () => api.get<AssignableMechanic[]>('/api/v1/work-orders/mechanics'),
 
   updateMechanicNotes: (id: string, mechanicNotes: string | null) =>
     api.patchJson<void>(`/api/v1/work-orders/${id}/mechanic-notes`, { mechanicNotes }, true),

@@ -48,6 +48,25 @@ export function MechanicWorkOrderDetailPage() {
     enabled: !!id,
   })
 
+  const [assigning, setAssigning] = useState(false)
+  const [assignError, setAssignError] = useState<string | null>(null)
+
+  // Doc 06 /m/ordenes/:id: "Asignarme" (solo órdenes sin asignar; el servidor resuelve que es el propio mecánico).
+  async function handleAssignSelf() {
+    if (!id) return
+    setAssigning(true)
+    setAssignError(null)
+    try {
+      await workOrdersApi.assign(id)
+      queryClient.invalidateQueries({ queryKey: ['work-order', id] })
+      queryClient.invalidateQueries({ queryKey: ['mechanic-work-orders'] })
+    } catch (err) {
+      setAssignError(err instanceof ApiError ? err.detail : 'No se pudo asignar la orden.')
+    } finally {
+      setAssigning(false)
+    }
+  }
+
   async function handleChangeStatus() {
     if (!changingStatus || !id) return
     setSavingStatus(true)
@@ -114,6 +133,16 @@ export function MechanicWorkOrderDetailPage() {
           ← Volver
         </Link>
       </div>
+
+      {order.assignedMechanicId == null && order.status !== 'delivered' && order.status !== 'cancelled' && (
+        <Section title="Asignación">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-amber-700">Esta orden no tiene mecánico asignado.</p>
+            <Button size="sm" loading={assigning} onClick={handleAssignSelf}>Asignarme</Button>
+          </div>
+          {assignError && <p role="alert" className="mt-2 text-xs text-tc-stamp-red">{assignError}</p>}
+        </Section>
+      )}
 
       <Section title="Vehículo">
         <div className="space-y-1">

@@ -15,6 +15,8 @@ import {
   STATUS_LABELS as PAYMENT_STATUS_LABELS,
 } from '../../../lib/api/payments'
 import { Button } from '../../../components/ui/Button'
+import { FormSelect, FormTextarea } from '../../../components/ui/FormField'
+import { ApiError } from '../../../lib/api/client'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { Modal } from '../../../components/ui/Modal'
 import { ChangeStatusModal } from './ChangeStatusModal'
@@ -48,10 +50,36 @@ export function WorkOrderDetailPage() {
     enabled: !!id,
   })
 
+  const [assigning, setAssigning] = useState(false)
+  const [assignError, setAssignError] = useState<string | null>(null)
+
+  const { data: mechanics } = useQuery({
+    queryKey: ['work-order-mechanics'],
+    queryFn: () => workOrdersApi.listMechanics(),
+    staleTime: 60_000,
+  })
+
+  async function handleAssign(mechanicId: string) {
+    if (!id || !mechanicId) return
+    setAssigning(true)
+    setAssignError(null)
+    try {
+      await workOrdersApi.assign(id, mechanicId)
+      queryClient.invalidateQueries({ queryKey: ['work-order', id] })
+      queryClient.invalidateQueries({ queryKey: ['work-orders'] })
+    } catch (err) {
+      setAssignError(err instanceof ApiError ? err.detail : 'No se pudo asignar el mecánico.')
+    } finally {
+      setAssigning(false)
+    }
+  }
+
   function handleStatusChange() {
     setChangingStatus(false)
     queryClient.invalidateQueries({ queryKey: ['work-order', id] })
     queryClient.invalidateQueries({ queryKey: ['work-order-history', id] })
+    // Cancelar deja el saldo en 0: los cobros (total/cobrado/saldo) también se recalculan.
+    queryClient.invalidateQueries({ queryKey: ['work-order-payments', id] })
     queryClient.invalidateQueries({ queryKey: ['work-orders'] })
   }
 
@@ -128,6 +156,22 @@ export function WorkOrderDetailPage() {
         <Section title="Asignación">
           <Row label="Mecánico">
             {order.assignedMechanicName ?? <span className="text-slate-400">Sin asignar</span>}
+            {canAct && (mechanics?.length ?? 0) > 0 && (
+              <FormSelect
+                label={order.assignedMechanicId ? 'Reasignar a' : 'Asignar a'}
+                size="sm"
+                className="mt-2 w-56"
+                disabled={assigning}
+                value=""
+                onChange={e => void handleAssign(e.target.value)}
+                error={assignError ?? undefined}
+              >
+                <option value="">Seleccionar mecánico…</option>
+                {mechanics!.filter(m => m.membershipId !== order.assignedMechanicId).map(m => (
+                  <option key={m.membershipId} value={m.membershipId}>{m.displayName}</option>
+                ))}
+              </FormSelect>
+            )}
           </Row>
           <Row label="Creada">
             {new Date(order.createdAt ?? '').toLocaleDateString('es-AR')}
@@ -392,10 +436,10 @@ function VoidPaymentDialog({ onConfirm, onClose }: { onConfirm: (r: string) => v
     <Modal title="Anular cobro" onClose={onClose} className="max-w-sm">
       <div className="space-y-4">
         <p className="text-sm text-slate-600">Ingresá el motivo de la anulación:</p>
-        <textarea
+        <FormTextarea
+          label="Motivo"
           value={reason}
           onChange={e => setReason(e.target.value)}
-          className="w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors"
           rows={3}
           placeholder="Motivo…"
           autoFocus
