@@ -6,6 +6,7 @@ import {
   loginAsMechanic,
   loginAsOwner,
   MECHANIC_EMAIL,
+  openWorkOrder,
   uid,
   uniquePlate,
 } from './helpers'

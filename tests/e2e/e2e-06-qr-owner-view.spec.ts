@@ -23,18 +23,20 @@ test.describe('E2E-06: QR batch → verificación → vista del dueño', () => {
 
     // 1. Generar un lote de 1 tarjeta: el código nuevo es el que no estaba antes en la lista
     await page.goto('/app/qr')
-    // La tabla lista las tarjetas más nuevas primero
-    const codes = async () => (await page.locator('tbody tr td:first-child').allInnerTexts()).map(c => c.trim())
-    // esperar a que la tabla cargue: la referencia "antes" no puede quedar vacía
-    await expect(page.locator('tbody tr td:first-child').first()).toBeVisible()
-    const before = new Set(await codes())
+    // El orden de la tabla no es cronológico: la tarjeta nueva es la que antes no estaba entre las libres
+    const freeCodes = async () => {
+      const resp = await page.request.get('/api/v1/qr/cards?status=free&pageSize=200')
+      expect(resp.ok()).toBeTruthy()
+      return new Set<string>(((await resp.json()).items as { code: string }[]).map(c => c.code))
+    }
+    const before = await freeCodes()
+    await expect(page.getByRole('button', { name: /generar lote/i })).toBeVisible()
     await page.getByRole('button', { name: /generar lote/i }).click()
     await dialog(page).getByLabel(/^cantidad/i).fill('1')
     await dialog(page).getByRole('button', { name: /^generar$/i }).click()
     await dialog(page).waitFor({ state: 'detached' })
-    await expect.poll(async () => (await codes()).filter(c => !before.has(c)).length).toBeGreaterThan(0)
-    const code = (await codes()).find(c => !before.has(c))!
-    await expect(page.getByRole('row').filter({ hasText: code })).toContainText(/libre/i)
+    await expect.poll(async () => [...(await freeCodes())].filter(c => !before.has(c)).length).toBe(1)
+    const code = [...(await freeCodes())].find(c => !before.has(c))!
 
     // 2. Asignarla por código al vehículo (selector de vehículo, sin pegar UUIDs)
     await page.getByRole('button', { name: /asignar por código/i }).click()
