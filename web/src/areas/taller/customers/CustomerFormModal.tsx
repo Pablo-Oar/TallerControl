@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { customersApi, type CustomerDto, type CustomerUpsertRequest, type DocType, type VatCondition } from '../../../lib/api/customers'
 import { Button } from '../../../components/ui/Button'
+import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
@@ -22,8 +23,6 @@ const DOC_OPTIONS: { value: DocType; label: string }[] = [
   { value: 'pasaporte', label: 'Pasaporte' },
   { value: 'otro', label: 'Otro' },
 ]
-
-const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
 
 const schema = z.object({
   name: z.string().trim().min(1, 'Requerido').max(150),
@@ -100,53 +99,34 @@ export function CustomerFormModal({ customer, onSuccess, onClose, onDelete }: Pr
   return (
     <Modal title={isEdit ? 'Editar cliente' : 'Nuevo cliente'} onClose={onClose}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label htmlFor="cust-name" className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Nombre *</label>
-          <input id="cust-name" {...register('name')} className={inputCls} placeholder="Nombre completo o razón social" />
-          {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
+        <FormField
+          label="Nombre"
+          requiredMark
+          placeholder="Nombre completo o razón social"
+          error={errors.name?.message}
+          {...register('name')}
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Email" type="email" placeholder="email@ejemplo.com" {...register('email')} />
+          <FormField label="Teléfono" placeholder="011 15-0000-0000" {...register('phone')} />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="cust-email" className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Email</label>
-            <input id="cust-email" {...register('email')} type="email" className={inputCls} placeholder="email@ejemplo.com" />
-          </div>
-          <div>
-            <label htmlFor="cust-phone" className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Teléfono</label>
-            <input id="cust-phone" {...register('phone')} className={inputCls} placeholder="011 15-0000-0000" />
-          </div>
+          <FormSelect label="Tipo de documento" {...register('docType')}>
+            <option value="">Sin documento</option>
+            {DOC_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </FormSelect>
+          <FormField label="Número" placeholder="20-12345678-9" {...register('docNumber')} />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="cust-doc-type" className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Tipo de documento</label>
-            <select id="cust-doc-type" {...register('docType')} className={inputCls}>
-              <option value="">Sin documento</option>
-              {DOC_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="cust-doc-number" className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Número</label>
-            <input id="cust-doc-number" {...register('docNumber')} className={inputCls} placeholder="20-12345678-9" />
-          </div>
-        </div>
+        <FormSelect label="Condición IVA" {...register('vatCondition')}>
+          {VAT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </FormSelect>
 
-        <div>
-          <label htmlFor="cust-vat" className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Condición IVA</label>
-          <select id="cust-vat" {...register('vatCondition')} className={inputCls}>
-            {VAT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
-        </div>
+        <FormField label="Dirección" placeholder="Av. Ejemplo 1234, CABA" {...register('address')} />
 
-        <div>
-          <label htmlFor="cust-address" className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Dirección</label>
-          <input id="cust-address" {...register('address')} className={inputCls} placeholder="Av. Ejemplo 1234, CABA" />
-        </div>
-
-        <div>
-          <label htmlFor="cust-notes" className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Notas</label>
-          <textarea id="cust-notes" {...register('notes')} rows={2} className={inputCls} placeholder="Observaciones internas…" />
-        </div>
+        <FormTextarea label="Notas" rows={2} placeholder="Observaciones internas…" {...register('notes')} />
 
         <label className="flex items-center gap-2 text-sm text-slate-600">
           <input type="checkbox" {...register('doNotContact')} className="h-4 w-4" />
@@ -160,9 +140,8 @@ export function CustomerFormModal({ customer, onSuccess, onClose, onDelete }: Pr
         {deleting && (
           <div className="space-y-2 border border-red-200 bg-red-50 p-3">
             <p className="text-xs font-bold tracking-wider uppercase text-red-700">Confirmar eliminación</p>
-            <input
-              className="w-full border border-red-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-red-400"
-              placeholder="Motivo de eliminación (requerido)"
+            <FormField
+              label="Motivo de eliminación (requerido)"
               value={deleteReason}
               onChange={e => setDeleteReason(e.target.value)}
               autoFocus

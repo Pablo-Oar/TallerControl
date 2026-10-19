@@ -20,3 +20,7 @@
 
 - Compila sin cambios con el tsconfig estricto (TS 6, `verbatimModuleSyntax`, `erasableSyntaxOnly`); 0 warnings de lint; sin delta de bundle mientras nadie lo importe.
 - **No sirve tal cual para los formularios:** el `<label>` no está asociado al input (sin `htmlFor`/`id`; rompe el trabajo de a11y de PR #35), `hasValue` es estado interno y no refleja valores controlados o seteados por React Hook Form (`reset`, `setValue`), usa `bg-input` (que en nuestro puente es un color de borde) y `rounded-lg` fijo en vez de `--radius`, y su `peer-focus` duplica la lógica del estado. El wrapper `FormField` deberá corregir todo esto (id/htmlFor, label flotante por CSS `:placeholder-shown`, forwardRef, `error`/`hint`, `aria-invalid`/`aria-describedby`).
+
+## Registro de componentes
+
+- `floating-input`: **no se vendoreó.** F1 implementa `components/ui/FormField.tsx` propio con la idea de etiqueta flotante (por CSS, sin `motion`), porque el código original tenía los defectos listados arriba. Sin archivo en esta carpeta, sin dependencias nuevas.

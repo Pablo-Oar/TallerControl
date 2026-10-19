@@ -119,6 +119,12 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
+/* FormField: una sola señal de foco — borde violeta + anillo pegado (sin capa, para ganarle a las utilidades) */
+[data-field]:focus-visible {
+  outline-offset: 0;
+  border-color: var(--color-tc-purple);
+}
+
 /* Tabular numerals on monetary data — applied via utility class */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
