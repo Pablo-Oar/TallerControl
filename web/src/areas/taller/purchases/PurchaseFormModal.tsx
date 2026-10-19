@@ -7,10 +7,10 @@ import { purchasesApi, type PurchaseDto } from '../../../lib/api/purchases'
 import { suppliersApi } from '../../../lib/api/suppliers'
 import { catalogApi } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
+import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
-const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
 const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const itemSchema = z.object({
@@ -106,32 +106,24 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
     <Modal title="Nueva compra" onClose={onClose} className="max-w-2xl">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="pur-supplier" className={labelCls}>Proveedor *</label>
-            <select id="pur-supplier" {...register('supplierId')} className={inputCls}>
-              <option value="">Seleccioná un proveedor</option>
-              {suppliersPage?.items.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
-            {errors.supplierId && <p className="mt-1 text-xs text-red-600">{errors.supplierId.message}</p>}
-          </div>
-          <div>
-            <label htmlFor="pur-invoice-date" className={labelCls}>Fecha de factura *</label>
-            <input id="pur-invoice-date" type="date" {...register('invoiceDate')} className={inputCls} />
-            {errors.invoiceDate && <p className="mt-1 text-xs text-red-600">{errors.invoiceDate.message}</p>}
-          </div>
+          <FormSelect
+            key={suppliersPage ? 'loaded' : 'loading'}
+            label="Proveedor"
+            requiredMark
+            error={errors.supplierId?.message}
+            {...register('supplierId')}
+          >
+            <option value="">Seleccioná un proveedor</option>
+            {suppliersPage?.items.map(s => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </FormSelect>
+          <FormField label="Fecha de factura" requiredMark type="date" error={errors.invoiceDate?.message} {...register('invoiceDate')} />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="pur-pos" className={labelCls}>Punto de venta <span className="font-normal normal-case text-slate-400">(opcional)</span></label>
-            <input id="pur-pos" type="number" {...register('pointOfSale')} className={inputCls} placeholder="Ej. 1" min={1} />
-          </div>
-          <div>
-            <label htmlFor="pur-inv-number" className={labelCls}>Nro. de factura <span className="font-normal normal-case text-slate-400">(opcional)</span></label>
-            <input id="pur-inv-number" type="number" {...register('invoiceNumber')} className={inputCls} placeholder="Ej. 1234" min={1} />
-          </div>
+          <FormField label="Punto de venta (opcional)" type="number" placeholder="Ej. 1" min={1} {...register('pointOfSale')} />
+          <FormField label="Nro. de factura (opcional)" type="number" placeholder="Ej. 1234" min={1} {...register('invoiceNumber')} />
         </div>
 
         {/* Ítems */}
@@ -154,60 +146,56 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
               <div key={field.id} className="grid grid-cols-[1fr_5rem_6rem_4.5rem_2rem] gap-2 items-start border border-tc-border bg-tc-stub-bg p-2">
                 <div className="space-y-1.5">
                   {catalogPage && catalogPage.items.length > 0 && (
-                    <select
-                      className="w-full border border-tc-border bg-white px-2 py-1.5 text-xs text-slate-700 outline-none focus:border-tc-border-mid"
+                    <FormSelect
+                      label="Catálogo (opcional)"
+                      size="sm"
                       onChange={e => {
                         setValue(`items.${index}.catalogItemId`, e.target.value)
                         handleCatalogSelect(index, e.target.value)
                       }}
                       defaultValue=""
                     >
-                      <option value="">Catálogo (opcional)</option>
+                      <option value="">Sin catálogo</option>
                       {catalogPage.items.map(c => (
                         <option key={c.id} value={c.id}>{c.name}</option>
                       ))}
-                    </select>
+                    </FormSelect>
                   )}
-                  <input
+                  <FormField
+                    label="Descripción del ítem"
+                    size="sm"
+                    error={errors.items?.[index]?.description?.message}
                     {...register(`items.${index}.description`)}
-                    className="w-full border border-tc-border bg-white px-2 py-1.5 text-xs text-slate-800 outline-none focus:border-tc-border-mid"
-                    placeholder="Descripción del ítem"
-                  />
-                  {errors.items?.[index]?.description && (
-                    <p className="text-xs text-red-600">{errors.items[index]?.description?.message}</p>
-                  )}
-                </div>
-                <div>
-                  <input
-                    type="number"
-                    step="0.001"
-                    min="0.001"
-                    {...register(`items.${index}.quantity`)}
-                    className="w-full border border-tc-border bg-white px-2 py-1.5 text-xs tabular-nums outline-none focus:border-tc-border-mid"
-                    placeholder="Cant."
                   />
                 </div>
-                <div>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    {...register(`items.${index}.unitCost`)}
-                    className="w-full border border-tc-border bg-white px-2 py-1.5 text-xs tabular-nums outline-none focus:border-tc-border-mid"
-                    placeholder="Costo unit."
-                  />
-                </div>
-                <div>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    {...register(`items.${index}.vatRate`)}
-                    className="w-full border border-tc-border bg-white px-2 py-1.5 text-xs tabular-nums outline-none focus:border-tc-border-mid"
-                    placeholder="IVA%"
-                  />
-                </div>
+                <FormField
+                  label="Cant."
+                  size="sm"
+                  type="number"
+                  step="0.001"
+                  min="0.001"
+                  inputClassName="tabular-nums"
+                  {...register(`items.${index}.quantity`)}
+                />
+                <FormField
+                  label="Costo unit."
+                  size="sm"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  inputClassName="tabular-nums"
+                  {...register(`items.${index}.unitCost`)}
+                />
+                <FormField
+                  label="IVA %"
+                  size="sm"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  inputClassName="tabular-nums"
+                  {...register(`items.${index}.vatRate`)}
+                />
                 <div className="flex items-center justify-center pt-1">
                   {fields.length > 1 && (
                     <button
@@ -226,14 +214,8 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
 
         {/* Percepciones / retenciones */}
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="pur-perceptions" className={labelCls}>Percepciones</label>
-            <input id="pur-perceptions" type="number" step="0.01" min="0" {...register('perceptions')} className={inputCls} placeholder="0,00" />
-          </div>
-          <div>
-            <label htmlFor="pur-retentions" className={labelCls}>Retenciones</label>
-            <input id="pur-retentions" type="number" step="0.01" min="0" {...register('retentions')} className={inputCls} placeholder="0,00" />
-          </div>
+          <FormField label="Percepciones" type="number" step="0.01" min="0" placeholder="0,00" inputClassName="tabular-nums" {...register('perceptions')} />
+          <FormField label="Retenciones" type="number" step="0.01" min="0" placeholder="0,00" inputClassName="tabular-nums" {...register('retentions')} />
         </div>
 
         <label className="flex items-center gap-2 text-sm text-slate-600">

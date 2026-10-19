@@ -7,11 +7,10 @@ import { quotesApi, type QuoteDto } from '../../../lib/api/quotes'
 import { customersApi } from '../../../lib/api/customers'
 import { catalogApi } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
+import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
-const inputCls =
-  'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
 const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const itemSchema = z.object({
@@ -139,15 +138,17 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {/* Cliente */}
         <div>
-          <label htmlFor="qf-customer-search" className={labelCls}>Cliente <span className="text-tc-stamp-red">*</span></label>
+          {selectedCustomerId && (
+            <span className={labelCls}>Cliente <span className="text-tc-stamp-red">*</span></span>
+          )}
           {!selectedCustomerId && (
             <div className="relative">
-              <input
-                id="qf-customer-search"
+              <FormField
+                label="Cliente"
+                requiredMark
                 type="search"
                 value={customerSearch}
                 onChange={e => setCustomerSearch(e.target.value)}
-                className={inputCls}
                 placeholder="Escribir nombre o DNI para buscar…"
                 autoComplete="off"
               />
@@ -194,52 +195,37 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
 
         {/* Vehículo */}
         {selectedCustomerId && (
-          <div>
-            <label htmlFor="qf-vehicle" className={labelCls}>Vehículo <span className="text-tc-stamp-red">*</span></label>
-            <select id="qf-vehicle" {...register('vehicleId')} className={inputCls}>
-              <option value="">Seleccionar vehículo</option>
-              {vehicles.map(v => (
-                <option key={v.id} value={v.id}>
-                  {[v.brand, v.model, v.plate].filter(Boolean).join(' · ')}
-                </option>
-              ))}
-            </select>
-            {errors.vehicleId && (
-              <p className="mt-1 text-xs text-tc-stamp-red">{errors.vehicleId.message}</p>
-            )}
-          </div>
+          <FormSelect
+            key={customerDetail ? 'loaded' : 'loading'}
+            label="Vehículo"
+            requiredMark
+            error={errors.vehicleId?.message}
+            {...register('vehicleId')}
+          >
+            <option value="">Seleccionar vehículo</option>
+            {vehicles.map(v => (
+              <option key={v.id} value={v.id}>
+                {[v.brand, v.model, v.plate].filter(Boolean).join(' · ')}
+              </option>
+            ))}
+          </FormSelect>
         )}
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="qf-valid-until" className={labelCls}>Válido hasta <span className="text-tc-stamp-red">*</span></label>
-            <input id="qf-valid-until" type="date" {...register('validUntil')} className={inputCls} />
-            {errors.validUntil && (
-              <p className="mt-1 text-xs text-tc-stamp-red">{errors.validUntil.message}</p>
-            )}
-          </div>
-          <div>
-            <label htmlFor="qf-discount" className={labelCls}>Descuento global (%)</label>
-            <input
-              id="qf-discount"
-              type="number"
-              step="1"
-              min="0"
-              max="100"
-              {...register('globalDiscountPct', { valueAsNumber: true })}
-              className={`${inputCls} tabular-nums`}
-            />
-          </div>
+          <FormField label="Válido hasta" requiredMark type="date" error={errors.validUntil?.message} {...register('validUntil')} />
+          <FormField
+            label="Descuento global (%)"
+            type="number"
+            step="1"
+            min="0"
+            max="100"
+            inputClassName="tabular-nums"
+            {...register('globalDiscountPct', { valueAsNumber: true })}
+          />
         </div>
 
-        <div>
-          <label htmlFor="qf-customer-notes" className={labelCls}>Notas para el cliente</label>
-          <textarea id="qf-customer-notes" {...register('customerNotes')} rows={2} className={inputCls} />
-        </div>
-        <div>
-          <label htmlFor="qf-internal-notes" className={labelCls}>Notas internas</label>
-          <textarea id="qf-internal-notes" {...register('internalNotes')} rows={2} className={inputCls} />
-        </div>
+        <FormTextarea label="Notas para el cliente" rows={2} {...register('customerNotes')} />
+        <FormTextarea label="Notas internas" rows={2} {...register('internalNotes')} />
 
         {/* Ítems */}
         <div>
@@ -285,75 +271,63 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                     Eliminar
                   </button>
                 </div>
-                <div className="p-3 space-y-2">
+                <div className="space-y-3 p-3">
                   <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label htmlFor={`qf-item-${index}-cat`} className={labelCls}>Del catálogo</label>
-                      <select
-                        id={`qf-item-${index}-cat`}
-                        className={inputCls}
-                        onChange={e => handleSelectCatalogItem(index, e.target.value)}
-                        defaultValue=""
-                      >
-                        <option value="">Sin catálogo</option>
-                        {catalogData?.items.map(c => (
-                          <option key={c.id} value={c.id}>{c.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label htmlFor={`qf-item-${index}-kind`} className={labelCls}>Tipo</label>
-                      <select id={`qf-item-${index}-kind`} {...register(`items.${index}.kind`)} className={inputCls}>
-                        <option value="service">Servicio</option>
-                        <option value="product">Producto</option>
-                        <option value="manual">Manual</option>
-                      </select>
-                    </div>
+                    <FormSelect
+                      label="Del catálogo"
+                      size="sm"
+                      defaultValue=""
+                      onChange={e => handleSelectCatalogItem(index, e.target.value)}
+                    >
+                      <option value="">Sin catálogo</option>
+                      {catalogData?.items.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </FormSelect>
+                    <FormSelect label="Tipo" size="sm" {...register(`items.${index}.kind`)}>
+                      <option value="service">Servicio</option>
+                      <option value="product">Producto</option>
+                      <option value="manual">Manual</option>
+                    </FormSelect>
                   </div>
 
-                  <div>
-                    <label htmlFor={`qf-item-${index}-desc`} className={labelCls}>Descripción *</label>
-                    <input id={`qf-item-${index}-desc`} {...register(`items.${index}.description`)} className={inputCls} />
-                    {errors.items?.[index]?.description && (
-                      <p className="text-xs text-tc-stamp-red">{errors.items[index]?.description?.message}</p>
-                    )}
-                  </div>
+                  <FormField
+                    label="Descripción"
+                    requiredMark
+                    size="sm"
+                    error={errors.items?.[index]?.description?.message}
+                    {...register(`items.${index}.description`)}
+                  />
 
                   <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <input
-                        aria-label="Cantidad"
-                        type="number"
-                        step="1"
-                        min="0"
-                        {...register(`items.${index}.quantity`, { valueAsNumber: true })}
-                        className={`${inputCls} tabular-nums`}
-                        placeholder="Cant."
-                      />
-                    </div>
-                    <div>
-                      <input
-                        aria-label="Precio neto"
-                        type="number"
-                        step="1"
-                        min="0"
-                        {...register(`items.${index}.unitNetPrice`, { valueAsNumber: true })}
-                        className={`${inputCls} tabular-nums`}
-                        placeholder="P. neto"
-                      />
-                    </div>
-                    <div>
-                      <input
-                        aria-label="IVA %"
-                        type="number"
-                        step="1"
-                        min="0"
-                        max="100"
-                        {...register(`items.${index}.vatRate`, { valueAsNumber: true })}
-                        className={`${inputCls} tabular-nums`}
-                        placeholder="IVA%"
-                      />
-                    </div>
+                    <FormField
+                      label="Cantidad"
+                      size="sm"
+                      type="number"
+                      step="1"
+                      min="0"
+                      inputClassName="tabular-nums"
+                      {...register(`items.${index}.quantity`, { valueAsNumber: true })}
+                    />
+                    <FormField
+                      label="Precio neto"
+                      size="sm"
+                      type="number"
+                      step="1"
+                      min="0"
+                      inputClassName="tabular-nums"
+                      {...register(`items.${index}.unitNetPrice`, { valueAsNumber: true })}
+                    />
+                    <FormField
+                      label="IVA %"
+                      size="sm"
+                      type="number"
+                      step="1"
+                      min="0"
+                      max="100"
+                      inputClassName="tabular-nums"
+                      {...register(`items.${index}.vatRate`, { valueAsNumber: true })}
+                    />
                   </div>
 
                   <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
