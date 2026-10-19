@@ -72,6 +72,7 @@ function CertificatesSection({
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
 
+  const { data: testPoints } = useQuery({ queryKey: ['fiscal-points-of-sale'], queryFn: listPointsOfSale })
   const [testingId, setTestingId] = useState<string | null>(null)
   const [testPosId, setTestPosId] = useState('')
   const [testResult, setTestResult] = useState<string | null>(null)
@@ -212,14 +213,18 @@ function CertificatesSection({
           </div>
           <div className="p-4 space-y-2">
             <div className="flex gap-2">
-              <FormField
-                label="ID del punto de venta"
+              <FormSelect
+                label="Punto de venta"
                 size="sm"
-                type="text"
                 value={testPosId}
                 onChange={e => setTestPosId(e.target.value)}
                 className="flex-1"
-              />
+              >
+                <option value="">Seleccionar punto de venta…</option>
+                {testPoints?.filter(p => p.isActive).map(p => (
+                  <option key={p.id} value={p.id}>{p.number} — {p.name}</option>
+                ))}
+              </FormSelect>
               <Button
                 variant="secondary"
                 size="sm"
