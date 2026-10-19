@@ -7,10 +7,10 @@ import { workOrdersApi, type WorkOrderPriority } from '../../../lib/api/workOrde
 import { customersApi } from '../../../lib/api/customers'
 import { catalogApi, type CatalogItemKind } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
+import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
-const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
 const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const itemSchema = z.object({
@@ -136,20 +136,20 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
 
           {/* Cliente */}
           <div>
-            <label htmlFor="wo-customer-search" className={labelCls}>Cliente *</label>
+            {selectedCustomerId && <span className={labelCls}>Cliente *</span>}
             {!selectedCustomerId && (
               <div className="relative">
-                <input
-                  id="wo-customer-search"
+                <FormField
+                  label="Cliente"
+                  requiredMark
                   type="search"
                   value={customerSearch}
                   onChange={e => setCustomerSearch(e.target.value)}
                   placeholder="Escribir nombre o DNI para buscar…"
-                  className={inputCls}
                   autoComplete="off"
                 />
                 {customerSearch.length >= 1 && (
-                  <ul className="absolute z-10 mt-1 w-full max-h-52 overflow-y-auto rounded-md border border-slate-200 bg-white shadow-lg">
+                  <ul className="absolute z-10 mt-1 w-full max-h-52 overflow-y-auto border border-tc-border bg-white shadow-lg">
                     {!customersData && (
                       <li className="px-3 py-2 text-sm text-slate-400">Buscando…</li>
                     )}
@@ -190,78 +190,69 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
           {/* Vehículo */}
           {selectedCustomerId && (
             <div>
-              <label htmlFor="wo-vehicle" className={labelCls}>Vehículo *</label>
               {vehicles.length === 0 ? (
-                <p className="text-sm text-slate-400">El cliente no tiene vehículos registrados.</p>
+                <>
+                  <span className={labelCls}>Vehículo *</span>
+                  <p className="text-sm text-slate-400">El cliente no tiene vehículos registrados.</p>
+                </>
               ) : (
-                <select id="wo-vehicle" {...register('vehicleId')} className={inputCls}>
+                <FormSelect
+                  key={customerDetail?.id ?? 'loading'}
+                  label="Vehículo"
+                  requiredMark
+                  error={errors.vehicleId?.message}
+                  {...register('vehicleId')}
+                >
                   <option value="">Seleccionar…</option>
                   {vehicles.map(v => (
                     <option key={v.id} value={v.id}>
                       {v.plate}{v.brand ? ` — ${v.brand}` : ''}{v.model ? ` ${v.model}` : ''}
                     </option>
                   ))}
-                </select>
+                </FormSelect>
               )}
-              {errors.vehicleId && <p className="mt-1 text-xs text-red-600">{errors.vehicleId.message}</p>}
+              
             </div>
           )}
 
           {/* Odómetro y combustible */}
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="wo-odometer" className={labelCls}>Odómetro (km) *</label>
-              <input
-                id="wo-odometer"
-                {...register('odometerKm', { valueAsNumber: true })}
-                type="number"
-                min={0}
-                className={inputCls}
-                placeholder="0"
-              />
-              {errors.odometerKm && <p className="mt-1 text-xs text-red-600">{errors.odometerKm.message}</p>}
-            </div>
-            <div>
-              <label htmlFor="wo-fuel" className={labelCls}>Combustible %</label>
-              <input
-                id="wo-fuel"
-                {...register('fuelLevel', { valueAsNumber: true, setValueAs: v => (v === '' || isNaN(v) ? null : v) })}
-                type="number"
-                min={0}
-                max={100}
-                step={5}
-                className={inputCls}
-                placeholder="—"
-              />
-            </div>
+            <FormField
+              label="Odómetro (km)"
+              requiredMark
+              type="number"
+              min={0}
+              placeholder="0"
+              inputClassName="tabular-nums"
+              error={errors.odometerKm?.message}
+              {...register('odometerKm', { valueAsNumber: true })}
+            />
+            <FormField
+              label="Combustible %"
+              type="number"
+              min={0}
+              max={100}
+              step={5}
+              placeholder="—"
+              inputClassName="tabular-nums"
+              {...register('fuelLevel', { valueAsNumber: true, setValueAs: v => (v === '' || isNaN(v) ? null : v) })}
+            />
           </div>
 
           {/* Prioridad */}
-          <div>
-            <label htmlFor="wo-priority" className={labelCls}>Prioridad</label>
-            <select id="wo-priority" {...register('priority')} className={inputCls}>
-              <option value="low">Baja</option>
-              <option value="normal">Normal</option>
-              <option value="high">Alta</option>
-            </select>
-          </div>
+          <FormSelect label="Prioridad" {...register('priority')}>
+            <option value="low">Baja</option>
+            <option value="normal">Normal</option>
+            <option value="high">Alta</option>
+          </FormSelect>
 
           {/* Problema reportado */}
-          <div>
-            <label htmlFor="wo-issue" className={labelCls}>Problema reportado</label>
-            <textarea
-              id="wo-issue"
-              {...register('reportedIssue')}
-              rows={2}
-              className={inputCls}
-              placeholder="Descripción del problema…"
-            />
-          </div>
+          <FormTextarea label="Problema reportado" rows={2} placeholder="Descripción del problema…" {...register('reportedIssue')} />
 
           {/* Renglones */}
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <label className="text-sm font-medium">Renglones</label>
+              <span className="text-sm font-medium">Renglones</span>
               <button
                 type="button"
                 onClick={addItem}
@@ -322,74 +313,38 @@ function ItemRow({ index, register, errors, catalogItems, onSelectCatalog, onRem
   onSelectCatalog: (index: number, id: string) => void
   onRemove: () => void
 }) {
-  const rowInputCls = 'w-full border border-tc-border bg-white px-2 py-1.5 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
   const catId = `wo-item-${index}-cat`
 
   return (
-    <div className="border border-tc-border p-3 bg-tc-surface">
+    <div className="border border-tc-border bg-tc-surface p-3">
       <div className="mb-2 flex items-center justify-between">
         <span className="text-xs font-bold tracking-wider uppercase text-slate-400">Renglón {index + 1}</span>
         <button type="button" onClick={onRemove} className="text-xs font-bold tracking-wider uppercase text-tc-stamp-red hover:opacity-70 transition-opacity">Quitar</button>
       </div>
       <div className="space-y-2">
-        <div>
-          <label htmlFor={catId} className="mb-1 block text-[10px] font-bold tracking-wider uppercase text-slate-400">Ítem de catálogo (opcional)</label>
-          <select
-            id={catId}
-            onChange={e => { if (e.target.value) onSelectCatalog(index, e.target.value) }}
-            className={rowInputCls}
-          >
-            <option value="">— manual —</option>
-            {catalogItems.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <input
-            {...register(`items.${index}.description`)}
-            aria-label={`Descripción del renglón ${index + 1}`}
-            placeholder="Descripción *"
-            className={rowInputCls}
-          />
-          {errors.items?.[index]?.description && (
-            <p className="mt-0.5 text-xs text-red-600">{errors.items[index].description.message}</p>
-          )}
-        </div>
+        <FormSelect
+          id={catId}
+          label="Ítem de catálogo (opcional)"
+          size="sm"
+          onChange={e => { if (e.target.value) onSelectCatalog(index, e.target.value) }}
+        >
+          <option value="">— manual —</option>
+          {catalogItems.map(c => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </FormSelect>
+        <FormField
+          label="Descripción"
+          requiredMark
+          size="sm"
+          aria-label={`Descripción del renglón ${index + 1}`}
+          error={errors.items?.[index]?.description?.message}
+          {...register(`items.${index}.description`)}
+        />
         <div className="grid grid-cols-3 gap-2">
-          <div>
-            <input
-              {...register(`items.${index}.quantity`, { valueAsNumber: true })}
-              aria-label="Cantidad"
-              type="number"
-              min={0}
-              step="1"
-              className={rowInputCls}
-              placeholder="Cant."
-            />
-          </div>
-          <div>
-            <input
-              {...register(`items.${index}.unitNetPrice`, { valueAsNumber: true })}
-              aria-label="Precio neto"
-              type="number"
-              min={0}
-              step="1"
-              className={rowInputCls}
-              placeholder="P. neto"
-            />
-          </div>
-          <div>
-            <input
-              {...register(`items.${index}.vatRate`, { valueAsNumber: true })}
-              aria-label="IVA %"
-              type="number"
-              min={0}
-              max={100}
-              className={rowInputCls}
-              placeholder="IVA%"
-            />
-          </div>
+          <FormField label="Cantidad" size="sm" type="number" min={0} step="1" inputClassName="tabular-nums" {...register(`items.${index}.quantity`, { valueAsNumber: true })} />
+          <FormField label="Precio neto" size="sm" type="number" min={0} step="1" inputClassName="tabular-nums" {...register(`items.${index}.unitNetPrice`, { valueAsNumber: true })} />
+          <FormField label="IVA %" size="sm" type="number" min={0} max={100} inputClassName="tabular-nums" {...register(`items.${index}.vatRate`, { valueAsNumber: true })} />
         </div>
       </div>
     </div>

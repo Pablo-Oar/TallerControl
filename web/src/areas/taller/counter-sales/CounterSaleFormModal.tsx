@@ -7,10 +7,10 @@ import { counterSalesApi, type CounterSaleDto } from '../../../lib/api/counterSa
 import { customersApi } from '../../../lib/api/customers'
 import { catalogApi } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
+import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
-const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
 const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const itemSchema = z.object({
@@ -92,15 +92,16 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
           <p className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
         )}
 
-        <div>
-          <label htmlFor="cs-customer" className={labelCls}>Cliente (opcional)</label>
-          <select id="cs-customer" {...register('customerId')} className={inputCls}>
-            <option value="">— Sin cliente —</option>
-            {customersPage?.items.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
-        </div>
+        <FormSelect
+          key={customersPage ? 'loaded' : 'loading'}
+          label="Cliente (opcional)"
+          {...register('customerId')}
+        >
+          <option value="">— Sin cliente —</option>
+          {customersPage?.items.map(c => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </FormSelect>
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -130,42 +131,34 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
               </div>
 
               {catalogPage && catalogPage.items.length > 0 && (
-                <div>
-                  <label htmlFor={`csal-item-${idx}-cat`} className={labelCls}>Del catálogo</label>
-                  <select
-                    id={`csal-item-${idx}-cat`}
-                    {...register(`items.${idx}.catalogItemId`)}
-                    className={inputCls}
-                    onChange={e => {
-                      register(`items.${idx}.catalogItemId`).onChange(e)
-                      if (e.target.value) handleCatalogSelect(idx, e.target.value)
-                    }}
-                  >
-                    <option value="">— Ítem libre —</option>
-                    {catalogPage.items.map(c => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
+                <FormSelect
+                  label="Del catálogo"
+                  size="sm"
+                  {...register(`items.${idx}.catalogItemId`)}
+                  onChange={e => {
+                    register(`items.${idx}.catalogItemId`).onChange(e)
+                    if (e.target.value) handleCatalogSelect(idx, e.target.value)
+                  }}
+                >
+                  <option value="">— Ítem libre —</option>
+                  {catalogPage.items.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </FormSelect>
               )}
 
-              <div className="grid grid-cols-2 gap-2">
-                <div className="col-span-2">
-                  <label htmlFor={`csal-item-${idx}-desc`} className={labelCls}>Descripción *</label>
-                  <input id={`csal-item-${idx}-desc`} {...register(`items.${idx}.description`)} className={inputCls} placeholder="Descripción del producto o servicio" />
-                  {errors.items?.[idx]?.description && (
-                    <p className="mt-1 text-xs text-red-600">{errors.items[idx].description?.message}</p>
-                  )}
-                </div>
-                <div>
-                  <input aria-label="Cantidad" type="number" step="0.001" {...register(`items.${idx}.quantity`)} className={inputCls} />
-                </div>
-                <div>
-                  <input aria-label="Precio unitario neto" type="number" step="0.01" {...register(`items.${idx}.unitPrice`)} className={inputCls} />
-                </div>
-                <div>
-                  <input aria-label="IVA %" type="number" step="1" {...register(`items.${idx}.vatRate`)} className={inputCls} />
-                </div>
+              <FormField
+                label="Descripción"
+                requiredMark
+                size="sm"
+                placeholder="Descripción del producto o servicio"
+                error={errors.items?.[idx]?.description?.message}
+                {...register(`items.${idx}.description`)}
+              />
+              <div className="grid grid-cols-3 gap-2">
+                <FormField label="Cantidad" size="sm" type="number" step="0.001" inputClassName="tabular-nums" {...register(`items.${idx}.quantity`)} />
+                <FormField label="Precio unitario neto" size="sm" type="number" step="0.01" inputClassName="tabular-nums" {...register(`items.${idx}.unitPrice`)} />
+                <FormField label="IVA %" size="sm" type="number" step="1" inputClassName="tabular-nums" {...register(`items.${idx}.vatRate`)} />
               </div>
             </div>
           ))}
