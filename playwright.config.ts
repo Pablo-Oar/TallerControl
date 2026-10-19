@@ -10,10 +10,14 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 1 : undefined,
+  // Los flujos E2E encadenan alta de cliente, vehículo, OT, etc.: 30 s por defecto no alcanzan
+  timeout: 90_000,
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
+    // E2E_CHANNEL=chrome usa el Chrome instalado (sin descargar el Chromium de Playwright)
+    channel: process.env.E2E_CHANNEL || undefined,
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },

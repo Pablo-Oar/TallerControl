@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test'
-import { loginAsOwner, API_URL, uid } from './helpers'
+import { createCustomer, createVehicle, dialog, loginAsOwner, uid, uniquePlate } from './helpers'
 
 /**
- * E2E-06: QR batch → asignación → /q/{code} → verificación Base32 → vista dueño (doc 08 §3).
- * Usa D-01 opción a: código Base32 de 8 chars del cliente como alternativa al OTP email.
- * El flujo público usa el campo "código de acceso" en lugar del email OTP.
+ * E2E-06: QR → lote → asignación → portal público del dueño (doc 08 §3, D-01).
+ * La patente nunca alcanza: el portal exige además un código (OTP por email o código de acceso del cliente).
+ * El último paso (ver el historial) necesita ese código; se ejecuta solo si E2E_QR_ACCESS_CODE está definido.
  */
 
 const E2E_RUN = process.env.E2E_RUN === '1'
@@ -12,97 +12,59 @@ const E2E_RUN = process.env.E2E_RUN === '1'
 test.describe('E2E-06: QR batch → verificación → vista del dueño', () => {
   test.skip(!E2E_RUN, 'Requiere E2E_RUN=1 y entorno local levantado')
 
-  test('generar batch, asignar, escanear y ver historial del vehículo', async ({ page }) => {
+  test('generar lote, asignar al vehículo y verificar identidad en el portal público', async ({ page, browser }) => {
     const suffix = uid()
     const customerName = `QR E2E ${suffix}`
-    const plate = `EE${suffix.slice(0, 3)}FF`
+    const plate = uniquePlate('EE', suffix)
 
     await loginAsOwner(page)
+    await createCustomer(page, customerName, `qr${suffix}@test.com`)
+    await createVehicle(page, customerName, plate, { brand: 'Honda', model: 'Civic', year: 2022 })
 
-    // 1. Crear cliente + vehículo
-    await page.goto('/app/customers')
-    await page.getByRole('button', { name: /nuevo cliente/i }).click()
-    await page.getByLabel(/nombre/i).fill(customerName)
-    await page.getByLabel(/email/i).fill(`qr${suffix}@test.com`)
-    await page.getByRole('button', { name: /guardar/i }).click()
-
-    await page.goto('/app/vehicles')
-    await page.getByRole('button', { name: /nuevo vehículo/i }).click()
-    await page.getByRole('combobox', { name: /cliente/i }).fill(customerName.split(' ')[0])
-    await page.getByRole('option', { name: new RegExp(customerName, 'i') }).first().click()
-    await page.getByLabel(/patente/i).fill(plate)
-    await page.getByLabel(/marca/i).fill('Honda')
-    await page.getByLabel(/modelo/i).fill('Civic')
-    await page.getByLabel(/año/i).fill('2022')
-    await page.getByRole('button', { name: /guardar/i }).click()
-
-    // 2. Generar un batch de tarjetas QR (1 tarjeta)
+    // 1. Generar un lote de 1 tarjeta: el código nuevo es el que no estaba antes en la lista
     await page.goto('/app/qr')
-    await page.getByRole('button', { name: /generar tarjetas/i }).click()
-    await page.getByLabel(/cantidad/i).fill('1')
-    await page.getByRole('button', { name: /generar/i }).click()
-    await expect(page.getByText(/generada|libre/i).first()).toBeVisible()
+    // La tabla lista las tarjetas más nuevas primero
+    const codes = async () => (await page.locator('tbody tr td:first-child').allInnerTexts()).map(c => c.trim())
+    // esperar a que la tabla cargue: la referencia "antes" no puede quedar vacía
+    await expect(page.locator('tbody tr td:first-child').first()).toBeVisible()
+    const before = new Set(await codes())
+    await page.getByRole('button', { name: /generar lote/i }).click()
+    await dialog(page).getByLabel(/^cantidad/i).fill('1')
+    await dialog(page).getByRole('button', { name: /^generar$/i }).click()
+    await dialog(page).waitFor({ state: 'detached' })
+    await expect.poll(async () => (await codes()).filter(c => !before.has(c)).length).toBeGreaterThan(0)
+    const code = (await codes()).find(c => !before.has(c))!
+    await expect(page.getByRole('row').filter({ hasText: code })).toContainText(/libre/i)
 
-    // 3. Asignar la tarjeta al vehículo
-    await page.getByRole('button', { name: /asignar/i }).first().click()
+    // 2. Asignarla por código al vehículo (selector de vehículo, sin pegar UUIDs)
+    await page.getByRole('button', { name: /asignar por código/i }).click()
+    await dialog(page).getByLabel(/código de la tarjeta/i).fill(code)
+    await dialog(page).getByRole('combobox', { name: /^veh[ií]culo/i }).fill(plate)
+    await dialog(page).getByRole('option', { name: new RegExp(plate) }).click()
+    await dialog(page).getByRole('button', { name: /^asignar$/i }).click()
+    await dialog(page).waitFor({ state: 'detached' })
+    await expect(page.getByRole('row').filter({ hasText: code })).toContainText(/asignada/i)
+    await expect(page.getByRole('row').filter({ hasText: code })).toContainText(plate)
 
-    const plateInput = page.getByLabel(/patente/i)
-    await plateInput.fill(plate)
+    // 3. Portal público como dueño del vehículo (sin sesión)
+    const ownerCtx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+    const pub = await ownerCtx.newPage()
+    await pub.goto(`/q/${code}`)
+    await expect(pub.getByText(/portal del dueño/i)).toBeVisible()
 
-    // Obtener el código QR mostrado en la tabla (para usarlo en el paso 5)
-    const qrCodeCell = page.getByRole('cell').filter({ hasText: /^[0-9A-Z]{10}$/ }).first()
-    const qrCode = await qrCodeCell.textContent()
+    // La patente por sí sola no habilita nada: tras enviarla se pide un código de verificación
+    await pub.getByLabel(/patente del veh/i).fill(plate)
+    await pub.getByRole('button', { name: /verificar identidad/i }).click()
+    await expect(pub.getByLabel(/código de verificación/i)).toBeVisible()
 
-    await page.getByRole('button', { name: /confirmar|asignar/i }).click()
-    await expect(page.getByText(/asignada/i).first()).toBeVisible()
-
-    // Obtener código QR de la tarjeta ahora asignada
-    const assignedCode = await page
-      .getByRole('row')
-      .filter({ hasText: plate })
-      .getByRole('cell')
-      .nth(1)
-      .textContent()
-    const code = (qrCode ?? assignedCode ?? '').trim()
-    expect(code.length).toBeGreaterThan(0)
-
-    // 4. Ir al portal público del QR como dueño del vehículo
-    await page.goto(`/q/${code}`)
-    await expect(page.getByText(/taller|verificar/i)).toBeVisible()
-
-    // 5. Paso de verificación: placa + código de acceso (D-01 Base32)
-    // El sistema muestra primero el resultado del escaneo, luego el formulario
-    await expect(page.getByRole('button', { name: /continuar|verificar/i })).toBeVisible()
-    await page.getByRole('button', { name: /continuar|verificar/i }).click()
-
-    // Ingresar patente y seleccionar "código de acceso"
-    await page.getByLabel(/patente/i).fill(plate)
-
-    // Seleccionar método código de acceso si hay selector
-    const accessCodeOption = page.getByRole('radio', { name: /código de acceso/i })
-    if (await accessCodeOption.isVisible()) {
-      await accessCodeOption.check()
+    // 4. Con el código de acceso del cliente se entra al historial del vehículo
+    const accessCode = process.env.E2E_QR_ACCESS_CODE
+    if (accessCode) {
+      await pub.getByLabel(/código de verificación/i).fill(accessCode)
+      await pub.getByRole('button', { name: /^acceder$/i }).click()
+      await expect(pub).toHaveURL(new RegExp(`/q/${code}/mi-vehiculo`))
+      await expect(pub.getByText(plate)).toBeVisible()
     }
-
-    await page.getByRole('button', { name: /continuar|enviar/i }).click()
-
-    // 6. Ingresar el código Base32 del cliente
-    // El backend aceptará cualquier valor como "otp" para el challenge type=access_code
-    // En el entorno de prueba se puede obtener el hash via API o usar el código del seeder
-    // Por ahora verificamos que la pantalla de código se muestre
-    await expect(page.getByLabel(/código/i)).toBeVisible()
-
-    // Nota: en un entorno E2E real se obtendría el código Base32 via el API de /api/v1/qr-cards
-    // y se ingresaría aquí. Por ahora verificamos que el flujo llega hasta este punto.
-    const accessCodeInput = page.getByLabel(/código/i)
-    const testCode = process.env.E2E_QR_ACCESS_CODE ?? ''
-    test.skip(!testCode, 'Requiere E2E_QR_ACCESS_CODE para completar la verificación Base32')
-
-    await accessCodeInput.fill(testCode)
-    await page.getByRole('button', { name: /acceder|verificar/i }).click()
-
-    // 7. Vista del dueño: historial del vehículo
-    await expect(page).toHaveURL(new RegExp(`/q/${code}/mi-vehiculo`))
-    await expect(page.getByText(new RegExp(plate, 'i'))).toBeVisible()
+    await ownerCtx.close()
   })
 })

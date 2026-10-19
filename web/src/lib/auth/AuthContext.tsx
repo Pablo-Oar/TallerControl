@@ -31,7 +31,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  /**
+   * La sesión cambió (login, aceptar invitación): el token antiforgery está ligado a la identidad, así que el
+   * obtenido antes de autenticarse deja de valer. Se descarta para pedir uno nuevo en la primera mutación;
+   * sin esto la primera acción tras iniciar sesión (sin recargar) fallaba con "cabecera antiforgery inválida".
+   */
   function invalidate() {
+    clearCsrfToken()
     queryClient.invalidateQueries({ queryKey: ['me'] })
   }
 

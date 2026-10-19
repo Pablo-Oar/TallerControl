@@ -1,87 +1,82 @@
 import { test, expect } from '@playwright/test'
-import { loginAsOwner, loginAsMechanic, MECHANIC_EMAIL, uid } from './helpers'
+import {
+  createCustomer,
+  createVehicle,
+  createWorkOrder,
+  loginAsMechanic,
+  loginAsOwner,
+  MECHANIC_EMAIL,
+  uid,
+  uniquePlate,
+} from './helpers'
 
 /**
- * E2E-04: Portal del mecánico en viewport móvil → autoasignación → inicio →
- * foto adjunta → completar (doc 08 §3).
- * Requiere E2E_MECHANIC_EMAIL y E2E_MECHANIC_PASSWORD adicionales.
+ * E2E-04: Portal del mecánico en viewport móvil (doc 08 §3).
+ * El mecánico ve las OT sin asignar, trabaja una (en proceso → nota → completada) y no ve precios.
+ * Requiere E2E_MECHANIC_EMAIL y E2E_MECHANIC_PASSWORD.
+ *
+ * Pendiente de UI: la autoasignación ("Tomarla") y la foto adjunta no tienen pantalla todavía
+ * (workOrdersApi.assign existe pero ningún componente lo usa), ver test.fixme más abajo.
  */
 
 const E2E_RUN = process.env.E2E_RUN === '1'
 const HAS_MECHANIC = !!MECHANIC_EMAIL
 
-test.describe('E2E-04: Mecánico móvil → asignación → completar', () => {
+test.describe('E2E-04: Mecánico móvil', () => {
   test.skip(!E2E_RUN, 'Requiere E2E_RUN=1 y entorno local levantado')
   test.skip(!HAS_MECHANIC, 'Requiere E2E_MECHANIC_EMAIL y E2E_MECHANIC_PASSWORD')
 
-  test('mecánico se autoasigna y completa OT desde móvil', async ({ browser }) => {
+  test('el mecánico trabaja una OT: en proceso → nota → completada (sin ver precios)', async ({ browser }) => {
     const suffix = uid()
     const customerName = `Mec E2E ${suffix}`
-    const plate = `CC${suffix.slice(0, 3)}DD`
+    const plate = uniquePlate('CC', suffix)
 
-    // Setup: crear OT como owner
+    // Preparación como dueño: cliente + vehículo + OT con un renglón con precio
     const ownerCtx = await browser.newContext()
     const ownerPage = await ownerCtx.newPage()
     await loginAsOwner(ownerPage)
-
-    await ownerPage.goto('/app/customers')
-    await ownerPage.getByRole('button', { name: /nuevo cliente/i }).click()
-    await ownerPage.getByLabel(/nombre/i).fill(customerName)
-    await ownerPage.getByLabel(/email/i).fill(`mec${suffix}@test.com`)
-    await ownerPage.getByRole('button', { name: /guardar/i }).click()
-
-    await ownerPage.goto('/app/vehicles')
-    await ownerPage.getByRole('button', { name: /nuevo vehículo/i }).click()
-    await ownerPage.getByRole('combobox', { name: /cliente/i }).fill(customerName.split(' ')[0])
-    await ownerPage.getByRole('option', { name: new RegExp(customerName, 'i') }).first().click()
-    await ownerPage.getByLabel(/patente/i).fill(plate)
-    await ownerPage.getByLabel(/marca/i).fill('VW')
-    await ownerPage.getByLabel(/modelo/i).fill('Gol')
-    await ownerPage.getByLabel(/año/i).fill('2018')
-    await ownerPage.getByRole('button', { name: /guardar/i }).click()
-
-    await ownerPage.goto('/app/work-orders')
-    await ownerPage.getByRole('button', { name: /nueva orden/i }).click()
-    const clientInput = ownerPage.getByPlaceholder(/buscar cliente/i).first()
-    await clientInput.fill(customerName.split(' ')[0])
-    await ownerPage.getByRole('option', { name: new RegExp(customerName, 'i') }).first().click()
-    const vehicleInput = ownerPage.getByPlaceholder(/buscar vehículo/i).first()
-    await vehicleInput.fill(plate)
-    await ownerPage.getByRole('option', { name: new RegExp(plate, 'i') }).first().click()
-    await ownerPage.getByRole('button', { name: /guardar/i }).click()
+    await createCustomer(ownerPage, customerName, `mec${suffix}@test.com`)
+    await createVehicle(ownerPage, customerName, plate, { brand: 'VW', model: 'Gol', year: 2018 })
+    await createWorkOrder(ownerPage, customerName, plate, { description: 'Revisión general', price: 8000 })
     await ownerCtx.close()
 
-    // Mecánico: viewport móvil
-    const mechCtx = await browser.newContext({
-      viewport: { width: 390, height: 844 }, // iPhone 14
-    })
-    const mechPage = await mechCtx.newPage()
-    await loginAsMechanic(mechPage)
+    // Mecánico en viewport móvil (iPhone 14)
+    const mechCtx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+    const m = await mechCtx.newPage()
+    await loginAsMechanic(m)
 
-    // Verificar que la OT aparece en la lista del mecánico
-    await expect(mechPage.getByText(plate)).toBeVisible()
+    // La OT sin asignar aparece en su lista
+    const card = m.getByRole('link').filter({ hasText: plate })
+    await expect(card).toBeVisible()
+    await expect(card.getByText(/sin asignar/i)).toBeVisible()
+    await card.click()
 
-    // Abrir detalle de la OT
-    await mechPage.getByText(plate).click()
+    // Detalle: ve el trabajo pero ningún monto (el rol no tiene prices.view)
+    await expect(m.getByText('Revisión general')).toBeVisible()
+    await expect(m.getByText(/\$\s*\d/)).toHaveCount(0)
 
-    // Autoasignarse
-    await mechPage.getByRole('button', { name: /asignarme|tomar esta orden/i }).click()
-    await expect(mechPage.getByText(/asignado|en progreso/i)).toBeVisible()
+    // Iniciar el trabajo
+    await m.getByRole('button', { name: /→ en proceso/i }).click()
+    await m.getByRole('button', { name: /^confirmar$/i }).click()
+    await expect(m.getByText(/en proceso/i).first()).toBeVisible()
 
-    // Iniciar trabajo
-    await mechPage.getByRole('button', { name: /iniciar|comenzar/i }).click()
-    await expect(mechPage.getByText(/en proceso/i)).toBeVisible()
+    // Nota del mecánico
+    const note = `Revisión completada - ${suffix}`
+    await m.getByRole('button', { name: /^agregar$/i }).click()
+    await m.getByLabel('Notas del trabajo').fill(note)
+    await m.getByRole('button', { name: /^guardar$/i }).click()
+    await expect(m.getByText(note)).toBeVisible()
 
-    // Agregar nota de mecánico
-    const notesArea = mechPage.getByPlaceholder(/notas del mecánico/i)
-    await notesArea.fill(`Revisión completada - ${suffix}`)
-    await mechPage.getByRole('button', { name: /guardar nota/i }).click()
-
-    // Completar la OT
-    await mechPage.getByRole('button', { name: /completar/i }).click()
-    await mechPage.getByRole('button', { name: /confirmar|aceptar/i }).click()
-    await expect(mechPage.getByText(/completada/i)).toBeVisible()
+    // Completar
+    await m.getByRole('button', { name: /→ completada/i }).click()
+    await m.getByRole('button', { name: /^confirmar$/i }).click()
+    await expect(m.getByText(/completada/i).first()).toBeVisible()
 
     await mechCtx.close()
+  })
+
+  test.fixme('el mecánico se autoasigna la OT y adjunta una foto', async () => {
+    // Sin UI: no hay botón para asignarse la orden ni para adjuntar fotos en /m.
+    // Habilitar cuando exista (API: POST /api/v1/work-orders/{id}/assign con workorders.assign_self).
   })
 })
