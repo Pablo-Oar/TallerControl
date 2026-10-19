@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
@@ -8,6 +9,7 @@ const apiTarget = process.env.VITE_API_TARGET ?? 'http://localhost:5233'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   optimizeDeps: {
     // Scan lazy route areas so all their transitive deps are pre-bundled at startup,
     // preventing mid-render re-optimization that creates duplicate React instances.

@@ -7,6 +7,9 @@ import { afterEach } from 'vitest'
 // en un entorno de pruebas con muchos módulos cargados.
 configure({ asyncUtilTimeout: 8000 })
 
+// D-27: sin animaciones en tests.
+// MotionProvider se monta con reducedMotion="always" en los render helpers que lo necesiten.
+
 afterEach(() => {
   cleanup()
 })
