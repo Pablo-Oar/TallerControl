@@ -5,9 +5,9 @@ import { z } from 'zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { appointmentsApi, type AppointmentDto } from '../../../lib/api/appointments'
 import { Button } from '../../../components/ui/Button'
+import { FormField, FormTextarea } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 
-const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
 const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const serviceSchema = z.object({
@@ -97,34 +97,20 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
       <form onSubmit={handleSubmit(v => mutation.mutate(v))} className="space-y-4">
         {!isEdit && (
           <>
-            <div>
-              <label htmlFor="apt-customer" className={labelCls}>ID Cliente *</label>
-              <input id="apt-customer" {...register('customerId')} className={inputCls} placeholder="UUID del cliente" />
-              {errors.customerId && <p className="mt-1 text-xs text-tc-stamp-red">{errors.customerId.message}</p>}
-            </div>
-            <div>
-              <label htmlFor="apt-vehicle" className={labelCls}>ID Vehículo *</label>
-              <input id="apt-vehicle" {...register('vehicleId')} className={inputCls} placeholder="UUID del vehículo" />
-              {errors.vehicleId && <p className="mt-1 text-xs text-tc-stamp-red">{errors.vehicleId.message}</p>}
-            </div>
+            <FormField label="ID Cliente" requiredMark placeholder="UUID del cliente" error={errors.customerId?.message} {...register('customerId')} />
+            <FormField label="ID Vehículo" requiredMark placeholder="UUID del vehículo" error={errors.vehicleId?.message} {...register('vehicleId')} />
           </>
         )}
 
-        <div>
-          <label htmlFor="apt-scheduled-at" className={labelCls}>Fecha y hora *</label>
-          <input
-            id="apt-scheduled-at"
-            type="datetime-local"
-            {...register('scheduledAt')}
-            className={inputCls}
-          />
-          {errors.scheduledAt && <p className="mt-1 text-xs text-tc-stamp-red">{errors.scheduledAt.message}</p>}
-        </div>
+        <FormField
+          label="Fecha y hora"
+          requiredMark
+          type="datetime-local"
+          error={errors.scheduledAt?.message}
+          {...register('scheduledAt')}
+        />
 
-        <div>
-          <label htmlFor="apt-notes" className={labelCls}>Notas <span className="normal-case font-normal text-slate-400">(opcional)</span></label>
-          <textarea id="apt-notes" {...register('notes')} rows={2} className={inputCls} />
-        </div>
+        <FormTextarea label="Notas (opcional)" rows={2} {...register('notes')} />
 
         {!isEdit && (
           <div>
@@ -151,31 +137,28 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
                       </button>
                     )}
                   </div>
-                  <div className="p-2 space-y-2">
-                    <input
-                      {...register(`services.${index}.catalogItemId`)}
+                  <div className="space-y-2 p-2">
+                    <FormField
+                      label="ID ítem de catálogo"
+                      size="sm"
                       placeholder="UUID ítem catálogo"
-                      className={inputCls}
+                      {...register(`services.${index}.catalogItemId`)}
                     />
                     <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <input
-                          aria-label="Duración (minutos)"
-                          type="number"
-                          {...register(`services.${index}.durationMinutes`, { valueAsNumber: true })}
-                          className={`${inputCls} tabular-nums`}
-                          placeholder="45 min"
-                        />
-                      </div>
-                      <div>
-                        <input
-                          aria-label="Buffer (minutos)"
-                          type="number"
-                          {...register(`services.${index}.bufferMinutes`, { valueAsNumber: true })}
-                          className={`${inputCls} tabular-nums`}
-                          placeholder="15 min"
-                        />
-                      </div>
+                      <FormField
+                        label="Duración (minutos)"
+                        size="sm"
+                        type="number"
+                        inputClassName="tabular-nums"
+                        {...register(`services.${index}.durationMinutes`, { valueAsNumber: true })}
+                      />
+                      <FormField
+                        label="Buffer (minutos)"
+                        size="sm"
+                        type="number"
+                        inputClassName="tabular-nums"
+                        {...register(`services.${index}.bufferMinutes`, { valueAsNumber: true })}
+                      />
                     </div>
                   </div>
                 </div>
