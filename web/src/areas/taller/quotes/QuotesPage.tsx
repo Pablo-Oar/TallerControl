@@ -72,9 +72,9 @@ export function QuotesPage() {
         <>
           <div className="border border-tc-border bg-white overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-[3rem_1fr_7rem_6rem_7rem_7rem] border-b border-tc-border bg-tc-stub-bg">
-              {[['#', ''], ['Cliente / Vehículo', ''], ['Estado', ''], ['Total', 'text-right'], ['Válido hasta', ''], ['Creado', '']].map(([h, cls], i) => (
-                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${cls}`}>
+            <div className="grid grid-cols-[3rem_1fr_7rem_6rem] md:grid-cols-[3rem_1fr_7rem_6rem_7rem_7rem] border-b border-tc-border bg-tc-stub-bg">
+              {[['#', '', false], ['Cliente / Vehículo', '', false], ['Estado', '', false], ['Total', 'text-right', false], ['Válido hasta', '', true], ['Creado', '', true]].map(([h, cls, hide], i) => (
+                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${cls} ${hide ? 'hidden md:block' : ''}`}>
                   {h}
                 </div>
               ))}
@@ -87,7 +87,7 @@ export function QuotesPage() {
                 {data.items.map((q: QuoteListDto) => (
                   <li
                     key={q.id}
-                    className="grid grid-cols-[3rem_1fr_7rem_6rem_7rem_7rem] items-center hover:bg-tc-surface transition-colors"
+                    className="grid grid-cols-[3rem_1fr_7rem_6rem] md:grid-cols-[3rem_1fr_7rem_6rem_7rem_7rem] items-center hover:bg-tc-surface transition-colors"
                   >
                     {/* Stub: number */}
                     <div className="flex h-full items-center border-r border-tc-border bg-tc-stub-bg px-3 py-3">
@@ -118,14 +118,14 @@ export function QuotesPage() {
                     </div>
 
                     {/* Valid until */}
-                    <div className="px-4 py-3">
+                    <div className="hidden md:block px-4 py-3">
                       <span className="text-xs text-slate-500">
                         {new Date(q.validUntil).toLocaleDateString('es-AR')}
                       </span>
                     </div>
 
                     {/* Created */}
-                    <div className="px-4 py-3">
+                    <div className="hidden md:block px-4 py-3">
                       <span className="text-xs text-slate-400">
                         {new Date(q.createdAt).toLocaleDateString('es-AR')}
                       </span>

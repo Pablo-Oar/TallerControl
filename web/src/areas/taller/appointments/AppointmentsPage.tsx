@@ -62,7 +62,7 @@ export function AppointmentsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">Agenda</h1>
+        <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Agenda</h1>
         <Button size="sm" onClick={() => setShowModal(true)}>Nuevo turno</Button>
       </div>
 
@@ -103,10 +103,10 @@ export function AppointmentsPage() {
             <thead>
               <tr className="bg-tc-stub-bg border-b border-tc-border">
                 <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Fecha / hora</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Cliente</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 hidden sm:table-cell">Cliente</th>
                 <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Vehículo</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Mecánico</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Duración</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 hidden md:table-cell">Mecánico</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 hidden md:table-cell">Duración</th>
                 <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</th>
                 <th className="px-4 py-2" />
               </tr>
@@ -121,18 +121,21 @@ export function AppointmentsPage() {
               ) : (
                 items.map((appt, idx) => (
                   <tr key={appt.id} className={`border-b border-tc-border last:border-0 hover:bg-tc-surface ${idx % 2 === 0 ? '' : ''}`}>
-                    <td className="px-4 py-2.5 font-medium text-slate-800 tabular-nums">
-                      {new Date(appt.scheduledAt).toLocaleString('es-AR', {
-                        dateStyle: 'short',
-                        timeStyle: 'short',
-                      })}
+                    <td className="px-4 py-2.5 tabular-nums">
+                      <span className="font-medium text-slate-800 whitespace-nowrap">
+                        {new Date(appt.scheduledAt).toLocaleString('es-AR', {
+                          dateStyle: 'short',
+                          timeStyle: 'short',
+                        })}
+                      </span>
+                      <p className="mt-0.5 text-xs text-slate-500 sm:hidden">{appt.customerName}</p>
                     </td>
-                    <td className="px-4 py-2.5 text-slate-700">{appt.customerName}</td>
+                    <td className="px-4 py-2.5 text-slate-700 hidden sm:table-cell">{appt.customerName}</td>
                     <td className="px-4 py-2.5 font-mono tracking-widest text-sm text-slate-700">{appt.vehiclePlate}</td>
-                    <td className="px-4 py-2.5 text-slate-600">
+                    <td className="px-4 py-2.5 text-slate-600 hidden md:table-cell">
                       {appt.mechanicName ?? <span className="text-slate-400">—</span>}
                     </td>
-                    <td className="px-4 py-2.5 text-slate-600 tabular-nums">{appt.totalDurationMinutes} min</td>
+                    <td className="px-4 py-2.5 text-slate-600 tabular-nums hidden md:table-cell">{appt.totalDurationMinutes} min</td>
                     <td className="px-4 py-2.5">
                       <StatusBadge status={appt.status} label={getAppointmentStatusLabel(appt.status)} />
                     </td>

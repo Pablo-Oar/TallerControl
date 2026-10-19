@@ -1,16 +1,18 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
 
-/** Barra de búsqueda por patente. Navega a /app/vehicles?q={plate}. */
-export function PlateSearchBar() {
-  const navigate = useNavigate()
+interface PlateSearchBarProps {
+  onNavigate: (url: string) => void
+}
+
+/** Barra de búsqueda por patente. Llama onNavigate con /app/vehicles?q={plate}. */
+export function PlateSearchBar({ onNavigate }: PlateSearchBarProps) {
   const [value, setValue] = useState('')
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const plate = value.trim().toUpperCase()
     if (!plate) return
-    navigate(`/app/vehicles?q=${encodeURIComponent(plate)}`)
+    onNavigate(`/app/vehicles?q=${encodeURIComponent(plate)}`)
     setValue('')
   }
 
@@ -26,7 +28,7 @@ export function PlateSearchBar() {
       />
       <button
         type="submit"
-        className="border border-tc-navy-mid bg-transparent px-2 py-1 text-sm text-tc-navy-text hover:text-white hover:border-tc-navy-text transition-colors disabled:opacity-40"
+        className="border border-white/40 bg-white/10 px-2 py-1 text-sm text-white hover:bg-white/20 hover:border-white/70 transition-colors disabled:opacity-30"
         disabled={!value.trim()}
       >
         Ir

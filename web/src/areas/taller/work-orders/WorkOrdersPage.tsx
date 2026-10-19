@@ -80,13 +80,13 @@ export function WorkOrdersPage() {
           {/* Coupon stack */}
           <div className="border border-tc-border bg-white overflow-hidden">
             {/* Column header */}
-            <div className="grid grid-cols-[3rem_1fr_6rem_6rem_5rem_5rem_2.5rem] items-center gap-0 border-b border-tc-border bg-tc-stub-bg px-0">
+            <div className="grid grid-cols-[3rem_1fr_6rem_2.5rem] md:grid-cols-[3rem_1fr_6rem_6rem_5rem_5rem_2.5rem] items-center gap-0 border-b border-tc-border bg-tc-stub-bg px-0">
               <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">#</div>
               <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Cliente / Vehículo</div>
               <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</div>
-              <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 text-right">Total</div>
-              <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 text-right">Saldo</div>
-              <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Mecánico</div>
+              <div className="hidden md:block px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 text-right">Total</div>
+              <div className="hidden md:block px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 text-right">Saldo</div>
+              <div className="hidden md:block px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Mecánico</div>
               <div />
             </div>
 
@@ -141,7 +141,7 @@ function WorkOrderRow({ order }: { order: WorkOrderListDto }) {
   const vehicleLabel = [order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ') || order.vehiclePlate
 
   return (
-    <li className="grid grid-cols-[3rem_1fr_6rem_6rem_5rem_5rem_2.5rem] items-center gap-0 hover:bg-tc-surface group transition-colors">
+    <li className="grid grid-cols-[3rem_1fr_6rem_2.5rem] md:grid-cols-[3rem_1fr_6rem_6rem_5rem_5rem_2.5rem] items-center gap-0 hover:bg-tc-surface group transition-colors">
       {/* Stub: number */}
       <div className="flex h-full items-center border-r border-tc-border bg-tc-stub-bg px-3 py-3">
         <span className="text-xs font-bold tabular-nums text-slate-500">#{order.number}</span>
@@ -165,14 +165,14 @@ function WorkOrderRow({ order }: { order: WorkOrderListDto }) {
       </div>
 
       {/* Total */}
-      <div className="px-4 py-3 text-right">
+      <div className="hidden md:block px-4 py-3 text-right">
         <span className="tabular-nums text-sm text-tc-purple font-medium">
           {order.total != null ? fmtARS(order.total) : '—'}
         </span>
       </div>
 
       {/* Balance */}
-      <div className="px-4 py-3 text-right">
+      <div className="hidden md:block px-4 py-3 text-right">
         {order.balance != null ? (
           <span className={['tabular-nums text-sm', order.balance > 0 ? 'font-semibold text-amber-600' : 'text-slate-400'].join(' ')}>
             {fmtARS(order.balance)}
@@ -183,7 +183,7 @@ function WorkOrderRow({ order }: { order: WorkOrderListDto }) {
       </div>
 
       {/* Mechanic */}
-      <div className="px-3 py-3">
+      <div className="hidden md:block px-3 py-3">
         <span className="text-xs text-slate-400 truncate">{order.assignedMechanicName ?? '—'}</span>
       </div>
 

@@ -56,7 +56,7 @@ export function UsersSettingsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">Usuarios del taller</h1>
+        <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Usuarios del taller</h1>
         <Button size="sm" onClick={() => setInviting(true)}>Invitar usuario</Button>
       </div>
 
@@ -65,7 +65,7 @@ export function UsersSettingsPage() {
           <thead>
             <tr className="bg-tc-stub-bg border-b border-tc-border">
               <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Nombre</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Email</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 hidden sm:table-cell">Email</th>
               <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Rol</th>
               <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</th>
               <th className="px-4 py-2" />
@@ -75,7 +75,7 @@ export function UsersSettingsPage() {
             {members.map((m) => (
               <tr key={m.membershipId} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
                 <td className="px-4 py-2.5 font-medium text-slate-800">{m.displayName}</td>
-                <td className="px-4 py-2.5 text-slate-500 text-xs">{m.email}</td>
+                <td className="px-4 py-2.5 text-slate-500 text-xs hidden sm:table-cell">{m.email}</td>
                 <td className="px-4 py-2.5 text-slate-600 text-xs font-medium">{ROLE_LABEL[m.role]}</td>
                 <td className="px-4 py-2.5">
                   <StatusBadge status={m.status} label={STATUS_LABEL[m.status]} />

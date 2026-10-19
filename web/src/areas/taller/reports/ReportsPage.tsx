@@ -64,15 +64,15 @@ export function ReportsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold tracking-tight text-slate-900">Reportes</h1>
+      <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Reportes</h1>
 
-      {/* Tabs */}
-      <div className="flex border-b border-tc-border">
+      {/* Tabs — scrollable on mobile */}
+      <div className="flex overflow-x-auto border-b border-tc-border">
         {(Object.keys(TAB_LABELS) as Tab[]).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 text-xs font-bold tracking-wider uppercase transition-colors border-b-2 -mb-px ${
+            className={`shrink-0 px-4 py-2 text-xs font-bold tracking-wider uppercase transition-colors border-b-2 -mb-px whitespace-nowrap ${
               tab === t
                 ? 'border-tc-purple text-tc-purple'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -84,11 +84,15 @@ export function ReportsPage() {
       </div>
 
       {isDateRange && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Desde</span>
-          <input type="date" value={from} onChange={e => setFrom(e.target.value)} className={inputCls} />
-          <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Hasta</span>
-          <input type="date" value={to} onChange={e => setTo(e.target.value)} className={inputCls} />
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Desde</span>
+            <input type="date" value={from} onChange={e => setFrom(e.target.value)} className={inputCls} />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Hasta</span>
+            <input type="date" value={to} onChange={e => setTo(e.target.value)} className={inputCls} />
+          </div>
         </div>
       )}
 

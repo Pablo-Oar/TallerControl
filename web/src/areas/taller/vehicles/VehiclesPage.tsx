@@ -93,15 +93,15 @@ export function VehiclesPage() {
         <>
           <div className="border border-tc-border bg-white overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-[7rem_1fr_3.5rem_1fr_2.5rem] border-b border-tc-border bg-tc-stub-bg">
+            <div className="grid grid-cols-[7rem_1fr_2.5rem] md:grid-cols-[7rem_1fr_3.5rem_1fr_2.5rem] border-b border-tc-border bg-tc-stub-bg">
               {[
-                ['Patente', ''],
-                ['Marca / Modelo', ''],
-                ['Año', 'text-right'],
-                ['Cliente', ''],
-                ['', ''],
-              ].map(([h, cls], i) => (
-                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${cls}`}>
+                ['Patente', '', false],
+                ['Marca / Modelo', '', false],
+                ['Año', 'text-right', true],
+                ['Cliente', '', true],
+                ['', '', false],
+              ].map(([h, cls, hideOnMobile], i) => (
+                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${cls} ${hideOnMobile ? 'hidden md:block' : ''}`}>
                   {h}
                 </div>
               ))}
@@ -116,7 +116,7 @@ export function VehiclesPage() {
                 {data.items.map(v => (
                   <li
                     key={v.id}
-                    className={`grid grid-cols-[7rem_1fr_3.5rem_1fr_2.5rem] items-center transition-colors ${v.isDeleted ? 'bg-red-50 opacity-60' : 'hover:bg-tc-surface'}`}
+                    className={`grid grid-cols-[7rem_1fr_2.5rem] md:grid-cols-[7rem_1fr_3.5rem_1fr_2.5rem] items-center transition-colors ${v.isDeleted ? 'bg-red-50 opacity-60' : 'hover:bg-tc-surface'}`}
                   >
                     <div className="px-4 py-3">
                       <span className="font-mono text-sm font-bold tracking-widest text-slate-800">{v.plate}</span>
@@ -125,11 +125,12 @@ export function VehiclesPage() {
                       <p className="text-sm text-slate-700 truncate">
                         {[v.brand, v.model].filter(Boolean).join(' ') || <span className="text-slate-300">—</span>}
                       </p>
+                      <p className="mt-0.5 text-xs text-slate-400 truncate md:hidden">{v.customerName}</p>
                     </div>
-                    <div className="px-4 py-3 text-right">
+                    <div className="hidden md:block px-4 py-3 text-right">
                       <span className="tabular-nums text-sm text-slate-500">{v.year ?? '—'}</span>
                     </div>
-                    <div className="px-4 py-3">
+                    <div className="hidden md:block px-4 py-3">
                       <span className="text-sm text-slate-500 truncate">{v.customerName}</span>
                     </div>
                     <div className="flex items-center justify-center border-l border-tc-border bg-tc-stub-bg px-2 py-3">

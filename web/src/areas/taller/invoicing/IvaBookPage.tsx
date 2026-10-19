@@ -37,7 +37,7 @@ export function IvaBookPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">Libro IVA Digital</h1>
+        <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Libro IVA Digital</h1>
         <Button variant="secondary" size="sm" loading={downloading} onClick={handleDownloadCiti}>
           Descargar CITI (.zip)
         </Button>

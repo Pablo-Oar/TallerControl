@@ -75,7 +75,7 @@ export function CashPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">Cuentas de Caja</h1>
+        <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Cuentas de Caja</h1>
         <Button size="sm" onClick={() => setCreating(true)}>Nueva cuenta</Button>
       </div>
 
@@ -144,7 +144,7 @@ export function CashPage() {
                   <p className="text-xs text-slate-500">{KIND_LABELS[account.kind]}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center sm:gap-3">
                 <span
                   className={`border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
                     account.isActive
@@ -154,22 +154,24 @@ export function CashPage() {
                 >
                   {account.isActive ? 'Activa' : 'Inactiva'}
                 </span>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  loading={openingId === account.id}
-                  onClick={() => handleOpen(account)}
-                >
-                  Abrir sesión
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  loading={closingId === account.id}
-                  onClick={() => handleClose(account)}
-                >
-                  Cerrar sesión
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={openingId === account.id}
+                    onClick={() => handleOpen(account)}
+                  >
+                    Abrir sesión
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={closingId === account.id}
+                    onClick={() => handleClose(account)}
+                  >
+                    Cerrar sesión
+                  </Button>
+                </div>
               </div>
             </div>
           ))}

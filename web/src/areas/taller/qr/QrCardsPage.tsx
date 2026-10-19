@@ -98,9 +98,9 @@ export function QrCardsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">Tarjetas QR</h1>
-        <div className="flex gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Tarjetas QR</h1>
+        <div className="flex flex-wrap gap-2">
           <Button variant="secondary" size="sm" onClick={() => setShowScannerModal(true)}>
             Escanear código
           </Button>
@@ -145,7 +145,7 @@ export function QrCardsPage() {
               <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Código</th>
               <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</th>
               <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Vehículo</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Asignada</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 hidden sm:table-cell">Asignada</th>
               <th className="px-4 py-2" />
             </tr>
           </thead>
@@ -324,7 +324,7 @@ function QrCardRow({
       <td className="px-4 py-2.5 font-mono tracking-widest text-sm text-slate-600">
         {card.vehiclePlate ?? <span className="text-slate-400 font-sans tracking-normal">—</span>}
       </td>
-      <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums">
+      <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums hidden sm:table-cell">
         {card.assignedAt
           ? new Date(card.assignedAt).toLocaleDateString('es-AR')
           : <span className="text-slate-400">—</span>}

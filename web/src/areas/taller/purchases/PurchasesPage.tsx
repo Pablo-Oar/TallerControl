@@ -79,7 +79,7 @@ export function PurchasesPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">Compras</h1>
+        <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Compras</h1>
         <Button onClick={() => setCreating(true)} size="sm">Nueva compra</Button>
       </div>
 
