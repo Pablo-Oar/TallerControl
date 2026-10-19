@@ -125,6 +125,24 @@ button:focus-visible {
   border-color: var(--color-tc-purple);
 }
 
+/* Check de éxito del Button: se dibuja en 200 ms; sin movimiento si el usuario lo pide */
+.tc-check path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: tc-check-draw 200ms ease-out forwards;
+}
+@keyframes tc-check-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tc-check path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
 /* Tabular numerals on monetary data — applied via utility class */
 .tabular-nums {
   font-variant-numeric: tabular-nums;

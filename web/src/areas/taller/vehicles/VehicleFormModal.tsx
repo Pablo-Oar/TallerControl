@@ -124,7 +124,14 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
             {...register('plate')}
             onChange={e => setValue('plate', e.target.value.toUpperCase().replace(/[\s-]/g, ''))}
           />
-          <FormSelect label="Cliente" requiredMark error={errors.customerId?.message} {...register('customerId')}>
+          {/* key: las opciones llegan async; al montar de nuevo con la lista cargada RHF re-aplica el cliente actual. */}
+          <FormSelect
+            key={customersPage ? 'loaded' : 'loading'}
+            label="Cliente"
+            requiredMark
+            error={errors.customerId?.message}
+            {...register('customerId')}
+          >
             <option value="">Seleccioná un cliente</option>
             {customersPage?.items.map(c => (
               <option key={c.id} value={c.id}>{c.name}</option>
