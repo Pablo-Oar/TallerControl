@@ -2,10 +2,13 @@ import { useEffect } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { appointmentsApi, type AppointmentDto } from '../../../lib/api/appointments'
+import { customersApi } from '../../../lib/api/customers'
+import { catalogApi } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
-import { FormField, FormTextarea } from '../../../components/ui/FormField'
+import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
+import { CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 
 const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
@@ -36,7 +39,7 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
   const qc = useQueryClient()
   const isEdit = !!editData
 
-  const { register, handleSubmit, control, reset, formState: { errors, isSubmitting } } = useForm<FormValues>({
+  const { register, handleSubmit, control, reset, watch, setValue, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       customerId: '',
@@ -49,6 +52,20 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
   })
 
   const { fields, append, remove } = useFieldArray({ control, name: 'services' })
+
+  const customerId = watch('customerId')
+
+  const { data: customerDetail } = useQuery({
+    queryKey: ['customer', customerId],
+    queryFn: () => customersApi.get(customerId),
+    enabled: !isEdit && !!customerId,
+  })
+  const { data: catalogPage } = useQuery({
+    queryKey: ['catalog-services'],
+    queryFn: () => catalogApi.search(null, 'service', true, 1, 100),
+    enabled: !isEdit,
+  })
+  const vehicles = customerDetail?.vehicles ?? []
 
   useEffect(() => {
     if (editData) {
@@ -97,8 +114,35 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
       <form onSubmit={handleSubmit(v => mutation.mutate(v))} className="space-y-4">
         {!isEdit && (
           <>
-            <FormField label="ID Cliente" requiredMark placeholder="UUID del cliente" error={errors.customerId?.message} {...register('customerId')} />
-            <FormField label="ID Vehículo" requiredMark placeholder="UUID del vehículo" error={errors.vehicleId?.message} {...register('vehicleId')} />
+            <CustomerPicker
+              value={customerId}
+              requiredMark
+              error={errors.customerId?.message}
+              onChange={id => {
+                setValue('customerId', id, { shouldValidate: !!id })
+                setValue('vehicleId', '')
+              }}
+            />
+            {customerId && (
+              vehicles.length === 0 && customerDetail ? (
+                <p className="text-sm text-tc-text-muted">El cliente no tiene vehículos registrados.</p>
+              ) : (
+                <FormSelect
+                  key={customerDetail?.id ?? 'loading'}
+                  label="Vehículo"
+                  requiredMark
+                  error={errors.vehicleId?.message}
+                  {...register('vehicleId')}
+                >
+                  <option value="">Seleccionar vehículo</option>
+                  {vehicles.map(v => (
+                    <option key={v.id} value={v.id}>
+                      {[v.plate, v.brand, v.model].filter(Boolean).join(' · ')}
+                    </option>
+                  ))}
+                </FormSelect>
+              )
+            )}
           </>
         )}
 
@@ -138,12 +182,19 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
                     )}
                   </div>
                   <div className="space-y-2 p-2">
-                    <FormField
-                      label="ID ítem de catálogo"
+                    <FormSelect
+                      key={catalogPage ? 'loaded' : 'loading'}
+                      label="Servicio del catálogo"
+                      requiredMark
                       size="sm"
-                      placeholder="UUID ítem catálogo"
+                      error={errors.services?.[index]?.catalogItemId?.message}
                       {...register(`services.${index}.catalogItemId`)}
-                    />
+                    >
+                      <option value="">Seleccionar servicio…</option>
+                      {catalogPage?.items.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </FormSelect>
                     <div className="grid grid-cols-2 gap-2">
                       <FormField
                         label="Duración (minutos)"

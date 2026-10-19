@@ -6,6 +6,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { remindersApi } from '../../../lib/api/reminders'
 import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
+import { VehiclePicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
@@ -46,11 +47,15 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
     handleSubmit,
     reset,
     setError,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { kind: 'service_due' },
   })
+
+  const vehicleId = watch('vehicleId')
 
   useEffect(() => {
     if (existing) {
@@ -117,12 +122,11 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
       )}
 
       <form onSubmit={onSubmit} className="space-y-4">
-        <FormField
-          label="ID del vehículo"
-          placeholder="UUID del vehículo"
-          inputClassName="font-mono text-xs"
+        <VehiclePicker
+          value={vehicleId ?? ''}
+          requiredMark
           error={errors.vehicleId?.message}
-          {...register('vehicleId')}
+          onChange={id => setValue('vehicleId', id, { shouldValidate: !!id, shouldDirty: true })}
         />
 
         <FormSelect label="Tipo" {...register('kind')}>
@@ -142,7 +146,9 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
             min={0}
             placeholder="Ej. 50000"
             inputClassName="tabular-nums"
-            {...register('dueKm', { valueAsNumber: true })}
+            error={errors.dueKm?.message}
+            // vacío -> undefined (valueAsNumber daba NaN y bloqueaba el envío sin mostrar error)
+            {...register('dueKm', { setValueAs: v => (v === '' || v == null || Number.isNaN(Number(v)) ? undefined : Number(v)) })}
           />
         </div>
 

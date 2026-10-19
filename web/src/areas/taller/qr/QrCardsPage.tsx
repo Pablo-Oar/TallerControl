@@ -13,6 +13,7 @@ import {
 } from '../../../lib/api/qrCards'
 import { Button } from '../../../components/ui/Button'
 import { FormField, FormTextarea } from '../../../components/ui/FormField'
+import { VehiclePicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { QrScannerModal } from './QrScannerModal'
@@ -231,13 +232,7 @@ export function QrCardsPage() {
               value={assignCode}
               onChange={(e) => setAssignCode(e.target.value.toUpperCase())}
             />
-            <FormField
-              label="ID del vehículo"
-              inputClassName="font-mono text-xs"
-              placeholder="UUID del vehículo"
-              value={assignVehicleId}
-              onChange={(e) => setAssignVehicleId(e.target.value)}
-            />
+            <VehiclePicker value={assignVehicleId} onChange={id => setAssignVehicleId(id)} />
             <div className="flex justify-end gap-2">
               <Button variant="secondary" size="sm" onClick={() => setShowAssignByCodeModal(false)}>
                 Cancelar
