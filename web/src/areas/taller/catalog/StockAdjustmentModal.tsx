@@ -4,11 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { catalogApi, type CatalogItemListDto } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
+import { FormField } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
-const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const schema = z.object({
   quantity: z.number().refine(v => v !== 0, 'La cantidad no puede ser cero'),
@@ -55,31 +54,24 @@ export function StockAdjustmentModal({ item, onSuccess, onClose }: Props) {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label htmlFor="stock-qty" className={labelCls}>
-            Cantidad (+ entrada / − salida) *
-          </label>
-          <input
-            id="stock-qty"
-            {...register('quantity', { valueAsNumber: true })}
-            type="number"
-            step="0.001"
-            className={inputCls}
-            placeholder="Ej. 10 o -5"
-          />
-          {errors.quantity && <p className="mt-1 text-xs text-red-600">{errors.quantity.message}</p>}
-        </div>
+        <FormField
+          label="Cantidad (+ entrada / − salida)"
+          requiredMark
+          type="number"
+          step="0.001"
+          placeholder="Ej. 10 o -5"
+          inputClassName="tabular-nums"
+          error={errors.quantity?.message}
+          {...register('quantity', { valueAsNumber: true })}
+        />
 
-        <div>
-          <label htmlFor="stock-note" className={labelCls}>Nota *</label>
-          <input
-            id="stock-note"
-            {...register('note')}
-            className={inputCls}
-            placeholder="Motivo del ajuste…"
-          />
-          {errors.note && <p className="mt-1 text-xs text-red-600">{errors.note.message}</p>}
-        </div>
+        <FormField
+          label="Nota"
+          requiredMark
+          placeholder="Motivo del ajuste…"
+          error={errors.note?.message}
+          {...register('note')}
+        />
 
         {serverError && (
           <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>

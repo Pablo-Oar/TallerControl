@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import { vehiclesApi, type FuelType, type VehicleUsageProfile, type VehicleDto, type VehicleUpsertRequest } from '../../../lib/api/vehicles'
 import { customersApi } from '../../../lib/api/customers'
 import { Button } from '../../../components/ui/Button'
+import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
@@ -24,8 +25,6 @@ const FUEL_OPTIONS: { value: FuelType; label: string }[] = [
   { value: 'other', label: 'Otro' },
 ]
 
-const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const schema = z.object({
   plate: z.string().trim().min(5, 'Mínimo 5 caracteres').max(10, 'Máximo 10 caracteres'),
@@ -116,88 +115,79 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
     <Modal title={isEdit ? 'Editar vehículo' : 'Nuevo vehículo'} onClose={onClose} className="max-w-lg">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="veh-plate" className={labelCls}>Patente *</label>
-            <input
-              id="veh-plate"
-              {...register('plate')}
-              className={`${inputCls} font-mono tracking-widest uppercase`}
-              placeholder="ABC123"
-              onChange={e => setValue('plate', e.target.value.toUpperCase().replace(/[\s-]/g, ''))}
-            />
-            {errors.plate && <p className="mt-1 text-xs text-tc-stamp-red">{errors.plate.message}</p>}
-          </div>
-          <div>
-            <label htmlFor="veh-customer" className={labelCls}>Cliente *</label>
-            <select id="veh-customer" {...register('customerId')} className={inputCls}>
-              <option value="">Seleccioná un cliente</option>
-              {customersPage?.items.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-            {errors.customerId && <p className="mt-1 text-xs text-tc-stamp-red">{errors.customerId.message}</p>}
-          </div>
+          <FormField
+            label="Patente"
+            requiredMark
+            placeholder="ABC123"
+            inputClassName="font-mono tracking-widest uppercase"
+            error={errors.plate?.message}
+            {...register('plate')}
+            onChange={e => setValue('plate', e.target.value.toUpperCase().replace(/[\s-]/g, ''))}
+          />
+          <FormSelect label="Cliente" requiredMark error={errors.customerId?.message} {...register('customerId')}>
+            <option value="">Seleccioná un cliente</option>
+            {customersPage?.items.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </FormSelect>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="veh-brand" className={labelCls}>Marca</label>
-            <input id="veh-brand" {...register('brand')} className={inputCls} placeholder="Toyota" />
-          </div>
-          <div>
-            <label htmlFor="veh-model" className={labelCls}>Modelo</label>
-            <input id="veh-model" {...register('model')} className={inputCls} placeholder="Corolla" />
-          </div>
+          <FormField label="Marca" placeholder="Toyota" {...register('brand')} />
+          <FormField label="Modelo" placeholder="Corolla" {...register('model')} />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="veh-version" className={labelCls}>Versión</label>
-            <input id="veh-version" {...register('version')} className={inputCls} placeholder="XEI CVT" />
-          </div>
-          <div>
-            <label htmlFor="veh-color" className={labelCls}>Color</label>
-            <input id="veh-color" {...register('color')} className={inputCls} placeholder="Blanco" />
-          </div>
+          <FormField label="Versión" placeholder="XEI CVT" {...register('version')} />
+          <FormField label="Color" placeholder="Blanco" {...register('color')} />
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label htmlFor="veh-year" className={labelCls}>Año</label>
-            <input id="veh-year" type="number" {...register('year')} className={inputCls} placeholder="2020" min={1900} max={new Date().getFullYear() + 1} />
-            {errors.year && <p className="mt-1 text-xs text-tc-stamp-red">{errors.year.message}</p>}
-          </div>
-          <div>
-            <label htmlFor="veh-fuel" className={labelCls}>Combustible</label>
-            <select id="veh-fuel" {...register('fuel')} className={inputCls}>
-              <option value="">Sin especificar</option>
-              {FUEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="veh-odometer" className={labelCls}>Km actuales *</label>
-            <input id="veh-odometer" type="number" {...register('odometerKm')} className={`${inputCls} tabular-nums`} placeholder="0" min={0} />
-            {errors.odometerKm && <p className="mt-1 text-xs text-tc-stamp-red">{errors.odometerKm.message}</p>}
-          </div>
+          <FormField
+            label="Año"
+            type="number"
+            placeholder="2020"
+            min={1900}
+            max={new Date().getFullYear() + 1}
+            error={errors.year?.message}
+            {...register('year')}
+          />
+          <FormSelect label="Combustible" {...register('fuel')}>
+            <option value="">Sin especificar</option>
+            {FUEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </FormSelect>
+          <FormField
+            label="Km actuales"
+            requiredMark
+            type="number"
+            placeholder="0"
+            min={0}
+            inputClassName="tabular-nums"
+            error={errors.odometerKm?.message}
+            {...register('odometerKm')}
+          />
         </div>
 
-        <div>
-          <label htmlFor="veh-vin" className={labelCls}>VIN / Nro. de chasis</label>
-          <input id="veh-vin" {...register('vin')} className={`${inputCls} font-mono`} placeholder="1HGBH41JXMN109186" maxLength={17} />
-        </div>
+        <FormField
+          label="VIN / Nro. de chasis"
+          placeholder="1HGBH41JXMN109186"
+          maxLength={17}
+          inputClassName="font-mono"
+          {...register('vin')}
+        />
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="veh-usage" className={labelCls}>Perfil de uso</label>
-            <select id="veh-usage" {...register('usageProfile')} className={inputCls}>
-              <option value="">Sin especificar</option>
-              {USAGE_PROFILE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="veh-engine" className={labelCls}>Nro. de motor</label>
-            <input id="veh-engine" {...register('engineNumber')} className={`${inputCls} font-mono`} placeholder="ABC123456" maxLength={30} />
-          </div>
+          <FormSelect label="Perfil de uso" {...register('usageProfile')}>
+            <option value="">Sin especificar</option>
+            {USAGE_PROFILE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </FormSelect>
+          <FormField
+            label="Nro. de motor"
+            placeholder="ABC123456"
+            maxLength={30}
+            inputClassName="font-mono"
+            {...register('engineNumber')}
+          />
         </div>
 
         {serverError && (
@@ -207,9 +197,8 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
         {deleting && (
           <div className="space-y-2 border border-red-200 bg-red-50 p-3">
             <p className="text-xs font-bold tracking-wider uppercase text-red-700">Confirmar eliminación</p>
-            <input
-              className="w-full border border-red-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-red-400"
-              placeholder="Motivo de eliminación (requerido)"
+            <FormField
+              label="Motivo de eliminación (requerido)"
               value={deleteReason}
               onChange={e => setDeleteReason(e.target.value)}
               autoFocus
