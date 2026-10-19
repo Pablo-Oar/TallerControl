@@ -52,7 +52,7 @@ public sealed class PublicEndpointsTests : IAsyncLifetime
         (await client.SendAsync(req)).EnsureSuccessStatusCode();
     }
 
-    private async Task<JsonElement> CreateAndSendQuoteAsync(HttpClient client)
+    private async Task<JsonElement> CreateAndSendQuoteAsync(HttpClient client, object[]? items = null, bool send = true)
     {
         var csrf1 = await FetchCsrfAsync(client);
         var validUntil = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(15)).ToString("yyyy-MM-dd");
@@ -64,7 +64,7 @@ public sealed class PublicEndpointsTests : IAsyncLifetime
             globalDiscountPct = 0m,
             customerNotes = (string?)null,
             internalNotes = (string?)null,
-            items = new object[]
+            items = items ?? new object[]
             {
                 new
                 {
@@ -88,10 +88,13 @@ public sealed class PublicEndpointsTests : IAsyncLifetime
         var quote = await createResp.Content.ReadFromJsonAsync<JsonElement>();
         var quoteId = quote.GetProperty("id").GetGuid();
 
-        var csrf2 = await FetchCsrfAsync(client);
-        var sendReq = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/quotes/{quoteId}/send");
-        sendReq.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf2);
-        (await client.SendAsync(sendReq)).EnsureSuccessStatusCode();
+        if (send)
+        {
+            var csrf2 = await FetchCsrfAsync(client);
+            var sendReq = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/quotes/{quoteId}/send");
+            sendReq.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf2);
+            (await client.SendAsync(sendReq)).EnsureSuccessStatusCode();
+        }
 
         return quote;
     }
@@ -193,27 +196,113 @@ public sealed class PublicEndpointsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
     }
 
-    // ── T-PUB-03: flujo completo presupuesto → respuesta pública ─────────────
+    // ── Enlace público (REQ-10, doc 05 §2.6) ──────────────────────────────────
 
-    [Fact(DisplayName = "T-PUB-03: flujo completo: crear, enviar y responder presupuesto via endpoint público")]
-    public async Task Flujo_completo_presupuesto_aprobado()
+    private static async Task<HttpResponseMessage> PostPublicLinkAsync(HttpClient client, Guid quoteId)
     {
-        // Este test requiere interceptar el token generado en SendQuoteHandler.
-        // Dado que solo guardamos el hash en la BD, el endpoint /send devuelve el QuoteDto
-        // sin exponer el token. El token viaja por email (outbox).
-        // Para este test de integración, verificamos el estado final del presupuesto
-        // después de enviar, que es "sent", y que el endpoint público de OT también existe.
+        var csrf = await FetchCsrfAsync(client);
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/quotes/{quoteId}/public-link");
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        return await client.SendAsync(req);
+    }
 
-        using var ownerClient = CreateClient();
-        await LoginAsync(ownerClient, QuotesWebApplicationFactory.OwnerEmail, QuotesWebApplicationFactory.Password);
+    private static object[] TwoItems() => new object[]
+    {
+        new { kind = "service", description = "Cambio de aceite", catalogItemId = (Guid?)null, quantity = 1m,
+              unitNetPrice = 1000m, vatRate = 21m, requiredForApproval = true },
+        new { kind = "service", description = "Alineación", catalogItemId = (Guid?)null, quantity = 1m,
+              unitNetPrice = 500m, vatRate = 21m, requiredForApproval = false },
+    };
 
-        var quote = await CreateAndSendQuoteAsync(ownerClient);
-        var quoteId = quote.GetProperty("id").GetGuid();
+    private async Task<(Guid QuoteId, string Token)> SendWithLinkAsync(HttpClient owner)
+    {
+        var quote = await CreateAndSendQuoteAsync(owner, TwoItems());
+        var id = quote.GetProperty("id").GetGuid();
+        var link = await PostPublicLinkAsync(owner, id);
+        Assert.Equal(HttpStatusCode.OK, link.StatusCode);
+        var token = (await link.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("tokenBase64Url").GetString()!;
+        Assert.False(string.IsNullOrWhiteSpace(token));
+        return (id, token);
+    }
 
-        // Verificar que el presupuesto está en estado sent
-        var getResp = await ownerClient.GetAsync($"/api/v1/quotes/{quoteId}");
-        Assert.Equal(HttpStatusCode.OK, getResp.StatusCode);
-        var dto = await getResp.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.Equal("sent", dto.GetProperty("status").GetString());
+    private static async Task<HttpResponseMessage> RespondAsync(
+        HttpClient anon, string token, JsonElement publicQuote, Func<JsonElement, bool> approve)
+    {
+        var items = publicQuote.GetProperty("items").EnumerateArray()
+            .Select(i => new { quoteItemId = i.GetProperty("id").GetGuid(), approved = approve(i) })
+            .ToArray();
+        var csrf = await FetchCsrfAsync(anon);
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/public/v1/quotes/{token}/responses")
+        {
+            Content = JsonContent.Create(new
+            {
+                decision = "approved",
+                signerName = "Cliente Prueba",
+                contentHash = publicQuote.GetProperty("contentHash").GetString(),
+                items,
+            }),
+        };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        return await anon.SendAsync(req);
+    }
+
+    [Fact(DisplayName = "T-PUB-03: el dueño obtiene el enlace público; el cliente aprueba parcialmente (destilda el opcional)")]
+    public async Task Flujo_completo_presupuesto_con_aprobacion_parcial()
+    {
+        using var owner = CreateClient();
+        await LoginAsync(owner, QuotesWebApplicationFactory.OwnerEmail, QuotesWebApplicationFactory.Password);
+        var (quoteId, token) = await SendWithLinkAsync(owner);
+
+        // El cliente (sin sesión) abre el enlace.
+        using var anon = CreateClient();
+        var view = await anon.GetAsync($"/api/public/v1/quotes/{token}");
+        Assert.Equal(HttpStatusCode.OK, view.StatusCode);
+        var publicQuote = await view.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(2, publicQuote.GetProperty("items").GetArrayLength());
+
+        // Aprueba solo el renglón obligatorio.
+        var resp = await RespondAsync(anon, token, publicQuote, i => i.GetProperty("requiredForApproval").GetBoolean());
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+
+        var dto = await (await owner.GetAsync($"/api/v1/quotes/{quoteId}")).Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("partially_approved", dto.GetProperty("status").GetString());
+        Assert.Equal(1210m, dto.GetProperty("approvedTotal").GetDecimal()); // 1.000 + IVA 21 %
+        Assert.Equal(1815m, dto.GetProperty("total").GetDecimal());         // 1.500 + IVA 21 %
+    }
+
+    [Fact(DisplayName = "T-PUB-03: quitar un renglón obligatorio de la aprobación devuelve 422")]
+    public async Task Aprobar_sin_un_renglon_obligatorio_devuelve_422()
+    {
+        using var owner = CreateClient();
+        await LoginAsync(owner, QuotesWebApplicationFactory.OwnerEmail, QuotesWebApplicationFactory.Password);
+        var (_, token) = await SendWithLinkAsync(owner);
+
+        using var anon = CreateClient();
+        var publicQuote = await (await anon.GetAsync($"/api/public/v1/quotes/{token}")).Content.ReadFromJsonAsync<JsonElement>();
+
+        // Aprueba solo el opcional: el obligatorio queda destildado.
+        var resp = await RespondAsync(anon, token, publicQuote, i => !i.GetProperty("requiredForApproval").GetBoolean());
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
+    }
+
+    [Fact(DisplayName = "T-PUB-04: un enlace nuevo revoca el anterior; un borrador no tiene enlace")]
+    public async Task Nuevo_enlace_revoca_el_anterior_y_el_borrador_no_tiene_enlace()
+    {
+        using var owner = CreateClient();
+        await LoginAsync(owner, QuotesWebApplicationFactory.OwnerEmail, QuotesWebApplicationFactory.Password);
+        var (quoteId, firstToken) = await SendWithLinkAsync(owner);
+
+        var second = await PostPublicLinkAsync(owner, quoteId);
+        var secondToken = (await second.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("tokenBase64Url").GetString()!;
+        Assert.NotEqual(firstToken, secondToken);
+
+        using var anon = CreateClient();
+        Assert.Equal(HttpStatusCode.NotFound, (await anon.GetAsync($"/api/public/v1/quotes/{firstToken}")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await anon.GetAsync($"/api/public/v1/quotes/{secondToken}")).StatusCode);
+
+        // Un borrador (sin enviar) no se puede compartir.
+        var draft = await CreateAndSendQuoteAsync(owner, TwoItems(), send: false);
+        var resp = await PostPublicLinkAsync(owner, draft.GetProperty("id").GetGuid());
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
     }
 }

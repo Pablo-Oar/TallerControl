@@ -60,6 +60,12 @@ internal static class QuotesEndpoints
             .RequirePermission(Permission.QuotesWrite)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
+        app.MapPost("/api/v1/quotes/{id:guid}/public-link",
+                (Guid id, GetQuotePublicLinkHandler handler, CancellationToken ct) =>
+                    handler.HandleAsync(id, ct))
+            .RequirePermission(Permission.QuotesWrite)
+            .AddEndpointFilter<AntiforgeryEndpointFilter>();
+
         app.MapPost("/api/v1/quotes/{id:guid}/reopen",
                 (Guid id, ReopenQuoteRequest request, ReopenQuoteHandler handler, CancellationToken ct) =>
                     ReopenAsync(id, request, handler, ct))

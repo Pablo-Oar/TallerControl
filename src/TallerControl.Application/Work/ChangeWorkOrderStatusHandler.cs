@@ -1,4 +1,6 @@
+using TallerControl.Application.Catalog;
 using TallerControl.Application.Common;
+using TallerControl.Domain.Catalog;
 using TallerControl.Domain.Work;
 
 namespace TallerControl.Application.Work;
@@ -10,15 +12,18 @@ namespace TallerControl.Application.Work;
 public sealed class ChangeWorkOrderStatusHandler
 {
     private readonly IWorkOrderRepository _repo;
+    private readonly ICatalogRepository _catalogRepo;
     private readonly IActorContext _actorContext;
     private readonly TimeProvider _clock;
 
     public ChangeWorkOrderStatusHandler(
         IWorkOrderRepository repo,
+        ICatalogRepository catalogRepo,
         IActorContext actorContext,
         TimeProvider clock)
     {
         _repo = repo;
+        _catalogRepo = catalogRepo;
         _actorContext = actorContext;
         _clock = clock;
     }
@@ -58,9 +63,35 @@ public sealed class ChangeWorkOrderStatusHandler
             throw new BusinessRuleException(ex.Message);
         }
 
+        // REQ-12 CA2 / T-WO-10: cancelar repone el stock que la orden había descontado. Se hace en el mismo
+        // SaveChanges que el cambio de estado: o se cancela y se repone, o no ocurre nada.
+        if (request.ToStatus == WorkOrderStatus.Cancelled)
+            await RestockAsync(order, actorId, now, ct);
+
         await _repo.SaveChangesAsync(ct);
 
         return await _repo.GetFullAsync(id, includePrices: true, ct)
             ?? throw new InvalidOperationException("La orden actualizada no se pudo leer.");
+    }
+
+    private async Task RestockAsync(WorkOrder order, Guid? actorId, DateTimeOffset now, CancellationToken ct)
+    {
+        foreach (var item in order.Items)
+        {
+            if (!item.CatalogItemId.HasValue) continue;
+
+            // Puede haberse borrado lógicamente después de vender: el stock se repone igual.
+            var catalogItem = await _catalogRepo.FindAnyByIdAsync(item.CatalogItemId.Value, ct);
+            if (catalogItem is null || !catalogItem.TrackStock) continue;
+
+            var movement = new StockMovement(
+                order.TenantId, order.BranchId, catalogItem.Id,
+                item.Quantity, StockMovementReason.WorkOrderCancel,
+                note: null, workOrderItemId: item.Id,
+                createdBy: actorId, createdAt: now);
+
+            catalogItem.ApplyStockMovement(item.Quantity);
+            await _catalogRepo.AddMovementAsync(movement, ct);
+        }
     }
 }

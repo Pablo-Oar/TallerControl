@@ -34,7 +34,7 @@ public sealed class GetPublicQuoteHandler
         if (link == null || !link.IsActive(now))
             throw new NotFoundException();
 
-        var quote = await _quoteRepo.GetFullAsync(link.TargetId, ct);
+        var quote = await _quoteRepo.GetFullPublicAsync(link.TargetId, ct);
 
         // El presupuesto debe existir y estar en un estado visible al cliente.
         if (quote == null || quote.Status is

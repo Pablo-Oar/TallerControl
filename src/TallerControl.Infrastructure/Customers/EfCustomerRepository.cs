@@ -43,7 +43,11 @@ internal sealed class EfCustomerRepository : ICustomerRepository
                 c.Name,
                 c.Phone,
                 c.DocNumber,
-                0m)) // Balance calculado desde órdenes en E4
+                // Deuda = suma de (total - cobrado) de las órdenes NO canceladas (V2: una sola definición,
+                // la misma que usan el dashboard y los reportes).
+                _db.Set<WorkOrder>()
+                    .Where(w => w.CustomerId == c.Id && w.Status != WorkOrderStatus.Cancelled)
+                    .Sum(w => w.Total - w.PaidAmount)))
             .ToListAsync(ct);
 
         return new Page<CustomerListDto>(items, page, pageSize, total);
@@ -67,6 +71,8 @@ internal sealed class EfCustomerRepository : ICustomerRepository
             .Select(v => new VehicleBasicDto(v.Id, v.Plate, v.Brand, v.Model))
             .ToListAsync(ct);
 
+        var balance = await GetPendingBalanceAsync(id, ct);
+
         return new CustomerDto(
             customer.Id,
             customer.Name,
@@ -78,7 +84,7 @@ internal sealed class EfCustomerRepository : ICustomerRepository
             customer.Address,
             customer.DoNotContact,
             customer.Notes,
-            Balance: 0m, // E4
+            Balance: balance,
             vehicles,
             customer.Version);
     }

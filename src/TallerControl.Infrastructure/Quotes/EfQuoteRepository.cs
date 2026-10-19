@@ -92,9 +92,15 @@ internal sealed class EfQuoteRepository : IQuoteRepository
         return new Page<QuoteListDto>(items, page, pageSize, total);
     }
 
-    public async Task<QuoteDto?> GetFullAsync(Guid id, CancellationToken ct)
+    public Task<QuoteDto?> GetFullAsync(Guid id, CancellationToken ct) => GetFullCoreAsync(id, ignoreTenantFilter: false, ct);
+
+    // Acceso por enlace público: no hay taller en la sesión; el taller lo determina el enlace (token) ya validado.
+    public Task<QuoteDto?> GetFullPublicAsync(Guid id, CancellationToken ct) => GetFullCoreAsync(id, ignoreTenantFilter: true, ct);
+
+    private async Task<QuoteDto?> GetFullCoreAsync(Guid id, bool ignoreTenantFilter, CancellationToken ct)
     {
-        var quote = await _db.Set<Quote>()
+        var quotes = ignoreTenantFilter ? _db.Set<Quote>().IgnoreQueryFilters() : _db.Set<Quote>();
+        var quote = await quotes
             .Include(q => q.Items)
             .FirstOrDefaultAsync(q => q.Id == id, ct);
 
@@ -137,6 +143,13 @@ internal sealed class EfQuoteRepository : IQuoteRepository
 
     public Task<Quote?> FindByIdAsync(Guid id, CancellationToken ct) =>
         _db.Set<Quote>()
+            .Include(q => q.Items)
+            .Include(q => q.Responses).ThenInclude(r => r.Items)
+            .FirstOrDefaultAsync(q => q.Id == id, ct);
+
+    public Task<Quote?> FindByIdPublicAsync(Guid id, CancellationToken ct) =>
+        _db.Set<Quote>()
+            .IgnoreQueryFilters()
             .Include(q => q.Items)
             .Include(q => q.Responses).ThenInclude(r => r.Items)
             .FirstOrDefaultAsync(q => q.Id == id, ct);

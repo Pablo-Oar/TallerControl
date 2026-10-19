@@ -15,6 +15,7 @@ namespace TallerControl.Api.Endpoints.Work;
 /// GET    /api/v1/work-orders/{id}                      → workorders.read     (O, A, M*)
 /// PUT    /api/v1/work-orders/{id}                      → workorders.write    (O, A)
 /// POST   /api/v1/work-orders/{id}/status               → workorders.status   (O, A, M*)
+/// GET    /api/v1/work-orders/mechanics                 → workorders.write    (O, A) mecánicos asignables
 /// POST   /api/v1/work-orders/{id}/assign               → workorders.write / workorders.assign_self
 /// PATCH  /api/v1/work-orders/{id}/mechanic-notes       → workorders.status   (M)
 /// GET    /api/v1/work-orders/{id}/history              → workorders.read     (O, A)
@@ -65,6 +66,10 @@ internal static class WorkOrdersEndpoints
                     ChangeStatusAsync(id, request, handler, auth, ctx, ct))
             .RequirePermission(Permission.WorkOrdersStatus)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
+
+        app.MapGet("/api/v1/work-orders/mechanics",
+                (ListAssignableMechanicsHandler handler, CancellationToken ct) => handler.HandleAsync(ct))
+            .RequirePermission(Permission.WorkOrdersWrite);
 
         app.MapPost("/api/v1/work-orders/{id:guid}/assign",
                 (Guid id, AssignMechanicRequest request, AssignMechanicHandler handler,

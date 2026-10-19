@@ -149,6 +149,7 @@ public static class DependencyInjection
         services.AddScoped<UpdateWorkOrderHandler>();
         services.AddScoped<ChangeWorkOrderStatusHandler>();
         services.AddScoped<AssignMechanicHandler>();
+        services.AddScoped<ListAssignableMechanicsHandler>();
         services.AddScoped<UpdateMechanicNotesHandler>();
         services.AddScoped<GetWorkOrderHistoryHandler>();
         services.AddScoped<GetWorkOrderPdfHandler>();
@@ -168,6 +169,7 @@ public static class DependencyInjection
         services.AddScoped<GetQuoteHandler>();
         services.AddScoped<SearchQuotesHandler>();
         services.AddScoped<SendQuoteHandler>();
+        services.AddScoped<GetQuotePublicLinkHandler>();
         services.AddScoped<ReopenQuoteHandler>();
         services.AddScoped<ConvertQuoteHandler>();
         services.AddScoped<CancelQuoteHandler>();

@@ -1,4 +1,6 @@
 using TallerControl.Application.Common;
+using TallerControl.Application.Users;
+using TallerControl.Domain.Users;
 
 namespace TallerControl.Application.Work;
 
@@ -10,11 +12,13 @@ namespace TallerControl.Application.Work;
 public sealed class AssignMechanicHandler
 {
     private readonly IWorkOrderRepository _repo;
+    private readonly IMembershipRepository _memberships;
     private readonly IActorContext _actorContext;
 
-    public AssignMechanicHandler(IWorkOrderRepository repo, IActorContext actorContext)
+    public AssignMechanicHandler(IWorkOrderRepository repo, IMembershipRepository memberships, IActorContext actorContext)
     {
         _repo = repo;
+        _memberships = memberships;
         _actorContext = actorContext;
     }
 
@@ -28,9 +32,19 @@ public sealed class AssignMechanicHandler
             ?? _actorContext.ActorId
             ?? throw new InvalidOperationException("No hay actor en la sesión.");
 
+        // El mecánico se asigna a sí mismo aunque no mande el id; dueño/administrativo deben elegir uno.
+        Guid? requested = request.MechanicId ?? (isMechanic ? actorId : (Guid?)null);
+        var mechanicId = requested
+            ?? throw new BusinessRuleException("Indicá el mecánico a asignar.");
+
+        // La FK del cuerpo se valida contra el taller (filtro global): debe ser un mecánico activo de este taller.
+        var membership = await _memberships.FindByIdAsync(mechanicId, ct);
+        if (membership is null || membership.Role != TenantRole.Mechanic || membership.Status != MembershipStatus.Active)
+            throw new BusinessRuleException("El mecánico indicado no existe o no está activo.");
+
         try
         {
-            order.Assign(request.MechanicId, isMechanic, actorId);
+            order.Assign(mechanicId, isMechanic, actorId);
         }
         catch (ArgumentException ex)
         {

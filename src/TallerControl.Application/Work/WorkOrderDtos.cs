@@ -114,8 +114,14 @@ public sealed record ChangeStatusRequest(
     string? Note = null,
     string? CancelReason = null);
 
-/// <summary>Cuerpo de POST /api/v1/work-orders/{id}/assign.</summary>
-public sealed record AssignMechanicRequest(Guid MechanicId);
+/// <summary>
+/// Cuerpo de POST /api/v1/work-orders/{id}/assign. <c>MechanicId</c> es la membresía del mecánico; el mecánico
+/// puede omitirlo (se asigna a sí mismo, doc 05: "assignee = self"), dueño y administrativo lo indican.
+/// </summary>
+public sealed record AssignMechanicRequest(Guid? MechanicId = null);
+
+/// <summary>Mecánico activo al que se puede asignar una orden (GET /api/v1/work-orders/mechanics).</summary>
+public sealed record AssignableMechanicDto(Guid MembershipId, string DisplayName);
 
 /// <summary>Cuerpo de PATCH /api/v1/work-orders/{id}/mechanic-notes.</summary>
 public sealed record UpdateMechanicNotesRequest(string? MechanicNotes);
