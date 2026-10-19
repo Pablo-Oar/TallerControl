@@ -65,8 +65,8 @@ export function ChangeStatusModal({ orderId, currentStatus, onSuccess, onClose }
     <Modal title="Cambiar estado" onClose={onClose} className="max-w-md">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className={labelCls}>Nuevo estado *</label>
-          <select {...register('toStatus')} className={inputCls}>
+          <label htmlFor="cs-status" className={labelCls}>Nuevo estado *</label>
+          <select id="cs-status" {...register('toStatus')} className={inputCls}>
             {transitions.map(s => (
               <option key={s} value={s}>{STATUS_LABELS[s]}</option>
             ))}
@@ -75,14 +75,14 @@ export function ChangeStatusModal({ orderId, currentStatus, onSuccess, onClose }
         </div>
 
         <div>
-          <label className={labelCls}>Nota (opcional)</label>
-          <textarea {...register('note')} rows={2} className={inputCls} placeholder="Comentario sobre el cambio…" />
+          <label htmlFor="cs-note" className={labelCls}>Nota (opcional)</label>
+          <textarea id="cs-note" {...register('note')} rows={2} className={inputCls} placeholder="Comentario sobre el cambio…" />
         </div>
 
         {toStatus === 'cancelled' && (
           <div>
-            <label className={labelCls}>Motivo de cancelación</label>
-            <input {...register('cancelReason')} className={inputCls} placeholder="Motivo…" />
+            <label htmlFor="cs-cancel-reason" className={labelCls}>Motivo de cancelación</label>
+            <input id="cs-cancel-reason" {...register('cancelReason')} className={inputCls} placeholder="Motivo…" />
           </div>
         )}
 

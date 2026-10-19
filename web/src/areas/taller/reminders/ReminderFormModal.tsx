@@ -120,8 +120,9 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
 
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
-          <label className={labelCls}>ID del vehículo</label>
+          <label htmlFor="rem-vehicle" className={labelCls}>ID del vehículo</label>
           <input
+            id="rem-vehicle"
             {...register('vehicleId')}
             className={`${inputCls} font-mono text-xs`}
             placeholder="UUID del vehículo"
@@ -132,8 +133,9 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
         </div>
 
         <div>
-          <label className={labelCls}>Tipo</label>
+          <label htmlFor="rem-kind" className={labelCls}>Tipo</label>
           <select
+            id="rem-kind"
             {...register('kind')}
             className="w-full border border-tc-border bg-white px-3 py-2 text-sm outline-none focus:border-tc-border-mid transition-colors"
           >
@@ -145,8 +147,9 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
         </div>
 
         <div>
-          <label className={labelCls}>Título</label>
+          <label htmlFor="rem-title" className={labelCls}>Título</label>
           <input
+            id="rem-title"
             {...register('title')}
             className={inputCls}
             placeholder="Ej. Cambio de aceite"
@@ -158,20 +161,22 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelCls}>
+            <label htmlFor="rem-due-date" className={labelCls}>
               Fecha límite <span className="font-normal normal-case text-slate-400">(opcional)</span>
             </label>
             <input
+              id="rem-due-date"
               type="date"
               {...register('dueDate')}
               className={inputCls}
             />
           </div>
           <div>
-            <label className={labelCls}>
+            <label htmlFor="rem-due-km" className={labelCls}>
               Km límite <span className="font-normal normal-case text-slate-400">(opcional)</span>
             </label>
             <input
+              id="rem-due-km"
               type="number"
               min={0}
               {...register('dueKm', { valueAsNumber: true })}
@@ -185,10 +190,11 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
         )}
 
         <div>
-          <label className={labelCls}>
+          <label htmlFor="rem-notes" className={labelCls}>
             Notas <span className="font-normal normal-case text-slate-400">(opcional)</span>
           </label>
           <textarea
+            id="rem-notes"
             rows={2}
             {...register('notes')}
             className={inputCls}

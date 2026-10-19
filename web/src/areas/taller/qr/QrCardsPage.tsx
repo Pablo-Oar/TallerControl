@@ -202,8 +202,9 @@ export function QrCardsPage() {
         <Modal title="Generar lote de tarjetas" onClose={() => setShowBatchModal(false)} className="max-w-xs">
           <div className="space-y-4">
             <div>
-              <label className={labelCls}>Cantidad</label>
+              <label htmlFor="qr-batch-qty" className={labelCls}>Cantidad</label>
               <input
+                id="qr-batch-qty"
                 type="number"
                 min={1}
                 max={500}
@@ -228,8 +229,9 @@ export function QrCardsPage() {
         <Modal title="Asignar tarjeta por código" onClose={() => setShowAssignByCodeModal(false)} className="max-w-sm">
           <div className="space-y-4">
             <div>
-              <label className={labelCls}>Código de la tarjeta</label>
+              <label htmlFor="qr-assign-code" className={labelCls}>Código de la tarjeta</label>
               <input
+                id="qr-assign-code"
                 className={`${inputFullCls} font-mono tracking-widest uppercase`}
                 placeholder="Ej. ABC12345"
                 value={assignCode}
@@ -237,8 +239,9 @@ export function QrCardsPage() {
               />
             </div>
             <div>
-              <label className={labelCls}>ID del vehículo</label>
+              <label htmlFor="qr-assign-vehicle" className={labelCls}>ID del vehículo</label>
               <input
+                id="qr-assign-vehicle"
                 className={`${inputFullCls} font-mono text-xs`}
                 placeholder="UUID del vehículo"
                 value={assignVehicleId}

@@ -93,8 +93,8 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
         )}
 
         <div>
-          <label className={labelCls}>Cliente (opcional)</label>
-          <select {...register('customerId')} className={inputCls}>
+          <label htmlFor="cs-customer" className={labelCls}>Cliente (opcional)</label>
+          <select id="cs-customer" {...register('customerId')} className={inputCls}>
             <option value="">— Sin cliente —</option>
             {customersPage?.items.map(c => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -131,8 +131,9 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
 
               {catalogPage && catalogPage.items.length > 0 && (
                 <div>
-                  <label className={labelCls}>Del catálogo</label>
+                  <label htmlFor={`csal-item-${idx}-cat`} className={labelCls}>Del catálogo</label>
                   <select
+                    id={`csal-item-${idx}-cat`}
                     {...register(`items.${idx}.catalogItemId`)}
                     className={inputCls}
                     onChange={e => {
@@ -150,23 +151,20 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="col-span-2">
-                  <label className={labelCls}>Descripción *</label>
-                  <input {...register(`items.${idx}.description`)} className={inputCls} placeholder="Descripción del producto o servicio" />
+                  <label htmlFor={`csal-item-${idx}-desc`} className={labelCls}>Descripción *</label>
+                  <input id={`csal-item-${idx}-desc`} {...register(`items.${idx}.description`)} className={inputCls} placeholder="Descripción del producto o servicio" />
                   {errors.items?.[idx]?.description && (
                     <p className="mt-1 text-xs text-red-600">{errors.items[idx].description?.message}</p>
                   )}
                 </div>
                 <div>
-                  <label className={labelCls}>Cantidad *</label>
-                  <input type="number" step="0.001" {...register(`items.${idx}.quantity`)} className={inputCls} />
+                  <input aria-label="Cantidad" type="number" step="0.001" {...register(`items.${idx}.quantity`)} className={inputCls} />
                 </div>
                 <div>
-                  <label className={labelCls}>Precio unitario neto *</label>
-                  <input type="number" step="0.01" {...register(`items.${idx}.unitPrice`)} className={inputCls} />
+                  <input aria-label="Precio unitario neto" type="number" step="0.01" {...register(`items.${idx}.unitPrice`)} className={inputCls} />
                 </div>
                 <div>
-                  <label className={labelCls}>IVA (%)</label>
-                  <input type="number" step="1" {...register(`items.${idx}.vatRate`)} className={inputCls} />
+                  <input aria-label="IVA %" type="number" step="1" {...register(`items.${idx}.vatRate`)} className={inputCls} />
                 </div>
               </div>
             </div>

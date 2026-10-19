@@ -59,8 +59,8 @@ export function CreatePaymentModal({ workOrderId, balance, onSuccess, onClose }:
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className={labelCls}>Método</label>
-          <select {...register('method')} className={inputCls}>
+          <label htmlFor="pay-method" className={labelCls}>Método</label>
+          <select id="pay-method" {...register('method')} className={inputCls}>
             {(Object.entries(METHOD_LABELS) as [PaymentMethod, string][]).map(([v, l]) => (
               <option key={v} value={v}>{l}</option>
             ))}
@@ -68,8 +68,9 @@ export function CreatePaymentModal({ workOrderId, balance, onSuccess, onClose }:
         </div>
 
         <div>
-          <label className={labelCls}>Monto</label>
+          <label htmlFor="pay-amount" className={labelCls}>Monto</label>
           <input
+            id="pay-amount"
             type="number"
             step="0.01"
             {...register('amount', { valueAsNumber: true })}
@@ -80,8 +81,8 @@ export function CreatePaymentModal({ workOrderId, balance, onSuccess, onClose }:
         </div>
 
         <div>
-          <label className={labelCls}>Referencia <span className="normal-case font-normal text-slate-400">(opcional)</span></label>
-          <input type="text" {...register('reference')} className={inputCls} placeholder="N° de transferencia, etc." />
+          <label htmlFor="pay-ref" className={labelCls}>Referencia <span className="normal-case font-normal text-slate-400">(opcional)</span></label>
+          <input id="pay-ref" type="text" {...register('reference')} className={inputCls} placeholder="N° de transferencia, etc." />
         </div>
 
         {serverError && (

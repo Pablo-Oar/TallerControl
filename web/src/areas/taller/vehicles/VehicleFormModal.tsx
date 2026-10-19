@@ -117,8 +117,9 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Patente *</label>
+            <label htmlFor="veh-plate" className={labelCls}>Patente *</label>
             <input
+              id="veh-plate"
               {...register('plate')}
               className={`${inputCls} font-mono tracking-widest uppercase`}
               placeholder="ABC123"
@@ -127,8 +128,8 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
             {errors.plate && <p className="mt-1 text-xs text-tc-stamp-red">{errors.plate.message}</p>}
           </div>
           <div>
-            <label className={labelCls}>Cliente *</label>
-            <select {...register('customerId')} className={inputCls}>
+            <label htmlFor="veh-customer" className={labelCls}>Cliente *</label>
+            <select id="veh-customer" {...register('customerId')} className={inputCls}>
               <option value="">Seleccioná un cliente</option>
               {customersPage?.items.map(c => (
                 <option key={c.id} value={c.id}>{c.name}</option>
@@ -140,62 +141,62 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Marca</label>
-            <input {...register('brand')} className={inputCls} placeholder="Toyota" />
+            <label htmlFor="veh-brand" className={labelCls}>Marca</label>
+            <input id="veh-brand" {...register('brand')} className={inputCls} placeholder="Toyota" />
           </div>
           <div>
-            <label className={labelCls}>Modelo</label>
-            <input {...register('model')} className={inputCls} placeholder="Corolla" />
+            <label htmlFor="veh-model" className={labelCls}>Modelo</label>
+            <input id="veh-model" {...register('model')} className={inputCls} placeholder="Corolla" />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Versión</label>
-            <input {...register('version')} className={inputCls} placeholder="XEI CVT" />
+            <label htmlFor="veh-version" className={labelCls}>Versión</label>
+            <input id="veh-version" {...register('version')} className={inputCls} placeholder="XEI CVT" />
           </div>
           <div>
-            <label className={labelCls}>Color</label>
-            <input {...register('color')} className={inputCls} placeholder="Blanco" />
+            <label htmlFor="veh-color" className={labelCls}>Color</label>
+            <input id="veh-color" {...register('color')} className={inputCls} placeholder="Blanco" />
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className={labelCls}>Año</label>
-            <input type="number" {...register('year')} className={inputCls} placeholder="2020" min={1900} max={new Date().getFullYear() + 1} />
+            <label htmlFor="veh-year" className={labelCls}>Año</label>
+            <input id="veh-year" type="number" {...register('year')} className={inputCls} placeholder="2020" min={1900} max={new Date().getFullYear() + 1} />
             {errors.year && <p className="mt-1 text-xs text-tc-stamp-red">{errors.year.message}</p>}
           </div>
           <div>
-            <label className={labelCls}>Combustible</label>
-            <select {...register('fuel')} className={inputCls}>
+            <label htmlFor="veh-fuel" className={labelCls}>Combustible</label>
+            <select id="veh-fuel" {...register('fuel')} className={inputCls}>
               <option value="">Sin especificar</option>
               {FUEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
           <div>
-            <label className={labelCls}>Km actuales *</label>
-            <input type="number" {...register('odometerKm')} className={`${inputCls} tabular-nums`} placeholder="0" min={0} />
+            <label htmlFor="veh-odometer" className={labelCls}>Km actuales *</label>
+            <input id="veh-odometer" type="number" {...register('odometerKm')} className={`${inputCls} tabular-nums`} placeholder="0" min={0} />
             {errors.odometerKm && <p className="mt-1 text-xs text-tc-stamp-red">{errors.odometerKm.message}</p>}
           </div>
         </div>
 
         <div>
-          <label className={labelCls}>VIN / Nro. de chasis</label>
-          <input {...register('vin')} className={`${inputCls} font-mono`} placeholder="1HGBH41JXMN109186" maxLength={17} />
+          <label htmlFor="veh-vin" className={labelCls}>VIN / Nro. de chasis</label>
+          <input id="veh-vin" {...register('vin')} className={`${inputCls} font-mono`} placeholder="1HGBH41JXMN109186" maxLength={17} />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Perfil de uso</label>
-            <select {...register('usageProfile')} className={inputCls}>
+            <label htmlFor="veh-usage" className={labelCls}>Perfil de uso</label>
+            <select id="veh-usage" {...register('usageProfile')} className={inputCls}>
               <option value="">Sin especificar</option>
               {USAGE_PROFILE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
           <div>
-            <label className={labelCls}>Nro. de motor</label>
-            <input {...register('engineNumber')} className={`${inputCls} font-mono`} placeholder="ABC123456" maxLength={30} />
+            <label htmlFor="veh-engine" className={labelCls}>Nro. de motor</label>
+            <input id="veh-engine" {...register('engineNumber')} className={`${inputCls} font-mono`} placeholder="ABC123456" maxLength={30} />
           </div>
         </div>
 

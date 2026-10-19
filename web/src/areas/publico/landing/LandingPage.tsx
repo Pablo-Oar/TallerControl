@@ -60,15 +60,15 @@ export function LandingPage() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
       {/* Nav */}
-      <nav className="flex items-center justify-between border-b border-tc-border bg-tc-navy px-6 py-4">
+      <nav className="flex items-center justify-between border-b border-tc-border bg-tc-navy px-6 py-3">
         <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white">TallerControl</span>
-        <div className="flex items-center gap-4 text-sm">
-          <Link to="/login" className="text-slate-300 hover:text-white transition-colors text-xs font-bold tracking-wider uppercase">
+        <div className="flex items-center gap-2">
+          <Link to="/login" className="inline-flex items-center justify-center min-h-[44px] px-4 text-xs font-bold tracking-wider uppercase text-slate-300 hover:text-white transition-colors">
             Ingresar
           </Link>
           <Link
             to="/registro"
-            className="border border-white px-4 py-2 text-xs font-bold tracking-wider uppercase text-white hover:bg-white hover:text-tc-navy transition-colors"
+            className="inline-flex items-center justify-center min-h-[44px] border border-white px-4 text-xs font-bold tracking-wider uppercase text-white hover:bg-white hover:text-tc-navy transition-colors"
           >
             Crear cuenta
           </Link>
@@ -161,7 +161,7 @@ export function LandingPage() {
                 </ul>
                 <Link
                   to={plan.href}
-                  className={`block w-full py-2.5 text-center text-xs font-bold tracking-wider uppercase transition-colors ${
+                  className={`flex items-center justify-center w-full min-h-[44px] text-xs font-bold tracking-wider uppercase transition-colors ${
                     plan.highlight
                       ? 'border border-slate-600 bg-transparent text-slate-400 cursor-not-allowed pointer-events-none'
                       : 'border border-tc-navy bg-tc-navy text-white hover:bg-transparent hover:text-tc-navy'

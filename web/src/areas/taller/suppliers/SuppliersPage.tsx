@@ -128,8 +128,9 @@ export function SuppliersPage() {
             )}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Nombre *</label>
+                <label htmlFor="sup-name" className={labelCls}>Nombre *</label>
                 <input
+                  id="sup-name"
                   type="text"
                   value={formName}
                   onChange={e => setFormName(e.target.value)}
@@ -138,8 +139,9 @@ export function SuppliersPage() {
                 />
               </div>
               <div>
-                <label className={labelCls}>CUIT</label>
+                <label htmlFor="sup-cuit" className={labelCls}>CUIT</label>
                 <input
+                  id="sup-cuit"
                   type="text"
                   value={formCuit}
                   onChange={e => setFormCuit(e.target.value)}
@@ -148,8 +150,9 @@ export function SuppliersPage() {
                 />
               </div>
               <div className="col-span-2">
-                <label className={labelCls}>Condición IVA *</label>
+                <label htmlFor="sup-vat" className={labelCls}>Condición IVA *</label>
                 <select
+                  id="sup-vat"
                   value={formVat}
                   onChange={e => setFormVat(e.target.value as VatCondition)}
                   className={inputCls}

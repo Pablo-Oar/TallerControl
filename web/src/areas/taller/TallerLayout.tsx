@@ -205,7 +205,7 @@ export function TallerLayout({ children }: { children: ReactNode }) {
           {/* Role chip at bottom of sidebar */}
           <div className="mt-auto px-4 pb-5">
             <span className="inline-flex items-center border border-tc-navy-mid px-2 py-0.5 text-[10px] font-bold tracking-widest text-tc-navy-text uppercase">
-              {role.replace('_', ' ')}
+              {({ owner: 'Dueño', admin_staff: 'Administrador', mechanic: 'Mecánico', accountant: 'Contador' } as Record<string, string>)[role] ?? role}
             </span>
           </div>
         </aside>

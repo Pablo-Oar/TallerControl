@@ -45,6 +45,11 @@
   /* Typography */
   --font-family-sans: ui-sans-serif, system-ui, Arial, Helvetica, sans-serif;
   --font-family-mono: ui-monospace, 'Courier New', monospace;
+
+  /* Semantic text tokens */
+  --color-tc-text: #0f172a;
+  --color-tc-text-secondary: #475569;
+  --color-tc-text-muted: #94a3b8;
 }
 
 /* Browser surface theming */
@@ -54,6 +59,15 @@
 }
 
 :focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
+}
+
+/* Override outline-none on form elements: specificity 0,1,1 beats utility class 0,1,0 */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
   outline: 2px solid #7c3aed;
   outline-offset: 2px;
 }
