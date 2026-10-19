@@ -36,7 +36,7 @@ function PageFallback() {
 /** Área del taller (`/app/*`): dueño y administrativo. Escritorio primero. */
 export function Component() {
   return (
-    <RequireAuth>
+    <RequireAuth area="app">
       <TallerLayout>
         <Suspense fallback={<PageFallback />}>
           <Routes>

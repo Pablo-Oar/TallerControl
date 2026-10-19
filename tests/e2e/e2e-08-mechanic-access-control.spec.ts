@@ -13,13 +13,12 @@ test.describe('E2E-08: Control de acceso del mecánico', () => {
   test.skip(!E2E_RUN, 'Requiere E2E_RUN=1 y entorno local levantado')
   test.skip(!HAS_MECHANIC, 'Requiere E2E_MECHANIC_EMAIL y E2E_MECHANIC_PASSWORD')
 
-  test('mecánico no ve enlace de Pagos en la navegación', async ({ page }) => {
+  test('mecánico no ve enlace de Pagos en su área', async ({ page }) => {
     await loginAsMechanic(page)
 
-    // Verificar que el nav de mecánico NO contiene el link a Pagos
-    const nav = page.getByRole('navigation')
-    await expect(nav).toBeVisible()
-    await expect(nav.getByRole('link', { name: /pagos/i })).not.toBeVisible()
+    // El área /m no tiene menú de panel: aterriza en /m y no expone ningún enlace a Pagos/Cobros.
+    await expect(page).toHaveURL(/\/m(\/|$)/)
+    await expect(page.getByRole('link', { name: /pagos|cobros/i })).toHaveCount(0)
   })
 
   test('mecánico que fuerza /app/* es redirigido al área de mecánico', async ({ page }) => {
@@ -29,18 +28,18 @@ test.describe('E2E-08: Control de acceso del mecánico', () => {
     await page.goto('/app/work-orders')
 
     // Debe redirigir al área de mecánico (/m)
-    await expect(page).toHaveURL(/^\/m/)
+    await expect(page).toHaveURL(/\/m(\/|$)/)
   })
 
   test('mecánico que intenta /app/quotes es redirigido a /m', async ({ page }) => {
     await loginAsMechanic(page)
     await page.goto('/app/quotes')
-    await expect(page).toHaveURL(/^\/m/)
+    await expect(page).toHaveURL(/\/m(\/|$)/)
   })
 
   test('mecánico que intenta /app/catalog es redirigido a /m', async ({ page }) => {
     await loginAsMechanic(page)
     await page.goto('/app/catalog')
-    await expect(page).toHaveURL(/^\/m/)
+    await expect(page).toHaveURL(/\/m(\/|$)/)
   })
 })
