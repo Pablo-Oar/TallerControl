@@ -24,3 +24,5 @@
 ## Registro de componentes
 
 - `floating-input`: **no se vendoreó.** F1 implementa `components/ui/FormField.tsx` propio con la idea de etiqueta flotante (por CSS, sin `motion`), porque el código original tenía los defectos listados arriba. Sin archivo en esta carpeta, sin dependencias nuevas.
+- `draw-signature`: **no se vendoreó.** F1 implementa `components/ui/SignaturePad.tsx` propio (Pointer Events, trazo suavizado, PNG con fondo blanco, `clear()`/`toBlob()` por ref), porque el original exige `next-themes`, `react-use-measure` y `react-icons`.
+- Button animado: `components/ui/Button.tsx` incorpora el brillo de `shimmer-button` (idea portada, sin código vendored).

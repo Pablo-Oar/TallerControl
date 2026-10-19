@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { useParams } from 'react-router'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { publicApi, type SubmitPublicResponseRequest, QUOTE_STATUS_LABELS } from '../../../lib/api/quotes'
 import { ApiError } from '../../../lib/api/client'
 import { Button } from '../../../components/ui/Button'
+import { SignaturePad, type SignaturePadHandle } from '../../../components/ui/SignaturePad'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 
 const inputCls =
@@ -29,18 +30,7 @@ export function PublicQuotePage() {
   const [submitted, setSubmitted] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
   const [signerDocNumber, setSignerDocNumber] = useState('')
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [isDrawing, setIsDrawing] = useState(false)
-  const [hasSig, setHasSig] = useState(false)
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-    ctx.fillStyle = '#fff'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-  }, [])
+  const sigRef = useRef<SignaturePadHandle>(null)
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['public-quote', token],
@@ -102,83 +92,24 @@ export function PublicQuotePage() {
     )
   }
 
-  function getCanvasPos(canvas: HTMLCanvasElement, e: React.MouseEvent | React.TouchEvent) {
-    const rect = canvas.getBoundingClientRect()
-    const scaleX = canvas.width / rect.width
-    const scaleY = canvas.height / rect.height
-    if ('touches' in e) {
-      const t = e.touches[0]
-      return { x: (t.clientX - rect.left) * scaleX, y: (t.clientY - rect.top) * scaleY }
-    }
-    return {
-      x: ((e as React.MouseEvent).clientX - rect.left) * scaleX,
-      y: ((e as React.MouseEvent).clientY - rect.top) * scaleY,
-    }
-  }
-
-  function startDraw(e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) {
-    e.preventDefault()
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-    const { x, y } = getCanvasPos(canvas, e)
-    ctx.beginPath()
-    ctx.moveTo(x, y)
-    setIsDrawing(true)
-    setHasSig(true)
-  }
-
-  function draw(e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) {
-    e.preventDefault()
-    if (!isDrawing) return
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-    const { x, y } = getCanvasPos(canvas, e)
-    ctx.lineWidth = 2
-    ctx.lineCap = 'round'
-    ctx.strokeStyle = '#1e293b'
-    ctx.lineTo(x, y)
-    ctx.stroke()
-  }
-
-  function endDraw() { setIsDrawing(false) }
-
-  function clearCanvas() {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-    ctx.fillStyle = '#fff'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-    setHasSig(false)
-  }
-
   async function onSubmit(values: FormData) {
     if (!data) return
     let sigKey: string | null = null
-    if (hasSig) {
-      const canvas = canvasRef.current
-      if (canvas) {
-        try {
-          const blob = await new Promise<Blob>((resolve, reject) => {
-            canvas.toBlob(b => b ? resolve(b) : reject(new Error('canvas vacío')), 'image/png')
-          })
-          const urlResp = await publicApi.getSignatureUploadUrl(token!, {
-            contentType: 'image/png',
-            size: blob.size,
-          })
-          await fetch(urlResp.uploadUrl, {
-            method: 'PUT',
-            body: blob,
-            headers: { 'Content-Type': 'image/png' },
-          })
-          sigKey = urlResp.fileKey
-        } catch {
-          // Si falla la subida de firma, continuar sin ella
-        }
+    const blob = await sigRef.current?.toBlob()
+    if (blob) {
+      try {
+        const urlResp = await publicApi.getSignatureUploadUrl(token!, {
+          contentType: 'image/png',
+          size: blob.size,
+        })
+        await fetch(urlResp.uploadUrl, {
+          method: 'PUT',
+          body: blob,
+          headers: { 'Content-Type': 'image/png' },
+        })
+        sigKey = urlResp.fileKey
+      } catch {
+        // Si falla la subida de firma, continuar sin ella
       }
     }
     const body: SubmitPublicResponseRequest = {
@@ -330,32 +261,7 @@ export function PublicQuotePage() {
                 {/* Firma digital */}
                 <div>
                   <p className={labelCls}>Firma <span className="font-normal normal-case text-slate-400">(opcional)</span></p>
-                  <div className="border border-tc-border bg-white overflow-hidden touch-none select-none">
-                    <canvas
-                      ref={canvasRef}
-                      width={600}
-                      height={160}
-                      className="w-full"
-                      style={{ cursor: 'crosshair' }}
-                      onMouseDown={startDraw}
-                      onMouseMove={draw}
-                      onMouseUp={endDraw}
-                      onMouseLeave={endDraw}
-                      onTouchStart={startDraw}
-                      onTouchMove={draw}
-                      onTouchEnd={endDraw}
-                    />
-                  </div>
-                  <div className="mt-1 flex items-center justify-between">
-                    <p className="text-xs text-slate-400">Dibuje su firma con el dedo o el mouse</p>
-                    <button
-                      type="button"
-                      onClick={clearCanvas}
-                      className="text-xs font-bold tracking-wider uppercase text-slate-400 hover:text-tc-stamp-red transition-colors"
-                    >
-                      Borrar firma
-                    </button>
-                  </div>
+                  <SignaturePad ref={sigRef} />
                 </div>
 
                 {/* DNI */}
