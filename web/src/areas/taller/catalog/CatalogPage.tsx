@@ -172,7 +172,7 @@ export function CatalogPage() {
                       )}
                     </div>
 
-                    <div className="flex items-center justify-end gap-2 px-3 py-3 border-l border-tc-border bg-tc-stub-bg">
+                    <div className="flex h-full items-center justify-center gap-2 border-l border-tc-border bg-tc-stub-bg px-2">
                       {item.trackStock && item.isActive && (
                         <button
                           onClick={() => setAdjusting(item)}

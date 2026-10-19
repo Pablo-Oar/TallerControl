@@ -93,7 +93,7 @@ export function VehiclesPage() {
         <>
           <div className="border border-tc-border bg-white overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-[7rem_1fr_2.5rem] md:grid-cols-[7rem_1fr_3.5rem_1fr_2.5rem] border-b border-tc-border bg-tc-stub-bg">
+            <div className="grid grid-cols-[7rem_1fr_3.5rem] md:grid-cols-[7rem_1fr_3.5rem_1fr_3.5rem] border-b border-tc-border bg-tc-stub-bg">
               {[
                 ['Patente', '', false],
                 ['Marca / Modelo', '', false],
@@ -116,7 +116,7 @@ export function VehiclesPage() {
                 {data.items.map(v => (
                   <li
                     key={v.id}
-                    className={`grid grid-cols-[7rem_1fr_2.5rem] md:grid-cols-[7rem_1fr_3.5rem_1fr_2.5rem] items-center transition-colors ${v.isDeleted ? 'bg-red-50 opacity-60' : 'hover:bg-tc-surface'}`}
+                    className={`grid grid-cols-[7rem_1fr_3.5rem] md:grid-cols-[7rem_1fr_3.5rem_1fr_3.5rem] items-center transition-colors ${v.isDeleted ? 'bg-red-50 opacity-60' : 'hover:bg-tc-surface'}`}
                   >
                     <div className="px-4 py-3">
                       <span className="font-mono text-sm font-bold tracking-widest text-slate-800">{v.plate}</span>
@@ -133,18 +133,18 @@ export function VehiclesPage() {
                     <div className="hidden md:block px-4 py-3">
                       <span className="text-sm text-slate-500 truncate">{v.customerName}</span>
                     </div>
-                    <div className="flex items-center justify-center border-l border-tc-border bg-tc-stub-bg px-2 py-3">
+                    <div className="flex h-full items-center justify-center border-l border-tc-border bg-tc-stub-bg">
                       {v.isDeleted ? (
                         <button
                           onClick={() => handleRestore(v)}
-                          className="text-[10px] font-bold tracking-wider uppercase text-green-700 hover:text-green-900 transition-colors"
+                          className="px-3 py-3 text-[10px] font-bold tracking-wider uppercase text-green-700 hover:text-green-900 transition-colors"
                         >
                           Restaurar
                         </button>
                       ) : (
                         <button
                           onClick={() => setEditing(v)}
-                          className="text-[10px] font-bold tracking-wider uppercase text-tc-navy-text-dim hover:text-tc-purple transition-colors"
+                          className="px-3 py-3 text-[10px] font-bold tracking-wider uppercase text-tc-navy-text-dim hover:text-tc-purple transition-colors"
                         >
                           Editar
                         </button>
