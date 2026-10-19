@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { remindersApi } from '../../../lib/api/reminders'
 import { Button } from '../../../components/ui/Button'
+import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
@@ -24,9 +25,6 @@ const schema = z
 
 type FormValues = z.infer<typeof schema>
 
-const inputCls =
-  'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 interface Props {
   id: string | null
@@ -119,88 +117,36 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
       )}
 
       <form onSubmit={onSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="rem-vehicle" className={labelCls}>ID del vehículo</label>
-          <input
-            id="rem-vehicle"
-            {...register('vehicleId')}
-            className={`${inputCls} font-mono text-xs`}
-            placeholder="UUID del vehículo"
-          />
-          {errors.vehicleId && (
-            <p className="mt-1 text-xs text-tc-stamp-red">{errors.vehicleId.message}</p>
-          )}
-        </div>
+        <FormField
+          label="ID del vehículo"
+          placeholder="UUID del vehículo"
+          inputClassName="font-mono text-xs"
+          error={errors.vehicleId?.message}
+          {...register('vehicleId')}
+        />
 
-        <div>
-          <label htmlFor="rem-kind" className={labelCls}>Tipo</label>
-          <select
-            id="rem-kind"
-            {...register('kind')}
-            className="w-full border border-tc-border bg-white px-3 py-2 text-sm outline-none focus:border-tc-border-mid transition-colors"
-          >
-            <option value="service_due">Service / Mantenimiento</option>
-            <option value="inspection_due">VTV / Inspección</option>
-            <option value="insurance_due">Seguro</option>
-            <option value="other_due">Otro vencimiento</option>
-          </select>
-        </div>
+        <FormSelect label="Tipo" {...register('kind')}>
+          <option value="service_due">Service / Mantenimiento</option>
+          <option value="inspection_due">VTV / Inspección</option>
+          <option value="insurance_due">Seguro</option>
+          <option value="other_due">Otro vencimiento</option>
+        </FormSelect>
 
-        <div>
-          <label htmlFor="rem-title" className={labelCls}>Título</label>
-          <input
-            id="rem-title"
-            {...register('title')}
-            className={inputCls}
-            placeholder="Ej. Cambio de aceite"
-          />
-          {errors.title && (
-            <p className="mt-1 text-xs text-tc-stamp-red">{errors.title.message}</p>
-          )}
-        </div>
+        <FormField label="Título" placeholder="Ej. Cambio de aceite" error={errors.title?.message} {...register('title')} />
 
         <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label htmlFor="rem-due-date" className={labelCls}>
-              Fecha límite <span className="font-normal normal-case text-slate-400">(opcional)</span>
-            </label>
-            <input
-              id="rem-due-date"
-              type="date"
-              {...register('dueDate')}
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <label htmlFor="rem-due-km" className={labelCls}>
-              Km límite <span className="font-normal normal-case text-slate-400">(opcional)</span>
-            </label>
-            <input
-              id="rem-due-km"
-              type="number"
-              min={0}
-              {...register('dueKm', { valueAsNumber: true })}
-              className={inputCls}
-              placeholder="Ej. 50000"
-            />
-          </div>
-        </div>
-        {errors.dueDate && (
-          <p className="text-xs text-tc-stamp-red">{errors.dueDate.message}</p>
-        )}
-
-        <div>
-          <label htmlFor="rem-notes" className={labelCls}>
-            Notas <span className="font-normal normal-case text-slate-400">(opcional)</span>
-          </label>
-          <textarea
-            id="rem-notes"
-            rows={2}
-            {...register('notes')}
-            className={inputCls}
-            placeholder="Observaciones adicionales"
+          <FormField label="Fecha límite (opcional)" type="date" error={errors.dueDate?.message} {...register('dueDate')} />
+          <FormField
+            label="Km límite (opcional)"
+            type="number"
+            min={0}
+            placeholder="Ej. 50000"
+            inputClassName="tabular-nums"
+            {...register('dueKm', { valueAsNumber: true })}
           />
         </div>
+
+        <FormTextarea label="Notas (opcional)" rows={2} placeholder="Observaciones adicionales" {...register('notes')} />
 
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="secondary" type="button" onClick={onClose}>

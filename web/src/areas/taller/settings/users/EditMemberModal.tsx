@@ -3,6 +3,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import type { MemberDto, UpdateMembershipRequest, TenantRole, MembershipStatus } from '../../../../lib/api/users'
 import { Button } from '../../../../components/ui/Button'
+import { FormSelect } from '../../../../components/ui/FormField'
+import { Modal } from '../../../../components/ui/Modal'
 
 const schema = z.object({
   role: z.enum(['owner', 'admin_staff', 'mechanic']),
@@ -33,50 +35,33 @@ export function EditMemberModal({ member, saving, error, onSave, onClose }: Prop
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-lg">
-        <h2 className="mb-4 text-lg font-semibold">Editar {member.displayName}</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label htmlFor="edit-member-role" className="text-sm font-medium text-slate-700">Rol</label>
-            <select
-              id="edit-member-role"
-              {...register('role')}
-              className="border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors"
-            >
-              <option value="owner">Dueño</option>
-              <option value="admin_staff">Administrativo</option>
-              <option value="mechanic">Mecánico</option>
-            </select>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="edit-member-status" className="text-sm font-medium text-slate-700">Estado</label>
-            <select
-              id="edit-member-status"
-              {...register('status')}
-              className="border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors"
-            >
-              <option value="active">Activo</option>
-              <option value="inactive">Inactivo</option>
-            </select>
-          </div>
+    <Modal title={`Editar ${member.displayName}`} onClose={onClose} className="max-w-sm">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <FormSelect label="Rol" {...register('role')}>
+          <option value="owner">Dueño</option>
+          <option value="admin_staff">Administrativo</option>
+          <option value="mechanic">Mecánico</option>
+        </FormSelect>
+        <FormSelect label="Estado" {...register('status')}>
+          <option value="active">Activo</option>
+          <option value="inactive">Inactivo</option>
+        </FormSelect>
 
-          {error && (
-            <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-              {error}
-            </p>
-          )}
+        {error && (
+          <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </p>
+        )}
 
-          <div className="flex justify-end gap-3 pt-2">
-            <Button type="button" variant="secondary" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button type="submit" loading={saving}>
-              Guardar
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="flex justify-end gap-3 pt-2">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" loading={saving}>
+            Guardar
+          </Button>
+        </div>
+      </form>
+    </Modal>
   )
 }

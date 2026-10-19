@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { workOrdersApi, type WorkOrderStatus, STATUS_LABELS } from '../../../lib/api/workOrders'
 import { Button } from '../../../components/ui/Button'
+import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
@@ -24,8 +25,6 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 interface Props {
   orderId: string
@@ -64,26 +63,16 @@ export function ChangeStatusModal({ orderId, currentStatus, onSuccess, onClose }
   return (
     <Modal title="Cambiar estado" onClose={onClose} className="max-w-md">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label htmlFor="cs-status" className={labelCls}>Nuevo estado *</label>
-          <select id="cs-status" {...register('toStatus')} className={inputCls}>
-            {transitions.map(s => (
-              <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-            ))}
-          </select>
-          {errors.toStatus && <p className="mt-1 text-xs text-tc-stamp-red">{errors.toStatus.message}</p>}
-        </div>
+        <FormSelect label="Nuevo estado" requiredMark error={errors.toStatus?.message} {...register('toStatus')}>
+          {transitions.map(s => (
+            <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+          ))}
+        </FormSelect>
 
-        <div>
-          <label htmlFor="cs-note" className={labelCls}>Nota (opcional)</label>
-          <textarea id="cs-note" {...register('note')} rows={2} className={inputCls} placeholder="Comentario sobre el cambio…" />
-        </div>
+        <FormTextarea label="Nota (opcional)" rows={2} placeholder="Comentario sobre el cambio…" {...register('note')} />
 
         {toStatus === 'cancelled' && (
-          <div>
-            <label htmlFor="cs-cancel-reason" className={labelCls}>Motivo de cancelación</label>
-            <input id="cs-cancel-reason" {...register('cancelReason')} className={inputCls} placeholder="Motivo…" />
-          </div>
+          <FormField label="Motivo de cancelación" placeholder="Motivo…" {...register('cancelReason')} />
         )}
 
         {serverError && (
