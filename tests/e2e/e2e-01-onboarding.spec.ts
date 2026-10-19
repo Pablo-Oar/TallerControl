@@ -4,21 +4,23 @@ import { test, expect } from '@playwright/test'
  * E2E-01: Alta del taller y primer usuario (doc 08 §3).
  * Flujo: invitación → definir contraseña → login → acceso al panel.
  *
- * Requiere el entorno local levantado (dev.ps1) con un taller de prueba
- * ya creado y un token de invitación válido en la variable de entorno
- * E2E_INVITATION_TOKEN.
+ * Requiere E2E_RUN=1 y el entorno local levantado (dev.ps1). Los dos primeros tests además necesitan un
+ * token de invitación válido en E2E_INVITATION_TOKEN (el token solo viaja por email/outbox: en local se
+ * lee de `outbox_messages`, payload "Token"); el de credenciales incorrectas corre siempre.
  *
  * Nota: "configurar logo" (último paso del E2E-01) está pendiente hasta
  * que se implemente la pantalla de configuración del taller (E2 o posterior).
  */
 
 const INVITATION_TOKEN = process.env.E2E_INVITATION_TOKEN ?? ''
+const E2E_RUN = process.env.E2E_RUN === '1'
 const E2E_PASSWORD = 'E2eTestPass123!'
 
 test.describe('E2E-01: Alta del taller y primer usuario', () => {
-  test.skip(!INVITATION_TOKEN, 'Se requiere E2E_INVITATION_TOKEN en el entorno')
+  test.skip(!E2E_RUN, 'Requiere E2E_RUN=1 y entorno local levantado')
 
   test('invitación → contraseña → login → acceso al panel', async ({ page }) => {
+    test.skip(!INVITATION_TOKEN, 'Se requiere E2E_INVITATION_TOKEN en el entorno')
     // 1. Abrir URL de invitación
     await page.goto(`/invitations/${INVITATION_TOKEN}/accept`)
     await expect(page.getByRole('heading', { name: /activar cuenta/i })).toBeVisible()

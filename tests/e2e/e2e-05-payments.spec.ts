@@ -1,10 +1,20 @@
 import { test, expect } from '@playwright/test'
-import { loginAsOwner, uid } from './helpers'
+import {
+  changeStatus,
+  createCustomer,
+  createVehicle,
+  createWorkOrder,
+  dialog,
+  loginAsOwner,
+  openWorkOrder,
+  uid,
+  uniquePlate,
+} from './helpers'
 
 /**
- * E2E-05: Pago parcial → pago completo → entrega → enlace PDF (doc 08 §3).
- * El OT pasa por InProgress y Completed antes de los cobros para que la
- * transición a Delivered sea válida.
+ * E2E-05: Cobros y entrega (doc 08 §3).
+ * OT con un servicio de $ 10.000 neto (+ IVA 21 % = $ 12.100): pago parcial → pago del saldo →
+ * entrega → comprobante PDF del cobro.
  */
 
 const E2E_RUN = process.env.E2E_RUN === '1'
@@ -15,76 +25,41 @@ test.describe('E2E-05: Cobros y entrega', () => {
   test('pago parcial → pago completo → entregar → PDF', async ({ page }) => {
     const suffix = uid()
     const customerName = `Cobro E2E ${suffix}`
-    const plate = `DD${suffix.slice(0, 3)}EE`
+    const plate = uniquePlate('DD', suffix)
 
     await loginAsOwner(page)
+    await createCustomer(page, customerName, `cobro${suffix}@test.com`)
+    await createVehicle(page, customerName, plate, { brand: 'Renault', model: 'Sandero', year: 2021 })
+    await createWorkOrder(page, customerName, plate, { description: 'Alineación y balanceo', price: 10000 })
+    await openWorkOrder(page, plate)
 
-    // Crear cliente + vehículo + OT con un servicio
-    await page.goto('/app/customers')
-    await page.getByRole('button', { name: /nuevo cliente/i }).click()
-    await page.getByLabel(/nombre/i).fill(customerName)
-    await page.getByLabel(/email/i).fill(`cobro${suffix}@test.com`)
-    await page.getByRole('button', { name: /guardar/i }).click()
+    // Pending → En proceso → Completada
+    await changeStatus(page, /en proceso/i)
+    await expect(page.getByText(/en proceso/i).first()).toBeVisible()
+    await changeStatus(page, /completada/i)
+    await expect(page.getByText(/completada/i).first()).toBeVisible()
 
-    await page.goto('/app/vehicles')
-    await page.getByRole('button', { name: /nuevo vehículo/i }).click()
-    await page.getByRole('combobox', { name: /cliente/i }).fill(customerName.split(' ')[0])
-    await page.getByRole('option', { name: new RegExp(customerName, 'i') }).first().click()
-    await page.getByLabel(/patente/i).fill(plate)
-    await page.getByLabel(/marca/i).fill('Renault')
-    await page.getByLabel(/modelo/i).fill('Sandero')
-    await page.getByLabel(/año/i).fill('2021')
-    await page.getByRole('button', { name: /guardar/i }).click()
-
-    await page.goto('/app/work-orders')
-    await page.getByRole('button', { name: /nueva orden/i }).click()
-    const clientInput = page.getByPlaceholder(/buscar cliente/i).first()
-    await clientInput.fill(customerName.split(' ')[0])
-    await page.getByRole('option', { name: new RegExp(customerName, 'i') }).first().click()
-    const vehicleInput = page.getByPlaceholder(/buscar vehículo/i).first()
-    await vehicleInput.fill(plate)
-    await page.getByRole('option', { name: new RegExp(plate, 'i') }).first().click()
-
-    // Agregar servicio con precio
-    await page.getByRole('button', { name: /agregar ítem/i }).click()
-    await page.getByPlaceholder(/descripción del servicio/i).last().fill('Alineación y balanceo')
-    await page.getByLabel(/precio unitario/i).last().fill('10000')
-
-    await page.getByRole('button', { name: /guardar/i }).click()
-
-    // Abrir detalle de la OT
-    await page.getByRole('link', { name: /ver detalle/i }).first().click()
-
-    // Avanzar estado: Pending → InProgress → Completed
-    await page.getByRole('button', { name: /cambiar estado/i }).click()
-    await page.getByRole('option', { name: /en proceso/i }).click()
-    await page.getByRole('button', { name: /confirmar/i }).click()
-    await expect(page.getByText(/en proceso/i)).toBeVisible()
-
-    await page.getByRole('button', { name: /cambiar estado/i }).click()
-    await page.getByRole('option', { name: /completada/i }).click()
-    await page.getByRole('button', { name: /confirmar/i }).click()
-    await expect(page.getByText(/completada/i)).toBeVisible()
-
-    // Registrar pago parcial (5000 de 10000)
+    // Pago parcial: 5.000 de 12.100
     await page.getByRole('button', { name: /registrar cobro/i }).click()
-    await page.getByLabel(/monto/i).fill('5000')
-    await page.getByRole('button', { name: /guardar|confirmar/i }).click()
-    await expect(page.getByText(/5\.000|5,000/)).toBeVisible()
+    await dialog(page).getByLabel(/^monto/i).fill('5000')
+    await dialog(page).getByRole('button', { name: /^registrar$/i }).click()
+    await dialog(page).waitFor({ state: 'detached' })
+    await expect(page.getByText(/7\.100/).first()).toBeVisible() // saldo pendiente
 
-    // Registrar segundo pago (los 5000 restantes)
+    // Segundo pago: el saldo restante
     await page.getByRole('button', { name: /registrar cobro/i }).click()
-    await page.getByLabel(/monto/i).fill('5000')
-    await page.getByRole('button', { name: /guardar|confirmar/i }).click()
+    await dialog(page).getByLabel(/^monto/i).fill('7100')
+    await dialog(page).getByRole('button', { name: /^registrar$/i }).click()
+    await dialog(page).waitFor({ state: 'detached' })
 
-    // OT pagada completamente → entregar
-    await page.getByRole('button', { name: /cambiar estado/i }).click()
-    await page.getByRole('option', { name: /entregada/i }).click()
-    await page.getByRole('button', { name: /confirmar/i }).click()
-    await expect(page.getByText(/entregada/i)).toBeVisible()
+    // Saldo cubierto: ya no se ofrece registrar más cobros
+    await expect(page.getByRole('button', { name: /registrar cobro/i })).toHaveCount(0)
 
-    // Verificar que el enlace de PDF del recibo es accesible
-    const pdfLinks = page.getByRole('link', { name: /pdf|recibo/i })
-    await expect(pdfLinks.first()).toBeVisible()
+    // Entregar
+    await changeStatus(page, /entregada/i)
+    await expect(page.getByText(/entregada/i).first()).toBeVisible()
+
+    // Comprobantes PDF de ambos cobros
+    await expect(page.getByRole('link', { name: /^pdf$/i })).toHaveCount(2)
   })
 })
