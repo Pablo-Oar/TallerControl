@@ -9,6 +9,7 @@ const apiTarget = process.env.VITE_API_TARGET ?? 'http://localhost:5233'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    host: true,
     allowedHosts: ['tallercontrol.com.ar'],
     proxy: {
       '/api': apiTarget,

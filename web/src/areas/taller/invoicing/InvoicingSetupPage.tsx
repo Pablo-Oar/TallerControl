@@ -33,7 +33,7 @@ export function InvoicingSetupPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-xl font-bold tracking-tight text-slate-900">Configuración ARCA</h1>
+      <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Configuración ARCA</h1>
 
       <CertificatesSection
         certs={certs ?? []}

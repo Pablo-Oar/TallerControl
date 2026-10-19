@@ -93,9 +93,9 @@ export function CustomersPage() {
         <>
           <div className="border border-tc-border bg-white overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-[1fr_7rem_8rem_6rem_3.5rem] border-b border-tc-border bg-tc-stub-bg">
+            <div className="grid grid-cols-[1fr_6rem_3.5rem] md:grid-cols-[1fr_7rem_8rem_6rem_3.5rem] border-b border-tc-border bg-tc-stub-bg">
               {['Nombre', 'Teléfono', 'Documento', 'Saldo', ''].map((h, i) => (
-                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${i === 3 ? 'text-right' : ''}`}>
+                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${i === 3 ? 'text-right' : ''} ${i === 1 || i === 2 ? 'hidden md:block' : ''}`}>
                   {h}
                 </div>
               ))}
@@ -110,15 +110,15 @@ export function CustomersPage() {
                 {data.items.map(c => (
                   <li
                     key={c.id}
-                    className={`grid grid-cols-[1fr_7rem_8rem_6rem_3.5rem] items-center transition-colors ${c.isDeleted ? 'bg-red-50 opacity-60' : 'hover:bg-tc-surface'}`}
+                    className={`grid grid-cols-[1fr_6rem_3.5rem] md:grid-cols-[1fr_7rem_8rem_6rem_3.5rem] items-center transition-colors ${c.isDeleted ? 'bg-red-50 opacity-60' : 'hover:bg-tc-surface'}`}
                   >
                     <div className="px-4 py-3">
                       <span className="text-sm font-medium text-slate-800">{c.name}</span>
                     </div>
-                    <div className="px-4 py-3">
+                    <div className="hidden md:block px-4 py-3">
                       <span className="text-sm text-slate-500">{c.phone ?? '—'}</span>
                     </div>
-                    <div className="px-4 py-3">
+                    <div className="hidden md:block px-4 py-3">
                       <span className="text-sm text-slate-500">{c.docNumber ?? '—'}</span>
                     </div>
                     <div className="px-4 py-3 text-right">

@@ -30,7 +30,7 @@ export function InvoicingPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">Facturación Electrónica</h1>
+        <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Facturación Electrónica</h1>
         <NavLink
           to="/app/invoicing/setup"
           className="border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-slate-600 hover:bg-tc-surface transition-colors"

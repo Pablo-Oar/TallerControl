@@ -108,17 +108,17 @@ export function CatalogPage() {
         <>
           <div className="border border-tc-border bg-white overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-[1fr_5rem_6rem_5rem_4rem_5rem_6rem] border-b border-tc-border bg-tc-stub-bg">
+            <div className="grid grid-cols-[1fr_5rem_5rem_6rem] md:grid-cols-[1fr_5rem_6rem_5rem_4rem_5rem_6rem] border-b border-tc-border bg-tc-stub-bg">
               {[
-                ['Nombre', ''],
-                ['Tipo', ''],
-                ['SKU', ''],
-                ['Precio neto', 'text-right'],
-                ['IVA', 'text-right'],
-                ['Stock', 'text-right'],
-                ['', ''],
-              ].map(([h, cls], i) => (
-                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${cls}`}>
+                ['Nombre', '', false],
+                ['Tipo', '', false],
+                ['SKU', '', true],
+                ['Precio neto', 'text-right', false],
+                ['IVA', 'text-right', true],
+                ['Stock', 'text-right', true],
+                ['', '', false],
+              ].map(([h, cls, hide], i) => (
+                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${cls} ${hide ? 'hidden md:block' : ''}`}>
                   {h}
                 </div>
               ))}
@@ -134,7 +134,7 @@ export function CatalogPage() {
                   <li
                     key={item.id}
                     className={[
-                      'grid grid-cols-[1fr_5rem_6rem_5rem_4rem_5rem_6rem] items-center hover:bg-tc-surface transition-colors',
+                      'grid grid-cols-[1fr_5rem_5rem_6rem] md:grid-cols-[1fr_5rem_6rem_5rem_4rem_5rem_6rem] items-center hover:bg-tc-surface transition-colors',
                       !item.isActive ? 'opacity-60' : '',
                     ].join(' ')}
                   >
@@ -149,7 +149,7 @@ export function CatalogPage() {
                       <span className="text-xs text-slate-500">{KIND_LABELS[item.kind]}</span>
                     </div>
 
-                    <div className="px-4 py-3">
+                    <div className="hidden md:block px-4 py-3">
                       <span className="font-mono text-xs text-slate-400">{item.sku ?? '—'}</span>
                     </div>
 
@@ -157,11 +157,11 @@ export function CatalogPage() {
                       <span className="tabular-nums text-sm text-tc-purple">{fmtARS(item.netPrice)}</span>
                     </div>
 
-                    <div className="px-4 py-3 text-right">
+                    <div className="hidden md:block px-4 py-3 text-right">
                       <span className="text-xs text-slate-500">{item.vatRate}%</span>
                     </div>
 
-                    <div className="px-4 py-3 text-right">
+                    <div className="hidden md:block px-4 py-3 text-right">
                       {item.trackStock ? (
                         <span className={['tabular-nums text-sm', item.isLowStock ? 'font-semibold text-amber-600' : 'text-slate-700'].join(' ')}>
                           {item.stockQty}

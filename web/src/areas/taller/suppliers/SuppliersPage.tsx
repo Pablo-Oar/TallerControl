@@ -101,7 +101,7 @@ export function SuppliersPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">Proveedores</h1>
+        <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Proveedores</h1>
         <Button size="sm" onClick={openCreate}>Nuevo proveedor</Button>
       </div>
 
@@ -191,7 +191,7 @@ export function SuppliersPage() {
               <tr className="bg-tc-stub-bg border-b border-tc-border">
                 <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Nombre</th>
                 <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">CUIT</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Condición IVA</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 hidden sm:table-cell">Condición IVA</th>
                 <th className="px-4 py-2" />
               </tr>
             </thead>
@@ -199,8 +199,8 @@ export function SuppliersPage() {
               {data.items.map(s => (
                 <tr key={s.id} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
                   <td className="px-4 py-2.5 font-medium text-slate-800">{s.name}</td>
-                  <td className="px-4 py-2.5 font-mono tabular-nums text-slate-600">{s.cuit ?? '—'}</td>
-                  <td className="px-4 py-2.5 text-slate-600 text-xs">{VAT_LABELS[s.vatCondition]}</td>
+                  <td className="px-4 py-2.5 font-mono tabular-nums text-slate-600 whitespace-nowrap">{s.cuit ?? '—'}</td>
+                  <td className="px-4 py-2.5 text-slate-600 text-xs hidden sm:table-cell">{VAT_LABELS[s.vatCondition]}</td>
                   <td className="px-4 py-2.5 text-right">
                     <div className="flex items-center justify-end gap-3 text-xs">
                       <button onClick={() => openEdit(s)} className="text-tc-purple hover:opacity-70">Editar</button>

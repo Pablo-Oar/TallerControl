@@ -26,7 +26,7 @@ export function PlateSearchBar() {
       />
       <button
         type="submit"
-        className="border border-tc-navy-mid bg-transparent px-2 py-1 text-sm text-tc-navy-text hover:text-white hover:border-tc-navy-text transition-colors disabled:opacity-40"
+        className="border border-white/40 bg-white/10 px-2 py-1 text-sm text-white hover:bg-white/20 hover:border-white/70 transition-colors disabled:opacity-30"
         disabled={!value.trim()}
       >
         Ir

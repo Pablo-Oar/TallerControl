@@ -39,7 +39,7 @@ export function RemindersPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">Recordatorios</h1>
+        <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Recordatorios</h1>
         <div className="flex gap-2">
           <Button
             variant="secondary"
@@ -67,11 +67,11 @@ export function RemindersPage() {
           <thead>
             <tr className="bg-tc-stub-bg border-b border-tc-border">
               <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Vehículo</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Tipo</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 hidden sm:table-cell">Tipo</th>
               <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Título</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Fecha límite</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Km límite</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Último aviso</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 hidden sm:table-cell">Fecha límite</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 hidden md:table-cell">Km límite</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 hidden md:table-cell">Último aviso</th>
               <th className="px-4 py-2" />
             </tr>
           </thead>
@@ -149,7 +149,7 @@ function ReminderRow({
   return (
     <tr className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
       <td className="px-4 py-2.5 font-mono tracking-widest text-sm text-slate-800">{reminder.vehiclePlate}</td>
-      <td className="px-4 py-2.5 text-slate-600 text-xs">{getReminderKindLabel(reminder.kind)}</td>
+      <td className="px-4 py-2.5 text-slate-600 text-xs hidden sm:table-cell">{getReminderKindLabel(reminder.kind)}</td>
       <td className="px-4 py-2.5">
         {isDueSoon && (
           <span className="mr-1.5 inline-block border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-amber-700">
@@ -158,17 +158,17 @@ function ReminderRow({
         )}
         <span className="text-sm text-slate-800">{reminder.title}</span>
       </td>
-      <td className="px-4 py-2.5 text-sm text-slate-600 tabular-nums">
+      <td className="px-4 py-2.5 text-sm text-slate-600 tabular-nums hidden sm:table-cell">
         {reminder.dueDate
           ? new Date(reminder.dueDate).toLocaleDateString('es-AR')
           : <span className="text-slate-400">—</span>}
       </td>
-      <td className="px-4 py-2.5 text-sm text-slate-600 tabular-nums">
+      <td className="px-4 py-2.5 text-sm text-slate-600 tabular-nums hidden md:table-cell">
         {reminder.dueKm != null
           ? `${reminder.dueKm.toLocaleString('es-AR')} km`
           : <span className="text-slate-400">—</span>}
       </td>
-      <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums">
+      <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums hidden md:table-cell">
         {reminder.lastNotifiedAt
           ? new Date(reminder.lastNotifiedAt).toLocaleDateString('es-AR')
           : <span className="text-slate-400">—</span>}
