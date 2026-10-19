@@ -7,11 +7,10 @@ import { z } from 'zod'
 import { publicApi, type SubmitPublicResponseRequest, QUOTE_STATUS_LABELS } from '../../../lib/api/quotes'
 import { ApiError } from '../../../lib/api/client'
 import { Button } from '../../../components/ui/Button'
+import { FormField, FormTextarea } from '../../../components/ui/FormField'
 import { SignaturePad, type SignaturePadHandle } from '../../../components/ui/SignaturePad'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 
-const inputCls =
-  'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
 const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const fmtARS = (n: number) =>
@@ -173,19 +172,24 @@ export function PublicQuotePage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-tc-border">
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Descripción</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Cant.</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Precio unit.</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Subtotal</th>
+                  <th className="px-3 py-2 sm:px-4 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Descripción</th>
+                  <th className="hidden px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 sm:table-cell">Cant.</th>
+                  <th className="hidden px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 sm:table-cell">Precio unit.</th>
+                  <th className="px-3 py-2 sm:px-4 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Subtotal</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-tc-border">
                 {data.items.map(item => (
                   <tr key={item.id} className="hover:bg-tc-surface transition-colors">
-                    <td className="px-4 py-3 text-slate-800">{item.description}</td>
-                    <td className="px-4 py-3 text-right tabular-nums text-slate-600">{item.quantity}</td>
-                    <td className="px-4 py-3 text-right tabular-nums text-slate-600">{fmtARS(item.unitNetPrice)}</td>
-                    <td className="px-4 py-3 text-right tabular-nums font-bold text-slate-800">{fmtARS(item.lineTotal)}</td>
+                    <td className="px-3 py-3 sm:px-4 text-slate-800">
+                      {item.description}
+                      <span className="block text-xs tabular-nums text-slate-500 sm:hidden">
+                        {item.quantity} × {fmtARS(item.unitNetPrice)}
+                      </span>
+                    </td>
+                    <td className="hidden px-4 py-3 text-right tabular-nums text-slate-600 sm:table-cell">{item.quantity}</td>
+                    <td className="hidden px-4 py-3 text-right tabular-nums text-slate-600 sm:table-cell">{fmtARS(item.unitNetPrice)}</td>
+                    <td className="px-3 py-3 sm:px-4 text-right tabular-nums font-bold text-slate-800">{fmtARS(item.lineTotal)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -223,15 +227,13 @@ export function PublicQuotePage() {
             </div>
             <div className="px-6 py-5">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                <div>
-                  <label htmlFor="pq-signer-name" className={labelCls}>
-                    Nombre completo <span className="text-tc-stamp-red">*</span>
-                  </label>
-                  <input id="pq-signer-name" {...register('signerName')} className={inputCls} placeholder="Juan García" />
-                  {errors.signerName && (
-                    <p className="mt-1 text-xs text-tc-stamp-red">{errors.signerName.message}</p>
-                  )}
-                </div>
+                <FormField
+                  label="Nombre completo"
+                  requiredMark
+                  placeholder="Juan García"
+                  error={errors.signerName?.message}
+                  {...register('signerName')}
+                />
 
                 <fieldset>
                   <legend className={labelCls}>Decisión</legend>
@@ -247,16 +249,12 @@ export function PublicQuotePage() {
                   </div>
                 </fieldset>
 
-                <div>
-                  <label htmlFor="pq-comment" className={labelCls}>Comentario <span className="font-normal normal-case text-slate-400">(opcional)</span></label>
-                  <textarea
-                    id="pq-comment"
-                    {...register('comment')}
-                    rows={3}
-                    className={inputCls}
-                    placeholder="Puede agregar observaciones..."
-                  />
-                </div>
+                <FormTextarea
+                  label="Comentario (opcional)"
+                  rows={3}
+                  placeholder="Puede agregar observaciones..."
+                  {...register('comment')}
+                />
 
                 {/* Firma digital */}
                 <div>
@@ -265,21 +263,16 @@ export function PublicQuotePage() {
                 </div>
 
                 {/* DNI */}
-                <div>
-                  <label htmlFor="pq-doc-number" className={labelCls}>DNI / Documento <span className="font-normal normal-case text-slate-400">(opcional)</span></label>
-                  <input
-                    id="pq-doc-number"
-                    type="text"
-                    value={signerDocNumber}
-                    onChange={e => setSignerDocNumber(e.target.value)}
-                    className={inputCls}
-                    placeholder="Ej: 30123456"
-                    maxLength={20}
-                  />
-                  <p className="mt-1 text-xs text-slate-400">
-                    Su documento se almacena cifrado y no es visible para terceros.
-                  </p>
-                </div>
+                <FormField
+                  label="DNI / Documento (opcional)"
+                  type="text"
+                  value={signerDocNumber}
+                  onChange={e => setSignerDocNumber(e.target.value)}
+                  placeholder="Ej: 30123456"
+                  maxLength={20}
+                  inputClassName="tabular-nums"
+                  hint="Su documento se almacena cifrado y no es visible para terceros."
+                />
 
                 {serverError && (
                   <div className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">

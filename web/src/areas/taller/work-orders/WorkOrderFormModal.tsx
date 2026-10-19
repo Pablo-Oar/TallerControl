@@ -8,6 +8,7 @@ import { customersApi } from '../../../lib/api/customers'
 import { catalogApi, type CatalogItemKind } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
+import { CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
@@ -41,7 +42,6 @@ interface Props {
 
 export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
   const [serverError, setServerError] = useState<string | null>(null)
-  const [customerSearch, setCustomerSearch] = useState('')
 
   const { register, handleSubmit, watch, control, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -60,12 +60,6 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
 
   const selectedCustomerId = watch('customerId')
 
-  const { data: customersData } = useQuery({
-    queryKey: ['customers-search', customerSearch],
-    queryFn: () => customersApi.search(customerSearch || null, 1, 20),
-    enabled: customerSearch.length >= 1,
-  })
-
   const { data: customerDetail } = useQuery({
     queryKey: ['customer', selectedCustomerId],
     queryFn: () => customersApi.get(selectedCustomerId),
@@ -76,11 +70,6 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
     queryKey: ['catalog-active'],
     queryFn: () => catalogApi.search(null, null, true, 1, 100),
   })
-
-  function handleSelectCustomer(id: string) {
-    setValue('customerId', id)
-    setValue('vehicleId', '')
-  }
 
   function handleCatalogItemSelect(index: number, itemId: string) {
     const item = catalogData?.items.find(i => i.id === itemId)
@@ -135,57 +124,15 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
           {/* Cliente */}
-          <div>
-            {selectedCustomerId && <span className={labelCls}>Cliente *</span>}
-            {!selectedCustomerId && (
-              <div className="relative">
-                <FormField
-                  label="Cliente"
-                  requiredMark
-                  type="search"
-                  value={customerSearch}
-                  onChange={e => setCustomerSearch(e.target.value)}
-                  placeholder="Escribir nombre o DNI para buscar…"
-                  autoComplete="off"
-                />
-                {customerSearch.length >= 1 && (
-                  <ul className="absolute z-10 mt-1 w-full max-h-52 overflow-y-auto border border-tc-border bg-white shadow-lg">
-                    {!customersData && (
-                      <li className="px-3 py-2 text-sm text-slate-400">Buscando…</li>
-                    )}
-                    {customersData && customersData.items.length === 0 && (
-                      <li className="px-3 py-2 text-sm text-slate-400">Sin resultados</li>
-                    )}
-                    {customersData && customersData.items.map(c => (
-                      <li key={c.id}>
-                        <button
-                          type="button"
-                          onClick={() => handleSelectCustomer(c.id)}
-                          className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50"
-                        >
-                          <span className="font-medium">{c.name}</span>
-                          {c.docNumber && <span className="ml-2 text-xs text-slate-400">{c.docNumber}</span>}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-            {selectedCustomerId && customerDetail && (
-              <div className="mt-1 flex items-center gap-2 rounded-md bg-blue-50 px-3 py-2 text-sm">
-                <span className="font-medium">{customerDetail.name}</span>
-                <button
-                  type="button"
-                  onClick={() => { setValue('customerId', ''); setValue('vehicleId', ''); setCustomerSearch('') }}
-                  className="ml-auto text-xs text-slate-400 hover:text-red-500"
-                >
-                  Cambiar
-                </button>
-              </div>
-            )}
-            {errors.customerId && <p className="mt-1 text-xs text-red-600">{errors.customerId.message}</p>}
-          </div>
+          <CustomerPicker
+            value={selectedCustomerId}
+            requiredMark
+            error={errors.customerId?.message}
+            onChange={id => {
+              setValue('customerId', id, { shouldValidate: !!id })
+              setValue('vehicleId', '')
+            }}
+          />
 
           {/* Vehículo */}
           {selectedCustomerId && (
