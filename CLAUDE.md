@@ -8,24 +8,27 @@ Foco del MVP: **vehículo + historial, ciclo presupuesto → orden → cobro, po
 El plan vive **fuera del repo** (es documentación interna, no se sube): `../documentacion/analisis-vehix/Plan implementaicon/` (la carpeta se llama `implementaicon`, sin "m").
 Antes de implementar algo, leer el documento que corresponde. No inventar reglas: si el plan no lo dice, preguntar.
 
-**Documento a seguir: `PlanImplementacionV3.html`** (V3, 15/10/2026, "estado real del proyecto"). Reemplaza a V2 como referencia principal. Estructura por secciones `<section id="doc-NN">`:
+**Documento a seguir: `PlanImplementacionV4.html`** (V4, 19/10/2026: estado real + track UI-R2). Reemplaza a V3 como referencia principal. Estructura por secciones `<section id="doc-NN">`:
 
 | doc | Contiene |
 |---|---|
-| doc-00 | Resumen V3 y diferencias con V2 |
-| doc-01 | Estado por etapa (E0–E10 completas, E11–E13 pendientes) |
-| doc-02 | Decisiones D-01..D-22 con estado y valor elegido |
-| doc-03 | Stack confirmado con versiones reales |
+| doc-00 | Resumen V4 y diferencias con V3 |
+| doc-01 | Estado por etapa (E0–E14 + UI-Redesign completas, PR #35, track UI-R2, E15–E20 pendientes) |
+| doc-02 | Decisiones D-01..D-29 con estado y valor elegido |
+| doc-03 | Stack confirmado con versiones reales + librerías planificadas para UI-R2 |
 | doc-04 | Arquitectura implementada (capas, módulos, interfaces por entidad) |
-| doc-05 | Modelo de datos (17 migraciones en orden) |
+| doc-05 | Modelo de datos (24 migraciones en orden) |
 | doc-06 | API implementada (todos los endpoints) |
-| doc-07 | Frontend implementado (todas las pantallas por área) |
-| doc-08 | Tests implementados (IDs por módulo, E2E specs) |
-| doc-09 | Roadmap pendiente E11–E13 + agenda de turnos sin etapa |
-| doc-10 | Decisiones abiertas para E11+ |
-| doc-11 | Patrones y convenciones establecidos en la práctica |
+| doc-07 | Frontend implementado (pantallas, componentes compartidos, cambios de PR #35) |
+| doc-08 | Tests implementados (IDs por módulo, E2E specs, T-UI-* propuestos) |
+| doc-09 | Roadmap E15–E20 y relación con UI-R2 |
+| doc-10 | Decisiones post-MVP |
+| doc-11 | Patrones y convenciones establecidos en la práctica (§11: frontend) |
+| doc-12 | UI-R2: reestructuración UI/UX con Watermelon, fases F0–F5 |
+| doc-13 | Guía de trabajo con las skills de diseño |
 
-Los IDs de V2 (`REQ-xx`, `T-*`, `D-xx`) siguen siendo válidos y están referenciados en V3.
+`PlanImplementacionV3.html` queda como histórico (V4 lo contiene entero con correcciones).
+Los IDs de V2 (`REQ-xx`, `T-*`, `D-xx`) siguen siendo válidos y están referenciados en V4.
 `PlanImplementacionV2.html` queda como histórico: no usarlo como referencia activa.
 `PlanImplementacion.html` (V1) también queda como histórico.
 Los `.md` de la carpeta `V2/` sirven solo como atajo de búsqueda de los IDs originales.
@@ -202,6 +205,22 @@ La API usa `ConnectionStrings:Default` con el rol **`tallercontrol_app`** (sin `
 - `PRODUCT.md` agregado al repo: contexto de producto para las skills Impeccable en próximas sesiones de diseño.
 - `.gitleaks.toml` agregado: allowlist para rutas `.agents/` y `.claude/skills/` (falsos positivos en archivos de skill con placeholders).
 - Estado actual: **E0–E14 + UI-Redesign completos, mergeados a Develop. MVP completo con frontend rediseñado.**
+
+**UI-Tweaks — responsive, a11y, code-splitting y polish (PRs #34 y #35, 18–19/10/2026, mergeados a Develop; último merge `5acd66a`):**
+- Responsive de todas las páginas `/app`; fix del React duplicado por re-optimización de Vite (`optimizeDeps.entries` en `vite.config.ts`); `PlateSearchBar` recibe `onNavigate` en `/m`; botones Editar visibles y modal "Nueva venta" en Mostrador; espaciado de columnas de acción en Vehículos y Catálogo.
+- Pase del audit de Impeccable: `htmlFor`/`id` en los 131 labels de 24 archivos (filas de `useFieldArray` con ids por plantilla o `aria-label`); regla global `input|select|textarea|button:focus-visible` en `index.css` que gana a `outline-none`; grupo de radios "Decisión" en `<fieldset>/<legend>`; `CatalogFormModal`, `StockAdjustmentModal` y `WorkOrderFormModal` migrados al componente `Modal`.
+- Code-splitting: `React.lazy` + `Suspense` en `TallerArea`, `PublicoArea` y `MecanicoArea` (cada página es su chunk; chunk principal 340,84 kB / 106,92 kB gzip). Toda página nueva se registra así.
+- Tokens `tc-text`, `tc-text-secondary`, `tc-text-muted` definidos en `@theme`; **los usos de `text-slate-*` no se migraron** (pendiente en UI-R2 F5).
+- `index.html`: `theme-color` #0a1628, `lang="es-AR"`; landing con `min-h-[44px]` en nav y CTAs; chip de rol del sidebar en español; estado vacío de Facturación con CTA "Configurar ARCA".
+- Tests: 12 Vitest (4 archivos) pasan; en una corrida local con la máquina cargada fallaron por timeout (flaky local, CI en verde). Backend sin cambios (394 .NET según Plan V3 doc-08; no re-corrido).
+- Migraciones totales reales: **24** (la línea "20" de E14 quedó desactualizada).
+
+**UI-R2 — reestructuración de UI/UX con Watermelon UI (PLANIFICADO, sin código todavía, 19/10/2026):**
+- Plan completo en `../documentacion/analisis-vehix/Plan implementaicon/PlanImplementacionV4.html` (doc-12 fases F0–F5, doc-13 guía de skills). V4 actualiza a V3 y es el documento a seguir.
+- Solo frontend. Componente a componente con la CLI de shadcn: el código instalado va a `web/src/components/watermelon/` y las páginas importan solo de `components/ui` (wrappers). Matriz aceptada: Floating Input, Draw Signature, Dialog Stack, Edit Profile, Fluid Tabs, Activities Card, Edit Badge, Button animado; Command Search condicional (E19); `auth-05` en spike.
+- Hallazgos del relevamiento: solo `Login/Register/Forgot/Reset` usan `Input.tsx` (los ~24 formularios usan controles crudos); `Modal` no cierra con Escape ni atrapa foco; no existen `components.json` ni alias `@/`; `public/sw.js` es cache-first sobre todo el origen (subir `CACHE` en cada release de UI).
+- Decisiones abiertas: D-29 (licencia de Watermelon, bloquea F0), D-26 (lenguaje visual; provisorio = mantener identidad `tc-*` con `--radius: 0`), D-27 (movimiento/bundle), D-28 (Command Search). Registradas: D-23 (landing en `/`), D-24 (estrategia), D-25 (matriz).
+- Estado actual: **E0–E14 + UI-Redesign + UI-Tweaks en Develop. Próximo: UI-R2 F0 (en paralelo a E15, lanzamiento a producción).**
 
 **Post-E8 — bugfixes en Develop (14–15/10/2026, commits `27d0d01` / `3395d74` / `b87f7a7` / `ab4dee8` / `a229bcb` / `e46bd2c` / `09a8c7d`):**
 - fix(api): `CatalogItemKind`, `WorkOrderStatus` y `QuoteStatus` como `string?` + `Enum.TryParse(ignoreCase: true)` en todos los endpoints de búsqueda — ASP.NET Core 10 minimal APIs son case-sensitive para enum query params.
