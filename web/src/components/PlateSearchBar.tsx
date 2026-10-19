@@ -1,16 +1,18 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
 
-/** Barra de búsqueda por patente. Navega a /app/vehicles?q={plate}. */
-export function PlateSearchBar() {
-  const navigate = useNavigate()
+interface PlateSearchBarProps {
+  onNavigate: (url: string) => void
+}
+
+/** Barra de búsqueda por patente. Llama onNavigate con /app/vehicles?q={plate}. */
+export function PlateSearchBar({ onNavigate }: PlateSearchBarProps) {
   const [value, setValue] = useState('')
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const plate = value.trim().toUpperCase()
     if (!plate) return
-    navigate(`/app/vehicles?q=${encodeURIComponent(plate)}`)
+    onNavigate(`/app/vehicles?q=${encodeURIComponent(plate)}`)
     setValue('')
   }
 

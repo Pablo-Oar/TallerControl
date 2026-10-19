@@ -125,7 +125,7 @@ export function TallerLayout({ children }: { children: ReactNode }) {
 
         {/* Search — hidden on mobile, visible from md */}
         <div className="hidden md:flex flex-1 max-w-sm">
-          <PlateSearchBar />
+          <PlateSearchBar onNavigate={navigate} />
         </div>
 
         {/* User + logout */}
