@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { suppliersApi, type SupplierDto, type VatCondition } from '../../../lib/api/suppliers'
 import { Button } from '../../../components/ui/Button'
+import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
@@ -13,8 +14,6 @@ const VAT_LABELS: Record<VatCondition, string> = {
   no_categorizado: 'No categorizado',
 }
 
-const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 const filterInputCls = 'border border-tc-border bg-white px-3 py-1.5 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors flex-1'
 
 export function SuppliersPage() {
@@ -127,41 +126,33 @@ export function SuppliersPage() {
               <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{formError}</p>
             )}
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label htmlFor="sup-name" className={labelCls}>Nombre *</label>
-                <input
-                  id="sup-name"
-                  type="text"
-                  value={formName}
-                  onChange={e => setFormName(e.target.value)}
-                  required
-                  className={inputCls}
-                />
-              </div>
-              <div>
-                <label htmlFor="sup-cuit" className={labelCls}>CUIT</label>
-                <input
-                  id="sup-cuit"
-                  type="text"
-                  value={formCuit}
-                  onChange={e => setFormCuit(e.target.value)}
-                  placeholder="xx-xxxxxxxx-x"
-                  className={`${inputCls} font-mono tabular-nums`}
-                />
-              </div>
-              <div className="col-span-2">
-                <label htmlFor="sup-vat" className={labelCls}>Condición IVA *</label>
-                <select
-                  id="sup-vat"
-                  value={formVat}
-                  onChange={e => setFormVat(e.target.value as VatCondition)}
-                  className={inputCls}
-                >
-                  {(Object.entries(VAT_LABELS) as [VatCondition, string][]).map(([k, v]) => (
-                    <option key={k} value={k}>{v}</option>
-                  ))}
-                </select>
-              </div>
+              <FormField
+                label="Nombre"
+                requiredMark
+                type="text"
+                value={formName}
+                onChange={e => setFormName(e.target.value)}
+                required
+              />
+              <FormField
+                label="CUIT"
+                type="text"
+                value={formCuit}
+                onChange={e => setFormCuit(e.target.value)}
+                placeholder="xx-xxxxxxxx-x"
+                inputClassName="font-mono tabular-nums"
+              />
+              <FormSelect
+                label="Condición IVA"
+                requiredMark
+                className="col-span-2"
+                value={formVat}
+                onChange={e => setFormVat(e.target.value as VatCondition)}
+              >
+                {(Object.entries(VAT_LABELS) as [VatCondition, string][]).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </FormSelect>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="secondary" size="sm" onClick={() => { setCreating(false); setEditing(null) }}>

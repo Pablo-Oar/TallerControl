@@ -29,6 +29,8 @@ interface BaseProps {
   size?: Size
   /** Clases del contenedor (ancho, grid-span…). */
   className?: string
+  /** Clases extra del control (p. ej. `font-mono uppercase`). */
+  inputClassName?: string
 }
 
 const ALWAYS_RAISED = new Set(['date', 'time', 'datetime-local', 'month', 'week', 'file', 'color'])
@@ -102,7 +104,7 @@ function describedBy(id: string, error?: string, hint?: string) {
 export interface FormFieldProps extends BaseProps, Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'className'> {}
 
 export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(function FormField(
-  { label, error, hint, requiredMark, size = 'md', className, id, type = 'text', placeholder, ...props },
+  { label, error, hint, requiredMark, size = 'md', className, inputClassName, id, type = 'text', placeholder, ...props },
   ref,
 ) {
   const autoId = useId()
@@ -117,7 +119,7 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(function F
         placeholder={placeholder ?? ' '}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy(fieldId, error, hint)}
-        className={cn(controlBase, controlSize[size], borderCls(error))}
+        className={cn(controlBase, controlSize[size], borderCls(error), inputClassName)}
         {...props}
       />
     </Shell>
@@ -127,7 +129,7 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(function F
 export interface FormTextareaProps extends BaseProps, Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'className'> {}
 
 export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(function FormTextarea(
-  { label, error, hint, requiredMark, size = 'md', className, id, placeholder, rows = 3, ...props },
+  { label, error, hint, requiredMark, size = 'md', className, inputClassName, id, placeholder, rows = 3, ...props },
   ref,
 ) {
   const autoId = useId()
@@ -142,7 +144,7 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(f
         placeholder={placeholder ?? ' '}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy(fieldId, error, hint)}
-        className={cn(controlBase, controlSize[size], borderCls(error), 'resize-y')}
+        className={cn(controlBase, controlSize[size], borderCls(error), 'resize-y', inputClassName)}
         {...props}
       />
     </Shell>
@@ -153,7 +155,7 @@ export interface FormSelectProps extends BaseProps, Omit<SelectHTMLAttributes<HT
 
 /** El select siempre tiene valor: la etiqueta queda arriba, igual que un campo con contenido. */
 export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(function FormSelect(
-  { label, error, hint, requiredMark, size = 'md', className, id, children, ...props },
+  { label, error, hint, requiredMark, size = 'md', className, inputClassName, id, children, ...props },
   ref,
 ) {
   const autoId = useId()
@@ -166,7 +168,7 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(functio
         id={fieldId}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy(fieldId, error, hint)}
-        className={cn(controlBase, controlSize[size], borderCls(error))}
+        className={cn(controlBase, controlSize[size], borderCls(error), inputClassName)}
         {...props}
       >
         {children}

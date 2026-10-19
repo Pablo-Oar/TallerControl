@@ -5,11 +5,10 @@ import { z } from 'zod'
 import type { Resolver } from 'react-hook-form'
 import { catalogApi, type CatalogItemDto } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
+import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
-const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const schema = z.object({
   kind: z.enum(['service', 'product']),
@@ -114,66 +113,46 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
         {!isEdit && (
-          <div>
-            <label htmlFor="cat-kind" className={labelCls}>Tipo *</label>
-            <select id="cat-kind" {...register('kind')} className={inputCls}>
-              <option value="service">Servicio</option>
-              <option value="product">Producto</option>
-            </select>
-          </div>
+          <FormSelect label="Tipo" requiredMark {...register('kind')}>
+            <option value="service">Servicio</option>
+            <option value="product">Producto</option>
+          </FormSelect>
         )}
 
-        <div>
-          <label htmlFor="cat-name" className={labelCls}>Nombre *</label>
-          <input id="cat-name" {...register('name')} className={inputCls} placeholder="Ej. Cambio de aceite" />
-          {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
-        </div>
+        <FormField
+          label="Nombre"
+          requiredMark
+          placeholder="Ej. Cambio de aceite"
+          error={errors.name?.message}
+          {...register('name')}
+        />
 
-        {!isEdit && (
-          <div>
-            <label htmlFor="cat-sku" className={labelCls}>SKU</label>
-            <input id="cat-sku" {...register('sku')} className={inputCls} placeholder="Ej. FIL-001" />
-          </div>
-        )}
+        {!isEdit && <FormField label="SKU" placeholder="Ej. FIL-001" {...register('sku')} />}
 
-        <div>
-          <label htmlFor="cat-desc" className={labelCls}>Descripción</label>
-          <textarea
-            id="cat-desc"
-            {...register('description')}
-            rows={2}
-            className={inputCls}
-            placeholder="Descripción opcional…"
-          />
-        </div>
+        <FormTextarea label="Descripción" rows={2} placeholder="Descripción opcional…" {...register('description')} />
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="cat-price" className={labelCls}>Precio neto *</label>
-            <input
-              id="cat-price"
-              {...register('netPrice', { valueAsNumber: true })}
-              type="number"
-              min={0}
-              step="1"
-              className={inputCls}
-              placeholder="0.00"
-            />
-            {errors.netPrice && <p className="mt-1 text-xs text-red-600">{errors.netPrice.message}</p>}
-          </div>
-          <div>
-            <label htmlFor="cat-vat" className={labelCls}>IVA %</label>
-            <input
-              id="cat-vat"
-              {...register('vatRate', { valueAsNumber: true })}
-              type="number"
-              min={0}
-              max={100}
-              step="1"
-              className={inputCls}
-              placeholder="21"
-            />
-          </div>
+          <FormField
+            label="Precio neto"
+            requiredMark
+            type="number"
+            min={0}
+            step="1"
+            placeholder="0.00"
+            inputClassName="tabular-nums"
+            error={errors.netPrice?.message}
+            {...register('netPrice', { valueAsNumber: true })}
+          />
+          <FormField
+            label="IVA %"
+            type="number"
+            min={0}
+            max={100}
+            step="1"
+            placeholder="21"
+            inputClassName="tabular-nums"
+            {...register('vatRate', { valueAsNumber: true })}
+          />
         </div>
 
         {(kind === 'product' || isEdit) && (
@@ -185,30 +164,8 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
 
         {trackStock && (
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="cat-min-stock" className={labelCls}>Stock mínimo</label>
-              <input
-                id="cat-min-stock"
-                {...register('minStockQty')}
-                type="number"
-                min={0}
-                step="1"
-                className={inputCls}
-                placeholder="—"
-              />
-            </div>
-            <div>
-              <label htmlFor="cat-max-stock" className={labelCls}>Stock máximo</label>
-              <input
-                id="cat-max-stock"
-                {...register('maxStockQty')}
-                type="number"
-                min={0}
-                step="1"
-                className={inputCls}
-                placeholder="—"
-              />
-            </div>
+            <FormField label="Stock mínimo" type="number" min={0} step="1" placeholder="—" inputClassName="tabular-nums" {...register('minStockQty')} />
+            <FormField label="Stock máximo" type="number" min={0} step="1" placeholder="—" inputClassName="tabular-nums" {...register('maxStockQty')} />
           </div>
         )}
 
