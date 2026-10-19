@@ -146,7 +146,7 @@ export function VehiclesPage() {
                           onClick={() => setEditing(v)}
                           className="text-[10px] font-bold tracking-wider uppercase text-tc-navy-text-dim hover:text-tc-purple transition-colors"
                         >
-                          Edit
+                          Editar
                         </button>
                       )}
                     </div>

@@ -5,6 +5,7 @@ import { Button } from '../../../components/ui/Button'
 import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { ApiError } from '../../../lib/api/client'
+import { CounterSaleFormModal } from './CounterSaleFormModal'
 
 const STATUS_LABELS: Record<CounterSaleStatus, string> = {
   draft: 'Borrador',
@@ -21,6 +22,7 @@ export function CounterSalesPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<CounterSaleDto | null>(null)
+  const [creating, setCreating] = useState(false)
 
   const { data, isLoading } = useQuery({
     queryKey: ['counter-sales', search, page],
@@ -76,8 +78,9 @@ export function CounterSalesPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Ventas de Mostrador</h1>
+        <Button onClick={() => setCreating(true)} size="sm">Nueva venta</Button>
       </div>
 
       <form onSubmit={handleSearch} className="flex gap-1">
@@ -160,6 +163,16 @@ export function CounterSalesPage() {
             </div>
           )}
         </div>
+      )}
+
+      {creating && (
+        <CounterSaleFormModal
+          onSuccess={() => {
+            setCreating(false)
+            queryClient.invalidateQueries({ queryKey: ['counter-sales'] })
+          }}
+          onClose={() => setCreating(false)}
+        />
       )}
 
       {selected && detail && (

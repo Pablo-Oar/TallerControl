@@ -1,6 +1,6 @@
 // Service worker de TallerControl — área del mecánico (PWA F-51).
 // Estrategia: cache-first para assets estáticos del bundle; network-first para /api/*.
-const CACHE = 'tc-sw-v1'
+const CACHE = 'tc-sw-v2'
 
 self.addEventListener('install', () => self.skipWaiting())
 

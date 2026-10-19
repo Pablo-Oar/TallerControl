@@ -143,7 +143,7 @@ export function CustomersPage() {
                           onClick={() => setEditing(c)}
                           className="px-3 py-3 text-[10px] font-bold tracking-wider text-tc-navy-text-dim hover:text-tc-purple transition-colors uppercase"
                         >
-                          Edit
+                          Editar
                         </button>
                       )}
                     </div>
