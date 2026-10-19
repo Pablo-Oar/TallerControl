@@ -11,12 +11,10 @@ import {
   type FiscalPointOfSaleDto,
 } from '../../../lib/api/invoicing'
 import { Button } from '../../../components/ui/Button'
+import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
-const inputCls =
-  'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 export function InvoicingSetupPage() {
   const queryClient = useQueryClient()
@@ -214,12 +212,13 @@ function CertificatesSection({
           </div>
           <div className="p-4 space-y-2">
             <div className="flex gap-2">
-              <input
+              <FormField
+                label="ID del punto de venta"
+                size="sm"
                 type="text"
-                placeholder="ID del punto de venta"
                 value={testPosId}
                 onChange={e => setTestPosId(e.target.value)}
-                className="flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-border-mid transition-colors"
+                className="flex-1"
               />
               <Button
                 variant="secondary"
@@ -265,27 +264,20 @@ function CertificatesSection({
       {showForm && (
         <Modal title="Nuevo certificado ARCA" onClose={() => setShowForm(false)} className="max-w-md">
           <form onSubmit={handleCreate} className="space-y-3">
-            <div>
-              <label htmlFor="inv-cuit" className={labelCls}>CUIT (sin guiones)</label>
-              <input
-                id="inv-cuit"
-                value={cuit}
-                onChange={e => setCuit(e.target.value)}
-                placeholder="20123456789"
-                required
-                className={inputCls}
-              />
-            </div>
-            <div>
-              <label htmlFor="inv-cert-name" className={labelCls}>Nombre identificador</label>
-              <input
-                id="inv-cert-name"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                required
-                className={inputCls}
-              />
-            </div>
+            <FormField
+              label="CUIT (sin guiones)"
+              value={cuit}
+              onChange={e => setCuit(e.target.value)}
+              placeholder="20123456789"
+              required
+              inputClassName="tabular-nums"
+            />
+            <FormField
+              label="Nombre identificador"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+            />
             <label className="flex items-center gap-2 text-sm text-slate-700">
               <input
                 type="checkbox"
@@ -311,28 +303,22 @@ function CertificatesSection({
       {uploadId && (
         <Modal title="Subir certificado PEM" onClose={() => setUploadId(null)} className="max-w-lg">
           <form onSubmit={handleUpload} className="space-y-3">
-            <div>
-              <label htmlFor="inv-cert-pem" className={labelCls}>Certificado PEM (obtenido de ARCA)</label>
-              <textarea
-                id="inv-cert-pem"
-                value={certPem}
-                onChange={e => setCertPem(e.target.value)}
-                className="h-32 w-full border border-tc-border bg-white p-2 font-mono text-xs outline-none focus:border-tc-border-mid transition-colors"
-                placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="inv-expires-at" className={labelCls}>Fecha de vencimiento</label>
-              <input
-                id="inv-expires-at"
-                type="date"
-                value={expiresAt}
-                onChange={e => setExpiresAt(e.target.value)}
-                required
-                className={inputCls}
-              />
-            </div>
+            <FormTextarea
+              label="Certificado PEM (obtenido de ARCA)"
+              rows={6}
+              value={certPem}
+              onChange={e => setCertPem(e.target.value)}
+              inputClassName="font-mono text-xs"
+              placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"
+              required
+            />
+            <FormField
+              label="Fecha de vencimiento"
+              type="date"
+              value={expiresAt}
+              onChange={e => setExpiresAt(e.target.value)}
+              required
+            />
             {uploadError && <p className="text-sm text-tc-stamp-red">{uploadError}</p>}
             <div className="flex justify-end gap-2">
               <Button variant="secondary" type="button" onClick={() => setUploadId(null)}>
@@ -436,45 +422,24 @@ function PointsOfSaleSection({
       {showForm && (
         <Modal title="Nuevo punto de venta" onClose={() => setShowForm(false)} className="max-w-md">
           <form onSubmit={handleCreate} className="space-y-3">
-            <div>
-              <label htmlFor="pos-cert" className={labelCls}>Certificado</label>
-              <select
-                id="pos-cert"
-                value={certId}
-                onChange={e => setCertId(e.target.value)}
-                className="w-full border border-tc-border bg-white px-3 py-2 text-sm outline-none focus:border-tc-border-mid transition-colors"
-                required
-              >
-                <option value="">Seleccionar certificado...</option>
-                {certs.map(c => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} ({c.cuit})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="pos-number" className={labelCls}>Número de punto de venta</label>
-              <input
-                id="pos-number"
-                type="number"
-                min="1"
-                value={number}
-                onChange={e => setNumber(e.target.value)}
-                required
-                className={inputCls}
-              />
-            </div>
-            <div>
-              <label htmlFor="pos-name" className={labelCls}>Nombre</label>
-              <input
-                id="pos-name"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                required
-                className={inputCls}
-              />
-            </div>
+            <FormSelect label="Certificado" value={certId} onChange={e => setCertId(e.target.value)} required>
+              <option value="">Seleccionar certificado...</option>
+              {certs.map(c => (
+                <option key={c.id} value={c.id}>
+                  {c.name} ({c.cuit})
+                </option>
+              ))}
+            </FormSelect>
+            <FormField
+              label="Número de punto de venta"
+              type="number"
+              min="1"
+              value={number}
+              onChange={e => setNumber(e.target.value)}
+              required
+              inputClassName="tabular-nums"
+            />
+            <FormField label="Nombre" value={name} onChange={e => setName(e.target.value)} required />
             {error && <p className="text-sm text-tc-stamp-red">{error}</p>}
             <div className="flex justify-end gap-2">
               <Button variant="secondary" type="button" onClick={() => setShowForm(false)}>

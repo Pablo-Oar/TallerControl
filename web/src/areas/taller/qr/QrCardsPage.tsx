@@ -12,6 +12,7 @@ import {
   type QrCardStatus,
 } from '../../../lib/api/qrCards'
 import { Button } from '../../../components/ui/Button'
+import { FormField, FormTextarea } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { QrScannerModal } from './QrScannerModal'
@@ -24,8 +25,6 @@ const STATUS_LABELS: Record<QrCardStatus, string> = {
 }
 
 const inputCls = 'border border-tc-border bg-white px-3 py-1.5 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
-const inputFullCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 export function QrCardsPage() {
   const qc = useQueryClient()
@@ -201,18 +200,15 @@ export function QrCardsPage() {
       {showBatchModal && (
         <Modal title="Generar lote de tarjetas" onClose={() => setShowBatchModal(false)} className="max-w-xs">
           <div className="space-y-4">
-            <div>
-              <label htmlFor="qr-batch-qty" className={labelCls}>Cantidad</label>
-              <input
-                id="qr-batch-qty"
-                type="number"
-                min={1}
-                max={500}
-                value={batchQty}
-                onChange={(e) => setBatchQty(Number(e.target.value))}
-                className={`${inputFullCls} tabular-nums`}
-              />
-            </div>
+            <FormField
+              label="Cantidad"
+              type="number"
+              min={1}
+              max={500}
+              value={batchQty}
+              onChange={(e) => setBatchQty(Number(e.target.value))}
+              inputClassName="tabular-nums"
+            />
             <div className="flex justify-end gap-2">
               <Button variant="secondary" size="sm" onClick={() => setShowBatchModal(false)}>
                 Cancelar
@@ -228,26 +224,20 @@ export function QrCardsPage() {
       {showAssignByCodeModal && (
         <Modal title="Asignar tarjeta por código" onClose={() => setShowAssignByCodeModal(false)} className="max-w-sm">
           <div className="space-y-4">
-            <div>
-              <label htmlFor="qr-assign-code" className={labelCls}>Código de la tarjeta</label>
-              <input
-                id="qr-assign-code"
-                className={`${inputFullCls} font-mono tracking-widest uppercase`}
-                placeholder="Ej. ABC12345"
-                value={assignCode}
-                onChange={(e) => setAssignCode(e.target.value.toUpperCase())}
-              />
-            </div>
-            <div>
-              <label htmlFor="qr-assign-vehicle" className={labelCls}>ID del vehículo</label>
-              <input
-                id="qr-assign-vehicle"
-                className={`${inputFullCls} font-mono text-xs`}
-                placeholder="UUID del vehículo"
-                value={assignVehicleId}
-                onChange={(e) => setAssignVehicleId(e.target.value)}
-              />
-            </div>
+            <FormField
+              label="Código de la tarjeta"
+              inputClassName="font-mono tracking-widest uppercase"
+              placeholder="Ej. ABC12345"
+              value={assignCode}
+              onChange={(e) => setAssignCode(e.target.value.toUpperCase())}
+            />
+            <FormField
+              label="ID del vehículo"
+              inputClassName="font-mono text-xs"
+              placeholder="UUID del vehículo"
+              value={assignVehicleId}
+              onChange={(e) => setAssignVehicleId(e.target.value)}
+            />
             <div className="flex justify-end gap-2">
               <Button variant="secondary" size="sm" onClick={() => setShowAssignByCodeModal(false)}>
                 Cancelar
@@ -275,10 +265,9 @@ export function QrCardsPage() {
             <p className="text-sm text-slate-500">
               Esta acción es irreversible. Ingresá el motivo.
             </p>
-            <textarea
+            <FormTextarea
+              label="Motivo de revocación"
               rows={3}
-              className={`${inputFullCls}`}
-              placeholder="Motivo de revocación"
               value={revokeReason}
               onChange={(e) => setRevokeReason(e.target.value)}
             />

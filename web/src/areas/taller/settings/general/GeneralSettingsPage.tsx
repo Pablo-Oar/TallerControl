@@ -12,6 +12,7 @@ import {
   type UpdateSettingsRequest,
 } from '../../../../lib/api/settings'
 import { ApiError } from '../../../../lib/api/client'
+import { FormField, FormSelect } from '../../../../components/ui/FormField'
 
 const schema = z.object({
   name: z.string().trim().min(1, 'El nombre es obligatorio'),
@@ -52,9 +53,6 @@ function toRequest(data: FormData): UpdateSettingsRequest {
     quoteValidityDays: data.quoteValidityDays,
   }
 }
-
-const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const LOGO_PICKER_TYPES = [{ description: 'Imágenes', accept: { 'image/png': ['.png'], 'image/jpeg': ['.jpg', '.jpeg'], 'image/webp': ['.webp'] } }]
 
@@ -208,32 +206,16 @@ export function GeneralSettingsPage() {
         </div>
 
         <div className="space-y-4 p-5">
-          <div>
-            <label htmlFor="gs-name" className={labelCls}>Nombre del taller *</label>
-            <input id="gs-name" {...register('name')} className={inputCls} />
-            {errors.name && <p className="mt-1 text-xs text-tc-stamp-red">{errors.name.message}</p>}
+          <FormField label="Nombre del taller" requiredMark error={errors.name?.message} {...register('name')} />
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Razón social" {...register('legalName')} />
+            <FormField label="CUIT" placeholder="20-12345678-9" inputClassName="tabular-nums" {...register('taxId')} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="gs-legal-name" className={labelCls}>Razón social</label>
-              <input id="gs-legal-name" {...register('legalName')} className={inputCls} />
-            </div>
-            <div>
-              <label htmlFor="gs-tax-id" className={labelCls}>CUIT</label>
-              <input id="gs-tax-id" {...register('taxId')} className={inputCls} placeholder="20-12345678-9" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="gs-address" className={labelCls}>Dirección</label>
-              <input id="gs-address" {...register('address')} className={inputCls} />
-            </div>
-            <div>
-              <label htmlFor="gs-phone" className={labelCls}>Teléfono</label>
-              <input id="gs-phone" {...register('phone')} className={inputCls} />
-            </div>
+            <FormField label="Dirección" {...register('address')} />
+            <FormField label="Teléfono" {...register('phone')} />
           </div>
         </div>
 
@@ -244,35 +226,28 @@ export function GeneralSettingsPage() {
         </div>
 
         <div className="space-y-4 p-5">
-          <div>
-            <label htmlFor="gs-timezone" className={labelCls}>Zona horaria</label>
-            <input id="gs-timezone" {...register('timeZone')} className={inputCls} placeholder="America/Argentina/Buenos_Aires" />
-            {errors.timeZone && <p className="mt-1 text-xs text-tc-stamp-red">{errors.timeZone.message}</p>}
-          </div>
+          <FormField
+            label="Zona horaria"
+            placeholder="America/Argentina/Buenos_Aires"
+            error={errors.timeZone?.message}
+            {...register('timeZone')}
+          />
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="gs-vat-rate" className={labelCls}>IVA por defecto</label>
-              <select id="gs-vat-rate" {...register('defaultVatRate')} className={inputCls}>
-                {ALLOWED_VAT_RATES.map((rate) => (
-                  <option key={rate} value={rate}>{rate}%</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="gs-quote-validity" className={labelCls}>Vigencia del presupuesto (días)</label>
-              <input
-                id="gs-quote-validity"
-                type="number"
-                min={1}
-                max={180}
-                {...register('quoteValidityDays')}
-                className={inputCls}
-              />
-              {errors.quoteValidityDays && (
-                <p className="mt-1 text-xs text-tc-stamp-red">{errors.quoteValidityDays.message}</p>
-              )}
-            </div>
+            <FormSelect label="IVA por defecto" {...register('defaultVatRate')}>
+              {ALLOWED_VAT_RATES.map((rate) => (
+                <option key={rate} value={rate}>{rate}%</option>
+              ))}
+            </FormSelect>
+            <FormField
+              label="Vigencia del presupuesto (días)"
+              type="number"
+              min={1}
+              max={180}
+              inputClassName="tabular-nums"
+              error={errors.quoteValidityDays?.message}
+              {...register('quoteValidityDays')}
+            />
           </div>
         </div>
 
