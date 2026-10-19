@@ -144,8 +144,9 @@ export function PublicQrPage() {
           {(step === 'scan' || step === 'challenge') && (
             <form onSubmit={handleChallenge} className="space-y-4">
               <div>
-                <label className={labelCls}>Patente del vehículo</label>
+                <label htmlFor="qr-plate" className={labelCls}>Patente del vehículo</label>
                 <input
+                  id="qr-plate"
                   required
                   className={`${inputCls} uppercase font-mono tracking-widest`}
                   placeholder="Ej. ABC123 o AB123CD"
@@ -154,11 +155,12 @@ export function PublicQrPage() {
                 />
               </div>
               <div>
-                <label className={labelCls}>
+                <label htmlFor="qr-access-code" className={labelCls}>
                   Código de acceso{' '}
                   <span className="font-normal normal-case text-slate-400">(opcional)</span>
                 </label>
                 <input
+                  id="qr-access-code"
                   className={`${inputCls} uppercase tracking-widest font-mono`}
                   placeholder="Código de 8 caracteres"
                   maxLength={8}
@@ -183,7 +185,7 @@ export function PublicQrPage() {
           {step === 'otp' && (
             <form onSubmit={handleOtp} className="space-y-4">
               <div>
-                <label className={labelCls}>Código de verificación</label>
+                <label htmlFor="qr-otp" className={labelCls}>Código de verificación</label>
                 {customerCode ? (
                   <p className="mb-2 text-sm text-slate-500">
                     Ingresá nuevamente tu código de acceso del taller ({customerCode.length} caracteres).
@@ -194,6 +196,7 @@ export function PublicQrPage() {
                   </p>
                 )}
                 <input
+                  id="qr-otp"
                   required
                   autoFocus
                   className="w-full border border-tc-border bg-white px-3 py-3 text-center text-xl font-mono tracking-widest text-slate-800 outline-none focus:border-tc-border-mid transition-colors uppercase"
@@ -228,10 +231,11 @@ export function PublicQrPage() {
                 puedan contactarte.
               </div>
               <div>
-                <label className={labelCls}>
+                <label htmlFor="qr-reporter-name" className={labelCls}>
                   Nombre <span className="font-normal normal-case text-slate-400">(opcional)</span>
                 </label>
                 <input
+                  id="qr-reporter-name"
                   className={inputCls}
                   placeholder="Tu nombre"
                   value={reporterName}
@@ -239,10 +243,11 @@ export function PublicQrPage() {
                 />
               </div>
               <div>
-                <label className={labelCls}>
+                <label htmlFor="qr-reporter-phone" className={labelCls}>
                   Teléfono <span className="font-normal normal-case text-slate-400">(opcional)</span>
                 </label>
                 <input
+                  id="qr-reporter-phone"
                   type="tel"
                   className={inputCls}
                   placeholder="Ej. +54 9 11 1234-5678"

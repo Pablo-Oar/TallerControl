@@ -139,10 +139,11 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {/* Cliente */}
         <div>
-          <label className={labelCls}>Cliente <span className="text-tc-stamp-red">*</span></label>
+          <label htmlFor="qf-customer-search" className={labelCls}>Cliente <span className="text-tc-stamp-red">*</span></label>
           {!selectedCustomerId && (
             <div className="relative">
               <input
+                id="qf-customer-search"
                 type="search"
                 value={customerSearch}
                 onChange={e => setCustomerSearch(e.target.value)}
@@ -194,8 +195,8 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
         {/* Vehículo */}
         {selectedCustomerId && (
           <div>
-            <label className={labelCls}>Vehículo <span className="text-tc-stamp-red">*</span></label>
-            <select {...register('vehicleId')} className={inputCls}>
+            <label htmlFor="qf-vehicle" className={labelCls}>Vehículo <span className="text-tc-stamp-red">*</span></label>
+            <select id="qf-vehicle" {...register('vehicleId')} className={inputCls}>
               <option value="">Seleccionar vehículo</option>
               {vehicles.map(v => (
                 <option key={v.id} value={v.id}>
@@ -211,15 +212,16 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Válido hasta <span className="text-tc-stamp-red">*</span></label>
-            <input type="date" {...register('validUntil')} className={inputCls} />
+            <label htmlFor="qf-valid-until" className={labelCls}>Válido hasta <span className="text-tc-stamp-red">*</span></label>
+            <input id="qf-valid-until" type="date" {...register('validUntil')} className={inputCls} />
             {errors.validUntil && (
               <p className="mt-1 text-xs text-tc-stamp-red">{errors.validUntil.message}</p>
             )}
           </div>
           <div>
-            <label className={labelCls}>Descuento global (%)</label>
+            <label htmlFor="qf-discount" className={labelCls}>Descuento global (%)</label>
             <input
+              id="qf-discount"
               type="number"
               step="1"
               min="0"
@@ -231,12 +233,12 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
         </div>
 
         <div>
-          <label className={labelCls}>Notas para el cliente</label>
-          <textarea {...register('customerNotes')} rows={2} className={inputCls} />
+          <label htmlFor="qf-customer-notes" className={labelCls}>Notas para el cliente</label>
+          <textarea id="qf-customer-notes" {...register('customerNotes')} rows={2} className={inputCls} />
         </div>
         <div>
-          <label className={labelCls}>Notas internas</label>
-          <textarea {...register('internalNotes')} rows={2} className={inputCls} />
+          <label htmlFor="qf-internal-notes" className={labelCls}>Notas internas</label>
+          <textarea id="qf-internal-notes" {...register('internalNotes')} rows={2} className={inputCls} />
         </div>
 
         {/* Ítems */}
@@ -286,8 +288,9 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                 <div className="p-3 space-y-2">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className={labelCls}>Del catálogo</label>
+                      <label htmlFor={`qf-item-${index}-cat`} className={labelCls}>Del catálogo</label>
                       <select
+                        id={`qf-item-${index}-cat`}
                         className={inputCls}
                         onChange={e => handleSelectCatalogItem(index, e.target.value)}
                         defaultValue=""
@@ -299,8 +302,8 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                       </select>
                     </div>
                     <div>
-                      <label className={labelCls}>Tipo</label>
-                      <select {...register(`items.${index}.kind`)} className={inputCls}>
+                      <label htmlFor={`qf-item-${index}-kind`} className={labelCls}>Tipo</label>
+                      <select id={`qf-item-${index}-kind`} {...register(`items.${index}.kind`)} className={inputCls}>
                         <option value="service">Servicio</option>
                         <option value="product">Producto</option>
                         <option value="manual">Manual</option>
@@ -309,8 +312,8 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                   </div>
 
                   <div>
-                    <label className={labelCls}>Descripción *</label>
-                    <input {...register(`items.${index}.description`)} className={inputCls} />
+                    <label htmlFor={`qf-item-${index}-desc`} className={labelCls}>Descripción *</label>
+                    <input id={`qf-item-${index}-desc`} {...register(`items.${index}.description`)} className={inputCls} />
                     {errors.items?.[index]?.description && (
                       <p className="text-xs text-tc-stamp-red">{errors.items[index]?.description?.message}</p>
                     )}
@@ -318,34 +321,37 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
 
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className={labelCls}>Cantidad</label>
                       <input
+                        aria-label="Cantidad"
                         type="number"
                         step="1"
                         min="0"
                         {...register(`items.${index}.quantity`, { valueAsNumber: true })}
                         className={`${inputCls} tabular-nums`}
+                        placeholder="Cant."
                       />
                     </div>
                     <div>
-                      <label className={labelCls}>Precio neto</label>
                       <input
+                        aria-label="Precio neto"
                         type="number"
                         step="1"
                         min="0"
                         {...register(`items.${index}.unitNetPrice`, { valueAsNumber: true })}
                         className={`${inputCls} tabular-nums`}
+                        placeholder="P. neto"
                       />
                     </div>
                     <div>
-                      <label className={labelCls}>IVA (%)</label>
                       <input
+                        aria-label="IVA %"
                         type="number"
                         step="1"
                         min="0"
                         max="100"
                         {...register(`items.${index}.vatRate`, { valueAsNumber: true })}
                         className={`${inputCls} tabular-nums`}
+                        placeholder="IVA%"
                       />
                     </div>
                   </div>

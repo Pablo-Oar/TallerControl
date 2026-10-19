@@ -266,8 +266,9 @@ function CertificatesSection({
         <Modal title="Nuevo certificado ARCA" onClose={() => setShowForm(false)} className="max-w-md">
           <form onSubmit={handleCreate} className="space-y-3">
             <div>
-              <label className={labelCls}>CUIT (sin guiones)</label>
+              <label htmlFor="inv-cuit" className={labelCls}>CUIT (sin guiones)</label>
               <input
+                id="inv-cuit"
                 value={cuit}
                 onChange={e => setCuit(e.target.value)}
                 placeholder="20123456789"
@@ -276,8 +277,9 @@ function CertificatesSection({
               />
             </div>
             <div>
-              <label className={labelCls}>Nombre identificador</label>
+              <label htmlFor="inv-cert-name" className={labelCls}>Nombre identificador</label>
               <input
+                id="inv-cert-name"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 required
@@ -310,8 +312,9 @@ function CertificatesSection({
         <Modal title="Subir certificado PEM" onClose={() => setUploadId(null)} className="max-w-lg">
           <form onSubmit={handleUpload} className="space-y-3">
             <div>
-              <label className={labelCls}>Certificado PEM (obtenido de ARCA)</label>
+              <label htmlFor="inv-cert-pem" className={labelCls}>Certificado PEM (obtenido de ARCA)</label>
               <textarea
+                id="inv-cert-pem"
                 value={certPem}
                 onChange={e => setCertPem(e.target.value)}
                 className="h-32 w-full border border-tc-border bg-white p-2 font-mono text-xs outline-none focus:border-tc-border-mid transition-colors"
@@ -320,8 +323,9 @@ function CertificatesSection({
               />
             </div>
             <div>
-              <label className={labelCls}>Fecha de vencimiento</label>
+              <label htmlFor="inv-expires-at" className={labelCls}>Fecha de vencimiento</label>
               <input
+                id="inv-expires-at"
                 type="date"
                 value={expiresAt}
                 onChange={e => setExpiresAt(e.target.value)}
@@ -433,8 +437,9 @@ function PointsOfSaleSection({
         <Modal title="Nuevo punto de venta" onClose={() => setShowForm(false)} className="max-w-md">
           <form onSubmit={handleCreate} className="space-y-3">
             <div>
-              <label className={labelCls}>Certificado</label>
+              <label htmlFor="pos-cert" className={labelCls}>Certificado</label>
               <select
+                id="pos-cert"
                 value={certId}
                 onChange={e => setCertId(e.target.value)}
                 className="w-full border border-tc-border bg-white px-3 py-2 text-sm outline-none focus:border-tc-border-mid transition-colors"
@@ -449,8 +454,9 @@ function PointsOfSaleSection({
               </select>
             </div>
             <div>
-              <label className={labelCls}>Número de punto de venta</label>
+              <label htmlFor="pos-number" className={labelCls}>Número de punto de venta</label>
               <input
+                id="pos-number"
                 type="number"
                 min="1"
                 value={number}
@@ -460,8 +466,9 @@ function PointsOfSaleSection({
               />
             </div>
             <div>
-              <label className={labelCls}>Nombre</label>
+              <label htmlFor="pos-name" className={labelCls}>Nombre</label>
               <input
+                id="pos-name"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 required

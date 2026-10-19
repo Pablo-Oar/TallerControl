@@ -1,8 +1,10 @@
+import { lazy, Suspense } from 'react'
 import { Route, Routes, useNavigate } from 'react-router'
-import { MechanicWorkOrdersPage } from './MechanicWorkOrdersPage'
-import { MechanicWorkOrderDetailPage } from './MechanicWorkOrderDetailPage'
 import { PlateSearchBar } from '../../components/PlateSearchBar'
 import { PwaInstallBanner } from './PwaInstallBanner'
+
+const MechanicWorkOrdersPage = lazy(() => import('./MechanicWorkOrdersPage').then(m => ({ default: m.MechanicWorkOrdersPage })))
+const MechanicWorkOrderDetailPage = lazy(() => import('./MechanicWorkOrderDetailPage').then(m => ({ default: m.MechanicWorkOrderDetailPage })))
 
 /** Área del mecánico (`/m/*`): celular primero. */
 export function Component() {
@@ -17,10 +19,16 @@ export function Component() {
       </header>
       <PwaInstallBanner />
       <main className="mx-auto max-w-lg p-4">
-        <Routes>
-          <Route index element={<MechanicWorkOrdersPage />} />
-          <Route path="work-orders/:id" element={<MechanicWorkOrderDetailPage />} />
-        </Routes>
+        <Suspense fallback={
+          <div className="flex items-center justify-center py-16">
+            <div className="h-5 w-5 animate-spin border-2 border-tc-purple border-t-transparent" />
+          </div>
+        }>
+          <Routes>
+            <Route index element={<MechanicWorkOrdersPage />} />
+            <Route path="work-orders/:id" element={<MechanicWorkOrderDetailPage />} />
+          </Routes>
+        </Suspense>
       </main>
     </div>
   )

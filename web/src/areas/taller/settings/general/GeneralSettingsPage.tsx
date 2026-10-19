@@ -209,30 +209,30 @@ export function GeneralSettingsPage() {
 
         <div className="space-y-4 p-5">
           <div>
-            <label className={labelCls}>Nombre del taller *</label>
-            <input {...register('name')} className={inputCls} />
+            <label htmlFor="gs-name" className={labelCls}>Nombre del taller *</label>
+            <input id="gs-name" {...register('name')} className={inputCls} />
             {errors.name && <p className="mt-1 text-xs text-tc-stamp-red">{errors.name.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>Razón social</label>
-              <input {...register('legalName')} className={inputCls} />
+              <label htmlFor="gs-legal-name" className={labelCls}>Razón social</label>
+              <input id="gs-legal-name" {...register('legalName')} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>CUIT</label>
-              <input {...register('taxId')} className={inputCls} placeholder="20-12345678-9" />
+              <label htmlFor="gs-tax-id" className={labelCls}>CUIT</label>
+              <input id="gs-tax-id" {...register('taxId')} className={inputCls} placeholder="20-12345678-9" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>Dirección</label>
-              <input {...register('address')} className={inputCls} />
+              <label htmlFor="gs-address" className={labelCls}>Dirección</label>
+              <input id="gs-address" {...register('address')} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Teléfono</label>
-              <input {...register('phone')} className={inputCls} />
+              <label htmlFor="gs-phone" className={labelCls}>Teléfono</label>
+              <input id="gs-phone" {...register('phone')} className={inputCls} />
             </div>
           </div>
         </div>
@@ -245,23 +245,24 @@ export function GeneralSettingsPage() {
 
         <div className="space-y-4 p-5">
           <div>
-            <label className={labelCls}>Zona horaria</label>
-            <input {...register('timeZone')} className={inputCls} placeholder="America/Argentina/Buenos_Aires" />
+            <label htmlFor="gs-timezone" className={labelCls}>Zona horaria</label>
+            <input id="gs-timezone" {...register('timeZone')} className={inputCls} placeholder="America/Argentina/Buenos_Aires" />
             {errors.timeZone && <p className="mt-1 text-xs text-tc-stamp-red">{errors.timeZone.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>IVA por defecto</label>
-              <select {...register('defaultVatRate')} className={inputCls}>
+              <label htmlFor="gs-vat-rate" className={labelCls}>IVA por defecto</label>
+              <select id="gs-vat-rate" {...register('defaultVatRate')} className={inputCls}>
                 {ALLOWED_VAT_RATES.map((rate) => (
                   <option key={rate} value={rate}>{rate}%</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className={labelCls}>Vigencia del presupuesto (días)</label>
+              <label htmlFor="gs-quote-validity" className={labelCls}>Vigencia del presupuesto (días)</label>
               <input
+                id="gs-quote-validity"
                 type="number"
                 min={1}
                 max={180}

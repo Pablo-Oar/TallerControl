@@ -107,8 +107,8 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Proveedor *</label>
-            <select {...register('supplierId')} className={inputCls}>
+            <label htmlFor="pur-supplier" className={labelCls}>Proveedor *</label>
+            <select id="pur-supplier" {...register('supplierId')} className={inputCls}>
               <option value="">Seleccioná un proveedor</option>
               {suppliersPage?.items.map(s => (
                 <option key={s.id} value={s.id}>{s.name}</option>
@@ -117,27 +117,27 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
             {errors.supplierId && <p className="mt-1 text-xs text-red-600">{errors.supplierId.message}</p>}
           </div>
           <div>
-            <label className={labelCls}>Fecha de factura *</label>
-            <input type="date" {...register('invoiceDate')} className={inputCls} />
+            <label htmlFor="pur-invoice-date" className={labelCls}>Fecha de factura *</label>
+            <input id="pur-invoice-date" type="date" {...register('invoiceDate')} className={inputCls} />
             {errors.invoiceDate && <p className="mt-1 text-xs text-red-600">{errors.invoiceDate.message}</p>}
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Punto de venta <span className="font-normal normal-case text-slate-400">(opcional)</span></label>
-            <input type="number" {...register('pointOfSale')} className={inputCls} placeholder="Ej. 1" min={1} />
+            <label htmlFor="pur-pos" className={labelCls}>Punto de venta <span className="font-normal normal-case text-slate-400">(opcional)</span></label>
+            <input id="pur-pos" type="number" {...register('pointOfSale')} className={inputCls} placeholder="Ej. 1" min={1} />
           </div>
           <div>
-            <label className={labelCls}>Nro. de factura <span className="font-normal normal-case text-slate-400">(opcional)</span></label>
-            <input type="number" {...register('invoiceNumber')} className={inputCls} placeholder="Ej. 1234" min={1} />
+            <label htmlFor="pur-inv-number" className={labelCls}>Nro. de factura <span className="font-normal normal-case text-slate-400">(opcional)</span></label>
+            <input id="pur-inv-number" type="number" {...register('invoiceNumber')} className={inputCls} placeholder="Ej. 1234" min={1} />
           </div>
         </div>
 
         {/* Ítems */}
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <label className={labelCls}>Ítems *</label>
+            <span className={labelCls}>Ítems *</span>
             <button
               type="button"
               onClick={() => append({ catalogItemId: '', description: '', quantity: '1' as unknown as number, unitCost: '0' as unknown as number, vatRate: '21' as unknown as number })}
@@ -227,12 +227,12 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
         {/* Percepciones / retenciones */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Percepciones</label>
-            <input type="number" step="0.01" min="0" {...register('perceptions')} className={inputCls} placeholder="0,00" />
+            <label htmlFor="pur-perceptions" className={labelCls}>Percepciones</label>
+            <input id="pur-perceptions" type="number" step="0.01" min="0" {...register('perceptions')} className={inputCls} placeholder="0,00" />
           </div>
           <div>
-            <label className={labelCls}>Retenciones</label>
-            <input type="number" step="0.01" min="0" {...register('retentions')} className={inputCls} placeholder="0,00" />
+            <label htmlFor="pur-retentions" className={labelCls}>Retenciones</label>
+            <input id="pur-retentions" type="number" step="0.01" min="0" {...register('retentions')} className={inputCls} placeholder="0,00" />
           </div>
         </div>
 

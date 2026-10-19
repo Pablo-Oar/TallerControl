@@ -101,51 +101,51 @@ export function CustomerFormModal({ customer, onSuccess, onClose, onDelete }: Pr
     <Modal title={isEdit ? 'Editar cliente' : 'Nuevo cliente'} onClose={onClose}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Nombre *</label>
-          <input {...register('name')} className={inputCls} placeholder="Nombre completo o razón social" />
+          <label htmlFor="cust-name" className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Nombre *</label>
+          <input id="cust-name" {...register('name')} className={inputCls} placeholder="Nombre completo o razón social" />
           {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Email</label>
-            <input {...register('email')} type="email" className={inputCls} placeholder="email@ejemplo.com" />
+            <label htmlFor="cust-email" className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Email</label>
+            <input id="cust-email" {...register('email')} type="email" className={inputCls} placeholder="email@ejemplo.com" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Teléfono</label>
-            <input {...register('phone')} className={inputCls} placeholder="011 15-0000-0000" />
+            <label htmlFor="cust-phone" className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Teléfono</label>
+            <input id="cust-phone" {...register('phone')} className={inputCls} placeholder="011 15-0000-0000" />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Tipo de documento</label>
-            <select {...register('docType')} className={inputCls}>
+            <label htmlFor="cust-doc-type" className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Tipo de documento</label>
+            <select id="cust-doc-type" {...register('docType')} className={inputCls}>
               <option value="">Sin documento</option>
               {DOC_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Número</label>
-            <input {...register('docNumber')} className={inputCls} placeholder="20-12345678-9" />
+            <label htmlFor="cust-doc-number" className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Número</label>
+            <input id="cust-doc-number" {...register('docNumber')} className={inputCls} placeholder="20-12345678-9" />
           </div>
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Condición IVA</label>
-          <select {...register('vatCondition')} className={inputCls}>
+          <label htmlFor="cust-vat" className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Condición IVA</label>
+          <select id="cust-vat" {...register('vatCondition')} className={inputCls}>
             {VAT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Dirección</label>
-          <input {...register('address')} className={inputCls} placeholder="Av. Ejemplo 1234, CABA" />
+          <label htmlFor="cust-address" className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Dirección</label>
+          <input id="cust-address" {...register('address')} className={inputCls} placeholder="Av. Ejemplo 1234, CABA" />
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Notas</label>
-          <textarea {...register('notes')} rows={2} className={inputCls} placeholder="Observaciones internas…" />
+          <label htmlFor="cust-notes" className="mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500">Notas</label>
+          <textarea id="cust-notes" {...register('notes')} rows={2} className={inputCls} placeholder="Observaciones internas…" />
         </div>
 
         <label className="flex items-center gap-2 text-sm text-slate-600">

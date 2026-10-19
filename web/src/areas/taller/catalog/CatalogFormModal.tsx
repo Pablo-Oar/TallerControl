@@ -5,9 +5,11 @@ import { z } from 'zod'
 import type { Resolver } from 'react-hook-form'
 import { catalogApi, type CatalogItemDto } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
+import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
-const inputCls = 'w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500'
+const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
+const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const schema = z.object({
   kind: z.enum(['service', 'product']),
@@ -108,124 +110,124 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
-        <h2 className="mb-5 text-lg font-semibold">
-          {isEdit ? 'Editar ítem' : 'Nuevo ítem de catálogo'}
-        </h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <Modal title={isEdit ? 'Editar ítem' : 'Nuevo ítem de catálogo'} onClose={onClose}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
-          {!isEdit && (
-            <div>
-              <label className="mb-1 block text-sm font-medium">Tipo *</label>
-              <select {...register('kind')} className={inputCls}>
-                <option value="service">Servicio</option>
-                <option value="product">Producto</option>
-              </select>
-            </div>
-          )}
-
+        {!isEdit && (
           <div>
-            <label className="mb-1 block text-sm font-medium">Nombre *</label>
-            <input {...register('name')} className={inputCls} placeholder="Ej. Cambio de aceite" />
-            {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
+            <label htmlFor="cat-kind" className={labelCls}>Tipo *</label>
+            <select id="cat-kind" {...register('kind')} className={inputCls}>
+              <option value="service">Servicio</option>
+              <option value="product">Producto</option>
+            </select>
           </div>
+        )}
 
-          {!isEdit && (
-            <div>
-              <label className="mb-1 block text-sm font-medium">SKU</label>
-              <input {...register('sku')} className={inputCls} placeholder="Ej. FIL-001" />
-            </div>
-          )}
+        <div>
+          <label htmlFor="cat-name" className={labelCls}>Nombre *</label>
+          <input id="cat-name" {...register('name')} className={inputCls} placeholder="Ej. Cambio de aceite" />
+          {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
+        </div>
 
+        {!isEdit && (
           <div>
-            <label className="mb-1 block text-sm font-medium">Descripción</label>
-            <textarea
-              {...register('description')}
-              rows={2}
+            <label htmlFor="cat-sku" className={labelCls}>SKU</label>
+            <input id="cat-sku" {...register('sku')} className={inputCls} placeholder="Ej. FIL-001" />
+          </div>
+        )}
+
+        <div>
+          <label htmlFor="cat-desc" className={labelCls}>Descripción</label>
+          <textarea
+            id="cat-desc"
+            {...register('description')}
+            rows={2}
+            className={inputCls}
+            placeholder="Descripción opcional…"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="cat-price" className={labelCls}>Precio neto *</label>
+            <input
+              id="cat-price"
+              {...register('netPrice', { valueAsNumber: true })}
+              type="number"
+              min={0}
+              step="1"
               className={inputCls}
-              placeholder="Descripción opcional…"
+              placeholder="0.00"
+            />
+            {errors.netPrice && <p className="mt-1 text-xs text-red-600">{errors.netPrice.message}</p>}
+          </div>
+          <div>
+            <label htmlFor="cat-vat" className={labelCls}>IVA %</label>
+            <input
+              id="cat-vat"
+              {...register('vatRate', { valueAsNumber: true })}
+              type="number"
+              min={0}
+              max={100}
+              step="1"
+              className={inputCls}
+              placeholder="21"
             />
           </div>
+        </div>
 
+        {(kind === 'product' || isEdit) && (
+          <label className="flex items-center gap-2 text-sm text-slate-600">
+            <input type="checkbox" {...register('trackStock')} className="h-4 w-4" />
+            Controlar stock
+          </label>
+        )}
+
+        {trackStock && (
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1 block text-sm font-medium">Precio neto *</label>
+              <label htmlFor="cat-min-stock" className={labelCls}>Stock mínimo</label>
               <input
-                {...register('netPrice', { valueAsNumber: true })}
+                id="cat-min-stock"
+                {...register('minStockQty')}
                 type="number"
                 min={0}
                 step="1"
                 className={inputCls}
-                placeholder="0.00"
+                placeholder="—"
               />
-              {errors.netPrice && <p className="mt-1 text-xs text-red-600">{errors.netPrice.message}</p>}
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">IVA %</label>
+              <label htmlFor="cat-max-stock" className={labelCls}>Stock máximo</label>
               <input
-                {...register('vatRate', { valueAsNumber: true })}
+                id="cat-max-stock"
+                {...register('maxStockQty')}
                 type="number"
                 min={0}
-                max={100}
                 step="1"
                 className={inputCls}
-                placeholder="21"
+                placeholder="—"
               />
             </div>
           </div>
+        )}
 
-          {(kind === 'product' || isEdit) && (
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" {...register('trackStock')} className="h-4 w-4 rounded" />
-              Controlar stock
-            </label>
-          )}
+        {isEdit && (
+          <label className="flex items-center gap-2 text-sm text-slate-600">
+            <input type="checkbox" {...register('isActive')} className="h-4 w-4" />
+            Activo
+          </label>
+        )}
 
-          {trackStock && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium">Stock mínimo</label>
-                <input
-                  {...register('minStockQty')}
-                  type="number"
-                  min={0}
-                  step="1"
-                  className={inputCls}
-                  placeholder="—"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Stock máximo</label>
-                <input
-                  {...register('maxStockQty')}
-                  type="number"
-                  min={0}
-                  step="1"
-                  className={inputCls}
-                  placeholder="—"
-                />
-              </div>
-            </div>
-          )}
+        {serverError && (
+          <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
+        )}
 
-          {isEdit && (
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" {...register('isActive')} className="h-4 w-4 rounded" />
-              Activo
-            </label>
-          )}
-
-          {serverError && (
-            <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
-          )}
-
-          <div className="flex justify-end gap-3 pt-2">
-            <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" loading={isSubmitting}>Guardar</Button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="flex justify-end gap-3 pt-2">
+          <Button type="button" variant="secondary" size="sm" onClick={onClose}>Cancelar</Button>
+          <Button type="submit" size="sm" loading={isSubmitting}>Guardar</Button>
+        </div>
+      </form>
+    </Modal>
   )
 }

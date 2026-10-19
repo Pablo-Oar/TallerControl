@@ -7,9 +7,11 @@ import { workOrdersApi, type WorkOrderPriority } from '../../../lib/api/workOrde
 import { customersApi } from '../../../lib/api/customers'
 import { catalogApi, type CatalogItemKind } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
+import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
-const inputCls = 'w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500'
+const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
+const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const itemSchema = z.object({
   kind: z.enum(['service', 'product', 'manual']),
@@ -129,17 +131,16 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
   const vehicles = customerDetail?.vehicles ?? []
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 pt-10">
-      <div className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl">
-        <h2 className="mb-5 text-lg font-semibold">Nueva orden de trabajo</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <Modal title="Nueva orden de trabajo" onClose={onClose} className="max-w-2xl">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
           {/* Cliente */}
           <div>
-            <label className="mb-1 block text-sm font-medium">Cliente *</label>
+            <label htmlFor="wo-customer-search" className={labelCls}>Cliente *</label>
             {!selectedCustomerId && (
               <div className="relative">
                 <input
+                  id="wo-customer-search"
                   type="search"
                   value={customerSearch}
                   onChange={e => setCustomerSearch(e.target.value)}
@@ -189,11 +190,11 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
           {/* Vehículo */}
           {selectedCustomerId && (
             <div>
-              <label className="mb-1 block text-sm font-medium">Vehículo *</label>
+              <label htmlFor="wo-vehicle" className={labelCls}>Vehículo *</label>
               {vehicles.length === 0 ? (
                 <p className="text-sm text-slate-400">El cliente no tiene vehículos registrados.</p>
               ) : (
-                <select {...register('vehicleId')} className={inputCls}>
+                <select id="wo-vehicle" {...register('vehicleId')} className={inputCls}>
                   <option value="">Seleccionar…</option>
                   {vehicles.map(v => (
                     <option key={v.id} value={v.id}>
@@ -209,8 +210,9 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
           {/* Odómetro y combustible */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1 block text-sm font-medium">Odómetro (km) *</label>
+              <label htmlFor="wo-odometer" className={labelCls}>Odómetro (km) *</label>
               <input
+                id="wo-odometer"
                 {...register('odometerKm', { valueAsNumber: true })}
                 type="number"
                 min={0}
@@ -220,8 +222,9 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
               {errors.odometerKm && <p className="mt-1 text-xs text-red-600">{errors.odometerKm.message}</p>}
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">Combustible %</label>
+              <label htmlFor="wo-fuel" className={labelCls}>Combustible %</label>
               <input
+                id="wo-fuel"
                 {...register('fuelLevel', { valueAsNumber: true, setValueAs: v => (v === '' || isNaN(v) ? null : v) })}
                 type="number"
                 min={0}
@@ -235,8 +238,8 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
 
           {/* Prioridad */}
           <div>
-            <label className="mb-1 block text-sm font-medium">Prioridad</label>
-            <select {...register('priority')} className={inputCls}>
+            <label htmlFor="wo-priority" className={labelCls}>Prioridad</label>
+            <select id="wo-priority" {...register('priority')} className={inputCls}>
               <option value="low">Baja</option>
               <option value="normal">Normal</option>
               <option value="high">Alta</option>
@@ -245,8 +248,9 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
 
           {/* Problema reportado */}
           <div>
-            <label className="mb-1 block text-sm font-medium">Problema reportado</label>
+            <label htmlFor="wo-issue" className={labelCls}>Problema reportado</label>
             <textarea
+              id="wo-issue"
               {...register('reportedIssue')}
               rows={2}
               className={inputCls}
@@ -285,16 +289,15 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
           </div>
 
           {serverError && (
-            <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
+            <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
           )}
 
           <div className="flex justify-end gap-3 pt-2">
-            <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" loading={isSubmitting}>Crear orden</Button>
+            <Button type="button" variant="secondary" size="sm" onClick={onClose}>Cancelar</Button>
+            <Button type="submit" size="sm" loading={isSubmitting}>Crear orden</Button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -319,18 +322,22 @@ function ItemRow({ index, register, errors, catalogItems, onSelectCatalog, onRem
   onSelectCatalog: (index: number, id: string) => void
   onRemove: () => void
 }) {
+  const rowInputCls = 'w-full border border-tc-border bg-white px-2 py-1.5 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
+  const catId = `wo-item-${index}-cat`
+
   return (
-    <div className="rounded-md border border-slate-200 p-3">
+    <div className="border border-tc-border p-3 bg-tc-surface">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-medium text-slate-500">Renglón {index + 1}</span>
-        <button type="button" onClick={onRemove} className="text-xs text-red-500 hover:underline">Quitar</button>
+        <span className="text-xs font-bold tracking-wider uppercase text-slate-400">Renglón {index + 1}</span>
+        <button type="button" onClick={onRemove} className="text-xs font-bold tracking-wider uppercase text-tc-stamp-red hover:opacity-70 transition-opacity">Quitar</button>
       </div>
       <div className="space-y-2">
         <div>
-          <label className="mb-1 block text-xs text-slate-500">Ítem de catálogo (opcional)</label>
+          <label htmlFor={catId} className="mb-1 block text-[10px] font-bold tracking-wider uppercase text-slate-400">Ítem de catálogo (opcional)</label>
           <select
+            id={catId}
             onChange={e => { if (e.target.value) onSelectCatalog(index, e.target.value) }}
-            className="w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm outline-none"
+            className={rowInputCls}
           >
             <option value="">— manual —</option>
             {catalogItems.map(c => (
@@ -341,8 +348,9 @@ function ItemRow({ index, register, errors, catalogItems, onSelectCatalog, onRem
         <div>
           <input
             {...register(`items.${index}.description`)}
+            aria-label={`Descripción del renglón ${index + 1}`}
             placeholder="Descripción *"
-            className="w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-blue-500"
+            className={rowInputCls}
           />
           {errors.items?.[index]?.description && (
             <p className="mt-0.5 text-xs text-red-600">{errors.items[index].description.message}</p>
@@ -350,33 +358,36 @@ function ItemRow({ index, register, errors, catalogItems, onSelectCatalog, onRem
         </div>
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="mb-0.5 block text-xs text-slate-400">Cantidad</label>
             <input
               {...register(`items.${index}.quantity`, { valueAsNumber: true })}
+              aria-label="Cantidad"
               type="number"
               min={0}
               step="1"
-              className="w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm outline-none"
+              className={rowInputCls}
+              placeholder="Cant."
             />
           </div>
           <div>
-            <label className="mb-0.5 block text-xs text-slate-400">P. neto</label>
             <input
               {...register(`items.${index}.unitNetPrice`, { valueAsNumber: true })}
+              aria-label="Precio neto"
               type="number"
               min={0}
               step="1"
-              className="w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm outline-none"
+              className={rowInputCls}
+              placeholder="P. neto"
             />
           </div>
           <div>
-            <label className="mb-0.5 block text-xs text-slate-400">IVA %</label>
             <input
               {...register(`items.${index}.vatRate`, { valueAsNumber: true })}
+              aria-label="IVA %"
               type="number"
               min={0}
               max={100}
-              className="w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm outline-none"
+              className={rowInputCls}
+              placeholder="IVA%"
             />
           </div>
         </div>

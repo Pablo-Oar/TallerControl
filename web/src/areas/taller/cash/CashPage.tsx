@@ -86,8 +86,9 @@ export function CashPage() {
               <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
             )}
             <div>
-              <label className={labelCls}>Nombre *</label>
+              <label htmlFor="cash-name" className={labelCls}>Nombre *</label>
               <input
+                id="cash-name"
                 type="text"
                 value={newName}
                 onChange={e => setNewName(e.target.value)}
@@ -97,8 +98,9 @@ export function CashPage() {
               />
             </div>
             <div>
-              <label className={labelCls}>Tipo</label>
+              <label htmlFor="cash-kind" className={labelCls}>Tipo</label>
               <select
+                id="cash-kind"
                 value={newKind}
                 onChange={e => setNewKind(e.target.value as CashAccountKind)}
                 className={inputCls}

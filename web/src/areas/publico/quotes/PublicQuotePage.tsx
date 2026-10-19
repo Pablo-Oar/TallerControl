@@ -293,17 +293,17 @@ export function PublicQuotePage() {
             <div className="px-6 py-5">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 <div>
-                  <label className={labelCls}>
+                  <label htmlFor="pq-signer-name" className={labelCls}>
                     Nombre completo <span className="text-tc-stamp-red">*</span>
                   </label>
-                  <input {...register('signerName')} className={inputCls} placeholder="Juan García" />
+                  <input id="pq-signer-name" {...register('signerName')} className={inputCls} placeholder="Juan García" />
                   {errors.signerName && (
                     <p className="mt-1 text-xs text-tc-stamp-red">{errors.signerName.message}</p>
                   )}
                 </div>
 
-                <div>
-                  <label className={labelCls}>Decisión</label>
+                <fieldset>
+                  <legend className={labelCls}>Decisión</legend>
                   <div className="flex gap-6 mt-1">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input type="radio" value="approved" {...register('decision')} className="accent-tc-purple" />
@@ -314,11 +314,12 @@ export function PublicQuotePage() {
                       <span className="text-sm font-bold tracking-wide text-tc-stamp-red">Rechazo</span>
                     </label>
                   </div>
-                </div>
+                </fieldset>
 
                 <div>
-                  <label className={labelCls}>Comentario <span className="font-normal normal-case text-slate-400">(opcional)</span></label>
+                  <label htmlFor="pq-comment" className={labelCls}>Comentario <span className="font-normal normal-case text-slate-400">(opcional)</span></label>
                   <textarea
+                    id="pq-comment"
                     {...register('comment')}
                     rows={3}
                     className={inputCls}
@@ -328,7 +329,7 @@ export function PublicQuotePage() {
 
                 {/* Firma digital */}
                 <div>
-                  <label className={labelCls}>Firma <span className="font-normal normal-case text-slate-400">(opcional)</span></label>
+                  <p className={labelCls}>Firma <span className="font-normal normal-case text-slate-400">(opcional)</span></p>
                   <div className="border border-tc-border bg-white overflow-hidden touch-none select-none">
                     <canvas
                       ref={canvasRef}
@@ -359,8 +360,9 @@ export function PublicQuotePage() {
 
                 {/* DNI */}
                 <div>
-                  <label className={labelCls}>DNI / Documento <span className="font-normal normal-case text-slate-400">(opcional)</span></label>
+                  <label htmlFor="pq-doc-number" className={labelCls}>DNI / Documento <span className="font-normal normal-case text-slate-400">(opcional)</span></label>
                   <input
+                    id="pq-doc-number"
                     type="text"
                     value={signerDocNumber}
                     onChange={e => setSignerDocNumber(e.target.value)}

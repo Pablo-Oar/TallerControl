@@ -98,21 +98,22 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
         {!isEdit && (
           <>
             <div>
-              <label className={labelCls}>ID Cliente *</label>
-              <input {...register('customerId')} className={inputCls} placeholder="UUID del cliente" />
+              <label htmlFor="apt-customer" className={labelCls}>ID Cliente *</label>
+              <input id="apt-customer" {...register('customerId')} className={inputCls} placeholder="UUID del cliente" />
               {errors.customerId && <p className="mt-1 text-xs text-tc-stamp-red">{errors.customerId.message}</p>}
             </div>
             <div>
-              <label className={labelCls}>ID Vehículo *</label>
-              <input {...register('vehicleId')} className={inputCls} placeholder="UUID del vehículo" />
+              <label htmlFor="apt-vehicle" className={labelCls}>ID Vehículo *</label>
+              <input id="apt-vehicle" {...register('vehicleId')} className={inputCls} placeholder="UUID del vehículo" />
               {errors.vehicleId && <p className="mt-1 text-xs text-tc-stamp-red">{errors.vehicleId.message}</p>}
             </div>
           </>
         )}
 
         <div>
-          <label className={labelCls}>Fecha y hora *</label>
+          <label htmlFor="apt-scheduled-at" className={labelCls}>Fecha y hora *</label>
           <input
+            id="apt-scheduled-at"
             type="datetime-local"
             {...register('scheduledAt')}
             className={inputCls}
@@ -121,8 +122,8 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
         </div>
 
         <div>
-          <label className={labelCls}>Notas <span className="normal-case font-normal text-slate-400">(opcional)</span></label>
-          <textarea {...register('notes')} rows={2} className={inputCls} />
+          <label htmlFor="apt-notes" className={labelCls}>Notas <span className="normal-case font-normal text-slate-400">(opcional)</span></label>
+          <textarea id="apt-notes" {...register('notes')} rows={2} className={inputCls} />
         </div>
 
         {!isEdit && (
@@ -158,19 +159,21 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className={labelCls}>Duración (min)</label>
                         <input
+                          aria-label="Duración (minutos)"
                           type="number"
                           {...register(`services.${index}.durationMinutes`, { valueAsNumber: true })}
                           className={`${inputCls} tabular-nums`}
+                          placeholder="45 min"
                         />
                       </div>
                       <div>
-                        <label className={labelCls}>Buffer (min)</label>
                         <input
+                          aria-label="Buffer (minutos)"
                           type="number"
                           {...register(`services.${index}.bufferMinutes`, { valueAsNumber: true })}
                           className={`${inputCls} tabular-nums`}
+                          placeholder="15 min"
                         />
                       </div>
                     </div>

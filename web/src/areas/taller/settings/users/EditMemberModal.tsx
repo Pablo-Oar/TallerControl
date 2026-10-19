@@ -38,10 +38,11 @@ export function EditMemberModal({ member, saving, error, onSave, onClose }: Prop
         <h2 className="mb-4 text-lg font-semibold">Editar {member.displayName}</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700">Rol</label>
+            <label htmlFor="edit-member-role" className="text-sm font-medium text-slate-700">Rol</label>
             <select
+              id="edit-member-role"
               {...register('role')}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors"
             >
               <option value="owner">Dueño</option>
               <option value="admin_staff">Administrativo</option>
@@ -49,10 +50,11 @@ export function EditMemberModal({ member, saving, error, onSave, onClose }: Prop
             </select>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700">Estado</label>
+            <label htmlFor="edit-member-status" className="text-sm font-medium text-slate-700">Estado</label>
             <select
+              id="edit-member-status"
               {...register('status')}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors"
             >
               <option value="active">Activo</option>
               <option value="inactive">Inactivo</option>

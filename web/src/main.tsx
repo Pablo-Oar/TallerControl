@@ -6,11 +6,11 @@ import { router } from './app/router.tsx'
 import { AuthProvider } from './lib/auth/AuthContext.tsx'
 import './styles/index.css'
 
-// Registrar service worker para la PWA del mecánico.
-if ('serviceWorker' in navigator) {
+// Registrar service worker para la PWA del mecánico (solo en producción).
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {
-      // SW opcional: falla silenciosamente en desarrollo o en contextos sin HTTPS.
+      // SW opcional: falla silenciosamente en contextos sin HTTPS.
     })
   })
 }

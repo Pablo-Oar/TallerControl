@@ -59,8 +59,15 @@ export function InvoicingPage() {
           ))}
         </div>
       ) : !data?.items.length ? (
-        <div className="border border-dashed border-tc-border px-4 py-10 text-center text-sm text-slate-400">
-          No hay facturas para mostrar.
+        <div className="border border-dashed border-tc-border px-6 py-12 text-center">
+          <p className="mb-1 text-sm font-medium text-slate-600">No hay facturas todavía</p>
+          <p className="mb-4 text-xs text-slate-400">Para emitir facturas electrónicas, primero configurá el certificado ARCA.</p>
+          <NavLink
+            to="/app/invoicing/setup"
+            className="inline-flex items-center gap-1.5 border border-tc-purple bg-tc-purple px-4 py-2 text-xs font-bold tracking-wider uppercase text-white hover:bg-tc-purple-mid transition-colors"
+          >
+            Configurar ARCA
+          </NavLink>
         </div>
       ) : (
         <div className="border border-tc-border bg-white overflow-x-auto">
