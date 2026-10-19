@@ -1,3 +1,4 @@
+import { FormField } from '../../../components/ui/FormField'
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useParams, useNavigate } from 'react-router'
@@ -11,9 +12,6 @@ import {
 
 type Step = 'scan' | 'challenge' | 'otp' | 'found-keys' | 'found-keys-done'
 
-const inputCls =
-  'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 export function PublicQrPage() {
   const { code } = useParams<{ code: string }>()
@@ -143,34 +141,23 @@ export function PublicQrPage() {
           {/* Step: formulario de verificación */}
           {(step === 'scan' || step === 'challenge') && (
             <form onSubmit={handleChallenge} className="space-y-4">
-              <div>
-                <label htmlFor="qr-plate" className={labelCls}>Patente del vehículo</label>
-                <input
-                  id="qr-plate"
-                  required
-                  className={`${inputCls} uppercase font-mono tracking-widest`}
-                  placeholder="Ej. ABC123 o AB123CD"
-                  value={plate}
-                  onChange={(e) => setPlate(e.target.value.toUpperCase())}
-                />
-              </div>
-              <div>
-                <label htmlFor="qr-access-code" className={labelCls}>
-                  Código de acceso{' '}
-                  <span className="font-normal normal-case text-slate-400">(opcional)</span>
-                </label>
-                <input
-                  id="qr-access-code"
-                  className={`${inputCls} uppercase tracking-widest font-mono`}
-                  placeholder="Código de 8 caracteres"
-                  maxLength={8}
-                  value={customerCode}
-                  onChange={(e) => setCustomerCode(e.target.value.toUpperCase())}
-                />
-                <p className="mt-1 text-xs text-slate-400">
-                  Si no tenés el código, podés pedir que el taller te envíe uno por email.
-                </p>
-              </div>
+              <FormField
+                label="Patente del vehículo"
+                required
+                inputClassName="uppercase font-mono tracking-widest"
+                placeholder="Ej. ABC123 o AB123CD"
+                value={plate}
+                onChange={(e) => setPlate(e.target.value.toUpperCase())}
+              />
+              <FormField
+                label="Código de acceso (opcional)"
+                inputClassName="uppercase tracking-widest font-mono"
+                placeholder="Código de 8 caracteres"
+                maxLength={8}
+                value={customerCode}
+                onChange={(e) => setCustomerCode(e.target.value.toUpperCase())}
+                hint="Si no tenés el código, podés pedir que el taller te envíe uno por email."
+              />
               <button
                 type="submit"
                 disabled={loading || !plate}
@@ -184,28 +171,25 @@ export function PublicQrPage() {
           {/* Step: ingresar OTP */}
           {step === 'otp' && (
             <form onSubmit={handleOtp} className="space-y-4">
-              <div>
-                <label htmlFor="qr-otp" className={labelCls}>Código de verificación</label>
-                {customerCode ? (
-                  <p className="mb-2 text-sm text-slate-500">
-                    Ingresá nuevamente tu código de acceso del taller ({customerCode.length} caracteres).
-                  </p>
-                ) : (
-                  <p className="mb-2 text-sm text-slate-500">
-                    Te enviamos un código de 6 dígitos por email. Ingresalo acá.
-                  </p>
-                )}
-                <input
-                  id="qr-otp"
-                  required
-                  autoFocus
-                  className="w-full border border-tc-border bg-white px-3 py-3 text-center text-xl font-mono tracking-widest text-slate-800 outline-none focus:border-tc-border-mid transition-colors uppercase"
-                  placeholder={customerCode ? '••••••••' : '000000'}
-                  maxLength={customerCode ? 8 : 6}
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.toUpperCase())}
-                />
-              </div>
+              {customerCode ? (
+                <p className="text-sm text-slate-500">
+                  Ingresá nuevamente tu código de acceso del taller ({customerCode.length} caracteres).
+                </p>
+              ) : (
+                <p className="text-sm text-slate-500">
+                  Te enviamos un código de 6 dígitos por email. Ingresalo acá.
+                </p>
+              )}
+              <FormField
+                label="Código de verificación"
+                required
+                autoFocus
+                inputClassName="text-center text-xl font-mono tracking-widest uppercase"
+                placeholder={customerCode ? '••••••••' : '000000'}
+                maxLength={customerCode ? 8 : 6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.toUpperCase())}
+              />
               <button
                 type="submit"
                 disabled={loading || !otp}
@@ -230,31 +214,19 @@ export function PublicQrPage() {
                 Vas a avisar al taller que encontraste estas llaves. Podés dejar tus datos para que
                 puedan contactarte.
               </div>
-              <div>
-                <label htmlFor="qr-reporter-name" className={labelCls}>
-                  Nombre <span className="font-normal normal-case text-slate-400">(opcional)</span>
-                </label>
-                <input
-                  id="qr-reporter-name"
-                  className={inputCls}
-                  placeholder="Tu nombre"
-                  value={reporterName}
-                  onChange={(e) => setReporterName(e.target.value)}
-                />
-              </div>
-              <div>
-                <label htmlFor="qr-reporter-phone" className={labelCls}>
-                  Teléfono <span className="font-normal normal-case text-slate-400">(opcional)</span>
-                </label>
-                <input
-                  id="qr-reporter-phone"
-                  type="tel"
-                  className={inputCls}
-                  placeholder="Ej. +54 9 11 1234-5678"
-                  value={reporterPhone}
-                  onChange={(e) => setReporterPhone(e.target.value)}
-                />
-              </div>
+              <FormField
+                label="Nombre (opcional)"
+                placeholder="Tu nombre"
+                value={reporterName}
+                onChange={(e) => setReporterName(e.target.value)}
+              />
+              <FormField
+                label="Teléfono (opcional)"
+                type="tel"
+                placeholder="Ej. +54 9 11 1234-5678"
+                value={reporterPhone}
+                onChange={(e) => setReporterPhone(e.target.value)}
+              />
               <button
                 type="submit"
                 disabled={loading}

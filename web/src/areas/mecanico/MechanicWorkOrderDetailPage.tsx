@@ -8,6 +8,7 @@ import {
   PRIORITY_LABELS,
 } from '../../lib/api/workOrders'
 import { StatusBadge } from '../../components/ui/StatusBadge'
+import { FormTextarea } from '../../components/ui/FormField'
 import { Button } from '../../components/ui/Button'
 import { ApiError } from '../../lib/api/client'
 
@@ -17,7 +18,6 @@ const MECHANIC_TRANSITIONS: Partial<Record<WorkOrderStatus, WorkOrderStatus[]>> 
   waiting_parts: ['in_progress'],
 }
 
-const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -155,12 +155,12 @@ export function MechanicWorkOrderDetailPage() {
       <Section title="Mis notas">
         {editingNotes ? (
           <div className="space-y-2">
-            <textarea
+            <FormTextarea
+              label="Notas del trabajo"
               value={mechanicNotes}
               onChange={e => setMechanicNotes(e.target.value)}
               rows={3}
               maxLength={2000}
-              className={inputCls}
               placeholder="Notas del trabajo…"
             />
             {notesError && <p className="text-xs text-tc-stamp-red">{notesError}</p>}
@@ -210,12 +210,12 @@ export function MechanicWorkOrderDetailPage() {
               </span>
             </div>
             <div className="p-4 space-y-3">
-              <textarea
+              <FormTextarea
+                label="Nota (opcional)"
                 value={note}
                 onChange={e => setNote(e.target.value)}
                 rows={2}
                 placeholder="Nota (opcional)…"
-                className={inputCls}
               />
               {statusError && <p className="text-xs text-tc-stamp-red">{statusError}</p>}
               <div className="flex gap-2">
