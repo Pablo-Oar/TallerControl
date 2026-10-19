@@ -17,7 +17,13 @@ public interface IQuoteRepository
 
     Task<QuoteDto?> GetFullAsync(Guid id, CancellationToken ct);
 
+    /// <summary>Igual que <see cref="GetFullAsync"/> sin filtro de taller: para los endpoints públicos (el taller sale del enlace).</summary>
+    Task<QuoteDto?> GetFullPublicAsync(Guid id, CancellationToken ct);
+
     Task<Quote?> FindByIdAsync(Guid id, CancellationToken ct);
+
+    /// <summary>Igual que <see cref="FindByIdAsync"/> sin filtro de taller: para los endpoints públicos.</summary>
+    Task<Quote?> FindByIdPublicAsync(Guid id, CancellationToken ct);
 
     Task<IReadOnlyList<QuoteResponseDto>> GetResponsesAsync(Guid quoteId, CancellationToken ct);
 

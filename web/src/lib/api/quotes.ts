@@ -190,6 +190,12 @@ export interface SubmitPublicResponseRequest {
   signerDocNumber?: string | null
 }
 
+export interface SubmitPublicResponseResult {
+  decision: string
+  approvedTotal: number
+  newStatus: string
+}
+
 export interface SignatureUploadUrlResponse {
   uploadUrl: string
   fileKey: string
@@ -254,6 +260,10 @@ export const quotesApi = {
 
   getPdfUrl: (id: string) => `/api/v1/quotes/${id}/pdf`,
 
+  /** Enlace público del presupuesto (/p/{token}): revoca el anterior y emite uno nuevo; el token solo viaja aquí. */
+  createPublicLink: (id: string) =>
+    api.post<{ tokenBase64Url: string; expiresAt: string }>(`/api/v1/quotes/${id}/public-link`, undefined, true),
+
   getPublicLink: (workOrderId: string) =>
     api.get<{ tokenBase64Url: string; expiresAt: string }>(
       `/api/v1/work-orders/${workOrderId}/public-link`,
@@ -267,7 +277,7 @@ export const publicApi = {
     api.get<PublicQuoteDto>(`/api/public/v1/quotes/${token}`),
 
   submitResponse: (token: string, body: SubmitPublicResponseRequest) =>
-    api.post<unknown>(`/api/public/v1/quotes/${token}/responses`, body, false),
+    api.post<SubmitPublicResponseResult>(`/api/public/v1/quotes/${token}/responses`, body, false),
 
   getSignatureUploadUrl: (
     token: string,

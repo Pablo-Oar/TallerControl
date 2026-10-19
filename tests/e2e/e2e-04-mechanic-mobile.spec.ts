@@ -6,6 +6,7 @@ import {
   loginAsMechanic,
   loginAsOwner,
   MECHANIC_EMAIL,
+  openWorkOrder,
   uid,
   uniquePlate,
 } from './helpers'
@@ -15,8 +16,7 @@ import {
  * El mecánico ve las OT sin asignar, trabaja una (en proceso → nota → completada) y no ve precios.
  * Requiere E2E_MECHANIC_EMAIL y E2E_MECHANIC_PASSWORD.
  *
- * Pendiente de UI: la autoasignación ("Tomarla") y la foto adjunta no tienen pantalla todavía
- * (workOrdersApi.assign existe pero ningún componente lo usa), ver test.fixme más abajo.
+ * La foto adjunta desde /m no tiene pantalla todavía (ver test.fixme).
  */
 
 const E2E_RUN = process.env.E2E_RUN === '1'
@@ -26,7 +26,7 @@ test.describe('E2E-04: Mecánico móvil', () => {
   test.skip(!E2E_RUN, 'Requiere E2E_RUN=1 y entorno local levantado')
   test.skip(!HAS_MECHANIC, 'Requiere E2E_MECHANIC_EMAIL y E2E_MECHANIC_PASSWORD')
 
-  test('el mecánico trabaja una OT: en proceso → nota → completada (sin ver precios)', async ({ browser }) => {
+  test('el mecánico se asigna una OT y la trabaja: asignarme → en proceso → nota → completada (sin ver precios)', async ({ browser }) => {
     const suffix = uid()
     const customerName = `Mec E2E ${suffix}`
     const plate = uniquePlate('CC', suffix)
@@ -55,6 +55,11 @@ test.describe('E2E-04: Mecánico móvil', () => {
     await expect(m.getByText('Revisión general')).toBeVisible()
     await expect(m.getByText(/\$\s*\d/)).toHaveCount(0)
 
+    // Se asigna la orden sin asignar (doc 06: "Asignarme")
+    await expect(m.getByText(/no tiene mecánico asignado/i)).toBeVisible()
+    await m.getByRole('button', { name: /^asignarme$/i }).click()
+    await expect(m.getByText(/no tiene mecánico asignado/i)).toHaveCount(0)
+
     // Iniciar el trabajo
     await m.getByRole('button', { name: /→ en proceso/i }).click()
     await m.getByRole('button', { name: /^confirmar$/i }).click()
@@ -75,8 +80,24 @@ test.describe('E2E-04: Mecánico móvil', () => {
     await mechCtx.close()
   })
 
-  test.fixme('el mecánico se autoasigna la OT y adjunta una foto', async () => {
-    // Sin UI: no hay botón para asignarse la orden ni para adjuntar fotos en /m.
-    // Habilitar cuando exista (API: POST /api/v1/work-orders/{id}/assign con workorders.assign_self).
+  test('el dueño asigna un mecánico desde el detalle de la OT', async ({ page }) => {
+    const suffix = uid()
+    const customerName = `Asig E2E ${suffix}`
+    const plate = uniquePlate('GG', suffix)
+
+    await loginAsOwner(page)
+    await createCustomer(page, customerName, `asig${suffix}@test.com`)
+    await createVehicle(page, customerName, plate, { brand: 'Fiat', model: 'Cronos', year: 2022 })
+    await createWorkOrder(page, customerName, plate)
+    await openWorkOrder(page, plate)
+
+    await expect(page.getByText(/sin asignar/i).first()).toBeVisible()
+    await page.getByLabel(/^asignar a/i).selectOption({ index: 1 })
+    await expect(page.getByText(/sin asignar/i)).toHaveCount(0)
+    await expect(page.getByLabel(/^reasignar a/i)).toBeVisible()
+  })
+
+  test.fixme('el mecánico adjunta una foto desde el celular', async () => {
+    // Sin UI: no hay carga de fotos en /m (doc 06: <input capture>). La API de adjuntos ya existe.
   })
 })

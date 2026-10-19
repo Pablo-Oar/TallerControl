@@ -437,6 +437,93 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.Equal("Cliente no se presentó", updated.GetProperty("cancelReason").GetString());
     }
 
+    // ── REQ-12 CA2 / T-WO-10 (plan): cancelar repone stock y la orden deja de ser deuda ─────────────
+
+    private async Task<decimal> GetStockAsync(HttpClient client)
+    {
+        var resp = await client.GetAsync($"/api/v1/catalog/{_factory.CatalogItemId}");
+        resp.EnsureSuccessStatusCode();
+        return (await resp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("stockQty").GetDecimal();
+    }
+
+    private async Task<decimal> GetCustomerBalanceAsync(HttpClient client)
+    {
+        var resp = await client.GetAsync($"/api/v1/customers/{_factory.CustomerId}");
+        resp.EnsureSuccessStatusCode();
+        return (await resp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("balance").GetDecimal();
+    }
+
+    [Fact(DisplayName = "T-WO-10: Cancelar una orden con producto repone el stock y deja saldo 0")]
+    public async Task Cancelar_orden_con_producto_repone_stock_y_deja_saldo_cero()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, WorkOrdersWebApplicationFactory.OwnerEmail,
+            WorkOrdersWebApplicationFactory.Password);
+
+        var stockBefore = await GetStockAsync(client);
+
+        var order = await CreateOrderAsync(client, items: new object[]
+        {
+            new
+            {
+                kind = "product",
+                description = "Filtro W-Test T-WO-10",
+                catalogItemId = _factory.CatalogItemId,
+                quantity = 2m,
+                unitNetPrice = 500m,
+                vatRate = 21m,
+            },
+        });
+        var id = order.GetProperty("id").GetGuid();
+
+        Assert.Equal(stockBefore - 2m, await GetStockAsync(client));
+
+        var resp = await ChangeStatusAsync(client, id, "cancelled", cancelReason: "Prueba T-WO-10");
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+
+        // El stock vuelve al valor inicial y queda un movimiento WorkOrderCancel por la cantidad repuesta.
+        Assert.Equal(stockBefore, await GetStockAsync(client));
+        var movements = await client.GetAsync($"/api/v1/catalog/{_factory.CatalogItemId}/stock-movements");
+        movements.EnsureSuccessStatusCode();
+        var json = await movements.Content.ReadAsStringAsync();
+        Assert.Contains("work_order_cancel", json, StringComparison.OrdinalIgnoreCase);
+
+        // Saldo de la orden = 0 (no genera deuda).
+        var detail = await client.GetAsync($"/api/v1/work-orders/{id}");
+        detail.EnsureSuccessStatusCode();
+        Assert.Equal(0m, (await detail.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("balance").GetDecimal());
+    }
+
+    [Fact(DisplayName = "V2: El saldo del cliente suma las órdenes abiertas y excluye las canceladas")]
+    public async Task Saldo_del_cliente_excluye_ordenes_canceladas()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, WorkOrdersWebApplicationFactory.OwnerEmail,
+            WorkOrdersWebApplicationFactory.Password);
+
+        var before = await GetCustomerBalanceAsync(client);
+
+        // 2 × 500 neto + IVA 21 % = 1.210
+        var order = await CreateOrderAsync(client, items: new object[]
+        {
+            new { kind = "service", description = "Servicio saldo cliente", quantity = 2m, unitNetPrice = 500m, vatRate = 21m },
+        });
+        var id = order.GetProperty("id").GetGuid();
+
+        Assert.Equal(before + 1210m, await GetCustomerBalanceAsync(client));
+
+        // El listado de clientes usa la misma definición.
+        var list = await client.GetAsync("/api/v1/customers?pageSize=100");
+        list.EnsureSuccessStatusCode();
+        var items = (await list.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("items");
+        var row = items.EnumerateArray().First(i => i.GetProperty("id").GetGuid() == _factory.CustomerId);
+        Assert.Equal(before + 1210m, row.GetProperty("balance").GetDecimal());
+
+        var resp = await ChangeStatusAsync(client, id, "cancelled", cancelReason: "Prueba saldo");
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        Assert.Equal(before, await GetCustomerBalanceAsync(client));
+    }
+
     // ── T-WO-10: Mecánico intenta Deliver → 403 ──────────────────────────────
 
     /// <summary>
@@ -502,6 +589,81 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
 
         var resp = await mechanicClient.SendAsync(req);
         Assert.Equal(HttpStatusCode.NoContent, resp.StatusCode);
+    }
+
+    private static async Task<HttpResponseMessage> AssignAsync(HttpClient client, Guid orderId, object body)
+    {
+        var csrf = await FetchCsrfAsync(client);
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/work-orders/{orderId}/assign")
+        {
+            Content = JsonContent.Create(body),
+        };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        return await client.SendAsync(req);
+    }
+
+    [Fact(DisplayName = "T-WO-12: El mecánico se autoasigna sin enviar su id (assignee = self)")]
+    public async Task Mecanico_se_autoasigna_sin_enviar_su_id()
+    {
+        using var ownerClient = CreateClient();
+        using var mechanicClient = CreateClient();
+        await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        await LoginAsync(mechanicClient, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
+
+        var id = (await CreateOrderAsync(ownerClient)).GetProperty("id").GetGuid();
+
+        var resp = await AssignAsync(mechanicClient, id, new { });
+        Assert.Equal(HttpStatusCode.NoContent, resp.StatusCode);
+
+        var detail = await ownerClient.GetAsync($"/api/v1/work-orders/{id}");
+        detail.EnsureSuccessStatusCode();
+        Assert.Equal(_factory.MechanicMembershipId,
+            (await detail.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("assignedMechanicId").GetGuid());
+
+        // Una vez asignada, otro intento del mecánico se rechaza (ya está asignada).
+        var again = await AssignAsync(mechanicClient, id, new { });
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, again.StatusCode);
+    }
+
+    [Fact(DisplayName = "T-WO-12: El dueño asigna un mecánico activo del taller; un id ajeno o de otro rol → 422")]
+    public async Task Owner_asigna_mecanico_y_valida_el_destinatario()
+    {
+        using var ownerClient = CreateClient();
+        await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        var id = (await CreateOrderAsync(ownerClient)).GetProperty("id").GetGuid();
+
+        // Sin mecánico → 422
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await AssignAsync(ownerClient, id, new { })).StatusCode);
+        // Un id inexistente (o de otro taller, que el filtro global oculta) → 422
+        Assert.Equal(HttpStatusCode.UnprocessableEntity,
+            (await AssignAsync(ownerClient, id, new { mechanicId = Guid.NewGuid() })).StatusCode);
+        // Un miembro que no es mecánico (el propio dueño) → 422
+        Assert.Equal(HttpStatusCode.UnprocessableEntity,
+            (await AssignAsync(ownerClient, id, new { mechanicId = _factory.OwnerMembershipId })).StatusCode);
+
+        // Un mecánico activo → 204 y queda asignado
+        Assert.Equal(HttpStatusCode.NoContent,
+            (await AssignAsync(ownerClient, id, new { mechanicId = _factory.MechanicMembershipId })).StatusCode);
+        var detail = await ownerClient.GetAsync($"/api/v1/work-orders/{id}");
+        Assert.Equal(_factory.MechanicMembershipId,
+            (await detail.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("assignedMechanicId").GetGuid());
+    }
+
+    [Fact(DisplayName = "T-WO-12: GET /work-orders/mechanics lista los mecánicos activos (dueño sí, mecánico no)")]
+    public async Task Listado_de_mecanicos_asignables()
+    {
+        using var ownerClient = CreateClient();
+        using var mechanicClient = CreateClient();
+        await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        await LoginAsync(mechanicClient, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
+
+        var ok = await ownerClient.GetAsync("/api/v1/work-orders/mechanics");
+        Assert.Equal(HttpStatusCode.OK, ok.StatusCode);
+        var list = await ok.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Contains(list.EnumerateArray(), m => m.GetProperty("membershipId").GetGuid() == _factory.MechanicMembershipId);
+        Assert.DoesNotContain(list.EnumerateArray(), m => m.GetProperty("membershipId").GetGuid() == _factory.OwnerMembershipId);
+
+        Assert.Equal(HttpStatusCode.Forbidden, (await mechanicClient.GetAsync("/api/v1/work-orders/mechanics")).StatusCode);
     }
 
     // ── T-WO-13: Mecánico asignado actualiza sus notas ───────────────────────

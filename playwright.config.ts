@@ -12,6 +12,8 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   // Los flujos E2E encadenan alta de cliente, vehículo, OT, etc.: 30 s por defecto no alcanzan
   timeout: 90_000,
+  // 5 s (por defecto) se quedan cortos con el API recién iniciado o con la máquina cargada
+  expect: { timeout: 10_000 },
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     baseURL: 'http://localhost:5173',

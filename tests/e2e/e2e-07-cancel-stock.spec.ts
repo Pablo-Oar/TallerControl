@@ -44,27 +44,33 @@ async function cancelOrderWithProduct(page: Page) {
   expect(await readStock(page, productName)).toBe(3)
   expect(await readReceivable(page)).toBeCloseTo(receivableBefore + 7260, 2)
 
+  // El saldo del cliente suma la orden abierta (misma definición que "Por cobrar")
+  await page.goto('/app/customers')
+  await expect(page.getByRole('listitem').filter({ hasText: customerName })).toContainText(/7\.260/)
+
   await openWorkOrder(page, plate)
   await changeStatus(page, /cancelada/i, { cancelReason: 'Prueba E2E cancelación' })
   await expect(page.getByText(/cancelada/i).first()).toBeVisible()
 
-  return { productName, receivableBefore }
+  // La orden cancelada no genera deuda: su detalle muestra saldo 0 (los cobros se recalculan al cancelar)
+  await expect(page.getByText(/saldo\s*\$\s*0,00/i).first()).toBeVisible()
+
+  return { productName, customerName, receivableBefore }
 }
 
 test.describe('E2E-07: Cancelar OT', () => {
   test.skip(!E2E_RUN, 'Requiere E2E_RUN=1 y entorno local levantado')
 
   test('cancelar una OT con producto la excluye de "Por cobrar"', async ({ page }) => {
-    const { receivableBefore } = await cancelOrderWithProduct(page)
-    // Regla V2: "por cobrar" = saldo de las OT no canceladas
+    const { receivableBefore, customerName } = await cancelOrderWithProduct(page)
+    // Regla V2: "por cobrar" y el saldo del cliente = saldo de las OT no canceladas
     expect(await readReceivable(page)).toBeCloseTo(receivableBefore, 2)
+    await page.goto('/app/customers')
+    await expect(page.getByRole('listitem').filter({ hasText: customerName })).not.toContainText(/7\.260/)
   })
 
   test('cancelar una OT con producto repone el stock', async ({ page }) => {
-    // BUG conocido (hallado al actualizar los E2E): ChangeWorkOrderStatusHandler no genera el movimiento
-    // StockMovementReason.WorkOrderCancel, así que el stock queda en 3. Cuando se corrija, este test pasará
-    // "inesperadamente" y Playwright avisará: quitar el test.fail().
-    test.fail(true, 'Cancelar una OT no repone el stock (WorkOrderCancel sin usar)')
+    // REQ-12 CA2: cancelar repone el stock descontado al crear la orden (movimiento WorkOrderCancel).
     const { productName } = await cancelOrderWithProduct(page)
     expect(await readStock(page, productName)).toBe(5)
   })

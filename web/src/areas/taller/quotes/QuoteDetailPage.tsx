@@ -7,6 +7,7 @@ import {
   QUOTE_STATUS_LABELS,
 } from '../../../lib/api/quotes'
 import { Button } from '../../../components/ui/Button'
+import { FormField } from '../../../components/ui/FormField'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { ApiError } from '../../../lib/api/client'
 import { QuoteFormModal } from './QuoteFormModal'
@@ -34,7 +35,7 @@ export function QuoteDetailPage() {
   const [cancelReason, setCancelReason] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [sendingLink, setSendingLink] = useState(false)
-  const [publicLink, setPublicLink] = useState<string | null>(null)
+  const [publicLink, setPublicLink] = useState<{ url: string; label: string } | null>(null)
 
   const { data: quote, isLoading } = useQuery({
     queryKey: ['quote', id],
@@ -52,7 +53,12 @@ export function QuoteDetailPage() {
 
   const sendMutation = useMutation({
     mutationFn: () => quotesApi.send(id!),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['quote', id] }); qc.invalidateQueries({ queryKey: ['quotes'] }) },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['quote', id] })
+      qc.invalidateQueries({ queryKey: ['quotes'] })
+      // Doc 05 §2.6: enviar entrega el enlace para compartirlo con el cliente (copiar / WhatsApp).
+      void handleQuoteLink()
+    },
     onError: (err) => setError(err instanceof ApiError ? err.detail : 'Error al enviar.'),
   })
 
@@ -88,12 +94,24 @@ export function QuoteDetailPage() {
     onError: (err) => setError(err instanceof ApiError ? err.detail : 'Error al convertir.'),
   })
 
+  async function handleQuoteLink() {
+    setSendingLink(true)
+    try {
+      const result = await quotesApi.createPublicLink(id!)
+      setPublicLink({ url: `${window.location.origin}/p/${result.tokenBase64Url}`, label: 'Enlace del presupuesto para el cliente' })
+    } catch (err) {
+      setError(err instanceof ApiError ? err.detail : 'Error al generar el enlace.')
+    } finally {
+      setSendingLink(false)
+    }
+  }
+
   async function handleGetPublicLink() {
     if (!quote?.workOrderId) return
     setSendingLink(true)
     try {
       const result = await quotesApi.getPublicLink(quote.workOrderId)
-      setPublicLink(`${window.location.origin}/o/${result.tokenBase64Url}`)
+      setPublicLink({ url: `${window.location.origin}/o/${result.tokenBase64Url}`, label: 'Enlace público de la OT' })
     } catch (err) {
       setError(err instanceof ApiError ? err.detail : 'Error al generar el enlace.')
     } finally {
@@ -125,6 +143,7 @@ export function QuoteDetailPage() {
   const canConvert = ['approved', 'partially_approved'].includes(quote.status)
   const canCancel = !['converted', 'cancelled'].includes(quote.status)
   const canDelete = quote.status === 'draft'
+  const canShare = ['sent', 'approved', 'partially_approved', 'rejected'].includes(quote.status)
 
   return (
     <div className="space-y-5">
@@ -271,6 +290,11 @@ export function QuoteDetailPage() {
             Convertir a OT
           </Button>
         )}
+        {canShare && (
+          <Button variant="secondary" size="sm" onClick={handleQuoteLink} loading={sendingLink}>
+            Enlace para el cliente
+          </Button>
+        )}
         {quote.workOrderId && (
           <Button variant="secondary" size="sm" onClick={handleGetPublicLink} loading={sendingLink}>
             Enlace OT
@@ -294,22 +318,23 @@ export function QuoteDetailPage() {
         )}
       </div>
 
-      {/* Enlace público de OT */}
+      {/* Enlace público (presupuesto para el cliente, u OT) */}
       {publicLink && (
         <div className="border border-tc-border bg-tc-stub-bg px-4 py-3">
-          <p className="mb-2 text-[10px] font-bold tracking-wider uppercase text-slate-400">Enlace público de la OT</p>
-          <div className="flex gap-2">
-            <input
-              readOnly
-              value={publicLink}
-              className="flex-1 border border-tc-border bg-white px-2 py-1 text-xs text-slate-700 outline-none"
-            />
-            <button
-              onClick={() => navigator.clipboard.writeText(publicLink)}
-              className="border border-tc-border bg-white px-3 py-1 text-xs font-bold tracking-wider uppercase text-slate-700 hover:bg-tc-surface transition-colors"
-            >
+          <p className="mb-2 text-[10px] font-bold tracking-wider uppercase text-slate-400">{publicLink.label}</p>
+          <div className="flex flex-wrap items-end gap-2">
+            <FormField label="Enlace" size="sm" readOnly value={publicLink.url} className="min-w-0 flex-1" />
+            <Button variant="secondary" size="sm" onClick={() => navigator.clipboard.writeText(publicLink.url)}>
               Copiar
-            </button>
+            </Button>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`Presupuesto #${quote.number}: ${publicLink.url}`)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-slate-700 hover:bg-tc-surface transition-colors"
+            >
+              WhatsApp
+            </a>
           </div>
         </div>
       )}

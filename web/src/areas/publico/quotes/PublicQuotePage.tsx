@@ -4,7 +4,7 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { publicApi, type SubmitPublicResponseRequest, QUOTE_STATUS_LABELS } from '../../../lib/api/quotes'
+import { publicApi, type SubmitPublicResponseRequest, type SubmitPublicResponseResult, QUOTE_STATUS_LABELS } from '../../../lib/api/quotes'
 import { ApiError } from '../../../lib/api/client'
 import { Button } from '../../../components/ui/Button'
 import { FormField, FormTextarea } from '../../../components/ui/FormField'
@@ -27,6 +27,9 @@ type FormData = z.infer<typeof schema>
 export function PublicQuotePage() {
   const { token } = useParams<{ token: string }>()
   const [submitted, setSubmitted] = useState(false)
+  const [result, setResult] = useState<SubmitPublicResponseResult | null>(null)
+  // Renglones opcionales que el cliente destildó (REQ-10); los obligatorios no se pueden quitar.
+  const [excluded, setExcluded] = useState<Set<string>>(new Set())
   const [serverError, setServerError] = useState<string | null>(null)
   const [signerDocNumber, setSignerDocNumber] = useState('')
   const sigRef = useRef<SignaturePadHandle>(null)
@@ -45,7 +48,7 @@ export function PublicQuotePage() {
 
   const submitMutation = useMutation({
     mutationFn: (body: SubmitPublicResponseRequest) => publicApi.submitResponse(token!, body),
-    onSuccess: () => setSubmitted(true),
+    onSuccess: (r) => { setResult(r); setSubmitted(true) },
     onError: (err) => {
       setServerError(err instanceof ApiError ? err.detail : 'Error al enviar la respuesta.')
     },
@@ -86,6 +89,11 @@ export function PublicQuotePage() {
           </div>
           <p className="font-bold text-slate-900">Respuesta enviada</p>
           <p className="mt-2 text-sm text-slate-500">Tu respuesta fue registrada correctamente.</p>
+          {result?.decision === 'approved' && (
+            <p className="mt-3 text-sm text-slate-700">
+              Total aprobado: <strong className="tabular-nums">{fmtARS(result.approvedTotal)}</strong>
+            </p>
+          )}
         </div>
       </div>
     )
@@ -116,7 +124,10 @@ export function PublicQuotePage() {
       signerName: values.signerName,
       contentHash: data.contentHash,
       comment: values.comment || null,
-      items: data.items.map(item => ({ quoteItemId: item.id, approved: values.decision === 'approved' })),
+      items: data.items.map(item => ({
+        quoteItemId: item.id,
+        approved: values.decision === 'approved' && !excluded.has(item.id),
+      })),
       signatureFileKey: sigKey,
       signerDocNumber: signerDocNumber.trim() || null,
     }
@@ -183,6 +194,28 @@ export function PublicQuotePage() {
                   <tr key={item.id} className="hover:bg-tc-surface transition-colors">
                     <td className="px-3 py-3 sm:px-4 text-slate-800">
                       {item.description}
+                      {canRespond && !isExpired && (
+                        item.requiredForApproval ? (
+                          <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Obligatorio</span>
+                        ) : (
+                          <label className="mt-1 flex min-h-[44px] cursor-pointer items-center gap-2 text-xs text-slate-600">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 accent-tc-purple"
+                              checked={!excluded.has(item.id)}
+                              onChange={e =>
+                                setExcluded(prev => {
+                                  const next = new Set(prev)
+                                  if (e.target.checked) next.delete(item.id)
+                                  else next.add(item.id)
+                                  return next
+                                })
+                              }
+                            />
+                            Incluir en la aprobación
+                          </label>
+                        )
+                      )}
                       <span className="block text-xs tabular-nums text-slate-500 sm:hidden">
                         {item.quantity} × {fmtARS(item.unitNetPrice)}
                       </span>

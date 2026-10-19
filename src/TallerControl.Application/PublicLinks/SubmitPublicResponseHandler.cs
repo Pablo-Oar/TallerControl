@@ -45,14 +45,14 @@ public sealed class SubmitPublicResponseHandler
             throw new NotFoundException();
 
         // Cargar el presupuesto (con ítems y respuestas).
-        var quote = await _quoteRepo.FindByIdAsync(link.TargetId, ct)
+        var quote = await _quoteRepo.FindByIdPublicAsync(link.TargetId, ct)
             ?? throw new NotFoundException();
 
         if (quote.Status is not (QuoteStatus.Sent or QuoteStatus.Approved or QuoteStatus.PartiallyApproved))
             throw new BusinessRuleException("El presupuesto ya no acepta respuestas.");
 
         // Verificar el hash del contenido (T-PUB-06): evita que el cliente apruebe una versión diferente.
-        var quoteDto = await _quoteRepo.GetFullAsync(quote.Id, ct)
+        var quoteDto = await _quoteRepo.GetFullPublicAsync(quote.Id, ct)
             ?? throw new NotFoundException();
 
         var expectedHash = GetPublicQuoteHandler.ComputeContentHash(quoteDto);
@@ -101,6 +101,16 @@ public sealed class SubmitPublicResponseHandler
 
         // Calcular ApprovedTotal con la misma fórmula que Quote.RecalculateTotals().
         var approvedIds = responseItems.Where(ri => ri.Approved).Select(ri => ri.QuoteItemId).ToHashSet();
+
+        // REQ-10: el cliente puede destildar solo los renglones NO obligatorios; al aprobar debe quedar al menos uno.
+        if (request.Decision == Quote.DecisionApproved)
+        {
+            if (approvedIds.Count == 0)
+                throw new BusinessRuleException("Aprobá al menos un renglón del presupuesto.");
+
+            if (quote.Items.Any(i => i.RequiredForApproval && !approvedIds.Contains(i.Id)))
+                throw new BusinessRuleException("Los renglones obligatorios no se pueden quitar de la aprobación.");
+        }
         var approvedItems = quote.Items.Where(i => approvedIds.Contains(i.Id)).ToList();
         var approvedSubtotal = approvedItems.Sum(i => i.LineNet);
         var approvedDiscount = decimal.Round(approvedSubtotal * quote.GlobalDiscountPct / 100m, 2, MidpointRounding.AwayFromZero);
