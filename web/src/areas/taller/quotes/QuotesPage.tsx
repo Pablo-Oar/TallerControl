@@ -73,8 +73,8 @@ export function QuotesPage() {
         <>
           <div className="border border-tc-border bg-white overflow-hidden">
             {/* Header */}
-            <div className="hidden md:grid md:grid-cols-[3rem_minmax(0,1fr)_8rem_6rem_7rem_7rem] border-b border-tc-border bg-tc-stub-bg">
-              {[['#', '', false], ['Cliente / Vehículo', '', false], ['Estado', 'text-center', false], ['Total', 'text-right', false], ['Válido hasta', '', true], ['Creado', '', true]].map(([h, cls, hide], i) => (
+            <div className="hidden md:grid md:grid-cols-[4rem_minmax(0,1fr)_9rem_8rem_8rem_8rem_3rem] border-b border-tc-border bg-tc-stub-bg">
+              {[['#', 'text-center', false], ['Cliente / Vehículo', '', false], ['Estado', 'text-center', false], ['Total', 'text-right', false], ['Válido hasta', '', true], ['Creado', '', true], ['', '', true]].map(([h, cls, hide], i) => (
                 <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${cls} ${hide ? 'hidden md:block' : ''}`}>
                   {h}
                 </div>
@@ -88,16 +88,11 @@ export function QuotesPage() {
                 {data.items.map((q: QuoteListDto) => (
                   <li
                     key={q.id}
-                    className="grid grid-cols-[auto_minmax(0,1fr)] md:grid-cols-[3rem_minmax(0,1fr)_8rem_6rem_7rem_7rem] items-center hover:bg-tc-surface transition-colors"
+                    className="grid grid-cols-[3.5rem_minmax(0,1fr)_2.75rem] md:grid-cols-[4rem_minmax(0,1fr)_9rem_8rem_8rem_8rem_3rem] items-center hover:bg-tc-surface transition-colors"
                   >
                     {/* Stub: number */}
-                    <div className="flex h-full min-h-[44px] items-center border-r border-tc-border bg-tc-stub-bg px-3 py-3">
-                      <Link
-                        to={`/app/quotes/${q.id}`}
-                        className="text-xs font-bold tabular-nums text-tc-purple hover:text-tc-purple-mid"
-                      >
-                        #{q.number}
-                      </Link>
+                    <div className="flex h-full min-h-[44px] items-center justify-center border-r border-tc-border bg-tc-stub-bg px-2 py-3">
+                      <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{q.number}</span>
                     </div>
 
                     {/* Customer + vehicle */}
@@ -135,6 +130,19 @@ export function QuotesPage() {
                       <span className="text-xs text-tc-text-muted">
                         {new Date(q.createdAt).toLocaleDateString('es-AR')}
                       </span>
+                    </div>
+
+                    {/* Flecha: entrar al presupuesto (igual que Órdenes) */}
+                    <div className="flex h-full min-h-[44px] items-center justify-center border-l border-tc-border bg-tc-stub-bg px-1">
+                      <Link
+                        to={`/app/quotes/${q.id}`}
+                        className="flex h-full w-full items-center justify-center text-tc-navy-text-dim hover:text-tc-purple transition-colors"
+                        aria-label={`Ver presupuesto #${q.number}`}
+                      >
+                        <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                          <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </Link>
                     </div>
                   </li>
                 ))}

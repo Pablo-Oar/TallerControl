@@ -27,7 +27,7 @@ async function createQuote(page: Page, customerName: string, secondOptional: boo
   await d.getByRole('button', { name: /crear presupuesto/i }).click()
   await d.waitFor({ state: 'detached' })
 
-  await page.getByRole('listitem').filter({ hasText: customerName }).getByRole('link', { name: /^#\d+$/ }).click()
+  await page.getByRole('listitem').filter({ hasText: customerName }).getByRole('link', { name: /^ver presupuesto #\d+$/i }).click()
 }
 
 test.describe('E2E-03: Presupuesto → aprobación → OT', () => {
