@@ -3,7 +3,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router'
-import { FormField } from '../../../components/ui/FormField'
+import { AuthCard, AuthInput } from '../../../components/ui/AuthCard'
+import { LockIcon, MailIcon } from '../../../components/ui/icons'
 import { Button } from '../../../components/ui/Button'
 import { authApi } from '../../../lib/api/auth'
 import { useAuth } from '../../../lib/auth/AuthContext'
@@ -49,56 +50,57 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4">
-      <div className="w-full max-w-sm border border-tc-border bg-white">
-        <div className="border-b border-tc-border bg-tc-stub-bg px-6 py-3">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">TallerControl</span>
+    <AuthCard
+      title="Bienvenido de nuevo"
+      subtitle="Ingresá para gestionar tu taller."
+      footer={
+        <>
+          ¿No tenés cuenta?{' '}
+          <Link to="/registro" className="font-semibold text-tc-purple hover:underline">
+            Crear cuenta gratis
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-3">
+        <AuthInput
+          label="Email"
+          type="email"
+          icon={<MailIcon />}
+          placeholder="Email"
+          autoComplete="email"
+          error={errors.email?.message}
+          {...register('email')}
+        />
+        <AuthInput
+          label="Contraseña"
+          type="password"
+          icon={<LockIcon />}
+          placeholder="Contraseña"
+          autoComplete="current-password"
+          error={errors.password?.message}
+          {...register('password')}
+        />
+        <div className="flex items-center justify-between gap-3">
+          <label className="flex min-h-[44px] items-center gap-2 text-sm text-tc-text-secondary">
+            <input type="checkbox" {...register('rememberMe')} className="h-4 w-4 accent-tc-purple" />
+            Recordarme
+          </label>
+          <Link to="/forgot-password" className="text-sm font-medium text-tc-purple hover:underline">
+            ¿Olvidaste tu contraseña?
+          </Link>
         </div>
-        <div className="px-6 py-8">
-          <h1 className="mb-6 text-xl font-bold tracking-tight text-tc-text">Ingresar</h1>
-          <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-            <FormField
-              label="Email"
-              type="email"
-              autoComplete="email"
-              error={errors.email?.message}
-              {...register('email')}
-            />
-            <FormField
-              label="Contraseña"
-              type="password"
-              autoComplete="current-password"
-              error={errors.password?.message}
-              {...register('password')}
-            />
-            <label className="flex items-center gap-2 text-sm text-tc-text-secondary">
-              <input type="checkbox" {...register('rememberMe')} className="accent-tc-purple" />
-              Recordarme
-            </label>
 
-            {serverError && (
-              <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {serverError}
-              </p>
-            )}
+        {serverError && (
+          <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {serverError}
+          </p>
+        )}
 
-            <Button type="submit" loading={isSubmitting} className="mt-2 w-full">
-              Ingresar
-            </Button>
-          </form>
-          <p className="mt-4 text-center text-sm text-tc-text-secondary">
-            <Link to="/forgot-password" className="text-tc-purple hover:opacity-70">
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </p>
-          <p className="mt-2 text-center text-sm text-tc-text-secondary">
-            ¿No tenés cuenta?{' '}
-            <Link to="/registro" className="text-tc-purple hover:opacity-70">
-              Crear cuenta gratis
-            </Link>
-          </p>
-        </div>
-      </div>
-    </div>
+        <Button type="submit" loading={isSubmitting} className="mt-1 h-11 w-full">
+          Ingresar
+        </Button>
+      </form>
+    </AuthCard>
   )
 }

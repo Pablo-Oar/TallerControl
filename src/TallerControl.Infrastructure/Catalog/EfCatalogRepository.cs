@@ -55,7 +55,7 @@ internal sealed class EfCatalogRepository : ICatalogRepository
                 c.StockQty,
                 c.StockMin,
                 c.IsActive,
-                c.TrackStock && c.StockMin.HasValue && c.StockQty < c.StockMin.Value))
+                c.TrackStock && (c.StockQty < 0 || (c.StockMin.HasValue && c.StockQty < c.StockMin.Value))))
             .ToListAsync(ct);
 
         return new Page<CatalogItemListDto>(items, page, pageSize, total);

@@ -3,7 +3,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { FormField } from '../../../components/ui/FormField'
+import { AuthCard, AuthInput } from '../../../components/ui/AuthCard'
+import { ArrowRightIcon, LockIcon, MailIcon, UserIcon, WrenchIcon } from '../../../components/ui/icons'
 import { Button } from '../../../components/ui/Button'
 import { registrationApi } from '../../../lib/api/registration'
 import { ApiError } from '../../../lib/api/client'
@@ -56,97 +57,103 @@ export function RegisterPage() {
 
   if (submitted) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4">
-        <div className="w-full max-w-sm border border-tc-border bg-white">
-          <div className="border-b border-tc-border bg-tc-stub-bg px-6 py-3">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">TallerControl</span>
-          </div>
-          <div className="px-6 py-8 text-center">
-            <p className="mb-3 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Verificación pendiente</p>
-            <h1 className="mb-3 text-xl font-bold text-tc-text">Verificá tu email</h1>
-            <p className="text-sm text-tc-text-secondary">
-              Te enviamos un enlace de verificación a{' '}
-              <span className="font-bold text-tc-text">{submittedEmail}</span>.
-              Hacé clic en el enlace para activar tu cuenta.
-            </p>
-            <p className="mt-4 text-xs text-tc-text-muted">¿No llegó? Revisá la carpeta de spam.</p>
-            <p className="mt-6 text-sm text-tc-text-secondary">
-              <Link to="/login" className="text-tc-purple hover:opacity-70">
-                Volver al inicio de sesión
-              </Link>
-            </p>
-          </div>
-        </div>
-      </div>
+      <AuthCard
+        title="Verificá tu email"
+        subtitle="Verificación pendiente"
+        footer={
+          <Link to="/login" className="font-semibold text-tc-purple hover:underline">
+            Volver al inicio de sesión
+          </Link>
+        }
+      >
+        <p className="text-center text-sm text-tc-text-secondary">
+          Te enviamos un enlace de verificación a{' '}
+          <span className="font-bold text-tc-text">{submittedEmail}</span>. Hacé clic en el enlace para activar tu
+          cuenta.
+        </p>
+        <p className="mt-4 text-center text-xs text-tc-text-muted">¿No llegó? Revisá la carpeta de spam.</p>
+      </AuthCard>
     )
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4 py-8">
-      <div className="w-full max-w-md border border-tc-border bg-white">
-        <div className="border-b border-tc-border bg-tc-stub-bg px-6 py-3">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">TallerControl</span>
-        </div>
-        <div className="px-6 py-8">
-          <h1 className="mb-1 text-xl font-bold tracking-tight text-tc-text">Crear cuenta</h1>
-          <p className="mb-6 text-sm text-tc-text-secondary">Empezá gratis — sin tarjeta de crédito.</p>
-          <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-            <FormField
-              label="Nombre del taller"
-              type="text"
-              autoComplete="organization"
-              placeholder="Ej: Taller Rodríguez"
-              error={errors.workshopName?.message}
-              {...register('workshopName')}
-            />
-            <FormField
-              label="Tu nombre"
-              type="text"
-              autoComplete="name"
-              placeholder="Ej: Carlos Rodríguez"
-              error={errors.displayName?.message}
-              {...register('displayName')}
-            />
-            <FormField
-              label="Email"
-              type="email"
-              autoComplete="email"
-              error={errors.email?.message}
-              {...register('email')}
-            />
-            <FormField
-              label="Contraseña"
-              type="password"
-              autoComplete="new-password"
-              error={errors.password?.message}
-              {...register('password')}
-            />
-            <FormField
-              label="Confirmar contraseña"
-              type="password"
-              autoComplete="new-password"
-              error={errors.confirmPassword?.message}
-              {...register('confirmPassword')}
-            />
+    <AuthCard
+      className="max-w-md"
+      title="Creá tu cuenta gratis"
+      subtitle="Empezá en minutos, sin tarjeta de crédito."
+      footer={
+        <>
+          ¿Ya tenés cuenta?{' '}
+          <Link to="/login" className="font-semibold text-tc-purple hover:underline">
+            Iniciá sesión
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
+        <AuthInput
+          label="Nombre del taller"
+          visibleLabel
+          icon={<WrenchIcon />}
+          autoComplete="organization"
+          placeholder="Ej: Taller Rodríguez"
+          error={errors.workshopName?.message}
+          {...register('workshopName')}
+        />
+        <AuthInput
+          label="Tu nombre"
+          visibleLabel
+          icon={<UserIcon />}
+          autoComplete="name"
+          placeholder="Ej: Carlos Rodríguez"
+          error={errors.displayName?.message}
+          {...register('displayName')}
+        />
+        <AuthInput
+          label="Email"
+          visibleLabel
+          type="email"
+          icon={<MailIcon />}
+          autoComplete="email"
+          placeholder="tu@taller.com"
+          error={errors.email?.message}
+          {...register('email')}
+        />
+        <AuthInput
+          label="Contraseña"
+          visibleLabel
+          type="password"
+          icon={<LockIcon />}
+          autoComplete="new-password"
+          placeholder="Mínimo 8 caracteres"
+          hint="Usá al menos 8 caracteres."
+          error={errors.password?.message}
+          {...register('password')}
+        />
+        <AuthInput
+          label="Confirmar contraseña"
+          visibleLabel
+          type="password"
+          icon={<LockIcon />}
+          autoComplete="new-password"
+          placeholder="Repetí la contraseña"
+          error={errors.confirmPassword?.message}
+          {...register('confirmPassword')}
+        />
 
-            {serverError && (
-              <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {serverError}
-              </p>
-            )}
-
-            <Button type="submit" loading={isSubmitting} className="mt-2 w-full">
-              Crear cuenta
-            </Button>
-          </form>
-          <p className="mt-4 text-center text-sm text-tc-text-secondary">
-            ¿Ya tenés cuenta?{' '}
-            <Link to="/login" className="text-tc-purple hover:opacity-70">
-              Iniciá sesión
-            </Link>
+        {serverError && (
+          <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {serverError}
           </p>
-        </div>
-      </div>
-    </div>
+        )}
+
+        <Button type="submit" loading={isSubmitting} className="mt-1 h-11 w-full gap-2">
+          <span className="inline-flex items-center gap-2">
+            Crear cuenta
+            <ArrowRightIcon />
+          </span>
+        </Button>
+      </form>
+    </AuthCard>
   )
 }

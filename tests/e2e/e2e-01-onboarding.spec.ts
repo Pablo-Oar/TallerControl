@@ -45,7 +45,7 @@ test.describe('E2E-01: Alta del taller y primer usuario', () => {
 
     await page.goto('/login')
     await page.getByLabel(/email/i).fill(email)
-    await page.getByLabel(/contraseña/i).fill(E2E_PASSWORD)
+    await page.getByLabel(/^contraseña$/i).fill(E2E_PASSWORD)
     await page.getByRole('button', { name: /ingresar/i }).click()
 
     await expect(page).toHaveURL('/app')
@@ -54,7 +54,7 @@ test.describe('E2E-01: Alta del taller y primer usuario', () => {
   test('credenciales incorrectas muestran error (no 500)', async ({ page }) => {
     await page.goto('/login')
     await page.getByLabel(/email/i).fill('noexiste@example.com')
-    await page.getByLabel(/contraseña/i).fill('ClaveIncorrecta99')
+    await page.getByLabel(/^contraseña$/i).fill('ClaveIncorrecta99')
     await page.getByRole('button', { name: /ingresar/i }).click()
 
     await expect(page.getByRole('alert')).toContainText(/incorrectos/i)

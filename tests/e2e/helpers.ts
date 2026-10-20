@@ -12,7 +12,7 @@ export const MECHANIC_PASSWORD = process.env.E2E_MECHANIC_PASSWORD ?? ''
 export async function loginAsOwner(page: Page) {
   await page.goto('/login')
   await page.getByLabel(/email/i).fill(OWNER_EMAIL)
-  await page.getByLabel(/contraseña/i).fill(OWNER_PASSWORD)
+  await page.getByLabel(/^contraseña$/i).fill(OWNER_PASSWORD)
   await page.getByRole('button', { name: /ingresar/i }).click()
   await page.waitForURL('/app')
 }
@@ -20,7 +20,7 @@ export async function loginAsOwner(page: Page) {
 export async function loginAsMechanic(page: Page) {
   await page.goto('/login')
   await page.getByLabel(/email/i).fill(MECHANIC_EMAIL)
-  await page.getByLabel(/contraseña/i).fill(MECHANIC_PASSWORD)
+  await page.getByLabel(/^contraseña$/i).fill(MECHANIC_PASSWORD)
   await page.getByRole('button', { name: /ingresar/i }).click()
   await page.waitForURL('/m')
 }
