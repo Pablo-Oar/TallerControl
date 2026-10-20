@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { AuthCard, AuthInput } from '../../../components/ui/AuthCard'
+import { AuthAlert, AuthCard, AuthInput } from '../../../components/ui/AuthCard'
 import { ArrowRightIcon, LockIcon, MailIcon, UserIcon, WrenchIcon } from '../../../components/ui/icons'
 import { Button } from '../../../components/ui/Button'
 import { registrationApi } from '../../../lib/api/registration'
@@ -142,12 +142,10 @@ export function RegisterPage() {
         />
 
         {serverError && (
-          <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {serverError}
-          </p>
+          <AuthAlert>{serverError}</AuthAlert>
         )}
 
-        <Button type="submit" loading={isSubmitting} className="mt-1 h-11 w-full gap-2">
+        <Button type="submit" loading={isSubmitting} className="mt-1 h-11 w-full gap-2 rounded-xl">
           <span className="inline-flex items-center gap-2">
             Crear cuenta
             <ArrowRightIcon />

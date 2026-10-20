@@ -3,7 +3,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
-import { FormField } from '../../../components/ui/FormField'
+import { AuthAlert, AuthCard, AuthInput } from '../../../components/ui/AuthCard'
+import { LockIcon } from '../../../components/ui/icons'
 import { Button } from '../../../components/ui/Button'
 import { invitationsApi } from '../../../lib/api/users'
 import { useAuth } from '../../../lib/auth/AuthContext'
@@ -48,42 +49,35 @@ export function AcceptInvitationPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4">
-      <div className="w-full max-w-sm border border-tc-border bg-white">
-        <div className="border-b border-tc-border bg-tc-stub-bg px-6 py-3">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">TallerControl</span>
-        </div>
-        <div className="px-6 py-8">
-          <h1 className="mb-2 text-xl font-bold tracking-tight text-tc-text">Activar cuenta</h1>
-          <p className="mb-6 text-sm text-tc-text-secondary">Elegí una contraseña para completar el registro.</p>
-          <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-            <FormField
-              label="Contraseña"
-              type="password"
-              autoComplete="new-password"
-              error={errors.password?.message}
-              {...register('password')}
-            />
-            <FormField
-              label="Confirmar contraseña"
-              type="password"
-              autoComplete="new-password"
-              error={errors.confirm?.message}
-              {...register('confirm')}
-            />
+    <AuthCard title="Activar cuenta" subtitle="Elegí una contraseña para completar el registro.">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
+        <AuthInput
+          label="Contraseña"
+          visibleLabel
+          type="password"
+          icon={<LockIcon />}
+          autoComplete="new-password"
+          placeholder="Mínimo 8 caracteres"
+          error={errors.password?.message}
+          {...register('password')}
+        />
+        <AuthInput
+          label="Confirmar contraseña"
+          visibleLabel
+          type="password"
+          icon={<LockIcon />}
+          autoComplete="new-password"
+          placeholder="Repetí la contraseña"
+          error={errors.confirm?.message}
+          {...register('confirm')}
+        />
 
-            {serverError && (
-              <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {serverError}
-              </p>
-            )}
+        {serverError && <AuthAlert>{serverError}</AuthAlert>}
 
-            <Button type="submit" loading={isSubmitting} className="mt-2 w-full">
-              Activar cuenta
-            </Button>
-          </form>
-        </div>
-      </div>
-    </div>
+        <Button type="submit" loading={isSubmitting} className="mt-1 h-11 w-full rounded-xl">
+          Activar cuenta
+        </Button>
+      </form>
+    </AuthCard>
   )
 }

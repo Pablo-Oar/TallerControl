@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router'
-import { AuthCard, AuthInput } from '../../../components/ui/AuthCard'
+import { AuthAlert, AuthCard, AuthInput } from '../../../components/ui/AuthCard'
 import { LockIcon, MailIcon } from '../../../components/ui/icons'
 import { Button } from '../../../components/ui/Button'
 import { authApi } from '../../../lib/api/auth'
@@ -92,12 +92,10 @@ export function LoginPage() {
         </div>
 
         {serverError && (
-          <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {serverError}
-          </p>
+          <AuthAlert>{serverError}</AuthAlert>
         )}
 
-        <Button type="submit" loading={isSubmitting} className="mt-1 h-11 w-full">
+        <Button type="submit" loading={isSubmitting} className="mt-1 h-11 w-full rounded-xl">
           Ingresar
         </Button>
       </form>
