@@ -5,6 +5,7 @@ import { TallerLayout } from './TallerLayout'
 
 const DashboardPage = lazy(() => import('./DashboardPage').then(m => ({ default: m.DashboardPage })))
 const CustomersPage = lazy(() => import('./customers/CustomersPage').then(m => ({ default: m.CustomersPage })))
+const VehicleDetailPage = lazy(() => import('./vehicles/VehicleDetailPage').then(m => ({ default: m.VehicleDetailPage })))
 const VehiclesPage = lazy(() => import('./vehicles/VehiclesPage').then(m => ({ default: m.VehiclesPage })))
 const CatalogPage = lazy(() => import('./catalog/CatalogPage').then(m => ({ default: m.CatalogPage })))
 const WorkOrdersPage = lazy(() => import('./work-orders/WorkOrdersPage').then(m => ({ default: m.WorkOrdersPage })))
@@ -43,6 +44,7 @@ export function Component() {
             <Route index element={<DashboardPage />} />
             <Route path="customers" element={<CustomersPage />} />
             <Route path="vehicles" element={<VehiclesPage />} />
+            <Route path="vehicles/:id" element={<VehicleDetailPage />} />
             <Route path="catalog" element={<CatalogPage />} />
             <Route path="quotes" element={<QuotesPage />} />
             <Route path="quotes/:id" element={<QuoteDetailPage />} />

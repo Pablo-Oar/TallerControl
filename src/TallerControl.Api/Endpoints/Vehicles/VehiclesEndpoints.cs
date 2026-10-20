@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using TallerControl.Api.Identity;
+using TallerControl.Application.Auth;
 using TallerControl.Application.Vehicles;
 using TallerControl.Domain.Users;
+using TallerControl.Infrastructure.Identity;
 
 namespace TallerControl.Api.Endpoints.Vehicles;
 
@@ -51,9 +53,19 @@ internal static class VehiclesEndpoints
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
         app.MapGet("/api/v1/vehicles/{id:guid}/history",
-                (Guid id, GetVehicleHistoryHandler handler, CancellationToken ct,
-                 int page = 1, int pageSize = 25) =>
-                    handler.HandleAsync(id, page, pageSize, ct))
+                async (Guid id, GetVehicleHistoryHandler handler, IAuthRepository auth, HttpContext ctx,
+                    CancellationToken ct, int page = 1, int pageSize = 25) =>
+                {
+                    // El total solo viaja si el rol puede ver precios (el mecánico no).
+                    var includePrices = false;
+                    if (Guid.TryParse(ctx.User.FindFirst(SessionClaims.UserId)?.Value, out var userId))
+                    {
+                        var membership = await auth.FindActiveMembershipAsync(userId, ct);
+                        includePrices = membership?.Membership.EffectivePermissions().Contains(Permission.PricesView) ?? false;
+                    }
+
+                    return Results.Ok(await handler.HandleAsync(id, includePrices, page, pageSize, ct));
+                })
             .RequirePermission(Permission.VehiclesRead);
 
         return app;

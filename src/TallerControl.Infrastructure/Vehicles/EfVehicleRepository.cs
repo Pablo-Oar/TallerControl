@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TallerControl.Application.Common;
 using TallerControl.Application.Vehicles;
 using TallerControl.Domain.Customers;
+using TallerControl.Domain.Quotes;
 using TallerControl.Domain.Vehicles;
 using TallerControl.Domain.Work;
 using TallerControl.Infrastructure.Persistence;
@@ -84,6 +85,37 @@ internal sealed class EfVehicleRepository : IVehicleRepository
             v.EngineNumber,
             ActiveQrCard: null, // E8
             v.Version);
+    }
+
+    public async Task<Page<HistoryEntryDto>> GetHistoryAsync(
+        Guid vehicleId, bool includePrices, int page, int pageSize, CancellationToken ct)
+    {
+        var orders = _db.Set<WorkOrder>().AsNoTracking().Where(w => w.VehicleId == vehicleId);
+        var quotes = _db.Set<Quote>().AsNoTracking().Where(q => q.VehicleId == vehicleId);
+        var total = await orders.CountAsync(ct) + await quotes.CountAsync(ct);
+
+        // Cada fuente aporta como mucho las filas que caben hasta la página pedida; se mezclan en memoria.
+        var take = page * pageSize;
+        var woRows = await orders.OrderByDescending(w => w.CreatedAt).Take(take)
+            .Select(w => new { w.Id, w.Number, w.CreatedAt, w.OdometerKm, w.Status, w.Total })
+            .ToListAsync(ct);
+        var quoteRows = await quotes.OrderByDescending(q => q.CreatedAt).Take(take)
+            .Select(q => new { q.Id, q.Number, q.CreatedAt, q.Status, q.Total })
+            .ToListAsync(ct);
+
+        var entries = woRows
+            .Select(w => new HistoryEntryDto(
+                "work_order", w.Id, $"OT-{w.Number:D4}", w.CreatedAt, w.OdometerKm,
+                EnumText.ToSnakeCase(w.Status.ToString()), includePrices ? w.Total : null))
+            .Concat(quoteRows.Select(q => new HistoryEntryDto(
+                "quote", q.Id, $"P-{q.Number:D4}", q.CreatedAt, null,
+                EnumText.ToSnakeCase(q.Status.ToString()), includePrices ? q.Total : null)))
+            .OrderByDescending(e => e.Date)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return new Page<HistoryEntryDto>(entries, page, pageSize, total);
     }
 
     public Task<Vehicle?> FindByIdAsync(Guid id, CancellationToken ct) =>
