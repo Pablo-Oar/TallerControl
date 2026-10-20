@@ -5,6 +5,7 @@ import { Button } from '../../../components/ui/Button'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { Tabs, TabPanel } from '../../../components/ui/Tabs'
 import { inputCls } from '../../../lib/styles'
+import { localDateISO } from '../../../lib/dates'
 
 type Tab = 'revenue' | 'receivables' | 'stock' | 'purchases'
 
@@ -15,14 +16,8 @@ const TAB_LABELS: Record<Tab, string> = {
   purchases: 'Compras',
 }
 
-function todayStr() {
-  return new Date().toISOString().slice(0, 10)
-}
-function monthAgoStr() {
-  const d = new Date()
-  d.setMonth(d.getMonth() - 1)
-  return d.toISOString().slice(0, 10)
-}
+const todayStr = () => localDateISO()
+const monthAgoStr = () => localDateISO(0, -1)
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -92,6 +87,7 @@ export function ReportsPage() {
       {tab === 'revenue' && (
         <ReportSection
           loading={revenueQuery.isLoading}
+          error={revenueQuery.isError}
           exportUrl={reportsApi.exportUrl('revenue', from, to)}
           exportName={`ingresos_${from}_${to}.xlsx`}
           summary={revenueQuery.data
@@ -124,6 +120,7 @@ export function ReportsPage() {
       {tab === 'receivables' && (
         <ReportSection
           loading={receivablesQuery.isLoading}
+          error={receivablesQuery.isError}
           exportUrl={reportsApi.exportUrl('receivables')}
           exportName="cuentas_por_cobrar.xlsx"
           summary={receivablesQuery.data
@@ -160,6 +157,7 @@ export function ReportsPage() {
       {tab === 'stock' && (
         <ReportSection
           loading={stockQuery.isLoading}
+          error={stockQuery.isError}
           exportUrl={reportsApi.exportUrl('stock')}
           exportName="stock.xlsx"
           summary={stockQuery.data
@@ -202,6 +200,7 @@ export function ReportsPage() {
       {tab === 'purchases' && (
         <ReportSection
           loading={purchasesQuery.isLoading}
+          error={purchasesQuery.isError}
           exportUrl={reportsApi.exportUrl('purchases', from, to)}
           exportName={`compras_${from}_${to}.xlsx`}
           summary={purchasesQuery.data
@@ -240,9 +239,10 @@ export function ReportsPage() {
 }
 
 function ReportSection({
-  loading, exportUrl, exportName, summary, children
+  loading, error, exportUrl, exportName, summary, children
 }: {
   loading: boolean
+  error?: boolean
   exportUrl: string
   exportName: string
   summary?: string
@@ -263,8 +263,12 @@ function ReportSection({
           Exportar Excel
         </Button>
       </div>
-      <div className="border border-tc-border bg-white overflow-hidden">
-        {loading ? (
+      <div className="border border-tc-border bg-white overflow-x-auto">
+        {error ? (
+          <p role="alert" className="px-4 py-6 text-sm text-red-700">
+            No se pudo cargar el reporte. Volvé a intentar en un momento.
+          </p>
+        ) : loading ? (
           <div className="space-y-0">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="h-10 animate-pulse border-b border-tc-border bg-tc-surface last:border-0" />

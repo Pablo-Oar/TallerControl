@@ -10,6 +10,7 @@ import {
 import { Button } from '../../../components/ui/Button'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { QuoteFormModal } from './QuoteFormModal'
+import { formatDateOnly } from '../../../lib/dates'
 
 const STATUS_OPTIONS: QuoteStatus[] = [
   'draft', 'sent', 'approved', 'partially_approved', 'rejected', 'expired', 'converted', 'cancelled',
@@ -120,7 +121,7 @@ export function QuotesPage() {
                     {/* Valid until */}
                     <div className="hidden md:block px-4 py-3">
                       <span className="text-xs text-tc-text-secondary">
-                        {new Date(q.validUntil).toLocaleDateString('es-AR')}
+                        {formatDateOnly(q.validUntil)}
                       </span>
                     </div>
 

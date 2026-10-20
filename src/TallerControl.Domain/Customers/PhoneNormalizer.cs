@@ -27,6 +27,14 @@ public static partial class PhoneNormalizer
         if (stripped.Length == 0)
             throw new ArgumentException("El teléfono no puede estar vacío.", nameof(phone));
 
+        // 54… / 549… escrito sin el '+'
+        if (!stripped.StartsWith('+') && !stripped.StartsWith('0') && stripped.StartsWith("54") && stripped.Length >= 12)
+            stripped = "+" + stripped;
+
+        // 10 dígitos sin el 0 de discado (3416565879, 1145678901): se toman como celular con área
+        if (!stripped.StartsWith('+') && !stripped.StartsWith('0') && stripped.Length == 10)
+            return $"+549{stripped}";
+
         // Ya en formato internacional
         if (stripped.StartsWith('+'))
         {
@@ -76,7 +84,6 @@ public static partial class PhoneNormalizer
         }
 
         throw new ArgumentException(
-            "No se pudo normalizar el teléfono. Use el formato E.164 (+549...) o local argentino (011 15-XXXX-XXXX).",
-            nameof(phone));
+            "No se pudo normalizar el teléfono. Probá con el código de área y el número (ej. 341 6565879), con el 0 (0341 15-6565879) o con +54.");
     }
 }

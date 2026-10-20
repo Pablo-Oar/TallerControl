@@ -105,7 +105,8 @@ internal sealed class EfReportsRepository : IReportsRepository
                 c.StockQty,
                 c.StockMin,
                 c.Cost ?? 0m,
-                c.IsLowStock))
+                // IsLowStock es una propiedad calculada de C#: EF no la traduce, se repite la condición.
+                c.TrackStock && c.StockMin != null && c.StockQty < c.StockMin))
             .OrderBy(r => r.Name)
             .ToListAsync(ct);
 

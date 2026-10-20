@@ -1,4 +1,4 @@
-import { api, ApiError } from './client'
+import { api } from './client'
 
 export type QrCardStatus = 'free' | 'assigned' | 'lost' | 'revoked'
 export type QrScanEventType = 'scan' | 'owner_challenge' | 'otp_sent' | 'otp_failed' | 'owner_session' | 'found_keys'
@@ -110,22 +110,10 @@ export const assignByCode = (code: string, vehicleId: string) =>
   api.post<QrCardDto>('/api/v1/qr/cards/assign-by-code', { code, vehicleId }, true)
 
 export const unassignQrCard = (id: string) =>
-  api.delete<void>(`/api/v1/qr/cards/${id}/assign`, true)
+  api.delete<void>(`/api/v1/qr/cards/${id}/assign`, undefined, true)
 
-export async function markLost(id: string, lost: boolean): Promise<void> {
-  const csrfRes = await fetch('/api/v1/auth/antiforgery-token', { credentials: 'include' })
-  const { token } = await csrfRes.json()
-  const res = await fetch(`/api/v1/qr/cards/${id}/lost`, {
-    method: 'PATCH',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token as string },
-    body: JSON.stringify({ lost }),
-  })
-  if (!res.ok) {
-    const json = await res.json().catch(() => null)
-    throw new ApiError(res.status, json?.detail ?? res.statusText)
-  }
-}
+export const markLost = (id: string, lost: boolean) =>
+  api.patchJson<void>(`/api/v1/qr/cards/${id}/lost`, { lost }, true)
 
 export const revokeQrCard = (id: string, reason: string) =>
   api.post<void>(`/api/v1/qr/cards/${id}/revoke`, { reason }, true)

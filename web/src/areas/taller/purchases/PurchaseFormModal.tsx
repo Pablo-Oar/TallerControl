@@ -11,6 +11,7 @@ import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 import { labelCls } from '../../../lib/styles'
+import { dateOnlyToUtcIso, localDateISO } from '../../../lib/dates'
 
 
 const itemSchema = z.object({
@@ -57,7 +58,7 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
     resolver: zodResolver(schema),
     defaultValues: {
       supplierId: '',
-      invoiceDate: new Date().toISOString().substring(0, 10),
+      invoiceDate: localDateISO(),
       pointOfSale: '',
       invoiceNumber: '',
       perceptions: 0,
@@ -74,7 +75,7 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
     if (item) {
       setValue(`items.${index}.description`, item.name)
       setValue(`items.${index}.unitCost`, String(item.netPrice) as unknown as number)
-      setValue(`items.${index}.vatRate`, String(item.vatRate * 100) as unknown as number)
+      setValue(`items.${index}.vatRate`, String(item.vatRate) as unknown as number)
     }
   }
 
@@ -83,7 +84,7 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
     try {
       const result = await purchasesApi.create({
         supplierId: data.supplierId,
-        invoiceDate: data.invoiceDate,
+        invoiceDate: dateOnlyToUtcIso(data.invoiceDate),
         pointOfSale: typeof data.pointOfSale === 'number' ? data.pointOfSale : undefined,
         invoiceNumber: typeof data.invoiceNumber === 'number' ? data.invoiceNumber : undefined,
         perceptions: data.perceptions,

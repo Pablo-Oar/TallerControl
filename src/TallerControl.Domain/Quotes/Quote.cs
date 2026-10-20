@@ -104,8 +104,10 @@ public sealed class Quote : Entity, ITenantOwned, IVersioned, IAudited, IAuditab
         CustomerNotes = customerNotes?.Trim();
         InternalNotes = internalNotes?.Trim();
 
+        // `items` puede ser la vista de _items (p. ej. al aplicar solo el descuento): copiar antes de vaciar.
+        var incoming = items.ToList();
         _items.Clear();
-        _items.AddRange(items);
+        _items.AddRange(incoming);
         RecalculateTotals();
     }
 

@@ -7,6 +7,23 @@ namespace TallerControl.Domain.Tests.Customers;
 /// </summary>
 public class PhoneNormalizerTests
 {
+    [Theory(DisplayName = "T-CUS-04: 10 dígitos sin el 0 de discado se toman como celular con área")]
+    [InlineData("3416565879", "+5493416565879")]
+    [InlineData("341 656-5879", "+5493416565879")]
+    [InlineData("1145678901", "+5491145678901")]
+    [InlineData("5493416565879", "+5493416565879")]
+    public void Diez_digitos_sin_cero_son_celular_con_area(string phone, string expected)
+    {
+        Assert.Equal(expected, PhoneNormalizer.Normalize(phone));
+    }
+
+    [Fact(DisplayName = "T-CUS-04: el mensaje de error no expone el nombre del parámetro")]
+    public void Mensaje_de_error_no_expone_parametro()
+    {
+        var ex = Assert.Throws<ArgumentException>(() => PhoneNormalizer.Normalize("5551234"));
+        Assert.DoesNotContain("Parameter", ex.Message);
+    }
+
     [Fact(DisplayName = "T-CUS-04: nulo devuelve nulo")]
     public void Nulo_devuelve_nulo()
     {

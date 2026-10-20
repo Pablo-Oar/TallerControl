@@ -27,8 +27,18 @@ internal sealed class EfCounterSaleRepository : ICounterSaleRepository
     {
         IQueryable<CounterSale> q = _db.Set<CounterSale>().AsNoTracking();
 
-        if (!string.IsNullOrWhiteSpace(query) && int.TryParse(query.Trim(), out var num))
-            q = q.Where(s => s.DocumentNumber == num);
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            var text = query.Trim();
+            if (int.TryParse(text, out var num))
+                q = q.Where(s => s.DocumentNumber == num);
+            else
+            {
+                // Texto libre: ventas que tengan un renglón con esa descripción.
+                var pattern = $"%{text}%";
+                q = q.Where(s => s.Items.Any(i => EF.Functions.ILike(i.Description, pattern)));
+            }
+        }
 
         var total = await q.CountAsync(ct);
 

@@ -35,10 +35,10 @@ internal static class WorkOrdersEndpoints
                  string? assignment = null, int page = 1, int pageSize = 25) =>
                 {
                     WorkOrderStatus? parsedStatus = status is not null
-                        && Enum.TryParse<WorkOrderStatus>(status, ignoreCase: true, out var s)
+                        && EnumQuery.TryParse<WorkOrderStatus>(status, out var s)
                         ? s : null;
                     var parsedAssignment = assignment is not null
-                        && Enum.TryParse<AssignmentFilter>(assignment, ignoreCase: true, out var a)
+                        && EnumQuery.TryParse<AssignmentFilter>(assignment, out var a)
                         ? a : AssignmentFilter.Any;
                     return SearchAsync(handler, auth, ctx, parsedStatus, mechanicId, vehicleId, withBalance, from, to, parsedAssignment, page, pageSize, ct);
                 })

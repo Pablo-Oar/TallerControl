@@ -85,7 +85,7 @@ export function QrScannerModal({ onClose }: Props) {
               </p>
               <div className="pt-2">
                 <Link
-                  to={`/app/vehicles?q=${encodeURIComponent(result.vehiclePlate ?? '')}`}
+                  to={result.vehicleId ? `/app/vehicles/${result.vehicleId}` : `/app/vehicles?q=${encodeURIComponent(result.vehiclePlate ?? '')}`}
                   className="text-sm font-medium text-tc-purple hover:text-tc-purple-mid"
                   onClick={onClose}
                 >

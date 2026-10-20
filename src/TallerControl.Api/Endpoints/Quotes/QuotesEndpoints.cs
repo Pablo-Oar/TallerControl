@@ -30,7 +30,7 @@ internal static class QuotesEndpoints
                  int page = 1, int pageSize = 25) =>
                 {
                     QuoteStatus? parsedStatus = status is not null
-                        && Enum.TryParse<QuoteStatus>(status, ignoreCase: true, out var s)
+                        && EnumQuery.TryParse<QuoteStatus>(status, out var s)
                         ? s : null;
                     return handler.HandleAsync(parsedStatus, customerId, vehicleId, from, to, page, pageSize, ct);
                 })

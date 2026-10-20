@@ -55,7 +55,7 @@ public sealed class CreatePurchaseHandler
         {
             purchase = new Purchase(
                 tenantId, branchId, request.SupplierId,
-                request.InvoiceDate, request.PointOfSale, request.InvoiceNumber,
+                request.InvoiceDate.ToUniversalTime(), request.PointOfSale, request.InvoiceNumber,
                 request.Perceptions, request.Retentions, number);
         }
         catch (ArgumentException ex)

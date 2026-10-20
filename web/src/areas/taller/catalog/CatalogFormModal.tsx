@@ -20,6 +20,8 @@ const schema = z.object({
   trackStock: z.boolean(),
   minStockQty: z.string().optional(),
   maxStockQty: z.string().optional(),
+  durationMinutes: z.string().optional(),
+  bufferMinutes: z.string().optional(),
   isActive: z.boolean(),
 })
 
@@ -44,8 +46,10 @@ function toFormData(dto: CatalogItemDto): FormData {
     netPrice: dto.netPrice,
     vatRate: dto.vatRate,
     trackStock: dto.trackStock,
-    minStockQty: dto.minStockQty != null ? String(dto.minStockQty) : '',
+    minStockQty: (dto.stockMin ?? dto.minStockQty) != null ? String(dto.stockMin ?? dto.minStockQty) : '',
     maxStockQty: dto.maxStockQty != null ? String(dto.maxStockQty) : '',
+    durationMinutes: dto.durationMinutes != null ? String(dto.durationMinutes) : '',
+    bufferMinutes: dto.bufferMinutes != null ? String(dto.bufferMinutes) : '',
     isActive: dto.isActive,
   }
 }
@@ -85,6 +89,9 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
           trackStock: data.trackStock,
           minStockQty: numOrNull(data.minStockQty),
           maxStockQty: numOrNull(data.maxStockQty),
+          stockMin: numOrNull(data.minStockQty),
+          durationMinutes: item.kind === 'service' ? numOrNull(data.durationMinutes) : null,
+          bufferMinutes: item.kind === 'service' ? numOrNull(data.bufferMinutes) : null,
           isActive: data.isActive,
         }, item.version)
         onSuccess(result)
@@ -99,6 +106,9 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
           trackStock: data.trackStock,
           minStockQty: numOrNull(data.minStockQty),
           maxStockQty: numOrNull(data.maxStockQty),
+          stockMin: numOrNull(data.minStockQty),
+          durationMinutes: data.kind === 'service' ? numOrNull(data.durationMinutes) : null,
+          bufferMinutes: data.kind === 'service' ? numOrNull(data.bufferMinutes) : null,
           isActive: data.isActive,
         })
         onSuccess(result)
@@ -154,6 +164,32 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
             {...register('vatRate', { valueAsNumber: true })}
           />
         </div>
+
+        {(isEdit ? item.kind : kind) === 'service' && (
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              label="Duración (min)"
+              type="number"
+              min={1}
+              step="5"
+              inputMode="numeric"
+              placeholder="45"
+              hint="La agenda reserva este tiempo."
+              inputClassName="tabular-nums"
+              {...register('durationMinutes')}
+            />
+            <FormField
+              label="Margen (min)"
+              type="number"
+              min={0}
+              step="5"
+              inputMode="numeric"
+              placeholder="15"
+              inputClassName="tabular-nums"
+              {...register('bufferMinutes')}
+            />
+          </div>
+        )}
 
         {(kind === 'product' || isEdit) && (
           <label className="flex items-center gap-2 text-sm text-tc-text-secondary">

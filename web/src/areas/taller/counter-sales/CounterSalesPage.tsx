@@ -88,7 +88,7 @@ export function CounterSalesPage() {
           type="search"
           value={q}
           onChange={e => setQ(e.target.value)}
-          placeholder="Buscar ventas…"
+          placeholder="Nº de venta o producto…"
           className="flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-border-mid transition-colors"
         />
         <Button type="submit" variant="secondary" size="sm">Buscar</Button>
