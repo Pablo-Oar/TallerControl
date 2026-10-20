@@ -10,6 +10,7 @@ import {
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { FormTextarea } from '../../components/ui/FormField'
 import { Button } from '../../components/ui/Button'
+import { WorkOrderPhotos } from '../../components/WorkOrderPhotos'
 import { ApiError } from '../../lib/api/client'
 
 const MECHANIC_TRANSITIONS: Partial<Record<WorkOrderStatus, WorkOrderStatus[]>> = {
@@ -180,6 +181,10 @@ export function MechanicWorkOrderDetailPage() {
           </ul>
         </Section>
       )}
+
+      <Section title="Fotos">
+        <WorkOrderPhotos workOrderId={order.id} />
+      </Section>
 
       <Section title="Mis notas">
         {editingNotes ? (

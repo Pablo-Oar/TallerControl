@@ -9,21 +9,48 @@ import {
 } from '../../lib/api/workOrders'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 
+type Tab = 'mine' | 'unassigned'
+
+const TABS: { id: Tab; label: string; empty: string }[] = [
+  { id: 'mine', label: 'Mías', empty: 'No tenés órdenes asignadas. Mirá las que están sin asignar.' },
+  { id: 'unassigned', label: 'Sin asignar', empty: 'No hay órdenes sin asignar.' },
+]
+
 const MECHANIC_STATUSES: WorkOrderStatus[] = ['pending', 'in_progress', 'waiting_parts']
 
 export function MechanicWorkOrdersPage() {
+  const [tab, setTab] = useState<Tab>('mine')
   const [statusFilter, setStatusFilter] = useState<WorkOrderStatus | ''>('')
   const [page, setPage] = useState(1)
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['mechanic-work-orders', statusFilter, page],
+    queryKey: ['mechanic-work-orders', tab, statusFilter, page],
     queryFn: () =>
-      workOrdersApi.search(statusFilter || null, null, null, null, null, null, page),
+      workOrdersApi.search(statusFilter || null, null, null, null, null, null, page, 25, tab),
   })
 
   return (
     <div className="space-y-4 px-4 pb-6">
       <h1 className="text-lg font-bold tracking-tight text-slate-900">Mis trabajos</h1>
+
+      {/* Pestañas: órdenes mías / sin asignar (doc 06 /m) */}
+      <div role="tablist" aria-label="Mis trabajos" className="flex border-b border-tc-border">
+        {TABS.map(t => (
+          <button
+            key={t.id}
+            role="tab"
+            aria-selected={tab === t.id}
+            onClick={() => { setTab(t.id); setPage(1) }}
+            className={`min-h-[44px] flex-1 border-b-2 px-3 text-sm font-bold tracking-wider uppercase transition-colors ${
+              tab === t.id
+                ? 'border-tc-purple text-tc-purple'
+                : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
       {/* Filtros de estado — chips horizontales */}
       <div className="flex gap-2 overflow-x-auto pb-1">
@@ -70,7 +97,7 @@ export function MechanicWorkOrdersPage() {
         <div className="space-y-2">
           {data.items.length === 0 && (
             <p className="border border-dashed border-tc-border px-4 py-8 text-center text-sm text-slate-400">
-              No hay órdenes asignadas.
+              {TABS.find(t => t.id === tab)!.empty}
             </p>
           )}
           {data.items.map(order => (

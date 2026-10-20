@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { Input } from '../../../components/ui/Input'
+import { FormField } from '../../../components/ui/FormField'
 import { Button } from '../../../components/ui/Button'
 import { authApi } from '../../../lib/api/auth'
 
@@ -50,7 +50,7 @@ export function ForgotPasswordPage() {
                 Ingresá tu email y te enviaremos un enlace para restablecer la contraseña.
               </p>
               <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-                <Input
+                <FormField
                   label="Email"
                   type="email"
                   autoComplete="email"

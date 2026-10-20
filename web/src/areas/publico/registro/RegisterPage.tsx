@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { Input } from '../../../components/ui/Input'
+import { FormField } from '../../../components/ui/FormField'
 import { Button } from '../../../components/ui/Button'
 import { registrationApi } from '../../../lib/api/registration'
 import { ApiError } from '../../../lib/api/client'
@@ -91,7 +91,7 @@ export function RegisterPage() {
           <h1 className="mb-1 text-xl font-bold tracking-tight text-slate-900">Crear cuenta</h1>
           <p className="mb-6 text-sm text-slate-500">Empezá gratis — sin tarjeta de crédito.</p>
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-            <Input
+            <FormField
               label="Nombre del taller"
               type="text"
               autoComplete="organization"
@@ -99,7 +99,7 @@ export function RegisterPage() {
               error={errors.workshopName?.message}
               {...register('workshopName')}
             />
-            <Input
+            <FormField
               label="Tu nombre"
               type="text"
               autoComplete="name"
@@ -107,21 +107,21 @@ export function RegisterPage() {
               error={errors.displayName?.message}
               {...register('displayName')}
             />
-            <Input
+            <FormField
               label="Email"
               type="email"
               autoComplete="email"
               error={errors.email?.message}
               {...register('email')}
             />
-            <Input
+            <FormField
               label="Contraseña"
               type="password"
               autoComplete="new-password"
               error={errors.password?.message}
               {...register('password')}
             />
-            <Input
+            <FormField
               label="Confirmar contraseña"
               type="password"
               autoComplete="new-password"
