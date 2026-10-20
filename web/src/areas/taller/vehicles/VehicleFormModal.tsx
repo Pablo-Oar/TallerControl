@@ -6,7 +6,7 @@ import { vehiclesApi, type FuelType, type VehicleUsageProfile, type VehicleDto, 
 import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { CustomerPicker } from '../../../components/ui/EntityPickers'
-import { Modal } from '../../../components/ui/Modal'
+import { EditDialog } from '../../../components/ui/EditDialog'
 import { ApiError } from '../../../lib/api/client'
 
 const USAGE_PROFILE_OPTIONS: { value: VehicleUsageProfile; label: string }[] = [
@@ -74,7 +74,7 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
   const [deleteLoading, setDeleteLoading] = useState(false)
   const isEdit = !!vehicle
 
-  const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
+  const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting, isDirty } } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: vehicle ? toFormData(vehicle) : { odometerKm: 0, customerId: '' },
   })
@@ -106,8 +106,23 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
   }
 
   return (
-    <Modal title={isEdit ? 'Editar vehículo' : 'Nuevo vehículo'} onClose={onClose} className="max-w-lg">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <EditDialog
+      title={isEdit ? 'Editar vehículo' : 'Nuevo vehículo'}
+      onClose={onClose}
+      onSubmit={handleSubmit(onSubmit)}
+      dirty={isDirty}
+      saving={isSubmitting}
+      error={serverError}
+      requireChanges={isEdit}
+      className="max-w-lg"
+      footerStart={
+        isEdit && onDelete && !deleting ? (
+          <Button type="button" variant="danger" size="sm" onClick={() => setDeleting(true)}>
+            Eliminar
+          </Button>
+        ) : undefined
+      }
+    >
         <div className="grid grid-cols-2 gap-4">
           <FormField
             label="Patente"
@@ -185,9 +200,6 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
           />
         </div>
 
-        {serverError && (
-          <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
-        )}
 
         {deleting && (
           <div className="space-y-2 border border-red-200 bg-red-50 p-3">
@@ -225,21 +237,6 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
             </div>
           </div>
         )}
-
-        <div className="flex items-center justify-between pt-2">
-          <div>
-            {isEdit && onDelete && !deleting && (
-              <Button type="button" variant="danger" size="sm" onClick={() => setDeleting(true)}>
-                Eliminar
-              </Button>
-            )}
-          </div>
-          <div className="flex gap-3">
-            <Button type="button" variant="secondary" size="sm" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" size="sm" loading={isSubmitting}>Guardar</Button>
-          </div>
-        </div>
-      </form>
-    </Modal>
+    </EditDialog>
   )
 }
