@@ -104,7 +104,7 @@ export function AppointmentsPage() {
               <tr className="bg-tc-stub-bg border-b border-tc-border">
                 <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha / hora</th>
                 <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden sm:table-cell">Cliente</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Vehículo</th>
+                <th className="hidden px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted sm:table-cell">Vehículo</th>
                 <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden md:table-cell">Mecánico</th>
                 <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden md:table-cell">Duración</th>
                 <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
@@ -129,9 +129,10 @@ export function AppointmentsPage() {
                         })}
                       </span>
                       <p className="mt-0.5 text-xs text-tc-text-secondary sm:hidden">{appt.customerName}</p>
+                      <p className="font-mono text-xs tracking-widest text-tc-text-secondary sm:hidden">{appt.vehiclePlate}</p>
                     </td>
                     <td className="px-4 py-2.5 text-tc-text-secondary hidden sm:table-cell">{appt.customerName}</td>
-                    <td className="px-4 py-2.5 font-mono tracking-widest text-sm text-tc-text-secondary">{appt.vehiclePlate}</td>
+                    <td className="hidden px-4 py-2.5 font-mono tracking-widest text-sm text-tc-text-secondary sm:table-cell">{appt.vehiclePlate}</td>
                     <td className="px-4 py-2.5 text-tc-text-secondary hidden md:table-cell">
                       {appt.mechanicName ?? <span className="text-tc-text-muted">—</span>}
                     </td>
@@ -143,7 +144,7 @@ export function AppointmentsPage() {
                       {(appt.status === 'pending' || appt.status === 'confirmed') && (
                         <button
                           onClick={() => { setCancellingId(appt.id); setCancelReason('') }}
-                          className="text-xs text-tc-stamp-red hover:opacity-70"
+                          className="min-h-[44px] px-2 text-xs font-bold text-tc-stamp-red hover:opacity-70"
                         >
                           Cancelar
                         </button>

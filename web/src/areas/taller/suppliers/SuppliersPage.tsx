@@ -5,6 +5,7 @@ import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
+import { confirmDialog, notify } from '../../../components/ui/dialogs'
 
 const VAT_LABELS: Record<VatCondition, string> = {
   responsable_inscripto: 'Responsable Inscripto',
@@ -85,12 +86,12 @@ export function SuppliersPage() {
   }
 
   async function handleDelete(s: SupplierDto) {
-    if (!confirm(`¿Dar de baja al proveedor "${s.name}"?`)) return
+    if (!(await confirmDialog(`¿Dar de baja al proveedor "${s.name}"?`, { danger: true }))) return
     try {
       await suppliersApi.delete(s.id, 'Baja manual')
       queryClient.invalidateQueries({ queryKey: ['suppliers'] })
     } catch (err) {
-      alert(err instanceof ApiError ? err.detail : 'Error al dar de baja')
+      notify(err instanceof ApiError ? err.detail : 'Error al dar de baja')
     }
   }
 

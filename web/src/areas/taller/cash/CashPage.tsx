@@ -5,6 +5,7 @@ import { Button } from '../../../components/ui/Button'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 import { labelCls, fieldCls } from '../../../lib/styles'
+import { confirmDialog, notify } from '../../../components/ui/dialogs'
 
 const KIND_LABELS: Record<CashAccountKind, string> = {
   cash: 'Efectivo',
@@ -52,20 +53,20 @@ export function CashPage() {
       await cashApi.openSession(account.id, {})
       queryClient.invalidateQueries({ queryKey: ['cash-accounts'] })
     } catch (err) {
-      alert(err instanceof ApiError ? err.detail : 'Error al abrir la sesión')
+      notify(err instanceof ApiError ? err.detail : 'Error al abrir la sesión')
     } finally {
       setOpeningId(null)
     }
   }
 
   async function handleClose(account: CashAccountDto) {
-    if (!confirm('¿Cerrar la sesión de caja actual?')) return
+    if (!(await confirmDialog('¿Cerrar la sesión de caja actual?', { danger: false }))) return
     setClosingId(account.id)
     try {
       await cashApi.closeSession(account.id, {})
       queryClient.invalidateQueries({ queryKey: ['cash-accounts'] })
     } catch (err) {
-      alert(err instanceof ApiError ? err.detail : 'Error al cerrar la sesión')
+      notify(err instanceof ApiError ? err.detail : 'Error al cerrar la sesión')
     } finally {
       setClosingId(null)
     }

@@ -104,7 +104,7 @@ export function TallerLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-tc-navy overflow-hidden">
+    <div className="flex h-dvh flex-col bg-tc-navy overflow-hidden">
       {/* ── Carrier bar ────────────────────────────────────── */}
       <header className="flex h-[52px] flex-none items-center gap-4 border-b border-tc-navy-mid px-4">
         {/* Hamburger — mobile only */}
@@ -177,7 +177,7 @@ export function TallerLayout({ children }: { children: ReactNode }) {
         <aside
           className={[
             'flex w-[220px] flex-none flex-col bg-tc-navy-deep overflow-y-auto',
-            'fixed inset-y-[52px] left-0 z-30 transition-transform duration-200',
+            'fixed bottom-0 top-[52px] left-0 z-30 transition-transform duration-200',
             'lg:relative lg:inset-auto lg:translate-x-0',
             sidebarOpen ? 'translate-x-0' : '-translate-x-full',
           ].join(' ')}

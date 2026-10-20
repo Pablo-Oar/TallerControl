@@ -119,7 +119,7 @@ export function SearchPicker<T>({
           readOnly
           tabIndex={-1}
           value={pickedLabel ?? fetchedLabel ?? '…'}
-          inputClassName="pr-20"
+          inputClassName="pr-24"
         />
         {!disabled && (
           <button

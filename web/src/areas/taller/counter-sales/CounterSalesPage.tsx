@@ -6,6 +6,7 @@ import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { ApiError } from '../../../lib/api/client'
 import { CounterSaleFormModal } from './CounterSaleFormModal'
+import { confirmDialog, notify } from '../../../components/ui/dialogs'
 
 const STATUS_LABELS: Record<CounterSaleStatus, string> = {
   draft: 'Borrador',
@@ -42,35 +43,35 @@ export function CounterSalesPage() {
   }
 
   async function handleConfirm(s: CounterSaleDto) {
-    if (!confirm('¿Confirmar la venta? Se descontará el stock.')) return
+    if (!(await confirmDialog('¿Confirmar la venta? Se descontará el stock.', { danger: false }))) return
     try {
       await counterSalesApi.confirm(s.id, { accountId: null, version: s.version })
       queryClient.invalidateQueries({ queryKey: ['counter-sales'] })
       setSelected(null)
     } catch (err) {
-      alert(err instanceof ApiError ? err.detail : 'Error al confirmar la venta')
+      notify(err instanceof ApiError ? err.detail : 'Error al confirmar la venta')
     }
   }
 
   async function handleCancel(s: CounterSaleDto) {
-    if (!confirm('¿Cancelar la venta?')) return
+    if (!(await confirmDialog('¿Cancelar la venta?', { danger: true }))) return
     try {
       await counterSalesApi.cancel(s.id)
       queryClient.invalidateQueries({ queryKey: ['counter-sales'] })
       setSelected(null)
     } catch (err) {
-      alert(err instanceof ApiError ? err.detail : 'Error al cancelar la venta')
+      notify(err instanceof ApiError ? err.detail : 'Error al cancelar la venta')
     }
   }
 
   async function handleDelete(s: CounterSaleDto) {
-    if (!confirm('¿Eliminar la venta?')) return
+    if (!(await confirmDialog('¿Eliminar la venta?', { danger: true }))) return
     try {
       await counterSalesApi.delete(s.id, 'Eliminación manual')
       queryClient.invalidateQueries({ queryKey: ['counter-sales'] })
       setSelected(null)
     } catch (err) {
-      alert(err instanceof ApiError ? err.detail : 'Error al eliminar la venta')
+      notify(err instanceof ApiError ? err.detail : 'Error al eliminar la venta')
     }
   }
 
@@ -113,26 +114,31 @@ export function CounterSalesPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-tc-stub-bg border-b border-tc-border">
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nº</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
-                <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Total</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
-                <th className="px-4 py-2" />
+                <th className="px-2 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted sm:px-4">Nº</th>
+                <th className="hidden px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted sm:table-cell">Fecha</th>
+                <th className="px-2 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted sm:px-4">Total</th>
+                <th className="px-2 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted sm:px-4">Estado</th>
+                <th className="px-1 py-2" />
               </tr>
             </thead>
             <tbody>
               {data.items.map(s => (
                 <tr key={s.id} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                  <td className="px-4 py-2.5 font-mono font-bold text-tc-text tabular-nums">#{s.documentNumber}</td>
-                  <td className="px-4 py-2.5 text-tc-text-secondary tabular-nums">
+                  <td className="px-2 py-2.5 font-mono font-bold text-tc-text tabular-nums sm:px-4">
+                    #{s.documentNumber}
+                    <span className="block text-[11px] font-normal text-tc-text-secondary sm:hidden">
+                      {new Date(s.date).toLocaleDateString('es-AR')}
+                    </span>
+                  </td>
+                  <td className="hidden px-4 py-2.5 text-tc-text-secondary tabular-nums sm:table-cell">
                     {new Date(s.date).toLocaleDateString('es-AR')}
                   </td>
-                  <td className="px-4 py-2.5 text-right font-bold text-tc-purple tabular-nums">{fmtARS(s.total)}</td>
-                  <td className="px-4 py-2.5">
+                  <td className="px-2 py-2.5 text-right font-bold text-tc-purple tabular-nums sm:px-4">{fmtARS(s.total)}</td>
+                  <td className="px-2 py-2.5 sm:px-4">
                     <StatusBadge status={s.status} label={STATUS_LABELS[s.status]} />
                   </td>
-                  <td className="px-4 py-2.5 text-right">
-                    <button onClick={() => setSelected(s)} className="text-xs text-tc-purple hover:opacity-70">
+                  <td className="px-1 py-1 text-right">
+                    <button onClick={() => setSelected(s)} className="min-h-[44px] min-w-[44px] px-2 text-xs font-bold text-tc-purple hover:opacity-70">
                       Ver
                     </button>
                   </td>

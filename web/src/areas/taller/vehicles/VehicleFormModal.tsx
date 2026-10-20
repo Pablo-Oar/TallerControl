@@ -152,7 +152,7 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
           <FormField label="Color" placeholder="Blanco" {...register('color')} />
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <FormField
             label="Año"
             type="number"
