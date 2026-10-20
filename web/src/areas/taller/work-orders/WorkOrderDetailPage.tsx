@@ -6,6 +6,7 @@ import {
   type WorkOrderStatus,
   STATUS_LABELS,
   PRIORITY_LABELS,
+  WORK_ORDER_TRANSITIONS,
 } from '../../../lib/api/workOrders'
 import {
   getPayments,
@@ -18,6 +19,7 @@ import { Button } from '../../../components/ui/Button'
 import { WorkOrderPhotos } from '../../../components/WorkOrderPhotos'
 import { FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { ApiError } from '../../../lib/api/client'
+import { EditableStatusBadge } from '../../../components/ui/EditableStatusBadge'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { Modal } from '../../../components/ui/Modal'
 import { ChangeStatusModal } from './ChangeStatusModal'
@@ -51,6 +53,7 @@ export function WorkOrderDetailPage() {
     enabled: !!id,
   })
 
+  const [initialStatus, setInitialStatus] = useState<WorkOrderStatus | undefined>(undefined)
   const [assigning, setAssigning] = useState(false)
   const [assignError, setAssignError] = useState<string | null>(null)
 
@@ -73,6 +76,18 @@ export function WorkOrderDetailPage() {
     } finally {
       setAssigning(false)
     }
+  }
+
+  // Badge editable: aplica la transición directa; "Anulada" exige motivo, así que delega en el diálogo.
+  async function handleBadgeSelect(value: string) {
+    if (!id) return
+    if (value === 'cancelled') {
+      setInitialStatus('cancelled')
+      setChangingStatus(true)
+      return
+    }
+    await workOrdersApi.changeStatus(id, { toStatus: value as WorkOrderStatus })
+    handleStatusChange()
   }
 
   function handleStatusChange() {
@@ -123,7 +138,12 @@ export function WorkOrderDetailPage() {
           <h1 className="text-lg font-bold tracking-wide text-slate-800 uppercase">
             Orden #{order.number}
           </h1>
-          <StatusBadge status={order.status} />
+          <EditableStatusBadge
+            status={order.status}
+            statusText={STATUS_LABELS[order.status]}
+            options={canAct ? WORK_ORDER_TRANSITIONS[order.status].map(s => ({ value: s, label: STATUS_LABELS[s] })) : []}
+            onSelect={handleBadgeSelect}
+          />
           <span className="text-xs text-slate-400 uppercase tracking-wider">
             {PRIORITY_LABELS[order.priority]}
           </span>
@@ -133,7 +153,7 @@ export function WorkOrderDetailPage() {
             <Button variant="secondary" size="sm">← Volver</Button>
           </Link>
           {canAct && (
-            <Button size="sm" onClick={() => setChangingStatus(true)}>Cambiar estado</Button>
+            <Button size="sm" onClick={() => { setInitialStatus(undefined); setChangingStatus(true) }}>Cambiar estado</Button>
           )}
         </div>
       </div>
@@ -381,6 +401,7 @@ export function WorkOrderDetailPage() {
         <ChangeStatusModal
           orderId={order.id}
           currentStatus={order.status}
+          initialStatus={initialStatus}
           onSuccess={handleStatusChange}
           onClose={() => setChangingStatus(false)}
         />

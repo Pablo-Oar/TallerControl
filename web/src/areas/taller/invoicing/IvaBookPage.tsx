@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getIvaBook, downloadCitiExport } from '../../../lib/api/invoicing'
 import { Button } from '../../../components/ui/Button'
+import { InvoicingTabs } from './InvoicingTabs'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -36,8 +37,11 @@ export function IvaBookPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Libro IVA Digital</h1>
+      <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Libro IVA Digital</h1>
+
+      <InvoicingTabs />
+
+      <div className="flex justify-end">
         <Button variant="secondary" size="sm" loading={downloading} onClick={handleDownloadCiti}>
           Descargar CITI (.zip)
         </Button>

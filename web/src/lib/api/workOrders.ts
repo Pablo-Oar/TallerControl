@@ -19,6 +19,16 @@ export const STATUS_LABELS: Record<WorkOrderStatus, string> = {
   cancelled: 'Cancelada',
 }
 
+/** Transiciones válidas por estado (espejo de `WorkOrder.CambiarEstado`; el servidor las vuelve a validar). */
+export const WORK_ORDER_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
+  pending: ['in_progress', 'cancelled'],
+  in_progress: ['waiting_parts', 'completed', 'cancelled'],
+  waiting_parts: ['in_progress', 'cancelled'],
+  completed: ['delivered', 'cancelled'],
+  delivered: [],
+  cancelled: [],
+}
+
 export const PRIORITY_LABELS: Record<WorkOrderPriority, string> = {
   low: 'Baja',
   normal: 'Normal',

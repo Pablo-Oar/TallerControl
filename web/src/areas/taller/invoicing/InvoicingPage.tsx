@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { searchInvoices, type InvoiceStatus, type InvoiceSourceType } from '../../../lib/api/invoicing'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { NavLink } from 'react-router'
+import { InvoicingTabs } from './InvoicingTabs'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -29,15 +30,9 @@ export function InvoicingPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Facturación Electrónica</h1>
-        <NavLink
-          to="/app/invoicing/setup"
-          className="border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-slate-600 hover:bg-tc-surface transition-colors"
-        >
-          Config. ARCA
-        </NavLink>
-      </div>
+      <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Facturación Electrónica</h1>
+
+      <InvoicingTabs />
 
       <div className="flex gap-2">
         <select
