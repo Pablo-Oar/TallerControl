@@ -666,6 +666,37 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.Forbidden, (await mechanicClient.GetAsync("/api/v1/work-orders/mechanics")).StatusCode);
     }
 
+    [Fact(DisplayName = "T-WO-01: Las pestañas del mecánico filtran por asignación (assignment=mine / unassigned)")]
+    public async Task Listado_del_mecanico_filtra_por_asignacion()
+    {
+        using var ownerClient = CreateClient();
+        using var mechanicClient = CreateClient();
+        await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        await LoginAsync(mechanicClient, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
+
+        var mine = (await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.MechanicMembershipId)).GetProperty("id").GetGuid();
+        var free = (await CreateOrderAsync(ownerClient)).GetProperty("id").GetGuid();
+        var other = (await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.AdminMembershipId)).GetProperty("id").GetGuid();
+
+        async Task<List<Guid>> IdsAsync(string assignment)
+        {
+            var resp = await mechanicClient.GetAsync($"/api/v1/work-orders?assignment={assignment}&pageSize=100");
+            resp.EnsureSuccessStatusCode();
+            var items = (await resp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("items");
+            return items.EnumerateArray().Select(i => i.GetProperty("id").GetGuid()).ToList();
+        }
+
+        var mineIds = await IdsAsync("mine");
+        Assert.Contains(mine, mineIds);
+        Assert.DoesNotContain(free, mineIds);
+        Assert.DoesNotContain(other, mineIds);
+
+        var freeIds = await IdsAsync("unassigned");
+        Assert.Contains(free, freeIds);
+        Assert.DoesNotContain(mine, freeIds);
+        Assert.DoesNotContain(other, freeIds);
+    }
+
     // ── T-WO-13: Mecánico asignado actualiza sus notas ───────────────────────
 
     [Fact(DisplayName = "T-WO-13: Mecánico asignado puede actualizar sus notas de trabajo → 204")]

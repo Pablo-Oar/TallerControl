@@ -14,6 +14,7 @@ public interface IWorkOrderRepository
         DateTimeOffset? to,
         bool mechanicFilterForced,
         Guid? forcedMechanicId,
+        AssignmentFilter assignment,
         int page,
         int pageSize,
         bool includePrices,

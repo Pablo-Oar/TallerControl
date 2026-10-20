@@ -32,12 +32,15 @@ internal static class WorkOrdersEndpoints
                  HttpContext ctx, CancellationToken ct,
                  string? status = null, Guid? mechanicId = null, Guid? vehicleId = null,
                  bool? withBalance = null, DateTimeOffset? from = null, DateTimeOffset? to = null,
-                 int page = 1, int pageSize = 25) =>
+                 string? assignment = null, int page = 1, int pageSize = 25) =>
                 {
                     WorkOrderStatus? parsedStatus = status is not null
                         && Enum.TryParse<WorkOrderStatus>(status, ignoreCase: true, out var s)
                         ? s : null;
-                    return SearchAsync(handler, auth, ctx, parsedStatus, mechanicId, vehicleId, withBalance, from, to, page, pageSize, ct);
+                    var parsedAssignment = assignment is not null
+                        && Enum.TryParse<AssignmentFilter>(assignment, ignoreCase: true, out var a)
+                        ? a : AssignmentFilter.Any;
+                    return SearchAsync(handler, auth, ctx, parsedStatus, mechanicId, vehicleId, withBalance, from, to, parsedAssignment, page, pageSize, ct);
                 })
             .RequirePermission(Permission.WorkOrdersRead);
 
@@ -109,11 +112,12 @@ internal static class WorkOrdersEndpoints
         HttpContext ctx,
         WorkOrderStatus? status, Guid? mechanicId, Guid? vehicleId,
         bool? withBalance, DateTimeOffset? from, DateTimeOffset? to,
+        AssignmentFilter assignment,
         int page, int pageSize, CancellationToken ct)
     {
         var (isMechanic, membershipId, includePrices) = await ResolveSessionAsync(auth, ctx, ct);
         var result = await handler.HandleAsync(
-            status, mechanicId, vehicleId, withBalance, from, to,
+            status, mechanicId, vehicleId, withBalance, from, to, assignment,
             isMechanic, membershipId, includePrices, page, pageSize, ct);
         return Results.Ok(result);
     }

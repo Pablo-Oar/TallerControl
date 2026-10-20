@@ -123,6 +123,15 @@ public sealed record AssignMechanicRequest(Guid? MechanicId = null);
 /// <summary>Mecánico activo al que se puede asignar una orden (GET /api/v1/work-orders/mechanics).</summary>
 public sealed record AssignableMechanicDto(Guid MembershipId, string DisplayName);
 
+/// <summary>Filtro de asignación del listado de órdenes (pestañas "Mías" / "Sin asignar" del portal del mecánico).</summary>
+public enum AssignmentFilter
+{
+    Any,
+    /// <summary>Asignadas al mecánico de la sesión.</summary>
+    Mine,
+    Unassigned,
+}
+
 /// <summary>Cuerpo de PATCH /api/v1/work-orders/{id}/mechanic-notes.</summary>
 public sealed record UpdateMechanicNotesRequest(string? MechanicNotes);
 

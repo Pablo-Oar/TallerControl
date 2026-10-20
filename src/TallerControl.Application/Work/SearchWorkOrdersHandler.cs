@@ -22,6 +22,7 @@ public sealed class SearchWorkOrdersHandler
         bool? withBalance,
         DateTimeOffset? from,
         DateTimeOffset? to,
+        AssignmentFilter assignment,
         bool isMechanic,
         Guid? actorMembershipId,
         bool includePrices,
@@ -37,7 +38,7 @@ public sealed class SearchWorkOrdersHandler
 
         return await _repo.SearchAsync(
             status, mechanicId, vehicleId, withBalance, from, to,
-            mechanicFilterForced, forcedMechanicId,
+            mechanicFilterForced, forcedMechanicId, assignment,
             page, pageSize, includePrices, ct);
     }
 }

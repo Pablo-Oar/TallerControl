@@ -15,11 +15,16 @@ internal sealed class S3ObjectStorage : IObjectStorage
 {
     private readonly AmazonS3Client _client;
     private readonly string _bucket;
+    private readonly Protocol _protocol;
 
     public S3ObjectStorage(IOptions<StorageOptions> options)
     {
         var o = options.Value;
         _bucket = o.Bucket;
+
+        // GetPreSignedURL firma con HTTPS por defecto aunque el ServiceURL sea http (RustFS local): el navegador
+        // fallaba con ERR_SSL_PROTOCOL_ERROR al subir fotos y el logo. El protocolo sale del ServiceUrl.
+        _protocol = o.ServiceUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ? Protocol.HTTP : Protocol.HTTPS;
 
         _client = new AmazonS3Client(
             new BasicAWSCredentials(o.AccessKey, o.SecretKey),
@@ -37,6 +42,7 @@ internal sealed class S3ObjectStorage : IObjectStorage
             BucketName = _bucket,
             Key = fileKey,
             Verb = HttpVerb.PUT,
+            Protocol = _protocol,
             ContentType = contentType,
             Expires = DateTime.UtcNow.Add(expiry),
         });
@@ -47,6 +53,7 @@ internal sealed class S3ObjectStorage : IObjectStorage
             BucketName = _bucket,
             Key = fileKey,
             Verb = HttpVerb.GET,
+            Protocol = _protocol,
             Expires = DateTime.UtcNow.Add(expiry),
         });
 
