@@ -695,6 +695,12 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.Contains(free, freeIds);
         Assert.DoesNotContain(mine, freeIds);
         Assert.DoesNotContain(other, freeIds);
+
+        // Una orden anulada no se ofrece al mecánico en "Sin asignar".
+        var cancelled = (await CreateOrderAsync(ownerClient)).GetProperty("id").GetGuid();
+        var cancelResp = await ChangeStatusAsync(ownerClient, cancelled, "cancelled", cancelReason: "Prueba");
+        Assert.Equal(HttpStatusCode.OK, cancelResp.StatusCode);
+        Assert.DoesNotContain(cancelled, await IdsAsync("unassigned"));
     }
 
     // ── REQ-07 / T-VEH-08: historial del vehículo ────────────────────────────

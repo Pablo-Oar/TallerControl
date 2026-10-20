@@ -2,6 +2,8 @@ import { lazy, Suspense } from 'react'
 import { Route, Routes, useNavigate } from 'react-router'
 import { PlateSearchBar } from '../../components/PlateSearchBar'
 import { PwaInstallBanner } from './PwaInstallBanner'
+import { Button } from '../../components/ui/Button'
+import { useAuth } from '../../lib/auth/AuthContext'
 
 const MechanicWorkOrdersPage = lazy(() => import('./MechanicWorkOrdersPage').then(m => ({ default: m.MechanicWorkOrdersPage })))
 const MechanicWorkOrderDetailPage = lazy(() => import('./MechanicWorkOrderDetailPage').then(m => ({ default: m.MechanicWorkOrderDetailPage })))
@@ -9,6 +11,15 @@ const MechanicWorkOrderDetailPage = lazy(() => import('./MechanicWorkOrderDetail
 /** Área del mecánico (`/m/*`): celular primero. */
 export function Component() {
   const navigate = useNavigate()
+  const { logout } = useAuth()
+
+  async function handleLogout() {
+    try {
+      await logout()
+    } finally {
+      navigate('/login')
+    }
+  }
   return (
     <div className="min-h-screen bg-tc-surface text-tc-text">
       <header className="bg-tc-navy px-4 h-[52px] flex items-center justify-between border-b border-tc-navy-mid">
@@ -29,6 +40,11 @@ export function Component() {
             <Route path="work-orders/:id" element={<MechanicWorkOrderDetailPage />} />
           </Routes>
         </Suspense>
+        <div className="mt-8 border-t border-tc-border pt-4">
+          <Button variant="secondary" size="sm" onClick={handleLogout}>
+            Cerrar sesión
+          </Button>
+        </div>
       </main>
     </div>
   )

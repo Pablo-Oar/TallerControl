@@ -48,7 +48,13 @@ internal sealed class EfWorkOrderRepository : IWorkOrderRepository
 
         // Pestañas del portal del mecánico: "Mías" (asignadas a la sesión) y "Sin asignar".
         if (assignment == AssignmentFilter.Unassigned)
-            query = query.Where(w => w.AssignedMechanicId == null);
+        {
+            // Una orden cerrada o anulada no se puede tomar: no tiene sentido ofrecerla al mecánico.
+            query = query.Where(w => w.AssignedMechanicId == null
+                && w.Status != WorkOrderStatus.Cancelled
+                && w.Status != WorkOrderStatus.Delivered
+                && w.Status != WorkOrderStatus.Completed);
+        }
         else if (assignment == AssignmentFilter.Mine && forcedMechanicId.HasValue)
             query = query.Where(w => w.AssignedMechanicId == forcedMechanicId);
 

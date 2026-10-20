@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Button } from '../../components/ui/Button'
 import { api } from '../../lib/api/client'
 
 interface BeforeInstallPromptEvent extends Event {
@@ -6,7 +7,20 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
+const DISMISS_KEY = 'tc-pwa-banner-dismissed'
+const DISMISS_DAYS = 7
+
+function dismissedRecently() {
+  try {
+    const at = Number(localStorage.getItem(DISMISS_KEY) ?? 0)
+    return Date.now() - at < DISMISS_DAYS * 86_400_000
+  } catch {
+    return false
+  }
+}
+
 export function PwaInstallBanner() {
+  const [dismissed, setDismissed] = useState(dismissedRecently)
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showPush, setShowPush] = useState(false)
   const [pushGranted, setPushGranted] = useState(false)
@@ -58,32 +72,43 @@ export function PwaInstallBanner() {
     setShowPush(false)
   }
 
-  if (!installPrompt && !showPush) return null
+  function dismiss() {
+    try {
+      localStorage.setItem(DISMISS_KEY, String(Date.now()))
+    } catch {
+      /* sin almacenamiento: se oculta hasta recargar */
+    }
+    setDismissed(true)
+  }
+
+  if (dismissed || (!installPrompt && !(showPush && !pushGranted))) return null
 
   return (
-    <div className="mx-4 my-2 rounded-xl border border-blue-200 bg-blue-50 p-3 flex flex-col gap-2">
-      {installPrompt && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-blue-800">Instalá la app para acceso rápido offline.</p>
-          <button
-            onClick={handleInstall}
-            className="ml-2 rounded-md bg-blue-700 px-3 py-1 text-xs font-medium text-white hover:bg-blue-800"
-          >
-            Instalar
-          </button>
+    <div className="mx-4 my-2 flex items-start gap-3 border border-tc-border bg-white p-3 text-sm text-tc-text">
+      <div className="min-w-0 flex-1 space-y-2">
+        {installPrompt && <p>Instalá la app para abrirla rápido, incluso sin señal.</p>}
+        {showPush && !pushGranted && <p>Activá los avisos de nuevas órdenes asignadas.</p>}
+        <div className="flex flex-wrap gap-2">
+          {installPrompt && (
+            <Button size="sm" onClick={handleInstall}>
+              Instalar
+            </Button>
+          )}
+          {showPush && !pushGranted && (
+            <Button size="sm" variant="secondary" onClick={handleEnablePush}>
+              Activar avisos
+            </Button>
+          )}
         </div>
-      )}
-      {showPush && !pushGranted && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-blue-800">Activá notificaciones para nuevas órdenes asignadas.</p>
-          <button
-            onClick={handleEnablePush}
-            className="ml-2 rounded-md bg-blue-700 px-3 py-1 text-xs font-medium text-white hover:bg-blue-800"
-          >
-            Activar
-          </button>
-        </div>
-      )}
+      </div>
+      <button
+        type="button"
+        onClick={dismiss}
+        aria-label="Ocultar este aviso por una semana"
+        className="flex h-11 w-11 shrink-0 items-center justify-center text-lg text-tc-text-muted hover:text-tc-text"
+      >
+        ×
+      </button>
     </div>
   )
 }

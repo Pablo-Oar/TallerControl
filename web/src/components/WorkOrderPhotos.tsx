@@ -45,6 +45,8 @@ interface Props {
 export function WorkOrderPhotos({ workOrderId, canDelete = false }: Props) {
   const queryClient = useQueryClient()
   const inputRef = useRef<HTMLInputElement>(null)
+  const galleryRef = useRef<HTMLInputElement>(null)
+  const [broken, setBroken] = useState<Set<string>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const queryKey = ['work-order-attachments', workOrderId]
 
@@ -88,12 +90,19 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false }: Props) {
           {photos.map((p, i) => (
             <li key={p.id} className="relative">
               <a href={p.downloadUrl!} target="_blank" rel="noreferrer" className="block border border-tc-border bg-tc-surface">
-                <img
-                  src={p.downloadUrl!}
-                  alt={`Foto ${i + 1} de la orden`}
-                  loading="lazy"
-                  className="aspect-square w-full object-cover"
-                />
+                {broken.has(p.id) ? (
+                  <span className="flex aspect-square w-full items-center justify-center p-1 text-center text-[11px] text-tc-text-muted">
+                    Foto {i + 1}: no se pudo cargar
+                  </span>
+                ) : (
+                  <img
+                    src={p.downloadUrl!}
+                    alt={`Foto ${i + 1} de la orden`}
+                    loading="lazy"
+                    onError={() => setBroken(b => new Set(b).add(p.id))}
+                    className="aspect-square w-full object-cover"
+                  />
+                )}
               </a>
               {canDelete && (
                 <button
@@ -111,19 +120,34 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false }: Props) {
         </ul>
       )}
 
+      {/* Dos entradas: `capture` fuerza la cámara en Android; sin él se abre la galería/archivos. */}
       <input
         ref={inputRef}
         type="file"
         accept="image/*"
         capture="environment"
         className="sr-only"
-        aria-label="Elegir foto"
+        aria-label="Sacar foto"
         tabIndex={-1}
         onChange={onPick}
       />
-      <Button size="sm" variant="secondary" loading={upload.isPending} onClick={() => inputRef.current?.click()}>
-        Agregar foto
-      </Button>
+      <input
+        ref={galleryRef}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        aria-label="Elegir de la galería"
+        tabIndex={-1}
+        onChange={onPick}
+      />
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="secondary" loading={upload.isPending} onClick={() => inputRef.current?.click()}>
+          Sacar foto
+        </Button>
+        <Button size="sm" variant="secondary" disabled={upload.isPending} onClick={() => galleryRef.current?.click()}>
+          Desde la galería
+        </Button>
+      </div>
       {error && (
         <p role="alert" className="text-xs text-tc-stamp-red">
           {error}

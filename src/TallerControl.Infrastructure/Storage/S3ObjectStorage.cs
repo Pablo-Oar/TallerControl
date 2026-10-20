@@ -14,6 +14,7 @@ namespace TallerControl.Infrastructure.Storage;
 internal sealed class S3ObjectStorage : IObjectStorage
 {
     private readonly AmazonS3Client _client;
+    private readonly AmazonS3Client _signer;
     private readonly string _bucket;
     private readonly Protocol _protocol;
 
@@ -24,7 +25,8 @@ internal sealed class S3ObjectStorage : IObjectStorage
 
         // GetPreSignedURL firma con HTTPS por defecto aunque el ServiceURL sea http (RustFS local): el navegador
         // fallaba con ERR_SSL_PROTOCOL_ERROR al subir fotos y el logo. El protocolo sale del ServiceUrl.
-        _protocol = o.ServiceUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ? Protocol.HTTP : Protocol.HTTPS;
+        var signingUrl = string.IsNullOrWhiteSpace(o.PublicUrl) ? o.ServiceUrl : o.PublicUrl.TrimEnd('/');
+        _protocol = signingUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ? Protocol.HTTP : Protocol.HTTPS;
 
         _client = new AmazonS3Client(
             new BasicAWSCredentials(o.AccessKey, o.SecretKey),
@@ -34,10 +36,23 @@ internal sealed class S3ObjectStorage : IObjectStorage
                 ForcePathStyle = o.ForcePathStyle,
                 AuthenticationRegion = o.Region,
             });
+
+        // Firmar es un cálculo local: un cliente aparte con la URL pública produce enlaces que el navegador alcanza
+        // (la firma incluye el host), sin tocar cómo la API se conecta al almacenamiento.
+        _signer = signingUrl == o.ServiceUrl
+            ? _client
+            : new AmazonS3Client(
+                new BasicAWSCredentials(o.AccessKey, o.SecretKey),
+                new AmazonS3Config
+                {
+                    ServiceURL = signingUrl,
+                    ForcePathStyle = o.ForcePathStyle,
+                    AuthenticationRegion = o.Region,
+                });
     }
 
     public string CreatePresignedPutUrl(string fileKey, string contentType, TimeSpan expiry) =>
-        _client.GetPreSignedURL(new GetPreSignedUrlRequest
+        _signer.GetPreSignedURL(new GetPreSignedUrlRequest
         {
             BucketName = _bucket,
             Key = fileKey,
@@ -48,7 +63,7 @@ internal sealed class S3ObjectStorage : IObjectStorage
         });
 
     public string CreatePresignedGetUrl(string fileKey, TimeSpan expiry) =>
-        _client.GetPreSignedURL(new GetPreSignedUrlRequest
+        _signer.GetPreSignedURL(new GetPreSignedUrlRequest
         {
             BucketName = _bucket,
             Key = fileKey,

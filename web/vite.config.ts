@@ -36,6 +36,9 @@ export default defineConfig({
     proxy: {
       '/api': apiTarget,
       '/health': apiTarget,
+      // Fotos desde el celular por el túnel: las URLs prefirmadas apuntan a {PublicUrl}/{bucket}/… y se reenvían
+      // al almacenamiento local conservando el Host (la firma lo incluye). Requiere STORAGE_PUBLIC_URL en .env.
+      '/tallercontrol-dev': { target: process.env.VITE_STORAGE_TARGET ?? 'http://127.0.0.1:9000', changeOrigin: false },
     },
   },
   test: {

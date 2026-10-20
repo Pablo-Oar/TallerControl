@@ -28,5 +28,7 @@ $env:Storage__ServiceUrl = "http://127.0.0.1:$storagePort"
 $env:Storage__AccessKey = $cfg['STORAGE_ACCESS_KEY']
 $env:Storage__SecretKey = $cfg['STORAGE_SECRET_KEY']
 $env:Storage__Bucket = if ($cfg['STORAGE_BUCKET']) { $cfg['STORAGE_BUCKET'] } else { 'tallercontrol-dev' }
+# Opcional: para probar fotos desde un celular por el túnel (ver docs/deploy-produccion.md / vite.config.ts), STORAGE_PUBLIC_URL=https://tallercontrol.com.ar en .env
+if ($cfg['STORAGE_PUBLIC_URL']) { $env:Storage__PublicUrl = $cfg['STORAGE_PUBLIC_URL'] }
 
 dotnet run --project src/TallerControl.Api --no-launch-profile --urls http://localhost:5233

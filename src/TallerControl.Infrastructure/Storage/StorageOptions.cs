@@ -17,6 +17,13 @@ public sealed class StorageOptions
 
     public string Bucket { get; set; } = string.Empty;
 
+    /// <summary>
+    /// URL pública con la que el navegador alcanza el almacenamiento (solo cambia las URLs prefirmadas; la API sigue
+    /// hablando con <see cref="ServiceUrl"/>). Vacía = se usa <see cref="ServiceUrl"/>. En local sirve para probar
+    /// desde un celular por el túnel: <c>https://tallercontrol.com.ar</c> con el proxy <c>/{bucket}</c> de Vite.
+    /// </summary>
+    public string? PublicUrl { get; set; }
+
     /// <summary>RustFS y R2 esperan la ruta del bucket en el path, no en el subdominio.</summary>
     public bool ForcePathStyle { get; set; } = true;
 
