@@ -182,7 +182,7 @@ export function ReportsPage() {
                   <tr key={r.catalogItemId} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
                     <td className="px-4 py-2 font-medium text-tc-text">{r.name}</td>
                     <td className="px-4 py-2 font-mono text-tc-text-secondary text-xs">{r.sku ?? '—'}</td>
-                    <td className="px-4 py-2 text-tc-text-secondary text-xs">{r.kind}</td>
+                    <td className="px-4 py-2 text-tc-text-secondary text-xs">{r.kind.toLowerCase() === 'service' ? 'Servicio' : r.kind.toLowerCase() === 'product' ? 'Producto' : r.kind}</td>
                     <td className="px-4 py-2 text-right tabular-nums text-tc-text-secondary">{r.stockQty}</td>
                     <td className="px-4 py-2 text-right tabular-nums text-tc-text-muted">{r.stockMin ?? '—'}</td>
                     <td className="px-4 py-2 text-right tabular-nums text-tc-purple font-medium">{fmtARS(r.unitCost)}</td>
