@@ -26,7 +26,7 @@ export function Component() {
         <span className="select-none text-sm font-bold tracking-widest text-white uppercase">
           TALLER<span className="text-tc-purple">CONTROL</span>
         </span>
-        <PlateSearchBar onNavigate={navigate} />
+        <PlateSearchBar onNavigate={navigate} target="/m" />
       </header>
       <PwaInstallBanner />
       <main className="mx-auto max-w-lg p-4">

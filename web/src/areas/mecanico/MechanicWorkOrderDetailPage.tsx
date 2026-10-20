@@ -243,11 +243,11 @@ export function MechanicWorkOrderDetailPage() {
         >
           <div className="space-y-3">
             <FormTextarea
-              label="Nota (opcional)"
+              label="Nota para el taller (opcional)"
               value={note}
               onChange={e => setNote(e.target.value)}
               rows={2}
-              placeholder="Nota (opcional)…"
+              placeholder="Queda en el historial de la orden"
             />
             {statusError && <p role="alert" className="text-xs text-tc-stamp-red">{statusError}</p>}
             <div className="flex gap-2">

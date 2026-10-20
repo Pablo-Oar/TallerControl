@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import {
   workOrdersApi,
@@ -23,12 +23,17 @@ export function MechanicWorkOrdersPage() {
   const [tab, setTab] = useState<Tab>('mine')
   const [statusFilter, setStatusFilter] = useState<WorkOrderStatus | ''>('')
   const [page, setPage] = useState(1)
+  const [params, setParams] = useSearchParams()
+  // Búsqueda por patente de la barra del encabezado (`/m?q=`): filtra las órdenes ya cargadas, sin salir del área.
+  const q = (params.get('q') ?? '').trim().toUpperCase()
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['mechanic-work-orders', tab, statusFilter, page],
     queryFn: () =>
       workOrdersApi.search(statusFilter || null, null, null, null, null, null, page, 25, tab),
   })
+
+  const visible = (data?.items ?? []).filter(o => !q || o.vehiclePlate.toUpperCase().includes(q))
 
   return (
     <div className="space-y-4 px-4 pb-6">
@@ -54,7 +59,7 @@ export function MechanicWorkOrdersPage() {
       </div>
 
       {/* Filtros de estado — chips horizontales */}
-      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex flex-wrap gap-2">
         <button
           onClick={() => { setStatusFilter(''); setPage(1) }}
           className={`whitespace-nowrap border px-3 py-1 text-xs font-bold tracking-wider uppercase transition-colors ${
@@ -92,12 +97,26 @@ export function MechanicWorkOrdersPage() {
 
       {data && (
         <div className="space-y-2">
-          {data.items.length === 0 && (
+          {q && (
+            <div className="flex items-center justify-between gap-2 border border-tc-border bg-white px-3 py-2 text-sm">
+              <span>
+                Patente: <span className="font-mono font-bold tracking-widest">{q}</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setParams({})}
+                className="min-h-[44px] px-2 text-xs font-bold uppercase tracking-wider text-tc-purple"
+              >
+                Quitar filtro
+              </button>
+            </div>
+          )}
+          {visible.length === 0 && (
             <p className="border border-dashed border-tc-border px-4 py-8 text-center text-sm text-tc-text-muted">
-              {TABS.find(t => t.id === tab)!.empty}
+              {q ? `Ninguna orden de esta pestaña tiene la patente ${q}.` : TABS.find(t => t.id === tab)!.empty}
             </p>
           )}
-          {data.items.map(order => (
+          {visible.map(order => (
             <Link
               key={order.id}
               to={`/m/work-orders/${order.id}`}
