@@ -8,6 +8,7 @@ import {
   PRIORITY_LABELS,
 } from '../../lib/api/workOrders'
 import { StatusBadge } from '../../components/ui/StatusBadge'
+import { LoadError } from '../../components/LoadError'
 
 type Tab = 'mine' | 'unassigned'
 
@@ -23,7 +24,7 @@ export function MechanicWorkOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<WorkOrderStatus | ''>('')
   const [page, setPage] = useState(1)
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['mechanic-work-orders', tab, statusFilter, page],
     queryFn: () =>
       workOrdersApi.search(statusFilter || null, null, null, null, null, null, page, 25, tab),
@@ -53,7 +54,7 @@ export function MechanicWorkOrdersPage() {
       </div>
 
       {/* Filtros de estado — chips horizontales */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <button
           onClick={() => { setStatusFilter(''); setPage(1) }}
           className={`whitespace-nowrap border px-3 py-1 text-xs font-bold tracking-wider uppercase transition-colors ${
@@ -87,11 +88,7 @@ export function MechanicWorkOrdersPage() {
         </div>
       )}
 
-      {error && (
-        <p className="border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-          No se pudo cargar los trabajos.
-        </p>
-      )}
+      {error && <LoadError what="los trabajos" onRetry={() => refetch()} />}
 
       {data && (
         <div className="space-y-2">

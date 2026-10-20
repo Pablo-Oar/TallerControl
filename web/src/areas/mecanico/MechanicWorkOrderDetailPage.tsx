@@ -8,6 +8,7 @@ import {
   PRIORITY_LABELS,
 } from '../../lib/api/workOrders'
 import { StatusBadge } from '../../components/ui/StatusBadge'
+import { LoadError } from '../../components/LoadError'
 import { FormTextarea } from '../../components/ui/FormField'
 import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
@@ -44,7 +45,7 @@ export function MechanicWorkOrderDetailPage() {
   const [savingNotes, setSavingNotes] = useState(false)
   const [notesError, setNotesError] = useState<string | null>(null)
 
-  const { data: order, isLoading, error } = useQuery({
+  const { data: order, isLoading, error, refetch } = useQuery({
     queryKey: ['work-order', id],
     queryFn: () => workOrdersApi.get(id!),
     enabled: !!id,
@@ -114,9 +115,7 @@ export function MechanicWorkOrderDetailPage() {
   if (error || !order) {
     return (
       <div className="px-4 pt-4">
-        <p className="border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-          No se pudo cargar la orden.
-        </p>
+        <LoadError what="la orden" onRetry={() => refetch()} />
       </div>
     )
   }

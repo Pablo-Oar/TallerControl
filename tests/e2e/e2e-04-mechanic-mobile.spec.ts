@@ -68,8 +68,8 @@ test.describe('E2E-04: Mecánico móvil', () => {
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
       'base64',
     )
-    await expect(m.getByLabel('Elegir foto')).toHaveAttribute('capture', 'environment')
-    await m.getByLabel('Elegir foto').setInputFiles({ name: 'foto.png', mimeType: 'image/png', buffer: png })
+    await expect(m.getByLabel('Sacar foto')).toHaveAttribute('capture', 'environment')
+    await m.getByLabel('Sacar foto').setInputFiles({ name: 'foto.png', mimeType: 'image/png', buffer: png })
     await expect(m.getByRole('img', { name: /foto 1 de la orden/i })).toBeVisible()
 
     // Iniciar el trabajo

@@ -31,7 +31,8 @@ describe('WorkOrderPhotos', () => {
   it('sin fotos muestra el estado vacío y el botón para agregar', async () => {
     renderIt()
     expect(await screen.findByText(/sin fotos todavía/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /agregar foto/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /sacar foto/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /desde la galería/i })).toBeInTheDocument()
   })
 
   it('lista solo las fotos listas y el dueño puede quitarlas', async () => {
@@ -52,7 +53,7 @@ describe('WorkOrderPhotos', () => {
   it('sube la foto elegida y rechaza formatos no admitidos', async () => {
     renderIt()
     await screen.findByText(/sin fotos todavía/i)
-    const input = screen.getByLabelText('Elegir foto')
+    const input = screen.getByLabelText('Sacar foto')
     expect(input).toHaveAttribute('capture', 'environment') // abre la cámara trasera en el celular
 
     await userEvent.upload(input, new File(['x'], 'doc.gif', { type: 'image/gif' }), { applyAccept: false })
