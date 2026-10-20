@@ -61,10 +61,10 @@ export function ResetPasswordPage() {
     <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4">
       <div className="w-full max-w-sm border border-tc-border bg-white">
         <div className="border-b border-tc-border bg-tc-stub-bg px-6 py-3">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">TallerControl</span>
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">TallerControl</span>
         </div>
         <div className="px-6 py-8">
-          <h1 className="mb-6 text-xl font-bold tracking-tight text-slate-900">Nueva contraseña</h1>
+          <h1 className="mb-6 text-xl font-bold tracking-tight text-tc-text">Nueva contraseña</h1>
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
             <FormField
               label="Contraseña"

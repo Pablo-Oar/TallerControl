@@ -49,7 +49,7 @@ export function Component() {
         <Route
           path="*"
           element={
-            <div className="flex min-h-screen items-center justify-center bg-white text-slate-900">
+            <div className="flex min-h-screen items-center justify-center bg-white text-tc-text">
               <h1 className="text-xl font-semibold">Página no encontrada</h1>
             </div>
           }

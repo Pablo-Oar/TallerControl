@@ -10,8 +10,8 @@ import { Button } from '../../../components/ui/Button'
 import { FormField, FormTextarea } from '../../../components/ui/FormField'
 import { SignaturePad, type SignaturePadHandle } from '../../../components/ui/SignaturePad'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { labelCls } from '../../../lib/styles'
 
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -69,9 +69,9 @@ export function PublicQuotePage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-tc-navy px-4 text-center">
         <div className="border border-tc-border bg-white p-8 max-w-sm w-full">
-          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 mb-2">Error</p>
-          <p className="font-bold text-slate-900">Presupuesto no encontrado</p>
-          <p className="mt-2 text-sm text-slate-500">El enlace puede haber expirado o ser incorrecto.</p>
+          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted mb-2">Error</p>
+          <p className="font-bold text-tc-text">Presupuesto no encontrado</p>
+          <p className="mt-2 text-sm text-tc-text-secondary">El enlace puede haber expirado o ser incorrecto.</p>
         </div>
       </div>
     )
@@ -84,13 +84,13 @@ export function PublicQuotePage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-tc-surface px-4">
         <div className="border border-tc-border bg-white p-10 max-w-sm w-full text-center">
-          <div className="bg-tc-stub-bg border border-tc-border w-10 h-10 flex items-center justify-center mx-auto mb-4 text-lg font-bold text-slate-600">
+          <div className="bg-tc-stub-bg border border-tc-border w-10 h-10 flex items-center justify-center mx-auto mb-4 text-lg font-bold text-tc-text-secondary">
             ✓
           </div>
-          <p className="font-bold text-slate-900">Respuesta enviada</p>
-          <p className="mt-2 text-sm text-slate-500">Tu respuesta fue registrada correctamente.</p>
+          <p className="font-bold text-tc-text">Respuesta enviada</p>
+          <p className="mt-2 text-sm text-tc-text-secondary">Tu respuesta fue registrada correctamente.</p>
           {result?.decision === 'approved' && (
-            <p className="mt-3 text-sm text-slate-700">
+            <p className="mt-3 text-sm text-tc-text-secondary">
               Total aprobado: <strong className="tabular-nums">{fmtARS(result.approvedTotal)}</strong>
             </p>
           )}
@@ -141,33 +141,33 @@ export function PublicQuotePage() {
         {/* Encabezado del presupuesto */}
         <div className="border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3 flex items-center justify-between">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Presupuesto</span>
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Presupuesto</span>
             <StatusBadge status={data.status} label={QUOTE_STATUS_LABELS[data.status] ?? data.status} />
           </div>
           <div className="px-6 py-5">
-            <p className="font-mono font-bold text-2xl text-slate-900 mb-4">#{data.number}</p>
+            <p className="font-mono font-bold text-2xl text-tc-text mb-4">#{data.number}</p>
             <dl className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <dt className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">Cliente</dt>
-                <dd className="text-slate-800">{data.customerName}</dd>
+                <dt className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted mb-1">Cliente</dt>
+                <dd className="text-tc-text">{data.customerName}</dd>
               </div>
               <div>
-                <dt className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">Vehículo</dt>
-                <dd className="text-slate-800 font-mono">
+                <dt className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted mb-1">Vehículo</dt>
+                <dd className="text-tc-text font-mono">
                   {[data.vehicleBrand, data.vehicleModel, data.vehiclePlate].filter(Boolean).join(' · ')}
                 </dd>
               </div>
               <div>
-                <dt className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">Válido hasta</dt>
-                <dd className={isExpired ? 'text-tc-stamp-red font-bold' : 'text-slate-800'}>
+                <dt className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted mb-1">Válido hasta</dt>
+                <dd className={isExpired ? 'text-tc-stamp-red font-bold' : 'text-tc-text'}>
                   {new Date(data.validUntil).toLocaleDateString('es-AR')}
                   {isExpired && ' — vencido'}
                 </dd>
               </div>
             </dl>
             {data.customerNotes && (
-              <div className="mt-4 border-t border-tc-border pt-3 text-sm text-slate-700">
-                <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">Notas</p>
+              <div className="mt-4 border-t border-tc-border pt-3 text-sm text-tc-text-secondary">
+                <p className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted mb-1">Notas</p>
                 {data.customerNotes}
               </div>
             )}
@@ -177,28 +177,28 @@ export function PublicQuotePage() {
         {/* Ítems del presupuesto */}
         <div className="border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Ítems</span>
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ítems</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-tc-border">
-                  <th className="px-3 py-2 sm:px-4 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Descripción</th>
-                  <th className="hidden px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 sm:table-cell">Cant.</th>
-                  <th className="hidden px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 sm:table-cell">Precio unit.</th>
-                  <th className="px-3 py-2 sm:px-4 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Subtotal</th>
+                  <th className="px-3 py-2 sm:px-4 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Descripción</th>
+                  <th className="hidden px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted sm:table-cell">Cant.</th>
+                  <th className="hidden px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted sm:table-cell">Precio unit.</th>
+                  <th className="px-3 py-2 sm:px-4 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Subtotal</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-tc-border">
                 {data.items.map(item => (
                   <tr key={item.id} className="hover:bg-tc-surface transition-colors">
-                    <td className="px-3 py-3 sm:px-4 text-slate-800">
+                    <td className="px-3 py-3 sm:px-4 text-tc-text">
                       {item.description}
                       {canRespond && !isExpired && (
                         item.requiredForApproval ? (
-                          <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Obligatorio</span>
+                          <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-tc-text-muted">Obligatorio</span>
                         ) : (
-                          <label className="mt-1 flex min-h-[44px] cursor-pointer items-center gap-2 text-xs text-slate-600">
+                          <label className="mt-1 flex min-h-[44px] cursor-pointer items-center gap-2 text-xs text-tc-text-secondary">
                             <input
                               type="checkbox"
                               className="h-4 w-4 accent-tc-purple"
@@ -216,13 +216,13 @@ export function PublicQuotePage() {
                           </label>
                         )
                       )}
-                      <span className="block text-xs tabular-nums text-slate-500 sm:hidden">
+                      <span className="block text-xs tabular-nums text-tc-text-secondary sm:hidden">
                         {item.quantity} × {fmtARS(item.unitNetPrice)}
                       </span>
                     </td>
-                    <td className="hidden px-4 py-3 text-right tabular-nums text-slate-600 sm:table-cell">{item.quantity}</td>
-                    <td className="hidden px-4 py-3 text-right tabular-nums text-slate-600 sm:table-cell">{fmtARS(item.unitNetPrice)}</td>
-                    <td className="px-3 py-3 sm:px-4 text-right tabular-nums font-bold text-slate-800">{fmtARS(item.lineTotal)}</td>
+                    <td className="hidden px-4 py-3 text-right tabular-nums text-tc-text-secondary sm:table-cell">{item.quantity}</td>
+                    <td className="hidden px-4 py-3 text-right tabular-nums text-tc-text-secondary sm:table-cell">{fmtARS(item.unitNetPrice)}</td>
+                    <td className="px-3 py-3 sm:px-4 text-right tabular-nums font-bold text-tc-text">{fmtARS(item.lineTotal)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -231,21 +231,21 @@ export function PublicQuotePage() {
           <div className="border-t border-tc-border px-4 py-3 space-y-1 text-sm bg-tc-stub-bg">
             {data.globalDiscountPct > 0 && (
               <>
-                <div className="flex justify-between text-slate-600">
+                <div className="flex justify-between text-tc-text-secondary">
                   <span className="text-xs font-bold tracking-wider uppercase">Subtotal</span>
                   <span className="tabular-nums">{fmtARS(data.subtotalNet)}</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
+                <div className="flex justify-between text-tc-text-secondary">
                   <span className="text-xs font-bold tracking-wider uppercase">Descuento ({data.globalDiscountPct}%)</span>
                   <span className="tabular-nums text-tc-stamp-red">−{fmtARS(data.discountAmount)}</span>
                 </div>
               </>
             )}
-            <div className="flex justify-between text-slate-600">
+            <div className="flex justify-between text-tc-text-secondary">
               <span className="text-xs font-bold tracking-wider uppercase">IVA</span>
               <span className="tabular-nums">{fmtARS(data.vatAmount)}</span>
             </div>
-            <div className="flex justify-between border-t border-tc-border pt-2 text-base font-bold text-slate-800">
+            <div className="flex justify-between border-t border-tc-border pt-2 text-base font-bold text-tc-text">
               <span className="text-xs font-bold tracking-wider uppercase">Total</span>
               <span className="tabular-nums text-tc-purple">{fmtARS(data.total)}</span>
             </div>
@@ -256,7 +256,7 @@ export function PublicQuotePage() {
         {canRespond && !isExpired && (
           <div className="border border-tc-border bg-white overflow-hidden">
             <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3">
-              <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Su respuesta</span>
+              <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Su respuesta</span>
             </div>
             <div className="px-6 py-5">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -291,7 +291,7 @@ export function PublicQuotePage() {
 
                 {/* Firma digital */}
                 <div>
-                  <p className={labelCls}>Firma <span className="font-normal normal-case text-slate-400">(opcional)</span></p>
+                  <p className={labelCls}>Firma <span className="font-normal normal-case text-tc-text-muted">(opcional)</span></p>
                   <SignaturePad ref={sigRef} />
                 </div>
 
@@ -329,9 +329,9 @@ export function PublicQuotePage() {
         )}
 
         {!canRespond && data.status !== 'sent' && (
-          <div className="border border-tc-border bg-white px-4 py-4 text-center text-sm text-slate-500">
+          <div className="border border-tc-border bg-white px-4 py-4 text-center text-sm text-tc-text-secondary">
             Este presupuesto está en estado{' '}
-            <span className="font-bold text-slate-700">{QUOTE_STATUS_LABELS[data.status]}</span>{' '}
+            <span className="font-bold text-tc-text-secondary">{QUOTE_STATUS_LABELS[data.status]}</span>{' '}
             y ya no acepta respuestas.
           </div>
         )}

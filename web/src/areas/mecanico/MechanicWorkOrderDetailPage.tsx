@@ -25,7 +25,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <div className="border border-tc-border bg-white overflow-hidden">
       <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">{title}</span>
+        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">{title}</span>
       </div>
       <div className="p-4">{children}</div>
     </div>
@@ -128,7 +128,7 @@ export function MechanicWorkOrderDetailPage() {
     <div className="space-y-3 px-4 pb-6">
       <div className="flex items-center justify-between py-2">
         <div className="flex items-center gap-3">
-          <span className="font-mono font-bold text-lg text-slate-900">#{order.number}</span>
+          <span className="font-mono font-bold text-lg text-tc-text">#{order.number}</span>
           <StatusBadge status={order.status} label={STATUS_LABELS[order.status]} />
         </div>
         <Link to="/m" className="text-xs font-bold tracking-wider uppercase text-tc-purple hover:opacity-70">
@@ -148,17 +148,17 @@ export function MechanicWorkOrderDetailPage() {
 
       <Section title="Vehículo">
         <div className="space-y-1">
-          <p className="font-mono font-bold tracking-widest text-slate-800">{order.vehiclePlate}</p>
-          {vehicleLabel && <p className="text-sm text-slate-500">{vehicleLabel}</p>}
-          <p className="text-sm text-slate-600">
+          <p className="font-mono font-bold tracking-widest text-tc-text">{order.vehiclePlate}</p>
+          {vehicleLabel && <p className="text-sm text-tc-text-secondary">{vehicleLabel}</p>}
+          <p className="text-sm text-tc-text-secondary">
             Odómetro: <strong className="tabular-nums">{order.odometerKm.toLocaleString('es-AR')} km</strong>
           </p>
           {order.fuelLevel != null && (
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-tc-text-secondary">
               Combustible: <strong>{order.fuelLevel}%</strong>
             </p>
           )}
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-tc-text-secondary">
             Prioridad: <strong>{PRIORITY_LABELS[order.priority]}</strong>
           </p>
         </div>
@@ -166,7 +166,7 @@ export function MechanicWorkOrderDetailPage() {
 
       {order.reportedIssue && (
         <Section title="Problema reportado">
-          <p className="text-sm text-slate-700">{order.reportedIssue}</p>
+          <p className="text-sm text-tc-text-secondary">{order.reportedIssue}</p>
         </Section>
       )}
 
@@ -175,8 +175,8 @@ export function MechanicWorkOrderDetailPage() {
           <ul className="space-y-1.5">
             {order.items.map(item => (
               <li key={item.id} className="flex items-baseline justify-between text-sm border-b border-tc-border pb-1.5 last:border-0 last:pb-0">
-                <span className="text-slate-700">{item.description}</span>
-                <span className="text-slate-400 tabular-nums text-xs ml-3 shrink-0">× {item.quantity}</span>
+                <span className="text-tc-text-secondary">{item.description}</span>
+                <span className="text-tc-text-muted tabular-nums text-xs ml-3 shrink-0">× {item.quantity}</span>
               </li>
             ))}
           </ul>
@@ -207,8 +207,8 @@ export function MechanicWorkOrderDetailPage() {
         ) : (
           <div className="flex items-start justify-between gap-3">
             {order.mechanicNotes
-              ? <p className="text-sm text-slate-700">{order.mechanicNotes}</p>
-              : <p className="text-sm text-slate-400">Sin notas</p>
+              ? <p className="text-sm text-tc-text-secondary">{order.mechanicNotes}</p>
+              : <p className="text-sm text-tc-text-muted">Sin notas</p>
             }
             <button
               onClick={() => { setMechanicNotes(order.mechanicNotes ?? ''); setEditingNotes(true) }}
@@ -227,7 +227,7 @@ export function MechanicWorkOrderDetailPage() {
               <button
                 key={toStatus}
                 onClick={() => setChangingStatus(toStatus)}
-                className="border border-tc-border bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-tc-surface transition-colors"
+                className="border border-tc-border bg-white px-4 py-2 text-sm font-medium text-tc-text-secondary hover:bg-tc-surface transition-colors"
               >
                 → {STATUS_LABELS[toStatus]}
               </button>

@@ -44,7 +44,7 @@ export function VerifyEmailPage() {
     <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4">
       <div className="w-full max-w-sm border border-tc-border bg-white">
         <div className="border-b border-tc-border bg-tc-stub-bg px-6 py-3">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">TallerControl</span>
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">TallerControl</span>
         </div>
         <div className="px-6 py-8 text-center">
           {status === 'loading' && (
@@ -53,15 +53,15 @@ export function VerifyEmailPage() {
                 <div className="mx-auto h-3 w-3/4 animate-pulse bg-tc-border" />
                 <div className="mx-auto h-3 w-1/2 animate-pulse bg-tc-border" />
               </div>
-              <p className="text-sm text-slate-500">Verificando tu email...</p>
+              <p className="text-sm text-tc-text-secondary">Verificando tu email...</p>
             </>
           )}
 
           {status === 'success' && (
             <>
-              <p className="mb-3 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Verificación exitosa</p>
-              <h1 className="mb-3 text-xl font-bold text-slate-900">Email verificado</h1>
-              <p className="text-sm text-slate-600">{message}</p>
+              <p className="mb-3 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Verificación exitosa</p>
+              <h1 className="mb-3 text-xl font-bold text-tc-text">Email verificado</h1>
+              <p className="text-sm text-tc-text-secondary">{message}</p>
               <div className="mt-6">
                 <Link to="/login">
                   <Button className="w-full">Iniciar sesión</Button>
@@ -73,9 +73,9 @@ export function VerifyEmailPage() {
           {status === 'error' && (
             <>
               <p className="mb-3 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-stamp-red">Error</p>
-              <h1 className="mb-3 text-xl font-bold text-slate-900">Error de verificación</h1>
-              <p className="text-sm text-slate-600">{message}</p>
-              <p className="mt-6 text-sm text-slate-500">
+              <h1 className="mb-3 text-xl font-bold text-tc-text">Error de verificación</h1>
+              <p className="text-sm text-tc-text-secondary">{message}</p>
+              <p className="mt-6 text-sm text-tc-text-secondary">
                 <Link to="/registro" className="text-tc-purple hover:opacity-70">
                   Volver al registro
                 </Link>

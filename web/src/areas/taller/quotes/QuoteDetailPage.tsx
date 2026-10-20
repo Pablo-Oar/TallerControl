@@ -154,7 +154,7 @@ export function QuoteDetailPage() {
           <Link to="/app/quotes" className="text-xs font-bold tracking-wider uppercase text-tc-navy-text hover:text-tc-purple transition-colors">
             ← Presupuestos
           </Link>
-          <h1 className="text-lg font-bold tracking-wide text-slate-800 uppercase">
+          <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">
             Presupuesto #{quote.number}
           </h1>
           <StatusBadge status={quote.status} label={QUOTE_STATUS_LABELS[quote.status]} />
@@ -171,14 +171,14 @@ export function QuoteDetailPage() {
       {/* Datos principales */}
       <div className="border border-tc-border bg-white overflow-hidden">
         <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Datos del presupuesto</span>
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Datos del presupuesto</span>
         </div>
         <div className="grid grid-cols-2 gap-0 sm:grid-cols-3 divide-x divide-tc-border">
           <DataCell label="Cliente">{quote.customerName}</DataCell>
           <DataCell label="Vehículo">
             <span className="font-mono font-bold tracking-wider">{quote.vehiclePlate}</span>
             {(quote.vehicleBrand || quote.vehicleModel) && (
-              <span className="ml-1 text-slate-500">— {[quote.vehicleBrand, quote.vehicleModel].filter(Boolean).join(' ')}</span>
+              <span className="ml-1 text-tc-text-secondary">— {[quote.vehicleBrand, quote.vehicleModel].filter(Boolean).join(' ')}</span>
             )}
           </DataCell>
           <DataCell label="Válido hasta">
@@ -199,14 +199,14 @@ export function QuoteDetailPage() {
           <div className="border-t border-tc-perf p-4 space-y-3">
             {quote.customerNotes && (
               <div>
-                <p className="mb-1 text-[10px] font-bold tracking-wider uppercase text-slate-400">Notas para el cliente</p>
-                <p className="text-sm text-slate-700">{quote.customerNotes}</p>
+                <p className="mb-1 text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Notas para el cliente</p>
+                <p className="text-sm text-tc-text-secondary">{quote.customerNotes}</p>
               </div>
             )}
             {quote.internalNotes && (
               <div>
-                <p className="mb-1 text-[10px] font-bold tracking-wider uppercase text-slate-400">Notas internas</p>
-                <p className="text-sm text-slate-500 italic">{quote.internalNotes}</p>
+                <p className="mb-1 text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Notas internas</p>
+                <p className="text-sm text-tc-text-secondary italic">{quote.internalNotes}</p>
               </div>
             )}
           </div>
@@ -216,14 +216,14 @@ export function QuoteDetailPage() {
       {/* Ítems */}
       <div className="border border-tc-border bg-white overflow-hidden">
         <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Ítems</span>
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ítems</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-tc-border">
                 {['Descripción', 'Tipo', 'Cant.', 'Precio neto', 'IVA%', 'Total'].map((h, i) => (
-                  <th key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${i > 1 ? 'text-right' : 'text-left'}`}>
+                  <th key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${i > 1 ? 'text-right' : 'text-left'}`}>
                     {h}
                   </th>
                 ))}
@@ -232,16 +232,16 @@ export function QuoteDetailPage() {
             <tbody className="divide-y divide-tc-border">
               {quote.items.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-sm text-slate-400">Sin ítems</td>
+                  <td colSpan={6} className="px-4 py-6 text-center text-sm text-tc-text-muted">Sin ítems</td>
                 </tr>
               ) : (
                 quote.items.map(item => (
                   <tr key={item.id}>
-                    <td className="px-4 py-2.5 text-slate-800">{item.description}</td>
-                    <td className="px-4 py-2.5 text-xs text-slate-500">{KIND_LABELS[item.kind] ?? item.kind}</td>
-                    <td className="px-4 py-2.5 text-right tabular-nums text-slate-600">{item.quantity}</td>
+                    <td className="px-4 py-2.5 text-tc-text">{item.description}</td>
+                    <td className="px-4 py-2.5 text-xs text-tc-text-secondary">{KIND_LABELS[item.kind] ?? item.kind}</td>
+                    <td className="px-4 py-2.5 text-right tabular-nums text-tc-text-secondary">{item.quantity}</td>
                     <td className="px-4 py-2.5 text-right tabular-nums text-tc-purple">{fmtARS(item.unitNetPrice)}</td>
-                    <td className="px-4 py-2.5 text-right text-slate-500">{item.vatRate}%</td>
+                    <td className="px-4 py-2.5 text-right text-tc-text-secondary">{item.vatRate}%</td>
                     <td className="px-4 py-2.5 text-right tabular-nums font-semibold text-tc-purple">{fmtARS(item.lineTotal)}</td>
                   </tr>
                 ))
@@ -305,7 +305,7 @@ export function QuoteDetailPage() {
           href={quotesApi.getPdfUrl(quote.id)}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-slate-700 hover:bg-tc-surface transition-colors"
+          className="inline-flex items-center border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-tc-text-secondary hover:bg-tc-surface transition-colors"
         >
           PDF
         </a>
@@ -322,7 +322,7 @@ export function QuoteDetailPage() {
       {/* Enlace público (presupuesto para el cliente, u OT) */}
       {publicLink && (
         <div className="border border-tc-border bg-tc-stub-bg px-4 py-3">
-          <p className="mb-2 text-[10px] font-bold tracking-wider uppercase text-slate-400">{publicLink.label}</p>
+          <p className="mb-2 text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">{publicLink.label}</p>
           <div className="flex flex-wrap items-end gap-2">
             <FormField label="Enlace" size="sm" readOnly value={publicLink.url} className="min-w-0 flex-1" />
             <Button variant="secondary" size="sm" onClick={() => navigator.clipboard.writeText(publicLink.url)}>
@@ -332,7 +332,7 @@ export function QuoteDetailPage() {
               href={`https://wa.me/?text=${encodeURIComponent(`Presupuesto #${quote.number}: ${publicLink.url}`)}`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-slate-700 hover:bg-tc-surface transition-colors"
+              className="inline-flex items-center border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-tc-text-secondary hover:bg-tc-surface transition-colors"
             >
               WhatsApp
             </a>
@@ -344,7 +344,7 @@ export function QuoteDetailPage() {
       {confirmCancel && (
         <div className="border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Cancelar presupuesto</span>
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Cancelar presupuesto</span>
           </div>
           <div className="p-4 space-y-3">
             <input
@@ -375,7 +375,7 @@ export function QuoteDetailPage() {
       {responses && responses.length > 0 && (
         <div className="border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Respuestas del cliente</span>
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Respuestas del cliente</span>
           </div>
           <div className="px-4 py-4">
             <Timeline
@@ -413,16 +413,16 @@ export function QuoteDetailPage() {
 function DataCell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="px-4 py-3">
-      <p className="mb-0.5 text-[10px] font-bold tracking-wider uppercase text-slate-400">{label}</p>
-      <p className="text-sm text-slate-800">{children}</p>
+      <p className="mb-0.5 text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">{label}</p>
+      <p className="text-sm text-tc-text">{children}</p>
     </div>
   )
 }
 
 function TotalRow({ label, children, bold }: { label: string; children: React.ReactNode; bold?: boolean }) {
   return (
-    <div className={`flex items-baseline justify-end gap-8 ${bold ? 'font-bold text-base' : 'text-slate-600'}`}>
-      <span className={bold ? 'text-slate-800' : 'text-slate-500'}>{label}</span>
+    <div className={`flex items-baseline justify-end gap-8 ${bold ? 'font-bold text-base' : 'text-tc-text-secondary'}`}>
+      <span className={bold ? 'text-tc-text' : 'text-tc-text-secondary'}>{label}</span>
       <span className="tabular-nums">{children}</span>
     </div>
   )

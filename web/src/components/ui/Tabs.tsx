@@ -14,7 +14,7 @@ const BAR = 'relative flex overflow-x-auto border-b border-tc-border'
 const TAB =
   'flex min-h-[44px] shrink-0 items-center whitespace-nowrap px-4 text-xs font-bold uppercase tracking-wider transition-colors'
 const ACTIVE = 'text-tc-purple'
-const IDLE = 'text-slate-500 hover:text-slate-800'
+const IDLE = 'text-tc-text-secondary hover:text-tc-text'
 
 /** Indicador deslizante: mide la pestaña activa y lo posiciona; sin transición con prefers-reduced-motion. */
 function useIndicator(activeKey: string) {

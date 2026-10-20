@@ -37,7 +37,7 @@ export function QuotesPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-bold tracking-wide text-slate-800 uppercase">Presupuestos</h1>
+        <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Presupuestos</h1>
         <Button onClick={() => setCreating(true)} size="sm">Nuevo presupuesto</Button>
       </div>
 
@@ -45,7 +45,7 @@ export function QuotesPage() {
         <select
           value={statusFilter}
           onChange={e => { setStatusFilter(e.target.value as QuoteStatus | ''); setPage(1) }}
-          className="border border-tc-border bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-tc-border-mid"
+          className="border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-border-mid"
         >
           <option value="">Todos los estados</option>
           {STATUS_OPTIONS.map(s => (
@@ -74,14 +74,14 @@ export function QuotesPage() {
             {/* Header */}
             <div className="grid grid-cols-[3rem_1fr_7rem_6rem] md:grid-cols-[3rem_1fr_7rem_6rem_7rem_7rem] border-b border-tc-border bg-tc-stub-bg">
               {[['#', '', false], ['Cliente / Vehículo', '', false], ['Estado', '', false], ['Total', 'text-right', false], ['Válido hasta', '', true], ['Creado', '', true]].map(([h, cls, hide], i) => (
-                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${cls} ${hide ? 'hidden md:block' : ''}`}>
+                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${cls} ${hide ? 'hidden md:block' : ''}`}>
                   {h}
                 </div>
               ))}
             </div>
 
             {data.items.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-slate-400">No hay presupuestos.</p>
+              <p className="px-4 py-8 text-center text-sm text-tc-text-muted">No hay presupuestos.</p>
             ) : (
               <ul className="divide-y divide-tc-border">
                 {data.items.map((q: QuoteListDto) => (
@@ -101,8 +101,8 @@ export function QuotesPage() {
 
                     {/* Customer + vehicle */}
                     <div className="px-4 py-3">
-                      <p className="text-sm font-medium text-slate-800 truncate">{q.customerName}</p>
-                      <p className="mt-0.5 text-[11px] font-bold tracking-widest text-slate-400 font-mono">{q.vehiclePlate}</p>
+                      <p className="text-sm font-medium text-tc-text truncate">{q.customerName}</p>
+                      <p className="mt-0.5 text-[11px] font-bold tracking-widest text-tc-text-muted font-mono">{q.vehiclePlate}</p>
                     </div>
 
                     {/* Status */}
@@ -119,14 +119,14 @@ export function QuotesPage() {
 
                     {/* Valid until */}
                     <div className="hidden md:block px-4 py-3">
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-tc-text-secondary">
                         {new Date(q.validUntil).toLocaleDateString('es-AR')}
                       </span>
                     </div>
 
                     {/* Created */}
                     <div className="hidden md:block px-4 py-3">
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-tc-text-muted">
                         {new Date(q.createdAt).toLocaleDateString('es-AR')}
                       </span>
                     </div>
@@ -137,7 +137,7 @@ export function QuotesPage() {
           </div>
 
           {data.total > data.pageSize && (
-            <div className="flex items-center justify-between text-sm text-slate-500">
+            <div className="flex items-center justify-between text-sm text-tc-text-secondary">
               <span className="tabular-nums">{data.total} presupuesto{data.total !== 1 ? 's' : ''}</span>
               <div className="flex items-center gap-1">
                 <button

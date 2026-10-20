@@ -40,7 +40,7 @@ export function WorkOrdersPage() {
     <div className="space-y-5">
       {/* Page header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-bold tracking-wide text-slate-800 uppercase">
+        <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">
           Órdenes de trabajo
         </h1>
         <Button onClick={() => setCreating(true)} size="sm">Nueva orden</Button>
@@ -51,7 +51,7 @@ export function WorkOrdersPage() {
         <select
           value={statusFilter}
           onChange={e => { setStatusFilter(e.target.value as WorkOrderStatus | ''); setPage(1) }}
-          className="border border-tc-border bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-tc-border-mid"
+          className="border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-border-mid"
         >
           <option value="">Todos los estados</option>
           {STATUS_OPTIONS.map(s => (
@@ -81,18 +81,18 @@ export function WorkOrdersPage() {
           <div className="border border-tc-border bg-white overflow-hidden">
             {/* Column header */}
             <div className="grid grid-cols-[3rem_1fr_6rem_2.5rem] md:grid-cols-[3rem_1fr_6rem_6rem_5rem_5rem_2.5rem] items-center gap-0 border-b border-tc-border bg-tc-stub-bg px-0">
-              <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">#</div>
-              <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Cliente / Vehículo</div>
-              <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</div>
-              <div className="hidden md:block px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 text-right">Total</div>
-              <div className="hidden md:block px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 text-right">Saldo</div>
-              <div className="hidden md:block px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Mecánico</div>
+              <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">#</div>
+              <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Cliente / Vehículo</div>
+              <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</div>
+              <div className="hidden md:block px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted text-right">Total</div>
+              <div className="hidden md:block px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted text-right">Saldo</div>
+              <div className="hidden md:block px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Mecánico</div>
               <div />
             </div>
 
             {/* Rows */}
             {data.items.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-slate-400">
+              <p className="px-4 py-8 text-center text-sm text-tc-text-muted">
                 No hay órdenes{statusFilter ? ' con ese estado' : ''}.
               </p>
             ) : (
@@ -106,7 +106,7 @@ export function WorkOrdersPage() {
 
           {/* Pagination */}
           {data.total > data.pageSize && (
-            <div className="flex items-center justify-between text-sm text-slate-500">
+            <div className="flex items-center justify-between text-sm text-tc-text-secondary">
               <span className="tabular-nums">{data.total} órdenes</span>
               <div className="flex items-center gap-1">
                 <button
@@ -144,16 +144,16 @@ function WorkOrderRow({ order }: { order: WorkOrderListDto }) {
     <li className="grid grid-cols-[3rem_1fr_6rem_2.5rem] md:grid-cols-[3rem_1fr_6rem_6rem_5rem_5rem_2.5rem] items-center gap-0 hover:bg-tc-surface group transition-colors">
       {/* Stub: number */}
       <div className="flex h-full items-center border-r border-tc-border bg-tc-stub-bg px-3 py-3">
-        <span className="text-xs font-bold tabular-nums text-slate-500">#{order.number}</span>
+        <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{order.number}</span>
       </div>
 
       {/* Body: customer + vehicle */}
       <div className="px-4 py-3">
-        <p className="text-sm font-medium text-slate-800 truncate">{order.customerName}</p>
+        <p className="text-sm font-medium text-tc-text truncate">{order.customerName}</p>
         <div className="mt-0.5 flex items-center gap-1.5">
-          <span className="text-[11px] font-bold tracking-widest text-slate-400 font-mono">{order.vehiclePlate}</span>
+          <span className="text-[11px] font-bold tracking-widest text-tc-text-muted font-mono">{order.vehiclePlate}</span>
           {vehicleLabel !== order.vehiclePlate && (
-            <span className="text-xs text-slate-400 truncate">— {vehicleLabel}</span>
+            <span className="text-xs text-tc-text-muted truncate">— {vehicleLabel}</span>
           )}
           <span className="text-[10px] text-slate-300">· {PRIORITY_LABELS[order.priority]}</span>
         </div>
@@ -174,7 +174,7 @@ function WorkOrderRow({ order }: { order: WorkOrderListDto }) {
       {/* Balance */}
       <div className="hidden md:block px-4 py-3 text-right">
         {order.balance != null ? (
-          <span className={['tabular-nums text-sm', order.balance > 0 ? 'font-semibold text-amber-600' : 'text-slate-400'].join(' ')}>
+          <span className={['tabular-nums text-sm', order.balance > 0 ? 'font-semibold text-amber-600' : 'text-tc-text-muted'].join(' ')}>
             {fmtARS(order.balance)}
           </span>
         ) : (
@@ -184,7 +184,7 @@ function WorkOrderRow({ order }: { order: WorkOrderListDto }) {
 
       {/* Mechanic */}
       <div className="hidden md:block px-3 py-3">
-        <span className="text-xs text-slate-400 truncate">{order.assignedMechanicName ?? '—'}</span>
+        <span className="text-xs text-tc-text-muted truncate">{order.assignedMechanicName ?? '—'}</span>
       </div>
 
       {/* Nav arrow */}

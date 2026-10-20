@@ -11,8 +11,8 @@ import { FormField, FormSelect, FormTextarea } from '../../../components/ui/Form
 import { CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
+import { labelCls } from '../../../lib/styles'
 
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const itemSchema = z.object({
   kind: z.enum(['service', 'product', 'manual']),
@@ -140,7 +140,7 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
               {vehicles.length === 0 ? (
                 <>
                   <span className={labelCls}>Vehículo *</span>
-                  <p className="text-sm text-slate-400">El cliente no tiene vehículos registrados.</p>
+                  <p className="text-sm text-tc-text-muted">El cliente no tiene vehículos registrados.</p>
                 </>
               ) : (
                 <FormSelect
@@ -209,7 +209,7 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
               </button>
             </div>
             {fields.length === 0 && (
-              <p className="text-xs text-slate-400">Sin renglones. La orden se crea sin ítems.</p>
+              <p className="text-xs text-tc-text-muted">Sin renglones. La orden se crea sin ítems.</p>
             )}
             <div className="space-y-3">
               {fields.map((field, index) => (
@@ -265,7 +265,7 @@ function ItemRow({ index, register, errors, catalogItems, onSelectCatalog, onRem
   return (
     <div className="border border-tc-border bg-tc-surface p-3">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-bold tracking-wider uppercase text-slate-400">Renglón {index + 1}</span>
+        <span className="text-xs font-bold tracking-wider uppercase text-tc-text-muted">Renglón {index + 1}</span>
         <button type="button" onClick={onRemove} className="text-xs font-bold tracking-wider uppercase text-tc-stamp-red hover:opacity-70 transition-opacity">Quitar</button>
       </div>
       <div className="space-y-2">

@@ -136,7 +136,7 @@ export function WorkOrderDetailPage() {
       {/* Encabezado */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-lg font-bold tracking-wide text-slate-800 uppercase">
+          <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">
             Orden #{order.number}
           </h1>
           <EditableStatusBadge
@@ -145,7 +145,7 @@ export function WorkOrderDetailPage() {
             options={canAct ? WORK_ORDER_TRANSITIONS[order.status].map(s => ({ value: s, label: STATUS_LABELS[s] })) : []}
             onSelect={handleBadgeSelect}
           />
-          <span className="text-xs text-slate-400 uppercase tracking-wider">
+          <span className="text-xs text-tc-text-muted uppercase tracking-wider">
             {PRIORITY_LABELS[order.priority]}
           </span>
         </div>
@@ -165,7 +165,7 @@ export function WorkOrderDetailPage() {
           <Row label="Cliente">{order.customerName}</Row>
           <Row label="Vehículo">
             <span className="font-mono font-bold tracking-widest">{order.vehiclePlate}</span>
-            {vehicleLabel && <span className="ml-1 text-slate-500">— {vehicleLabel}</span>}
+            {vehicleLabel && <span className="ml-1 text-tc-text-secondary">— {vehicleLabel}</span>}
           </Row>
           <Row label="Odómetro">
             <span className="tabular-nums">{order.odometerKm.toLocaleString('es-AR')} km</span>
@@ -177,7 +177,7 @@ export function WorkOrderDetailPage() {
 
         <Section title="Asignación">
           <Row label="Mecánico">
-            {order.assignedMechanicName ?? <span className="text-slate-400">Sin asignar</span>}
+            {order.assignedMechanicName ?? <span className="text-tc-text-muted">Sin asignar</span>}
             {canAct && (mechanics?.length ?? 0) > 0 && (
               <FormSelect
                 label={order.assignedMechanicId ? 'Reasignar a' : 'Asignar a'}
@@ -216,7 +216,7 @@ export function WorkOrderDetailPage() {
       {/* Problema reportado */}
       {order.reportedIssue && (
         <Section title="Problema reportado">
-          <p className="text-sm text-slate-700">{order.reportedIssue}</p>
+          <p className="text-sm text-tc-text-secondary">{order.reportedIssue}</p>
         </Section>
       )}
 
@@ -228,7 +228,7 @@ export function WorkOrderDetailPage() {
               <thead>
                 <tr className="border-b border-tc-border bg-tc-stub-bg">
                   {['Descripción', 'Cant.', 'P. neto', 'IVA', 'Total línea'].map((h, i) => (
-                    <th key={i} className={`px-3 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${i > 0 ? 'text-right' : 'text-left'}`}>
+                    <th key={i} className={`px-3 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${i > 0 ? 'text-right' : 'text-left'}`}>
                       {h}
                     </th>
                   ))}
@@ -242,7 +242,7 @@ export function WorkOrderDetailPage() {
                     <td className="px-3 py-2.5 text-right tabular-nums text-tc-purple">
                       {order.subtotalNet != null ? fmtARS(item.unitNetPrice) : '—'}
                     </td>
-                    <td className="px-3 py-2.5 text-right text-slate-500">{item.vatRate}%</td>
+                    <td className="px-3 py-2.5 text-right text-tc-text-secondary">{item.vatRate}%</td>
                     <td className="px-3 py-2.5 text-right tabular-nums font-semibold text-tc-purple">
                       {order.total != null ? fmtARS(item.lineTotal) : '—'}
                     </td>
@@ -253,11 +253,11 @@ export function WorkOrderDetailPage() {
           </div>
           {order.total != null && (
             <div className="mt-3 border-t border-tc-perf pt-3 flex justify-end gap-6 text-sm">
-              <span className="text-slate-500">
-                Subtotal neto <span className="tabular-nums text-slate-800">{fmtARS(order.subtotalNet ?? 0)}</span>
+              <span className="text-tc-text-secondary">
+                Subtotal neto <span className="tabular-nums text-tc-text">{fmtARS(order.subtotalNet ?? 0)}</span>
               </span>
-              <span className="text-slate-500">
-                IVA <span className="tabular-nums text-slate-800">{fmtARS(order.vatAmount ?? 0)}</span>
+              <span className="text-tc-text-secondary">
+                IVA <span className="tabular-nums text-tc-text">{fmtARS(order.vatAmount ?? 0)}</span>
               </span>
               <span className="font-bold text-tc-purple tabular-nums">
                 Total {fmtARS(order.total)}
@@ -277,14 +277,14 @@ export function WorkOrderDetailPage() {
         <Section title="Notas">
           {order.internalNotes && (
             <div>
-              <p className="mb-1 text-[10px] font-bold tracking-wider uppercase text-slate-400">Internas</p>
-              <p className="text-sm text-slate-700">{order.internalNotes}</p>
+              <p className="mb-1 text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Internas</p>
+              <p className="text-sm text-tc-text-secondary">{order.internalNotes}</p>
             </div>
           )}
           {order.mechanicNotes && (
             <div className={order.internalNotes ? 'mt-3' : ''}>
-              <p className="mb-1 text-[10px] font-bold tracking-wider uppercase text-slate-400">Del mecánico</p>
-              <p className="text-sm text-slate-700">{order.mechanicNotes}</p>
+              <p className="mb-1 text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Del mecánico</p>
+              <p className="text-sm text-tc-text-secondary">{order.mechanicNotes}</p>
             </div>
           )}
         </Section>
@@ -298,10 +298,10 @@ export function WorkOrderDetailPage() {
       <Section title="Cobros">
         {payments && (
           <div className="mb-3 flex flex-wrap gap-6 text-sm border-b border-tc-perf pb-3">
-            <span className="text-slate-500">
-              Total <span className="tabular-nums font-semibold text-slate-800">{fmtARS(payments.total)}</span>
+            <span className="text-tc-text-secondary">
+              Total <span className="tabular-nums font-semibold text-tc-text">{fmtARS(payments.total)}</span>
             </span>
-            <span className="text-slate-500">
+            <span className="text-tc-text-secondary">
               Cobrado <span className="tabular-nums font-semibold text-tc-done-text">{fmtARS(payments.paid)}</span>
             </span>
             <span className={payments.balance > 0 ? 'text-amber-600' : 'text-tc-done-text'}>
@@ -315,7 +315,7 @@ export function WorkOrderDetailPage() {
             <thead>
               <tr className="border-b border-tc-border">
                 {['#', 'Método', 'Monto', 'Fecha', 'Estado', ''].map((h, i) => (
-                  <th key={i} className={`pb-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${i === 2 ? 'text-right px-3' : i > 0 ? 'px-3 text-left' : 'text-left'}`}>
+                  <th key={i} className={`pb-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${i === 2 ? 'text-right px-3' : i > 0 ? 'px-3 text-left' : 'text-left'}`}>
                     {h}
                   </th>
                 ))}
@@ -324,12 +324,12 @@ export function WorkOrderDetailPage() {
             <tbody className="divide-y divide-tc-border">
               {payments.payments.map(pay => (
                 <tr key={pay.id} className={pay.status === 'voided' ? 'opacity-60' : ''}>
-                  <td className="py-2 text-slate-400 tabular-nums">{String(pay.number).padStart(4, '0')}</td>
+                  <td className="py-2 text-tc-text-muted tabular-nums">{String(pay.number).padStart(4, '0')}</td>
                   <td className="py-2 px-3">{METHOD_LABELS[pay.method]}</td>
-                  <td className={`py-2 px-3 text-right tabular-nums font-semibold ${pay.status === 'voided' ? 'line-through text-slate-400' : 'text-tc-purple'}`}>
+                  <td className={`py-2 px-3 text-right tabular-nums font-semibold ${pay.status === 'voided' ? 'line-through text-tc-text-muted' : 'text-tc-purple'}`}>
                     {fmtARS(pay.amount)}
                   </td>
-                  <td className="py-2 px-3 text-slate-500 text-xs">
+                  <td className="py-2 px-3 text-tc-text-secondary text-xs">
                     {new Date(pay.paidAt).toLocaleDateString('es-AR')}
                   </td>
                   <td className="py-2 px-3">
@@ -362,7 +362,7 @@ export function WorkOrderDetailPage() {
         )}
 
         {!payments?.payments.length && (
-          <p className="mb-3 text-sm text-slate-400">Sin cobros registrados.</p>
+          <p className="mb-3 text-sm text-tc-text-muted">Sin cobros registrados.</p>
         )}
 
         {canAct && (payments?.balance ?? 0) > 0 && (
@@ -430,7 +430,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <div className="border border-tc-border bg-white overflow-hidden">
       <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">{title}</span>
+        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">{title}</span>
       </div>
       <div className="p-4">{children}</div>
     </div>
@@ -440,8 +440,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between py-1.5 text-sm border-b border-tc-border last:border-0">
-      <span className="text-xs font-bold tracking-wider uppercase text-slate-400">{label}</span>
-      <span className="text-slate-800">{children}</span>
+      <span className="text-xs font-bold tracking-wider uppercase text-tc-text-muted">{label}</span>
+      <span className="text-tc-text">{children}</span>
     </div>
   )
 }
@@ -459,7 +459,7 @@ function VoidPaymentDialog({ onConfirm, onClose }: { onConfirm: (r: string) => v
   return (
     <Modal title="Anular cobro" onClose={onClose} className="max-w-sm">
       <div className="space-y-4">
-        <p className="text-sm text-slate-600">Ingresá el motivo de la anulación:</p>
+        <p className="text-sm text-tc-text-secondary">Ingresá el motivo de la anulación:</p>
         <FormTextarea
           label="Motivo"
           value={reason}

@@ -30,7 +30,7 @@ export function InvoicingPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Facturación Electrónica</h1>
+      <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Facturación Electrónica</h1>
 
       <InvoicingTabs />
 
@@ -55,8 +55,8 @@ export function InvoicingPage() {
         </div>
       ) : !data?.items.length ? (
         <div className="border border-dashed border-tc-border px-6 py-12 text-center">
-          <p className="mb-1 text-sm font-medium text-slate-600">No hay facturas todavía</p>
-          <p className="mb-4 text-xs text-slate-400">Para emitir facturas electrónicas, primero configurá el certificado ARCA.</p>
+          <p className="mb-1 text-sm font-medium text-tc-text-secondary">No hay facturas todavía</p>
+          <p className="mb-4 text-xs text-tc-text-muted">Para emitir facturas electrónicas, primero configurá el certificado ARCA.</p>
           <NavLink
             to="/app/invoicing/setup"
             className="inline-flex items-center gap-1.5 border border-tc-purple bg-tc-purple px-4 py-2 text-xs font-bold tracking-wider uppercase text-white hover:bg-tc-purple-mid transition-colors"
@@ -69,18 +69,18 @@ export function InvoicingPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-tc-stub-bg border-b border-tc-border">
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Nº</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Tipo</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Origen</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</th>
-                <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Total</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Fecha</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nº</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Tipo</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Origen</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
+                <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Total</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
               </tr>
             </thead>
             <tbody>
               {data.items.map(inv => (
                 <tr key={inv.id} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                  <td className="px-4 py-2.5 font-mono text-slate-800">
+                  <td className="px-4 py-2.5 font-mono text-tc-text">
                     {inv.number ?? '—'}
                     {inv.isCredit && (
                       <span className="ml-2 border border-amber-300 px-1 py-0.5 text-[10px] font-bold tracking-wider uppercase text-amber-700">
@@ -88,13 +88,13 @@ export function InvoicingPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-2.5 font-mono text-xs uppercase text-slate-600">Fcta. {inv.invoiceType}</td>
-                  <td className="px-4 py-2.5 text-slate-600 text-xs">{SOURCE_LABELS[inv.sourceType]}</td>
+                  <td className="px-4 py-2.5 font-mono text-xs uppercase text-tc-text-secondary">Fcta. {inv.invoiceType}</td>
+                  <td className="px-4 py-2.5 text-tc-text-secondary text-xs">{SOURCE_LABELS[inv.sourceType]}</td>
                   <td className="px-4 py-2.5">
                     <StatusBadge status={inv.status} label={STATUS_LABELS[inv.status]} />
                   </td>
                   <td className="px-4 py-2.5 text-right font-bold text-tc-purple tabular-nums">{fmtARS(inv.totalAmount)}</td>
-                  <td className="px-4 py-2.5 text-slate-500 tabular-nums">
+                  <td className="px-4 py-2.5 text-tc-text-secondary tabular-nums">
                     {new Date(inv.issuedAt).toLocaleDateString('es-AR')}
                   </td>
                 </tr>

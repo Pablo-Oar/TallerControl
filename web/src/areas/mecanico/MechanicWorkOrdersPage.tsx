@@ -31,7 +31,7 @@ export function MechanicWorkOrdersPage() {
 
   return (
     <div className="space-y-4 px-4 pb-6">
-      <h1 className="text-lg font-bold tracking-tight text-slate-900">Mis trabajos</h1>
+      <h1 className="text-lg font-bold tracking-tight text-tc-text">Mis trabajos</h1>
 
       {/* Pestañas: órdenes mías / sin asignar (doc 06 /m) */}
       <div role="tablist" aria-label="Mis trabajos" className="flex border-b border-tc-border">
@@ -44,7 +44,7 @@ export function MechanicWorkOrdersPage() {
             className={`min-h-[44px] flex-1 border-b-2 px-3 text-sm font-bold tracking-wider uppercase transition-colors ${
               tab === t.id
                 ? 'border-tc-purple text-tc-purple'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+                : 'border-transparent text-tc-text-secondary hover:text-tc-text-secondary'
             }`}
           >
             {t.label}
@@ -59,7 +59,7 @@ export function MechanicWorkOrdersPage() {
           className={`whitespace-nowrap border px-3 py-1 text-xs font-bold tracking-wider uppercase transition-colors ${
             statusFilter === ''
               ? 'border-tc-navy bg-tc-navy text-white'
-              : 'border-tc-border bg-white text-slate-600 hover:bg-tc-surface'
+              : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'
           }`}
         >
           Todos
@@ -71,7 +71,7 @@ export function MechanicWorkOrdersPage() {
             className={`whitespace-nowrap border px-3 py-1 text-xs font-bold tracking-wider uppercase transition-colors ${
               statusFilter === s
                 ? 'border-tc-navy bg-tc-navy text-white'
-                : 'border-tc-border bg-white text-slate-600 hover:bg-tc-surface'
+                : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'
             }`}
           >
             {STATUS_LABELS[s]}
@@ -96,7 +96,7 @@ export function MechanicWorkOrdersPage() {
       {data && (
         <div className="space-y-2">
           {data.items.length === 0 && (
-            <p className="border border-dashed border-tc-border px-4 py-8 text-center text-sm text-slate-400">
+            <p className="border border-dashed border-tc-border px-4 py-8 text-center text-sm text-tc-text-muted">
               {TABS.find(t => t.id === tab)!.empty}
             </p>
           )}
@@ -111,13 +111,13 @@ export function MechanicWorkOrdersPage() {
               <div className="flex-1 px-4 py-3">
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-sm text-slate-800">#{order.number}</span>
+                    <span className="font-mono font-bold text-sm text-tc-text">#{order.number}</span>
                     <StatusBadge status={order.status} label={STATUS_LABELS[order.status]} />
                   </div>
-                  <span className="text-xs text-slate-400 shrink-0">{PRIORITY_LABELS[order.priority]}</span>
+                  <span className="text-xs text-tc-text-muted shrink-0">{PRIORITY_LABELS[order.priority]}</span>
                 </div>
-                <p className="font-medium text-sm text-slate-800">{order.customerName}</p>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="font-medium text-sm text-tc-text">{order.customerName}</p>
+                <p className="text-xs text-tc-text-secondary mt-0.5">
                   <span className="font-mono tracking-widest">{order.vehiclePlate}</span>
                   {order.vehicleBrand && <> — {order.vehicleBrand} {order.vehicleModel}</>}
                 </p>

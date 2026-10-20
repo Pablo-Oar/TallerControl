@@ -72,8 +72,8 @@ export function VehicleDetailPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-mono text-xl font-bold tracking-widest text-slate-900">{vehicle.plate}</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="font-mono text-xl font-bold tracking-widest text-tc-text">{vehicle.plate}</h1>
+          <p className="mt-1 text-sm text-tc-text-secondary">
             {[vehicle.brand, vehicle.model, vehicle.versionName].filter(Boolean).join(' ') || 'Sin marca ni modelo'}
           </p>
         </div>
@@ -87,37 +87,37 @@ export function VehicleDetailPage() {
 
       <section className="border border-tc-border bg-white">
         <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Datos</span>
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Datos</span>
         </div>
         <dl className="grid grid-cols-2 gap-4 p-4 text-sm md:grid-cols-4">
           <div>
-            <dt className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Cliente</dt>
-            <dd className="text-slate-800">{vehicle.customerName}</dd>
+            <dt className="mb-1 text-[10px] font-bold uppercase tracking-wider text-tc-text-muted">Cliente</dt>
+            <dd className="text-tc-text">{vehicle.customerName}</dd>
           </div>
           <div>
-            <dt className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Kilometraje</dt>
-            <dd className="tabular-nums text-slate-800">{vehicle.odometerKm.toLocaleString('es-AR')} km</dd>
+            <dt className="mb-1 text-[10px] font-bold uppercase tracking-wider text-tc-text-muted">Kilometraje</dt>
+            <dd className="tabular-nums text-tc-text">{vehicle.odometerKm.toLocaleString('es-AR')} km</dd>
           </div>
           <div>
-            <dt className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Año</dt>
-            <dd className="tabular-nums text-slate-800">{vehicle.year ?? '—'}</dd>
+            <dt className="mb-1 text-[10px] font-bold uppercase tracking-wider text-tc-text-muted">Año</dt>
+            <dd className="tabular-nums text-tc-text">{vehicle.year ?? '—'}</dd>
           </div>
           <div>
-            <dt className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Color</dt>
-            <dd className="text-slate-800">{vehicle.color ?? '—'}</dd>
+            <dt className="mb-1 text-[10px] font-bold uppercase tracking-wider text-tc-text-muted">Color</dt>
+            <dd className="text-tc-text">{vehicle.color ?? '—'}</dd>
           </div>
         </dl>
       </section>
 
       <section className="border border-tc-border bg-white">
         <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
             Historial{total > 0 ? ` (${total})` : ''}
           </span>
         </div>
         <div className="p-4">
           {history.isLoading ? (
-            <p className="text-sm text-slate-400">Cargando historial…</p>
+            <p className="text-sm text-tc-text-muted">Cargando historial…</p>
           ) : (
             <Timeline items={items} label="Historial del vehículo" empty="Este vehículo todavía no tiene órdenes ni presupuestos." />
           )}

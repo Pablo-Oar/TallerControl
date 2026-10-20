@@ -11,8 +11,8 @@ import { FormField, FormSelect, FormTextarea } from '../../../components/ui/Form
 import { CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
+import { labelCls } from '../../../lib/styles'
 
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const itemSchema = z.object({
   kind: z.enum(['service', 'product', 'manual']),
@@ -193,7 +193,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
           </div>
 
           {fields.length === 0 && (
-            <p className="border border-dashed border-tc-border px-4 py-3 text-xs text-slate-400">
+            <p className="border border-dashed border-tc-border px-4 py-3 text-xs text-tc-text-muted">
               Sin ítems todavía. Agregá al menos uno.
             </p>
           )}
@@ -202,7 +202,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
             {fields.map((field, index) => (
               <div key={field.id} className="border border-tc-border bg-white">
                 <div className="bg-tc-stub-bg border-b border-tc-border px-3 py-1.5 flex items-center justify-between">
-                  <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">
+                  <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
                     Ítem {index + 1}
                   </span>
                   <button
@@ -272,7 +272,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                     />
                   </div>
 
-                  <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs text-tc-text-secondary cursor-pointer">
                     <input type="checkbox" {...register(`items.${index}.requiredForApproval`)} className="accent-tc-purple" />
                     Requerido para aprobación
                   </label>

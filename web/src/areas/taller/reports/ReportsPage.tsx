@@ -4,6 +4,7 @@ import { reportsApi } from '../../../lib/api/reports'
 import { Button } from '../../../components/ui/Button'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { Tabs, TabPanel } from '../../../components/ui/Tabs'
+import { inputCls } from '../../../lib/styles'
 
 type Tab = 'revenue' | 'receivables' | 'stock' | 'purchases'
 
@@ -26,7 +27,6 @@ function monthAgoStr() {
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
 
-const inputCls = 'border border-tc-border bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-border-mid transition-colors'
 
 function downloadExcel(url: string, filename: string) {
   const a = document.createElement('a')
@@ -65,7 +65,7 @@ export function ReportsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Reportes</h1>
+      <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Reportes</h1>
 
       <Tabs
         label="Reportes"
@@ -79,11 +79,11 @@ export function ReportsPage() {
       {isDateRange && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Desde</span>
+            <span className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Desde</span>
             <input type="date" value={from} onChange={e => setFrom(e.target.value)} className={inputCls} />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Hasta</span>
+            <span className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Hasta</span>
             <input type="date" value={to} onChange={e => setTo(e.target.value)} className={inputCls} />
           </div>
         </div>
@@ -102,16 +102,16 @@ export function ReportsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-tc-stub-bg border-b border-tc-border">
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Fecha</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Cobros</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Monto</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Cobros</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Monto</th>
                 </tr>
               </thead>
               <tbody>
                 {revenueQuery.data.rows.map(r => (
                   <tr key={r.date} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                    <td className="px-4 py-2 text-slate-700 tabular-nums">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</td>
-                    <td className="px-4 py-2 text-right tabular-nums text-slate-600">{r.paymentCount}</td>
+                    <td className="px-4 py-2 text-tc-text-secondary tabular-nums">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</td>
+                    <td className="px-4 py-2 text-right tabular-nums text-tc-text-secondary">{r.paymentCount}</td>
                     <td className="px-4 py-2 text-right font-bold text-tc-purple tabular-nums">{fmtARS(r.amount)}</td>
                   </tr>
                 ))}
@@ -134,21 +134,21 @@ export function ReportsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-tc-stub-bg border-b border-tc-border">
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">N° OT</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Cliente</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Vehículo</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Saldo</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Fecha</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">N° OT</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Cliente</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Vehículo</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Saldo</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
                 </tr>
               </thead>
               <tbody>
                 {receivablesQuery.data.rows.map(r => (
                   <tr key={r.workOrderId} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                    <td className="px-4 py-2 font-mono font-bold tabular-nums text-slate-800">#{r.workOrderNumber}</td>
-                    <td className="px-4 py-2 text-slate-700">{r.customerName}</td>
-                    <td className="px-4 py-2 font-mono tracking-widest text-sm text-slate-600">{r.vehiclePlate}</td>
+                    <td className="px-4 py-2 font-mono font-bold tabular-nums text-tc-text">#{r.workOrderNumber}</td>
+                    <td className="px-4 py-2 text-tc-text-secondary">{r.customerName}</td>
+                    <td className="px-4 py-2 font-mono tracking-widest text-sm text-tc-text-secondary">{r.vehiclePlate}</td>
                     <td className="px-4 py-2 text-right font-bold text-tc-stamp-red tabular-nums">{fmtARS(r.balance)}</td>
-                    <td className="px-4 py-2 text-slate-500 tabular-nums">{new Date(r.createdAt).toLocaleDateString('es-AR')}</td>
+                    <td className="px-4 py-2 text-tc-text-secondary tabular-nums">{new Date(r.createdAt).toLocaleDateString('es-AR')}</td>
                   </tr>
                 ))}
               </tbody>
@@ -170,23 +170,23 @@ export function ReportsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-tc-stub-bg border-b border-tc-border">
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Nombre</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">SKU</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Tipo</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Stock</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Mín.</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Costo unit.</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nombre</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">SKU</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Tipo</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Stock</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Mín.</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Costo unit.</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
                 </tr>
               </thead>
               <tbody>
                 {stockQuery.data.rows.map(r => (
                   <tr key={r.catalogItemId} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                    <td className="px-4 py-2 font-medium text-slate-800">{r.name}</td>
-                    <td className="px-4 py-2 font-mono text-slate-500 text-xs">{r.sku ?? '—'}</td>
-                    <td className="px-4 py-2 text-slate-500 text-xs">{r.kind}</td>
-                    <td className="px-4 py-2 text-right tabular-nums text-slate-700">{r.stockQty}</td>
-                    <td className="px-4 py-2 text-right tabular-nums text-slate-400">{r.stockMin ?? '—'}</td>
+                    <td className="px-4 py-2 font-medium text-tc-text">{r.name}</td>
+                    <td className="px-4 py-2 font-mono text-tc-text-secondary text-xs">{r.sku ?? '—'}</td>
+                    <td className="px-4 py-2 text-tc-text-secondary text-xs">{r.kind}</td>
+                    <td className="px-4 py-2 text-right tabular-nums text-tc-text-secondary">{r.stockQty}</td>
+                    <td className="px-4 py-2 text-right tabular-nums text-tc-text-muted">{r.stockMin ?? '—'}</td>
                     <td className="px-4 py-2 text-right tabular-nums text-tc-purple font-medium">{fmtARS(r.unitCost)}</td>
                     <td className="px-4 py-2">
                       <StatusBadge status={r.isLowStock ? 'low_stock' : 'ok'} label={r.isLowStock ? 'Bajo' : 'OK'} />
@@ -212,21 +212,21 @@ export function ReportsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-tc-stub-bg border-b border-tc-border">
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Nº</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Proveedor</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Fecha</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Total</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nº</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Proveedor</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
+                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Total</th>
+                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
                 </tr>
               </thead>
               <tbody>
                 {purchasesQuery.data.rows.map(r => (
                   <tr key={r.purchaseId} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                    <td className="px-4 py-2 font-mono font-bold tabular-nums text-slate-800">#{r.purchaseNumber}</td>
-                    <td className="px-4 py-2 text-slate-700">{r.supplierName ?? '—'}</td>
-                    <td className="px-4 py-2 tabular-nums text-slate-600">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</td>
+                    <td className="px-4 py-2 font-mono font-bold tabular-nums text-tc-text">#{r.purchaseNumber}</td>
+                    <td className="px-4 py-2 text-tc-text-secondary">{r.supplierName ?? '—'}</td>
+                    <td className="px-4 py-2 tabular-nums text-tc-text-secondary">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</td>
                     <td className="px-4 py-2 text-right font-bold text-tc-purple tabular-nums">{fmtARS(r.total)}</td>
-                    <td className="px-4 py-2 text-xs text-slate-500">{r.status}</td>
+                    <td className="px-4 py-2 text-xs text-tc-text-secondary">{r.status}</td>
                   </tr>
                 ))}
               </tbody>
@@ -252,7 +252,7 @@ function ReportSection({
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-4">
         {summary && (
-          <p className="text-sm font-bold text-slate-700">{summary}</p>
+          <p className="text-sm font-bold text-tc-text-secondary">{summary}</p>
         )}
         <Button
           variant="secondary"

@@ -12,7 +12,7 @@ const variants = {
   primary:
     'bg-tc-purple text-white hover:bg-tc-purple-mid focus-visible:ring-tc-purple border border-tc-purple',
   secondary:
-    'bg-white text-slate-700 border border-tc-border hover:bg-tc-surface focus-visible:ring-tc-navy-text',
+    'bg-white text-tc-text-secondary border border-tc-border hover:bg-tc-surface focus-visible:ring-tc-navy-text',
   danger:
     'bg-tc-stamp-red text-white hover:bg-red-700 focus-visible:ring-tc-stamp-red border border-tc-stamp-red',
   ghost:

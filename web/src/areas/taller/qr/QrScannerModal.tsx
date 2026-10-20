@@ -65,21 +65,21 @@ export function QrScannerModal({ onClose }: Props) {
       {result && (
         <div className="mt-4 space-y-2 border border-tc-border bg-tc-surface p-4">
           <div className="flex items-center justify-between">
-            <span className="font-mono font-semibold tracking-widest text-slate-800">{result.code}</span>
+            <span className="font-mono font-semibold tracking-widest text-tc-text">{result.code}</span>
             <StatusBadge status={result.status} label={(STATUS_LABELS[result.status] ?? result.status).toUpperCase()} />
           </div>
 
           {result.vehicleId ? (
             <>
-              <p className="text-sm text-slate-700">
+              <p className="text-sm text-tc-text-secondary">
                 <span className="font-medium">Patente:</span>{' '}
                 <span className="font-mono">{result.vehiclePlate ?? '—'}</span>
               </p>
-              <p className="text-sm text-slate-700">
+              <p className="text-sm text-tc-text-secondary">
                 <span className="font-medium">Vehículo:</span>{' '}
                 {[result.vehicleBrand, result.vehicleModel].filter(Boolean).join(' ') || '—'}
               </p>
-              <p className="text-sm text-slate-700">
+              <p className="text-sm text-tc-text-secondary">
                 <span className="font-medium">Cliente:</span>{' '}
                 {result.customerName ?? '—'}
               </p>
@@ -94,7 +94,7 @@ export function QrScannerModal({ onClose }: Props) {
               </div>
             </>
           ) : (
-            <p className="text-sm text-slate-500">Esta tarjeta no tiene vehículo asignado.</p>
+            <p className="text-sm text-tc-text-secondary">Esta tarjeta no tiene vehículo asignado.</p>
           )}
         </div>
       )}

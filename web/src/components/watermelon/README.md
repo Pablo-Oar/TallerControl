@@ -26,3 +26,7 @@
 - `floating-input`: **no se vendoreó.** F1 implementa `components/ui/FormField.tsx` propio con la idea de etiqueta flotante (por CSS, sin `motion`), porque el código original tenía los defectos listados arriba. Sin archivo en esta carpeta, sin dependencias nuevas.
 - `draw-signature`: **no se vendoreó.** F1 implementa `components/ui/SignaturePad.tsx` propio (Pointer Events, trazo suavizado, PNG con fondo blanco, `clear()`/`toBlob()` por ref), porque el original exige `next-themes`, `react-use-measure` y `react-icons`.
 - Button animado: `components/ui/Button.tsx` incorpora el brillo de `shimmer-button` (idea portada, sin código vendored).
+- `dialog-stack`, `edit-profile` (F2): **no se vendorearon** (exigen motion, lucide, hugeicons). `Modal.tsx` y `EditDialog.tsx` son propios (pila, foco, `inert`, hoja inferior en móvil).
+- `fluid-tabs`, `edit-badge` (F3): **no se vendorearon** (exigen react-icons). `Tabs.tsx`/`TabNav` y `EditableStatusBadge.tsx` son propios, con indicador por CSS.
+- `activities-card` (F4): **no se vendoreó** (exige motion y react-icons). `Timeline.tsx` es propio.
+- Cierre (F5, 20/10/2026): esta carpeta no contiene código instalado; solo documentación y licencia. Ningún archivo de `areas/**` importa de acá (T-UI-08). Versión de la CLI usada en los spikes: `shadcn@latest` (19/10/2026).

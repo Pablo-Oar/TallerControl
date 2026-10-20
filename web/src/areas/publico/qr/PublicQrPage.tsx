@@ -47,9 +47,9 @@ export function PublicQrPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-tc-navy px-4 text-center">
         <div className="border border-tc-border bg-white p-8 max-w-sm w-full">
-          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 mb-2">Error</p>
-          <p className="font-bold text-slate-900">Tarjeta QR no válida</p>
-          <p className="mt-2 text-sm text-slate-500">Este código QR no está registrado o fue revocado.</p>
+          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted mb-2">Error</p>
+          <p className="font-bold text-tc-text">Tarjeta QR no válida</p>
+          <p className="mt-2 text-sm text-tc-text-secondary">Este código QR no está registrado o fue revocado.</p>
         </div>
       </div>
     )
@@ -59,9 +59,9 @@ export function PublicQrPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-tc-navy px-4 text-center">
         <div className="border border-tc-border bg-white p-8 max-w-sm w-full">
-          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 mb-2">{scanData.workshop.name}</p>
-          <p className="font-bold text-slate-900">Tarjeta no asignada</p>
-          <p className="mt-2 text-sm text-slate-500">Esta tarjeta QR aún no está vinculada a un vehículo.</p>
+          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted mb-2">{scanData.workshop.name}</p>
+          <p className="font-bold text-tc-text">Tarjeta no asignada</p>
+          <p className="mt-2 text-sm text-tc-text-secondary">Esta tarjeta QR aún no está vinculada a un vehículo.</p>
         </div>
       </div>
     )
@@ -120,14 +120,14 @@ export function PublicQrPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-tc-navy px-4 py-8">
       <div className="w-full max-w-sm border border-tc-border bg-white overflow-hidden">
         <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3">
-          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">
+          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
             {scanData.workshop.name}
           </p>
         </div>
         <div className="px-6 py-6 space-y-5">
           <div>
-            <h1 className="text-lg font-bold tracking-tight text-slate-900">Portal del dueño</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <h1 className="text-lg font-bold tracking-tight text-tc-text">Portal del dueño</h1>
+            <p className="mt-1 text-sm text-tc-text-secondary">
               Verificá que sos el dueño del vehículo para ver su historial.
             </p>
           </div>
@@ -172,11 +172,11 @@ export function PublicQrPage() {
           {step === 'otp' && (
             <form onSubmit={handleOtp} className="space-y-4">
               {customerCode ? (
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-tc-text-secondary">
                   Ingresá nuevamente tu código de acceso del taller ({customerCode.length} caracteres).
                 </p>
               ) : (
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-tc-text-secondary">
                   Te enviamos un código de 6 dígitos por email. Ingresalo acá.
                 </p>
               )}
@@ -199,7 +199,7 @@ export function PublicQrPage() {
               </button>
               <button
                 type="button"
-                className="w-full text-xs font-bold tracking-wider uppercase text-slate-400 hover:text-slate-600"
+                className="w-full text-xs font-bold tracking-wider uppercase text-tc-text-muted hover:text-tc-text-secondary"
                 onClick={() => { setStep('challenge'); setOtp(''); setError(null) }}
               >
                 ← Volver
@@ -236,7 +236,7 @@ export function PublicQrPage() {
               </button>
               <button
                 type="button"
-                className="w-full text-xs font-bold tracking-wider uppercase text-slate-400 hover:text-slate-600"
+                className="w-full text-xs font-bold tracking-wider uppercase text-tc-text-muted hover:text-tc-text-secondary"
                 onClick={() => { setStep('scan'); setError(null) }}
               >
                 ← Volver
@@ -258,7 +258,7 @@ export function PublicQrPage() {
             <div className="pt-1 text-center">
               <button
                 type="button"
-                className="text-xs text-slate-400 hover:text-amber-600 transition-colors"
+                className="text-xs text-tc-text-muted hover:text-amber-600 transition-colors"
                 onClick={() => { setStep('found-keys'); setError(null) }}
               >
                 Encontré estas llaves — no soy el dueño
@@ -267,7 +267,7 @@ export function PublicQrPage() {
           )}
         </div>
       </div>
-      <p className="mt-4 text-center text-xs text-slate-500">
+      <p className="mt-4 text-center text-xs text-tc-text-secondary">
         <Link to="/privacidad" className="hover:text-slate-300 transition-colors">
           Aviso de privacidad
         </Link>

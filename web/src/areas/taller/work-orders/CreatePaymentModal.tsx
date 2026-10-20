@@ -52,7 +52,7 @@ export function CreatePaymentModal({ workOrderId, balance, onSuccess, onClose }:
   return (
     <Modal title="Registrar cobro" onClose={onClose} className="max-w-sm">
       <div className="mb-4 flex items-center justify-between border border-tc-border bg-tc-stub-bg px-4 py-2.5">
-        <span className="text-xs font-bold tracking-wider uppercase text-slate-400">Saldo pendiente</span>
+        <span className="text-xs font-bold tracking-wider uppercase text-tc-text-muted">Saldo pendiente</span>
         <span className="tabular-nums font-bold text-tc-purple">{fmtARS(balance)}</span>
       </div>
 

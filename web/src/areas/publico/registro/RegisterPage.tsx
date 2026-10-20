@@ -59,18 +59,18 @@ export function RegisterPage() {
       <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4">
         <div className="w-full max-w-sm border border-tc-border bg-white">
           <div className="border-b border-tc-border bg-tc-stub-bg px-6 py-3">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">TallerControl</span>
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">TallerControl</span>
           </div>
           <div className="px-6 py-8 text-center">
-            <p className="mb-3 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Verificación pendiente</p>
-            <h1 className="mb-3 text-xl font-bold text-slate-900">Verificá tu email</h1>
-            <p className="text-sm text-slate-600">
+            <p className="mb-3 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Verificación pendiente</p>
+            <h1 className="mb-3 text-xl font-bold text-tc-text">Verificá tu email</h1>
+            <p className="text-sm text-tc-text-secondary">
               Te enviamos un enlace de verificación a{' '}
-              <span className="font-bold text-slate-800">{submittedEmail}</span>.
+              <span className="font-bold text-tc-text">{submittedEmail}</span>.
               Hacé clic en el enlace para activar tu cuenta.
             </p>
-            <p className="mt-4 text-xs text-slate-400">¿No llegó? Revisá la carpeta de spam.</p>
-            <p className="mt-6 text-sm text-slate-500">
+            <p className="mt-4 text-xs text-tc-text-muted">¿No llegó? Revisá la carpeta de spam.</p>
+            <p className="mt-6 text-sm text-tc-text-secondary">
               <Link to="/login" className="text-tc-purple hover:opacity-70">
                 Volver al inicio de sesión
               </Link>
@@ -85,11 +85,11 @@ export function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4 py-8">
       <div className="w-full max-w-md border border-tc-border bg-white">
         <div className="border-b border-tc-border bg-tc-stub-bg px-6 py-3">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">TallerControl</span>
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">TallerControl</span>
         </div>
         <div className="px-6 py-8">
-          <h1 className="mb-1 text-xl font-bold tracking-tight text-slate-900">Crear cuenta</h1>
-          <p className="mb-6 text-sm text-slate-500">Empezá gratis — sin tarjeta de crédito.</p>
+          <h1 className="mb-1 text-xl font-bold tracking-tight text-tc-text">Crear cuenta</h1>
+          <p className="mb-6 text-sm text-tc-text-secondary">Empezá gratis — sin tarjeta de crédito.</p>
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
             <FormField
               label="Nombre del taller"
@@ -139,7 +139,7 @@ export function RegisterPage() {
               Crear cuenta
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-slate-500">
+          <p className="mt-4 text-center text-sm text-tc-text-secondary">
             ¿Ya tenés cuenta?{' '}
             <Link to="/login" className="text-tc-purple hover:opacity-70">
               Iniciá sesión

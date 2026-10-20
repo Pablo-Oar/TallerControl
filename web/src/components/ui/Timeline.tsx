@@ -49,7 +49,7 @@ function Detail({ text }: { text: string }) {
   const [open, setOpen] = useState(false)
   const long = text.length > COLLAPSE_OVER
   return (
-    <div className="mt-1 text-sm text-slate-600">
+    <div className="mt-1 text-sm text-tc-text-secondary">
       <p className={cn(long && !open && 'line-clamp-2')}>{text}</p>
       {long && (
         <button
@@ -77,7 +77,7 @@ interface Props {
 }
 
 export function Timeline({ items, empty = 'Sin movimientos todavía.', showTime = true, label, className }: Props) {
-  if (items.length === 0) return <p className="text-sm text-slate-400">{empty}</p>
+  if (items.length === 0) return <p className="text-sm text-tc-text-muted">{empty}</p>
   return (
     <ol aria-label={label} className={cn('relative space-y-4 border-l border-tc-border pl-5', className)}>
       {items.map(item => {
@@ -89,7 +89,7 @@ export function Timeline({ items, empty = 'Sin movimientos todavía.', showTime 
               className={cn('absolute top-1.5 h-2.5 w-2.5', MARKER[kind], item.emphasis ? '-left-[29px]' : '-left-[25px]')}
             />
             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-              <div className="flex flex-wrap items-baseline gap-x-2 text-sm text-slate-800">
+              <div className="flex flex-wrap items-baseline gap-x-2 text-sm text-tc-text">
                 {item.href ? (
                   <Link to={item.href} className="font-semibold text-tc-purple hover:text-tc-purple-mid">
                     {item.title}
@@ -97,11 +97,11 @@ export function Timeline({ items, empty = 'Sin movimientos todavía.', showTime 
                 ) : (
                   <span className="font-semibold">{item.title}</span>
                 )}
-                {item.author && <span className="text-xs text-slate-400">por {item.author}</span>}
+                {item.author && <span className="text-xs text-tc-text-muted">por {item.author}</span>}
               </div>
               <div className="flex items-center gap-2">
                 {item.badge}
-                <time dateTime={item.date} className="text-xs tabular-nums text-slate-400">
+                <time dateTime={item.date} className="text-xs tabular-nums text-tc-text-muted">
                   {formatDate(item.date, showTime)}
                 </time>
               </div>

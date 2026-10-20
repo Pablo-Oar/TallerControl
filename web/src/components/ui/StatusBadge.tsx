@@ -20,12 +20,12 @@ const config: Record<string, { label: string; cls: string }> = {
   delivered:         { label: 'ENTREGADA',    cls: 'border border-teal-300 bg-teal-50 text-teal-700' },
   cancelled:         { label: 'ANULADA',      cls: 'border border-tc-void-border bg-white text-tc-void-text line-through' },
   // Quotes
-  draft:             { label: 'BORRADOR',     cls: 'border border-slate-300 bg-slate-50 text-slate-500' },
+  draft:             { label: 'BORRADOR',     cls: 'border border-slate-300 bg-slate-50 text-tc-text-secondary' },
   sent:              { label: 'ENVIADO',      cls: 'border border-tc-inprog-border bg-tc-inprog-bg text-tc-inprog-text' },
   approved:          { label: 'APROBADO',     cls: 'border border-tc-done-border bg-tc-done-bg text-tc-done-text' },
   partially_approved:{ label: 'PARCIAL',      cls: 'border border-teal-300 bg-teal-50 text-teal-700' },
   rejected:          { label: 'RECHAZADO',    cls: 'border border-red-300 bg-red-50 text-red-700' },
-  expired:           { label: 'VENCIDO',      cls: 'border border-slate-300 bg-slate-50 text-slate-500' },
+  expired:           { label: 'VENCIDO',      cls: 'border border-slate-300 bg-slate-50 text-tc-text-secondary' },
   converted:         { label: 'CONVERTIDO',   cls: 'border border-tc-purple bg-tc-purple-light text-tc-purple-mid' },
   // Appointments
   confirmed:         { label: 'CONFIRMADO',   cls: 'border border-tc-done-border bg-tc-done-bg text-tc-done-text' },
@@ -34,7 +34,7 @@ const config: Record<string, { label: string; cls: string }> = {
 export function StatusBadge({ status, label, className = '' }: StatusBadgeProps) {
   const found = config[status]
   const text = label ?? found?.label ?? status.toUpperCase().replace(/_/g, ' ')
-  const cls = found?.cls ?? 'border border-slate-300 bg-slate-50 text-slate-500'
+  const cls = found?.cls ?? 'border border-slate-300 bg-slate-50 text-tc-text-secondary'
 
   return (
     <span
