@@ -105,7 +105,10 @@ export async function createWorkOrder(
   await d.getByLabel(/^veh[ií]culo/i).selectOption({ index: 1 })
   if (item) {
     await d.getByRole('button', { name: /\+ agregar/i }).click()
-    if (item.catalogName) await d.getByLabel(/^ítem de catálogo/i).selectOption({ label: item.catalogName })
+    if (item.catalogName) {
+      await d.getByRole('combobox', { name: /^ítem de catálogo/i }).fill(item.catalogName)
+      await d.getByRole('option', { name: new RegExp(item.catalogName, 'i') }).first().click()
+    }
     if (item.description) await d.getByLabel(/^descripción/i).fill(item.description)
     if (item.price != null) await d.getByLabel(/^precio neto/i).fill(String(item.price))
     if (item.quantity != null) await d.getByLabel(/^cantidad/i).fill(String(item.quantity))

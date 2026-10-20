@@ -33,7 +33,7 @@ test.describe('E2E-02: Cliente → vehículo → OT → historial', () => {
     await createWorkOrder(page, customerName, plate)
 
     // La OT nueva queda Pendiente en la lista
-    await expect(workOrderRow(page, plate).getByText(/pendiente/i)).toBeVisible()
+    await expect(workOrderRow(page, plate).getByText(/pendiente/i).filter({ visible: true })).toBeVisible()
 
     // Detalle → el historial de estados muestra la creación
     await openWorkOrder(page, plate)

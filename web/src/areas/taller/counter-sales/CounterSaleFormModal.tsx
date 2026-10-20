@@ -2,12 +2,11 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { counterSalesApi, type CounterSaleDto } from '../../../lib/api/counterSales'
-import { catalogApi } from '../../../lib/api/catalog'
+import type { CatalogItemListDto } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
-import { FormField, FormSelect } from '../../../components/ui/FormField'
-import { CustomerPicker } from '../../../components/ui/EntityPickers'
+import { FormField } from '../../../components/ui/FormField'
+import { CatalogPicker, CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 import { labelCls } from '../../../lib/styles'
@@ -37,11 +36,6 @@ interface Props {
 export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
   const [serverError, setServerError] = useState<string | null>(null)
 
-  const { data: catalogPage } = useQuery({
-    queryKey: ['catalog-picker-products-services'],
-    queryFn: () => catalogApi.search(null, undefined, true, 1, 100),
-  })
-
   const { register, handleSubmit, control, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -52,8 +46,8 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
 
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
 
-  function handleCatalogSelect(index: number, catalogId: string) {
-    const item = catalogPage?.items.find(i => i.id === catalogId)
+  function handleCatalogSelect(index: number, item: CatalogItemListDto | null) {
+    setValue(`items.${index}.catalogItemId`, item?.id ?? '')
     if (item) {
       setValue(`items.${index}.description`, item.name)
       setValue(`items.${index}.unitPrice`, String(item.netPrice) as unknown as number)
@@ -120,22 +114,11 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
                 )}
               </div>
 
-              {catalogPage && catalogPage.items.length > 0 && (
-                <FormSelect
-                  label="Del catálogo"
-                  size="sm"
-                  {...register(`items.${idx}.catalogItemId`)}
-                  onChange={e => {
-                    register(`items.${idx}.catalogItemId`).onChange(e)
-                    if (e.target.value) handleCatalogSelect(idx, e.target.value)
-                  }}
-                >
-                  <option value="">— Ítem libre —</option>
-                  {catalogPage.items.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </FormSelect>
-              )}
+              <CatalogPicker
+                label="Del catálogo (opcional)"
+                size="sm"
+                onPick={item => handleCatalogSelect(idx, item)}
+              />
 
               <FormField
                 label="Descripción"
