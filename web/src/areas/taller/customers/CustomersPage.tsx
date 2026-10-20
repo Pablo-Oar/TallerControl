@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { customersApi, type CustomerDto, type CustomerListDto } from '../../../lib/api/customers'
 import { Button } from '../../../components/ui/Button'
 import { CustomerFormModal } from './CustomerFormModal'
+import { notify } from '../../../components/ui/dialogs'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
@@ -45,7 +46,7 @@ export function CustomersPage() {
       await customersApi.restore(c.id)
       queryClient.invalidateQueries({ queryKey: ['customers'] })
     } catch {
-      alert('No se pudo restaurar el cliente')
+      notify('No se pudo restaurar el cliente')
     }
   }
 
@@ -56,8 +57,8 @@ export function CustomersPage() {
         <Button onClick={() => setCreating(true)} size="sm">Nuevo cliente</Button>
       </div>
 
-      <div className="flex items-center gap-2">
-        <form onSubmit={handleSearch} className="flex flex-1 gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <form onSubmit={handleSearch} className="flex min-w-[14rem] flex-1 gap-2">
           <input
             type="search"
             value={q}
@@ -69,7 +70,7 @@ export function CustomersPage() {
         </form>
         <button
           onClick={() => { setShowDeleted(v => !v); setPage(1) }}
-          className={`border px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-colors ${showDeleted ? 'border-red-300 bg-red-50 text-red-700' : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'}`}
+          className={`shrink-0 whitespace-nowrap border px-3 py-2 text-xs font-bold tracking-wider uppercase transition-colors ${showDeleted ? 'border-red-300 bg-red-50 text-red-700' : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'}`}
         >
           {showDeleted ? 'Ocultar eliminados' : 'Ver eliminados'}
         </button>
@@ -127,7 +128,7 @@ export function CustomersPage() {
                           {fmtARS(c.balance)}
                         </span>
                       ) : (
-                        <span className="text-sm text-slate-300">—</span>
+                        <span className="text-sm text-tc-text-muted">—</span>
                       )}
                     </div>
                     <div className="flex h-full items-center justify-center border-l border-tc-border bg-tc-stub-bg">

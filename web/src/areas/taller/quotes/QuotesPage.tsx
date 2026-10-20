@@ -73,7 +73,7 @@ export function QuotesPage() {
         <>
           <div className="border border-tc-border bg-white overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-[3rem_1fr_7rem_6rem] md:grid-cols-[3rem_1fr_7rem_6rem_7rem_7rem] border-b border-tc-border bg-tc-stub-bg">
+            <div className="hidden md:grid md:grid-cols-[3rem_minmax(0,1fr)_7rem_6rem_7rem_7rem] border-b border-tc-border bg-tc-stub-bg">
               {[['#', '', false], ['Cliente / Vehículo', '', false], ['Estado', '', false], ['Total', 'text-right', false], ['Válido hasta', '', true], ['Creado', '', true]].map(([h, cls, hide], i) => (
                 <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${cls} ${hide ? 'hidden md:block' : ''}`}>
                   {h}
@@ -88,10 +88,10 @@ export function QuotesPage() {
                 {data.items.map((q: QuoteListDto) => (
                   <li
                     key={q.id}
-                    className="grid grid-cols-[3rem_1fr_7rem_6rem] md:grid-cols-[3rem_1fr_7rem_6rem_7rem_7rem] items-center hover:bg-tc-surface transition-colors"
+                    className="grid grid-cols-[auto_minmax(0,1fr)] md:grid-cols-[3rem_minmax(0,1fr)_7rem_6rem_7rem_7rem] items-center hover:bg-tc-surface transition-colors"
                   >
                     {/* Stub: number */}
-                    <div className="flex h-full items-center border-r border-tc-border bg-tc-stub-bg px-3 py-3">
+                    <div className="flex h-full min-h-[44px] items-center border-r border-tc-border bg-tc-stub-bg px-3 py-3">
                       <Link
                         to={`/app/quotes/${q.id}`}
                         className="text-xs font-bold tabular-nums text-tc-purple hover:text-tc-purple-mid"
@@ -101,18 +101,23 @@ export function QuotesPage() {
                     </div>
 
                     {/* Customer + vehicle */}
-                    <div className="px-4 py-3">
+                    <div className="min-w-0 px-3 py-3 md:px-4">
                       <p className="text-sm font-medium text-tc-text truncate">{q.customerName}</p>
                       <p className="mt-0.5 text-[11px] font-bold tracking-widest text-tc-text-muted font-mono">{q.vehiclePlate}</p>
+                      {/* Móvil: estado y total debajo, sin columnas que se recorten */}
+                      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 md:hidden">
+                        <StatusBadge status={q.status} />
+                        <span className="tabular-nums text-sm font-medium text-tc-purple">{fmtARS(q.total)}</span>
+                      </div>
                     </div>
 
                     {/* Status */}
-                    <div className="px-2 py-3">
+                    <div className="hidden md:block px-2 py-3">
                       <StatusBadge status={q.status} />
                     </div>
 
                     {/* Total */}
-                    <div className="px-4 py-3 text-right">
+                    <div className="hidden md:block px-4 py-3 text-right">
                       <span className="tabular-nums text-sm font-medium text-tc-purple">
                         {fmtARS(q.total)}
                       </span>

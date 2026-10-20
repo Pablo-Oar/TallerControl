@@ -80,7 +80,7 @@ export function WorkOrdersPage() {
           {/* Coupon stack */}
           <div className="border border-tc-border bg-white overflow-hidden">
             {/* Column header */}
-            <div className="grid grid-cols-[3rem_1fr_6rem_2.5rem] md:grid-cols-[3rem_1fr_6rem_6rem_5rem_5rem_2.5rem] items-center gap-0 border-b border-tc-border bg-tc-stub-bg px-0">
+            <div className="hidden md:grid md:grid-cols-[3rem_minmax(0,1fr)_7rem_6rem_5rem_5rem_2.5rem] items-center gap-0 border-b border-tc-border bg-tc-stub-bg px-0">
               <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">#</div>
               <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Cliente / Vehículo</div>
               <div className="px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</div>
@@ -141,26 +141,33 @@ function WorkOrderRow({ order }: { order: WorkOrderListDto }) {
   const vehicleLabel = [order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ') || order.vehiclePlate
 
   return (
-    <li className="grid grid-cols-[3rem_1fr_6rem_2.5rem] md:grid-cols-[3rem_1fr_6rem_6rem_5rem_5rem_2.5rem] items-center gap-0 hover:bg-tc-surface group transition-colors">
+    <li className="grid grid-cols-[auto_minmax(0,1fr)_2.75rem] md:grid-cols-[3rem_minmax(0,1fr)_7rem_6rem_5rem_5rem_2.5rem] items-center gap-0 hover:bg-tc-surface group transition-colors">
       {/* Stub: number */}
       <div className="flex h-full items-center border-r border-tc-border bg-tc-stub-bg px-3 py-3">
         <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{order.number}</span>
       </div>
 
       {/* Body: customer + vehicle */}
-      <div className="px-4 py-3">
+      <div className="min-w-0 px-3 py-3 md:px-4">
         <p className="text-sm font-medium text-tc-text truncate">{order.customerName}</p>
         <div className="mt-0.5 flex items-center gap-1.5">
           <span className="text-[11px] font-bold tracking-widest text-tc-text-muted font-mono">{order.vehiclePlate}</span>
           {vehicleLabel !== order.vehiclePlate && (
             <span className="text-xs text-tc-text-muted truncate">— {vehicleLabel}</span>
           )}
-          <span className="text-[10px] text-slate-300">· {PRIORITY_LABELS[order.priority]}</span>
+          <span className="shrink-0 text-xs text-tc-text-muted">· {PRIORITY_LABELS[order.priority]}</span>
+        </div>
+        {/* Móvil: estado y total debajo, así nada se recorta */}
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 md:hidden">
+          <StatusBadge status={order.status} />
+          {order.total != null && (
+            <span className="tabular-nums text-sm font-medium text-tc-purple">{fmtARS(order.total)}</span>
+          )}
         </div>
       </div>
 
       {/* Status stamp */}
-      <div className="px-2 py-3">
+      <div className="hidden md:block px-2 py-3">
         <StatusBadge status={order.status} />
       </div>
 
@@ -178,7 +185,7 @@ function WorkOrderRow({ order }: { order: WorkOrderListDto }) {
             {fmtARS(order.balance)}
           </span>
         ) : (
-          <span className="text-slate-300">—</span>
+          <span className="text-tc-text-muted">—</span>
         )}
       </div>
 
@@ -188,7 +195,7 @@ function WorkOrderRow({ order }: { order: WorkOrderListDto }) {
       </div>
 
       {/* Nav arrow */}
-      <div className="flex h-full items-center justify-center border-l border-tc-border bg-tc-stub-bg px-1">
+      <div className="flex h-full min-h-[44px] items-center justify-center border-l border-tc-border bg-tc-stub-bg px-1">
         <Link
           to={`/app/work-orders/${order.id}`}
           className="flex h-full w-full items-center justify-center text-tc-navy-text-dim hover:text-tc-purple transition-colors"

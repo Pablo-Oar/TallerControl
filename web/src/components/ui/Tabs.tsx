@@ -10,9 +10,9 @@ import { cn } from '@/lib/utils'
  * Propio, no se vendorea `fluid-tabs` (exige react-icons); el efecto "fluido" es un indicador con transición CSS.
  */
 
-const BAR = 'relative flex overflow-x-auto border-b border-tc-border'
+const BAR = 'relative flex overflow-x-auto border-b border-tc-border [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
 const TAB =
-  'flex min-h-[44px] shrink-0 items-center whitespace-nowrap px-4 text-xs font-bold uppercase tracking-wider transition-colors'
+  'flex min-h-[44px] shrink-0 items-center whitespace-nowrap px-3 text-xs sm:px-4 font-bold uppercase tracking-wider transition-colors'
 const ACTIVE = 'text-tc-purple'
 const IDLE = 'text-tc-text-secondary hover:text-tc-text'
 
@@ -29,6 +29,8 @@ function useIndicator(activeKey: string) {
     indicator.style.width = `${active.offsetWidth}px`
     indicator.style.transform = `translateX(${active.offsetLeft}px)`
     indicator.style.opacity = '1'
+    // En móvil la pestaña activa puede quedar fuera del ancho visible: se la trae a la vista.
+    active.scrollIntoView?.({ inline: 'nearest', block: 'nearest' })
   }, [])
 
   useLayoutEffect(() => {

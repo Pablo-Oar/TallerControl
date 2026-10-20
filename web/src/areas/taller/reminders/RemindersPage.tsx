@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { remindersApi, getReminderKindLabel, type ReminderListDto } from '../../../lib/api/reminders'
 import { Button } from '../../../components/ui/Button'
 import { ReminderFormModal } from './ReminderFormModal'
+import { notify } from '../../../components/ui/dialogs'
 
 export function RemindersPage() {
   const qc = useQueryClient()
@@ -29,7 +30,7 @@ export function RemindersPage() {
     onSuccess: (result) => {
       invalidate()
       setError(null)
-      alert(`Evaluación completada: ${result.notificationsCreated} notificaciones creadas.`)
+      notify(`Evaluación completada: ${result.notificationsCreated} avisos generados.`, 'info')
     },
     onError: (e: Error) => setError(e.message),
   })

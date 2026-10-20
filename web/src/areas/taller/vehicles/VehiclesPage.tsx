@@ -57,8 +57,8 @@ export function VehiclesPage() {
         <Button onClick={() => setCreating(true)} size="sm">Nuevo vehículo</Button>
       </div>
 
-      <div className="flex items-center gap-2">
-        <form onSubmit={handleSearch} className="flex flex-1 gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <form onSubmit={handleSearch} className="flex min-w-[14rem] flex-1 gap-2">
           <input
             type="search"
             value={q}
@@ -70,7 +70,7 @@ export function VehiclesPage() {
         </form>
         <button
           onClick={() => { setShowDeleted(v => !v); setPage(1) }}
-          className={`border px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-colors ${showDeleted ? 'border-red-300 bg-red-50 text-red-700' : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'}`}
+          className={`shrink-0 whitespace-nowrap border px-3 py-2 text-xs font-bold tracking-wider uppercase transition-colors ${showDeleted ? 'border-red-300 bg-red-50 text-red-700' : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'}`}
         >
           {showDeleted ? 'Ocultar eliminados' : 'Ver eliminados'}
         </button>
@@ -133,7 +133,7 @@ export function VehiclesPage() {
                     </div>
                     <div className="px-4 py-3">
                       <p className="text-sm text-tc-text-secondary truncate">
-                        {[v.brand, v.model].filter(Boolean).join(' ') || <span className="text-slate-300">—</span>}
+                        {[v.brand, v.model].filter(Boolean).join(' ') || <span className="text-tc-text-muted">—</span>}
                       </p>
                       <p className="mt-0.5 text-xs text-tc-text-muted truncate md:hidden">{v.customerName}</p>
                     </div>

@@ -144,8 +144,8 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
           )}
           <div className="space-y-2">
             {fields.map((field, index) => (
-              <div key={field.id} className="grid grid-cols-[1fr_5rem_6rem_4.5rem_2rem] gap-2 items-start border border-tc-border bg-tc-stub-bg p-2">
-                <div className="space-y-1.5">
+              <div key={field.id} className="grid grid-cols-3 gap-2 items-start border border-tc-border bg-tc-stub-bg p-2 sm:grid-cols-[minmax(0,1fr)_5rem_6rem_4.5rem_2rem]">
+                <div className="col-span-3 space-y-1.5 sm:col-span-1">
                   {catalogPage && catalogPage.items.length > 0 && (
                     <FormSelect
                       label="Catálogo (opcional)"
@@ -197,14 +197,15 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
                   inputClassName="tabular-nums"
                   {...register(`items.${index}.vatRate`)}
                 />
-                <div className="flex items-center justify-center pt-1">
+                <div className="col-span-3 flex items-center justify-end sm:col-span-1 sm:justify-center sm:pt-1">
                   {fields.length > 1 && (
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="text-xs text-tc-text-muted hover:text-red-600 transition-colors"
+                      aria-label="Quitar ítem"
+                      className="min-h-[44px] px-3 text-xs text-tc-text-muted hover:text-red-600 transition-colors sm:min-h-0 sm:px-0"
                     >
-                      ✕
+                      <span className="sm:hidden">Quitar ítem </span>✕
                     </button>
                   )}
                 </div>

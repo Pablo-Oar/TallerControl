@@ -67,7 +67,7 @@ export function CatalogPage() {
           value={q}
           onChange={e => setQ(e.target.value)}
           placeholder="Buscar por nombre o SKU…"
-          className="min-w-0 flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-border-mid"
+          className="min-w-0 basis-full border border-tc-border bg-white px-3 py-2 text-sm text-tc-text-secondary outline-none focus:border-tc-border-mid sm:basis-0 sm:flex-1"
         />
         <select
           value={kindFilter}
@@ -108,7 +108,7 @@ export function CatalogPage() {
         <>
           <div className="border border-tc-border bg-white overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-[1fr_5rem_5rem_6rem] md:grid-cols-[1fr_5rem_6rem_5rem_4rem_5rem_6rem] border-b border-tc-border bg-tc-stub-bg">
+            <div className="hidden md:grid md:grid-cols-[minmax(0,1fr)_5rem_6rem_6rem_4rem_5rem_8rem] border-b border-tc-border bg-tc-stub-bg">
               {[
                 ['Nombre', '', false],
                 ['Tipo', '', false],
@@ -134,18 +134,27 @@ export function CatalogPage() {
                   <li
                     key={item.id}
                     className={[
-                      'grid grid-cols-[1fr_5rem_5rem_6rem] md:grid-cols-[1fr_5rem_6rem_5rem_4rem_5rem_6rem] items-center hover:bg-tc-surface transition-colors',
+                      'grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(0,1fr)_5rem_6rem_6rem_4rem_5rem_8rem] items-center hover:bg-tc-surface transition-colors',
                       !item.isActive ? 'opacity-60' : '',
                     ].join(' ')}
                   >
-                    <div className="px-4 py-3">
+                    <div className="min-w-0 px-3 py-3 md:px-4">
                       <p className="text-sm font-medium text-tc-text truncate">{item.name}</p>
                       {!item.isActive && (
                         <span className="text-[10px] font-bold tracking-wider text-tc-text-muted uppercase">Inactivo</span>
                       )}
+                      {/* Móvil: tipo, precio y stock debajo del nombre */}
+                      <p className="mt-0.5 text-xs text-tc-text-secondary md:hidden">
+                        {KIND_LABELS[item.kind]} · <span className="tabular-nums text-tc-purple">{fmtARS(item.netPrice)}</span>
+                        {item.trackStock && (
+                          <span className={item.isLowStock ? ' font-semibold text-amber-600' : ''}>
+                            {' '}· Stock {item.stockQty}{item.isLowStock ? ' ▼' : ''}
+                          </span>
+                        )}
+                      </p>
                     </div>
 
-                    <div className="px-4 py-3">
+                    <div className="hidden md:block px-4 py-3">
                       <span className="text-xs text-tc-text-secondary">{KIND_LABELS[item.kind]}</span>
                     </div>
 
@@ -153,7 +162,7 @@ export function CatalogPage() {
                       <span className="font-mono text-xs text-tc-text-muted">{item.sku ?? '—'}</span>
                     </div>
 
-                    <div className="px-4 py-3 text-right">
+                    <div className="hidden md:block px-4 py-3 text-right">
                       <span className="tabular-nums text-sm text-tc-purple">{fmtARS(item.netPrice)}</span>
                     </div>
 
@@ -168,22 +177,22 @@ export function CatalogPage() {
                           {item.isLowStock && <span className="ml-0.5 text-[10px]">▼</span>}
                         </span>
                       ) : (
-                        <span className="text-slate-300">—</span>
+                        <span className="text-tc-text-muted">—</span>
                       )}
                     </div>
 
-                    <div className="flex h-full items-center justify-center gap-2 border-l border-tc-border bg-tc-stub-bg px-2">
+                    <div className="flex h-full items-stretch justify-center border-l border-tc-border bg-tc-stub-bg">
                       {item.trackStock && item.isActive && (
                         <button
                           onClick={() => setAdjusting(item)}
-                          className="text-[10px] font-bold tracking-wider uppercase text-amber-500 hover:text-amber-700 transition-colors"
+                          className="min-h-[44px] px-3 text-[11px] font-bold tracking-wider uppercase text-amber-600 hover:text-amber-800 transition-colors"
                         >
                           Stock
                         </button>
                       )}
                       <button
                         onClick={() => setEditing(item)}
-                        className="text-[10px] font-bold tracking-wider uppercase text-tc-navy-text-dim hover:text-tc-purple transition-colors"
+                        className="min-h-[44px] px-3 text-[11px] font-bold tracking-wider uppercase text-tc-navy-text-dim hover:text-tc-purple transition-colors"
                       >
                         Editar
                       </button>

@@ -139,7 +139,7 @@ export function QrCardsPage() {
       </div>
 
       <div className="border border-tc-border bg-white overflow-x-auto">
-        <table className="min-w-full text-sm">
+        <table className="w-full text-sm">
           <thead>
             <tr className="bg-tc-stub-bg border-b border-tc-border">
               <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Código</th>
@@ -300,59 +300,72 @@ function QrCardRow({
   onUnmarkLost: () => void
   onRevoke: () => void
 }) {
+  const btn = 'min-h-[44px] px-3 text-xs font-bold hover:opacity-70 sm:min-h-0 sm:px-0 sm:font-normal'
+  const actions = (
+    <>
+      {card.status === 'assigned' && (
+        <>
+          <button className={`${btn} text-amber-600`} onClick={onMarkLost}>
+            Marcar perdida
+          </button>
+          <button className={`${btn} text-tc-text-secondary`} onClick={onUnassign}>
+            Desasignar
+          </button>
+          <a
+            href={getQrCardPrintUrl(card.id)}
+            target="_blank"
+            rel="noreferrer"
+            className={`${btn} inline-flex items-center text-tc-purple`}
+          >
+            PDF
+          </a>
+        </>
+      )}
+      {card.status === 'lost' && (
+        <>
+          <button className={`${btn} text-green-700`} onClick={onUnmarkLost}>
+            Desmarcar perdida
+          </button>
+          <button className={`${btn} text-tc-text-secondary`} onClick={onUnassign}>
+            Desasignar
+          </button>
+        </>
+      )}
+      {card.status !== 'revoked' && (
+        <button className={`${btn} text-tc-stamp-red`} onClick={onRevoke}>
+          Revocar
+        </button>
+      )}
+    </>
+  )
+
   return (
-    <tr className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-      <td className="px-4 py-2.5 font-mono text-sm font-bold tracking-widest text-tc-text">
-        {card.code}
-      </td>
-      <td className="px-4 py-2.5">
-        <StatusBadge status={card.status} label={STATUS_LABELS[card.status]} />
-      </td>
-      <td className="px-4 py-2.5 font-mono tracking-widest text-sm text-tc-text-secondary">
-        {card.vehiclePlate ?? <span className="text-tc-text-muted font-sans tracking-normal">—</span>}
-      </td>
-      <td className="px-4 py-2.5 text-sm text-tc-text-secondary tabular-nums hidden sm:table-cell">
-        {card.assignedAt
-          ? new Date(card.assignedAt).toLocaleDateString('es-AR')
-          : <span className="text-tc-text-muted">—</span>}
-      </td>
-      <td className="px-4 py-2.5 text-right">
-        <div className="flex items-center justify-end gap-3 text-xs">
-          {card.status === 'assigned' && (
-            <>
-              <button className="text-amber-600 hover:opacity-70" onClick={onMarkLost}>
-                Marcar perdida
-              </button>
-              <button className="text-tc-text-secondary hover:opacity-70" onClick={onUnassign}>
-                Desasignar
-              </button>
-              <a
-                href={getQrCardPrintUrl(card.id)}
-                target="_blank"
-                rel="noreferrer"
-                className="text-tc-purple hover:opacity-70"
-              >
-                PDF
-              </a>
-            </>
-          )}
-          {card.status === 'lost' && (
-            <>
-              <button className="text-green-700 hover:opacity-70" onClick={onUnmarkLost}>
-                Desmarcar perdida
-              </button>
-              <button className="text-tc-text-secondary hover:opacity-70" onClick={onUnassign}>
-                Desasignar
-              </button>
-            </>
-          )}
-          {card.status !== 'revoked' && (
-            <button className="text-tc-stamp-red hover:opacity-70" onClick={onRevoke}>
-              Revocar
-            </button>
-          )}
-        </div>
-      </td>
-    </tr>
+    <>
+      <tr className="border-b border-tc-border hover:bg-tc-surface sm:last:border-0">
+        <td className="px-3 py-2.5 font-mono text-sm font-bold tracking-widest text-tc-text sm:px-4">
+          {card.code}
+        </td>
+        <td className="px-3 py-2.5 sm:px-4">
+          <StatusBadge status={card.status} label={STATUS_LABELS[card.status]} />
+        </td>
+        <td className="px-3 py-2.5 font-mono tracking-widest text-sm text-tc-text-secondary sm:px-4">
+          {card.vehiclePlate ?? <span className="text-tc-text-muted font-sans tracking-normal">—</span>}
+        </td>
+        <td className="px-4 py-2.5 text-sm text-tc-text-secondary tabular-nums hidden sm:table-cell">
+          {card.assignedAt
+            ? new Date(card.assignedAt).toLocaleDateString('es-AR')
+            : <span className="text-tc-text-muted">—</span>}
+        </td>
+        <td className="hidden px-4 py-2.5 text-right sm:table-cell">
+          <div className="flex items-center justify-end gap-3 text-xs whitespace-nowrap">{actions}</div>
+        </td>
+      </tr>
+      {/* Móvil: acciones en su propia fila, con objetivos táctiles de 44 px y sin scroll horizontal */}
+      <tr className="border-b border-tc-border last:border-0 sm:hidden">
+        <td colSpan={5} className="px-2 pb-1">
+          <div className="flex flex-wrap items-center">{actions}</div>
+        </td>
+      </tr>
+    </>
   )
 }

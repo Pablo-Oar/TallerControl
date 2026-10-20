@@ -6,6 +6,7 @@ import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { ApiError } from '../../../lib/api/client'
 import { PurchaseFormModal } from './PurchaseFormModal'
+import { confirmDialog, notify } from '../../../components/ui/dialogs'
 
 const STATUS_LABELS: Record<PurchaseStatus, string> = {
   draft: 'Borrador',
@@ -42,35 +43,35 @@ export function PurchasesPage() {
   }
 
   async function handleConfirm(p: PurchaseDto) {
-    if (!confirm('¿Confirmar la compra? Se actualizará el stock.')) return
+    if (!(await confirmDialog('¿Confirmar la compra? Se actualizará el stock.', { danger: false }))) return
     try {
       await purchasesApi.confirm(p.id, { accountId: null, version: p.version })
       queryClient.invalidateQueries({ queryKey: ['purchases'] })
       setSelected(null)
     } catch (err) {
-      alert(err instanceof ApiError ? err.detail : 'Error al confirmar la compra')
+      notify(err instanceof ApiError ? err.detail : 'Error al confirmar la compra')
     }
   }
 
   async function handleCancel(p: PurchaseDto) {
-    if (!confirm('¿Cancelar la compra?')) return
+    if (!(await confirmDialog('¿Cancelar la compra?', { danger: true }))) return
     try {
       await purchasesApi.cancel(p.id)
       queryClient.invalidateQueries({ queryKey: ['purchases'] })
       setSelected(null)
     } catch (err) {
-      alert(err instanceof ApiError ? err.detail : 'Error al cancelar la compra')
+      notify(err instanceof ApiError ? err.detail : 'Error al cancelar la compra')
     }
   }
 
   async function handleDelete(p: PurchaseDto) {
-    if (!confirm('¿Eliminar la compra?')) return
+    if (!(await confirmDialog('¿Eliminar la compra?', { danger: true }))) return
     try {
       await purchasesApi.delete(p.id, 'Eliminación manual')
       queryClient.invalidateQueries({ queryKey: ['purchases'] })
       setSelected(null)
     } catch (err) {
-      alert(err instanceof ApiError ? err.detail : 'Error al eliminar la compra')
+      notify(err instanceof ApiError ? err.detail : 'Error al eliminar la compra')
     }
   }
 

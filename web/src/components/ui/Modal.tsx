@@ -63,7 +63,9 @@ interface ModalProps {
   className?: string
 }
 
-export function Modal({ title, onClose, children, className = 'max-w-lg' }: ModalProps) {
+export function Modal({ title, onClose, children, className: rawClassName = 'max-w-lg' }: ModalProps) {
+  // El tope de ancho solo rige desde `sm`: en móvil el diálogo es una hoja a ancho completo.
+  const className = rawClassName.replace(/(^|\s)max-w-/g, '$1sm:max-w-')
   const id = useId()
   const titleId = `${id}-title`
   const panelRef = useRef<HTMLDivElement>(null)
