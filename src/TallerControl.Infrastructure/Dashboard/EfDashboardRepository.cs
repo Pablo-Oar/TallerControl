@@ -37,7 +37,7 @@ internal sealed class EfDashboardRepository : IDashboardRepository
 
         var lowStockItems = await _db.Set<CatalogItem>()
             .AsNoTracking()
-            .Where(c => c.TrackStock && c.StockMin.HasValue && c.StockQty < c.StockMin.Value)
+            .Where(c => c.TrackStock && (c.StockQty < 0 || (c.StockMin.HasValue && c.StockQty < c.StockMin.Value)))
             .CountAsync(ct);
 
         return new DashboardDto(totalReceivable, openWorkOrders, pendingQuotes, lowStockItems);

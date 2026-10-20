@@ -114,6 +114,14 @@ public class CatalogItemTests
         Assert.False(item.IsLowStock); // 10 >= 5
     }
 
+    [Fact(DisplayName = "IsLowStock: verdadero con stock negativo aunque no haya mínimo (D-07)")]
+    public void IsLowStock_verdadero_con_stock_negativo()
+    {
+        var item = new CatalogItem(TenantId, CatalogItemKind.Product, "Aceite", null, 100, 21, null, true, null, null, null);
+        item.ApplyStockMovement(-2);
+        Assert.True(item.IsLowStock);
+    }
+
     [Fact(DisplayName = "IsLowStock: falso si no hay mínimo configurado")]
     public void IsLowStock_falso_si_sin_minimo()
     {

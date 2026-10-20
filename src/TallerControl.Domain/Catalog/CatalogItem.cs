@@ -116,7 +116,8 @@ public sealed class CatalogItem : Entity, ITenantOwned, IVersioned, IAudited, IA
     /// <summary>
     /// ¿El stock está por debajo del mínimo? (D-07: alerta de stock negativo o bajo mínimo).
     /// </summary>
-    public bool IsLowStock => TrackStock && StockMin.HasValue && StockQty < StockMin.Value;
+    /// <summary>Stock bajo: por debajo del mínimo configurado, o negativo (D-07: se permite vender sin stock, con alerta).</summary>
+    public bool IsLowStock => TrackStock && (StockQty < 0 || (StockMin.HasValue && StockQty < StockMin.Value));
 
     public void SoftDelete(string? reason, Guid? deletedBy, DateTimeOffset deletedAt)
     {
