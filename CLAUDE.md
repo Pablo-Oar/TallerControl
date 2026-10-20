@@ -270,6 +270,8 @@ La API usa `ConnectionStrings:Default` con el rol **`tallercontrol_app`** (sin `
 
 **Pulido de escritorio (20/10/2026):** `Modal` mantiene `max-w-*` literal (Tailwind solo genera clases que aparecen escritas; un prefijo armado en runtime no existe) y usa `max-sm:max-w-none` para la hoja móvil; `StatusBadge` tiene ancho fijo (`w-28`) y texto centrado para alinear cualquier columna "Estado" (columnas de Órdenes/Presupuestos a 8rem); `SearchPicker` se abre al tocar/escribir/↓ y no por foco (el diálogo enfoca el primer campo y la lista tapaba el resto); `GET /reports/stock` daba 500 por un `OrderBy` sobre el record ya construido (T-REP-03). Si el reporte de Stock sigue fallando, la API en ejecución es anterior al fix: reiniciar `.\scripts\dev-api.ps1`.
 
+**Fotos según dispositivo (20/10/2026):** `WorkOrderPhotos` detecta el puntero (`matchMedia('(pointer: coarse)')`, sin `matchMedia` se asume táctil): en celular/tablet "Sacar foto" (cámara trasera) + "Desde la galería"; en escritorio un solo "Adjuntar imágenes" (varias a la vez y arrastrando) con miniaturas chicas. Los `input[type=file]` ocultos llevan `aria-hidden`. Los E2E del mecánico usan un contexto con `hasTouch`/`isMobile`.
+
 **Post-E8 — bugfixes en Develop (14–15/10/2026, commits `27d0d01` / `3395d74` / `b87f7a7` / `ab4dee8` / `a229bcb` / `e46bd2c` / `09a8c7d`):**
 - fix(api): `CatalogItemKind`, `WorkOrderStatus` y `QuoteStatus` como `string?` + `Enum.TryParse(ignoreCase: true)` en todos los endpoints de búsqueda — ASP.NET Core 10 minimal APIs son case-sensitive para enum query params.
 - fix(api): `DevelopmentSeeder` crea `Branch.CreateMain` para tenants que no la tenían; middleware `ForwardedHeaders` para Cloudflare tunnel; defaults en `appsettings.Development.json`.

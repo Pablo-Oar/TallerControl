@@ -41,7 +41,7 @@ test.describe('E2E-04: Mecánico móvil', () => {
     await ownerCtx.close()
 
     // Mecánico en viewport móvil (iPhone 14)
-    const mechCtx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+    const mechCtx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true })
     const m = await mechCtx.newPage()
     await loginAsMechanic(m)
 
