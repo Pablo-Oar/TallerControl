@@ -141,6 +141,25 @@ public sealed class CatalogEndpointsTests : IAsyncLifetime
 
     // ── T-CAT-02: GET /api/v1/catalog/{id} devuelve detalle ──────────────────
 
+    [Fact(DisplayName = "T-REP-03: GET /reports/stock lista los ítems con control de stock (no devuelve 500)")]
+    public async Task Reporte_de_stock_lista_items_con_control_de_stock()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CatalogWebApplicationFactory.OwnerEmail,
+            CatalogWebApplicationFactory.OwnerPassword);
+
+        var created = await PostCatalogItemAsync(client, "Item stock reporte", kind: "Product", trackStock: true);
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+
+        var resp = await client.GetAsync("/api/v1/reports/stock");
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+
+        var json = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        var rows = json.GetProperty("rows").EnumerateArray().ToList();
+        Assert.Contains(rows, r => r.GetProperty("name").GetString() == "Item stock reporte");
+        Assert.True(json.TryGetProperty("lowStockCount", out _));
+    }
+
     [Fact(DisplayName = "T-CAT-02: GET /catalog/{id} devuelve el detalle del ítem")]
     public async Task Get_item_devuelve_detalle()
     {

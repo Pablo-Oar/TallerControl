@@ -97,6 +97,8 @@ internal sealed class EfReportsRepository : IReportsRepository
         var rows = await _db.Set<CatalogItem>()
             .AsNoTracking()
             .Where(c => c.TrackStock)
+            // El orden va antes de la proyección: EF no traduce un OrderBy sobre el record ya construido.
+            .OrderBy(c => c.Name)
             .Select(c => new StockReportRow(
                 c.Id.ToString(),
                 c.Name,
@@ -107,7 +109,6 @@ internal sealed class EfReportsRepository : IReportsRepository
                 c.Cost ?? 0m,
                 // IsLowStock es una propiedad calculada de C#: EF no la traduce, se repite la condición.
                 c.TrackStock && c.StockMin != null && c.StockQty < c.StockMin))
-            .OrderBy(r => r.Name)
             .ToListAsync(ct);
 
         return new StockReportDto(rows, rows.Count(r => r.IsLowStock));
