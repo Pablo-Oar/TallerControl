@@ -157,7 +157,8 @@ export function SearchPicker<T>({
           setActive(0)
           setOpen(true)
         }}
-        onFocus={() => setOpen(true)}
+        // Se abre al tocar/escribir/↓, no por foco: el diálogo enfoca el primer campo solo y la lista taparía el resto.
+        onClick={() => setOpen(true)}
         onBlur={() => setOpen(false)}
         onKeyDown={onKeyDown}
       />
