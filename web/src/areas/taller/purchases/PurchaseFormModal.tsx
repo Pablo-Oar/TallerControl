@@ -5,7 +5,8 @@ import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
 import { purchasesApi, type PurchaseDto } from '../../../lib/api/purchases'
 import { suppliersApi } from '../../../lib/api/suppliers'
-import { catalogApi } from '../../../lib/api/catalog'
+import type { CatalogItemListDto } from '../../../lib/api/catalog'
+import { CatalogPicker } from '../../../components/ui/EntityPickers'
 import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
@@ -49,11 +50,6 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
     queryFn: () => suppliersApi.search(null, 1, 100),
   })
 
-  const { data: catalogPage } = useQuery({
-    queryKey: ['catalog-picker-products'],
-    queryFn: () => catalogApi.search(null, 'product', true, 1, 100),
-  })
-
   const { register, handleSubmit, control, setValue, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -70,8 +66,8 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
 
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
 
-  function handleCatalogSelect(index: number, catalogId: string) {
-    const item = catalogPage?.items.find(i => i.id === catalogId)
+  function handleCatalogSelect(index: number, item: CatalogItemListDto | null) {
+    setValue(`items.${index}.catalogItemId`, item?.id ?? '')
     if (item) {
       setValue(`items.${index}.description`, item.name)
       setValue(`items.${index}.unitCost`, String(item.netPrice) as unknown as number)
@@ -146,22 +142,12 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
             {fields.map((field, index) => (
               <div key={field.id} className="grid grid-cols-3 gap-2 items-start border border-tc-border bg-tc-stub-bg p-2 sm:grid-cols-[minmax(0,1fr)_5rem_6rem_4.5rem_2rem]">
                 <div className="col-span-3 space-y-1.5 sm:col-span-1">
-                  {catalogPage && catalogPage.items.length > 0 && (
-                    <FormSelect
-                      label="Catálogo (opcional)"
-                      size="sm"
-                      onChange={e => {
-                        setValue(`items.${index}.catalogItemId`, e.target.value)
-                        handleCatalogSelect(index, e.target.value)
-                      }}
-                      defaultValue=""
-                    >
-                      <option value="">Sin catálogo</option>
-                      {catalogPage.items.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </FormSelect>
-                  )}
+                  <CatalogPicker
+                    label="Catálogo (opcional)"
+                    kind="product"
+                    size="sm"
+                    onPick={item => handleCatalogSelect(index, item)}
+                  />
                   <FormField
                     label="Descripción del ítem"
                     size="sm"

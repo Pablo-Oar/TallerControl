@@ -5,10 +5,10 @@ import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
 import { quotesApi, type QuoteDto } from '../../../lib/api/quotes'
 import { customersApi } from '../../../lib/api/customers'
-import { catalogApi } from '../../../lib/api/catalog'
+import type { CatalogItemListDto } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
-import { CustomerPicker } from '../../../components/ui/EntityPickers'
+import { CatalogPicker, CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 import { labelCls } from '../../../lib/styles'
@@ -79,15 +79,12 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
     enabled: !!selectedCustomerId,
   })
 
-  const { data: catalogData } = useQuery({
-    queryKey: ['catalog-active'],
-    queryFn: () => catalogApi.search(null, null, true, 1, 100),
-  })
-
-  function handleSelectCatalogItem(index: number, catalogId: string) {
-    const item = catalogData?.items.find(c => c.id === catalogId)
-    if (!item) return
-    setValue(`items.${index}.catalogItemId`, catalogId)
+  function handleSelectCatalogItem(index: number, item: CatalogItemListDto | null) {
+    if (!item) {
+      setValue(`items.${index}.catalogItemId`, null)
+      return
+    }
+    setValue(`items.${index}.catalogItemId`, item.id)
     setValue(`items.${index}.description`, item.name)
     setValue(`items.${index}.unitNetPrice`, item.netPrice)
     setValue(`items.${index}.vatRate`, item.vatRate)
@@ -214,17 +211,12 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                 </div>
                 <div className="space-y-3 p-3">
                   <div className="grid grid-cols-2 gap-2">
-                    <FormSelect
+                    <CatalogPicker
                       label="Del catálogo"
                       size="sm"
-                      defaultValue=""
-                      onChange={e => handleSelectCatalogItem(index, e.target.value)}
-                    >
-                      <option value="">Sin catálogo</option>
-                      {catalogData?.items.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </FormSelect>
+                      initialId={field.catalogItemId ?? ''}
+                      onPick={item => handleSelectCatalogItem(index, item)}
+                    />
                     <FormSelect label="Tipo" size="sm" {...register(`items.${index}.kind`)}>
                       <option value="service">Servicio</option>
                       <option value="product">Producto</option>

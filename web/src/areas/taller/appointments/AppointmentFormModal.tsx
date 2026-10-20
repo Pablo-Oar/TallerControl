@@ -8,7 +8,7 @@ import { customersApi } from '../../../lib/api/customers'
 import { catalogApi } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
-import { CustomerPicker } from '../../../components/ui/EntityPickers'
+import { CatalogPicker, CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { labelCls } from '../../../lib/styles'
 
@@ -78,11 +78,6 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
     queryKey: ['customer', customerId],
     queryFn: () => customersApi.get(customerId),
     enabled: !isEdit && !!customerId,
-  })
-  const { data: catalogPage } = useQuery({
-    queryKey: ['catalog-services'],
-    queryFn: () => catalogApi.search(null, 'service', true, 1, 100),
-    enabled: !isEdit,
   })
   const vehicles = customerDetail?.vehicles ?? []
 
@@ -201,21 +196,17 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
                     )}
                   </div>
                   <div className="space-y-2 p-2">
-                    <FormSelect
-                      key={catalogPage ? 'loaded' : 'loading'}
+                    <CatalogPicker
                       label="Servicio del catálogo"
+                      kind="service"
                       requiredMark
                       size="sm"
                       error={errors.services?.[index]?.catalogItemId?.message}
-                      {...register(`services.${index}.catalogItemId`, {
-                        onChange: e => applyCatalogTiming(index, e.target.value),
-                      })}
-                    >
-                      <option value="">Seleccionar servicio…</option>
-                      {catalogPage?.items.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </FormSelect>
+                      onPick={item => {
+                        setValue(`services.${index}.catalogItemId`, item?.id ?? '', { shouldValidate: true })
+                        if (item) applyCatalogTiming(index, item.id)
+                      }}
+                    />
                     {missingDuration[index] && (
                       <p role="alert" className="border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs text-amber-900">
                         «{missingDuration[index]}» no tiene duración en el catálogo. Cargala en Catálogo → Editar para poder reservar el turno.

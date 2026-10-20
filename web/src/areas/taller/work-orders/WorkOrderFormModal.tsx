@@ -5,10 +5,10 @@ import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
 import { workOrdersApi, type WorkOrderPriority } from '../../../lib/api/workOrders'
 import { customersApi } from '../../../lib/api/customers'
-import { catalogApi, type CatalogItemKind } from '../../../lib/api/catalog'
+import type { CatalogItemListDto } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
-import { CustomerPicker } from '../../../components/ui/EntityPickers'
+import { CatalogPicker, CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 import { labelCls } from '../../../lib/styles'
@@ -66,15 +66,12 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
     enabled: !!selectedCustomerId,
   })
 
-  const { data: catalogData } = useQuery({
-    queryKey: ['catalog-active'],
-    queryFn: () => catalogApi.search(null, null, true, 1, 100),
-  })
-
-  function handleCatalogItemSelect(index: number, itemId: string) {
-    const item = catalogData?.items.find(i => i.id === itemId)
-    if (!item) return
-    setValue(`items.${index}.catalogItemId`, itemId)
+  function handleCatalogItemSelect(index: number, item: CatalogItemListDto | null) {
+    if (!item) {
+      setValue(`items.${index}.catalogItemId`, null)
+      return
+    }
+    setValue(`items.${index}.catalogItemId`, item.id)
     setValue(`items.${index}.description`, item.name)
     setValue(`items.${index}.unitNetPrice`, item.netPrice)
     setValue(`items.${index}.vatRate`, item.vatRate)
@@ -218,7 +215,6 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
                   index={index}
                   register={register}
                   errors={errors}
-                  catalogItems={catalogData?.items ?? []}
                   onSelectCatalog={handleCatalogItemSelect}
                   onRemove={() => remove(index)}
                 />
@@ -241,27 +237,16 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
 
 // ── Sub-componente de renglón ──────────────────────────────────────────────────
 
-interface CatalogItemOption {
-  id: string
-  name: string
-  kind: CatalogItemKind
-  netPrice: number
-  vatRate: number
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ItemRow({ index, register, errors, catalogItems, onSelectCatalog, onRemove }: {
+function ItemRow({ index, register, errors, onSelectCatalog, onRemove }: {
   index: number
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   register: any
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   errors: any
-  catalogItems: CatalogItemOption[]
-  onSelectCatalog: (index: number, id: string) => void
+  onSelectCatalog: (index: number, item: CatalogItemListDto | null) => void
   onRemove: () => void
 }) {
-  const catId = `wo-item-${index}-cat`
-
   return (
     <div className="border border-tc-border bg-tc-surface p-3">
       <div className="mb-2 flex items-center justify-between">
@@ -269,17 +254,11 @@ function ItemRow({ index, register, errors, catalogItems, onSelectCatalog, onRem
         <button type="button" onClick={onRemove} className="text-xs font-bold tracking-wider uppercase text-tc-stamp-red hover:opacity-70 transition-opacity">Quitar</button>
       </div>
       <div className="space-y-2">
-        <FormSelect
-          id={catId}
+        <CatalogPicker
           label="Ítem de catálogo (opcional)"
           size="sm"
-          onChange={e => { if (e.target.value) onSelectCatalog(index, e.target.value) }}
-        >
-          <option value="">— manual —</option>
-          {catalogItems.map(c => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </FormSelect>
+          onPick={item => onSelectCatalog(index, item)}
+        />
         <FormField
           label="Descripción"
           requiredMark
