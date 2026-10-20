@@ -38,7 +38,8 @@ export function StatusBadge({ status, label, className = '' }: StatusBadgeProps)
 
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold tracking-widest leading-none ${cls} ${className}`}
+      // Ancho fijo y texto centrado: los sellos de una columna "Estado" se alinean aunque el texto cambie.
+      className={`inline-flex w-28 shrink-0 items-center justify-center whitespace-nowrap px-2 py-0.5 text-center text-[10px] font-bold tracking-widest leading-none ${cls} ${className}`}
     >
       {text}
     </span>
