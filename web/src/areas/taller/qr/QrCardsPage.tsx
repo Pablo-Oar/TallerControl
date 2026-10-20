@@ -17,6 +17,7 @@ import { VehiclePicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { QrScannerModal } from './QrScannerModal'
+import { inputCls } from '../../../lib/styles'
 
 const STATUS_LABELS: Record<QrCardStatus, string> = {
   free: 'Libre',
@@ -25,7 +26,6 @@ const STATUS_LABELS: Record<QrCardStatus, string> = {
   revoked: 'Revocada',
 }
 
-const inputCls = 'border border-tc-border bg-white px-3 py-1.5 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
 
 export function QrCardsPage() {
   const qc = useQueryClient()
@@ -99,7 +99,7 @@ export function QrCardsPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Tarjetas QR</h1>
+        <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Tarjetas QR</h1>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" size="sm" onClick={() => setShowScannerModal(true)}>
             Escanear código
@@ -142,17 +142,17 @@ export function QrCardsPage() {
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-tc-stub-bg border-b border-tc-border">
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Código</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Vehículo</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 hidden sm:table-cell">Asignada</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Código</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Vehículo</th>
+              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden sm:table-cell">Asignada</th>
               <th className="px-4 py-2" />
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-400">Cargando…</td>
+                <td colSpan={5} className="px-4 py-10 text-center text-sm text-tc-text-muted">Cargando…</td>
               </tr>
             )}
             {data?.items.map((card) => (
@@ -167,7 +167,7 @@ export function QrCardsPage() {
             ))}
             {data?.items.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-400">
+                <td colSpan={5} className="px-4 py-10 text-center text-sm text-tc-text-muted">
                   No hay tarjetas.
                 </td>
               </tr>
@@ -257,7 +257,7 @@ export function QrCardsPage() {
       {revokeCardId && (
         <Modal title="Revocar tarjeta" onClose={() => setRevokeCardId(null)} className="max-w-sm">
           <div className="space-y-4">
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-tc-text-secondary">
               Esta acción es irreversible. Ingresá el motivo.
             </p>
             <FormTextarea
@@ -302,19 +302,19 @@ function QrCardRow({
 }) {
   return (
     <tr className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-      <td className="px-4 py-2.5 font-mono text-sm font-bold tracking-widest text-slate-800">
+      <td className="px-4 py-2.5 font-mono text-sm font-bold tracking-widest text-tc-text">
         {card.code}
       </td>
       <td className="px-4 py-2.5">
         <StatusBadge status={card.status} label={STATUS_LABELS[card.status]} />
       </td>
-      <td className="px-4 py-2.5 font-mono tracking-widest text-sm text-slate-600">
-        {card.vehiclePlate ?? <span className="text-slate-400 font-sans tracking-normal">—</span>}
+      <td className="px-4 py-2.5 font-mono tracking-widest text-sm text-tc-text-secondary">
+        {card.vehiclePlate ?? <span className="text-tc-text-muted font-sans tracking-normal">—</span>}
       </td>
-      <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums hidden sm:table-cell">
+      <td className="px-4 py-2.5 text-sm text-tc-text-secondary tabular-nums hidden sm:table-cell">
         {card.assignedAt
           ? new Date(card.assignedAt).toLocaleDateString('es-AR')
-          : <span className="text-slate-400">—</span>}
+          : <span className="text-tc-text-muted">—</span>}
       </td>
       <td className="px-4 py-2.5 text-right">
         <div className="flex items-center justify-end gap-3 text-xs">
@@ -323,7 +323,7 @@ function QrCardRow({
               <button className="text-amber-600 hover:opacity-70" onClick={onMarkLost}>
                 Marcar perdida
               </button>
-              <button className="text-slate-500 hover:opacity-70" onClick={onUnassign}>
+              <button className="text-tc-text-secondary hover:opacity-70" onClick={onUnassign}>
                 Desasignar
               </button>
               <a
@@ -341,7 +341,7 @@ function QrCardRow({
               <button className="text-green-700 hover:opacity-70" onClick={onUnmarkLost}>
                 Desmarcar perdida
               </button>
-              <button className="text-slate-500 hover:opacity-70" onClick={onUnassign}>
+              <button className="text-tc-text-secondary hover:opacity-70" onClick={onUnassign}>
                 Desasignar
               </button>
             </>

@@ -4,6 +4,7 @@ import { cashApi, type CashAccountDto, type CreateCashAccountRequest, type CashA
 import { Button } from '../../../components/ui/Button'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
+import { labelCls, fieldCls } from '../../../lib/styles'
 
 const KIND_LABELS: Record<CashAccountKind, string> = {
   cash: 'Efectivo',
@@ -11,8 +12,6 @@ const KIND_LABELS: Record<CashAccountKind, string> = {
   digital: 'Digital',
 }
 
-const inputCls = 'w-full border border-tc-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 export function CashPage() {
   const queryClient = useQueryClient()
@@ -75,7 +74,7 @@ export function CashPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Cuentas de Caja</h1>
+        <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Cuentas de Caja</h1>
         <Button size="sm" onClick={() => setCreating(true)}>Nueva cuenta</Button>
       </div>
 
@@ -94,7 +93,7 @@ export function CashPage() {
                 onChange={e => setNewName(e.target.value)}
                 placeholder="Nombre de la cuenta"
                 required
-                className={inputCls}
+                className={fieldCls}
               />
             </div>
             <div>
@@ -103,7 +102,7 @@ export function CashPage() {
                 id="cash-kind"
                 value={newKind}
                 onChange={e => setNewKind(e.target.value as CashAccountKind)}
-                className={inputCls}
+                className={fieldCls}
               >
                 <option value="cash">Efectivo</option>
                 <option value="bank">Banco</option>
@@ -127,7 +126,7 @@ export function CashPage() {
       )}
 
       {!isLoading && accounts && accounts.length === 0 && (
-        <div className="border border-dashed border-tc-border px-4 py-10 text-center text-sm text-slate-400">
+        <div className="border border-dashed border-tc-border px-4 py-10 text-center text-sm text-tc-text-muted">
           No hay cuentas de caja creadas.
         </div>
       )}
@@ -142,8 +141,8 @@ export function CashPage() {
               <div className="flex items-center gap-3">
                 <div className="w-1.5 h-8 bg-tc-stub-bg border border-tc-border" />
                 <div>
-                  <p className="font-medium text-slate-800">{account.name}</p>
-                  <p className="text-xs text-slate-500">{KIND_LABELS[account.kind]}</p>
+                  <p className="font-medium text-tc-text">{account.name}</p>
+                  <p className="text-xs text-tc-text-secondary">{KIND_LABELS[account.kind]}</p>
                 </div>
               </div>
               <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center sm:gap-3">
@@ -151,7 +150,7 @@ export function CashPage() {
                   className={`border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
                     account.isActive
                       ? 'border-green-300 bg-green-50 text-green-700'
-                      : 'border-tc-border bg-tc-stub-bg text-slate-500'
+                      : 'border-tc-border bg-tc-stub-bg text-tc-text-secondary'
                   }`}
                 >
                   {account.isActive ? 'Activa' : 'Inactiva'}

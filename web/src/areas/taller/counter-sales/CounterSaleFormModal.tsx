@@ -10,8 +10,8 @@ import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
+import { labelCls } from '../../../lib/styles'
 
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const itemSchema = z.object({
   catalogItemId: z.string().optional(),
@@ -112,7 +112,7 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
           {fields.map((field, idx) => (
             <div key={field.id} className="border border-tc-border bg-tc-surface p-3 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Ítem {idx + 1}</span>
+                <span className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Ítem {idx + 1}</span>
                 {fields.length > 1 && (
                   <button type="button" onClick={() => remove(idx)} className="text-xs text-tc-stamp-red hover:opacity-70">
                     Quitar

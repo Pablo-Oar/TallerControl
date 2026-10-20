@@ -112,7 +112,7 @@ export function EditableStatusBadge({ status, label, statusText, options, onSele
         {pending ? (
           <span className="h-3 w-3 animate-spin border-2 border-tc-purple border-t-transparent motion-reduce:animate-none" aria-hidden />
         ) : (
-          <svg className="h-3 w-3 text-slate-400" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+          <svg className="h-3 w-3 text-tc-text-muted" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
             <path d="M2 4.5l4 4 4-4" strokeLinecap="square" />
           </svg>
         )}
@@ -134,7 +134,7 @@ export function EditableStatusBadge({ status, label, statusText, options, onSele
               tabIndex={i === active ? 0 : -1}
               onClick={() => void choose(o.value)}
               onMouseEnter={() => setActive(i)}
-              className="block w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-tc-surface focus:bg-tc-surface focus:outline-none"
+              className="block w-full px-3 py-2 text-left text-sm text-tc-text-secondary hover:bg-tc-surface focus:bg-tc-surface focus:outline-none"
             >
               {o.label}
             </button>

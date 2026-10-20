@@ -14,7 +14,7 @@ const VAT_LABELS: Record<VatCondition, string> = {
   no_categorizado: 'No categorizado',
 }
 
-const filterInputCls = 'border border-tc-border bg-white px-3 py-1.5 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors flex-1'
+const filterInputCls = 'border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text outline-none focus:border-tc-border-mid transition-colors flex-1'
 
 export function SuppliersPage() {
   const queryClient = useQueryClient()
@@ -100,7 +100,7 @@ export function SuppliersPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Proveedores</h1>
+        <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Proveedores</h1>
         <Button size="sm" onClick={openCreate}>Nuevo proveedor</Button>
       </div>
 
@@ -173,7 +173,7 @@ export function SuppliersPage() {
       )}
 
       {!isLoading && data && data.items.length === 0 && (
-        <div className="border border-dashed border-tc-border px-4 py-10 text-center text-sm text-slate-400">
+        <div className="border border-dashed border-tc-border px-4 py-10 text-center text-sm text-tc-text-muted">
           No hay proveedores.
         </div>
       )}
@@ -183,18 +183,18 @@ export function SuppliersPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-tc-stub-bg border-b border-tc-border">
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Nombre</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">CUIT</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 hidden sm:table-cell">Condición IVA</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nombre</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">CUIT</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden sm:table-cell">Condición IVA</th>
                 <th className="px-4 py-2" />
               </tr>
             </thead>
             <tbody>
               {data.items.map(s => (
                 <tr key={s.id} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                  <td className="px-4 py-2.5 font-medium text-slate-800">{s.name}</td>
-                  <td className="px-4 py-2.5 font-mono tabular-nums text-slate-600 whitespace-nowrap">{s.cuit ?? '—'}</td>
-                  <td className="px-4 py-2.5 text-slate-600 text-xs hidden sm:table-cell">{VAT_LABELS[s.vatCondition]}</td>
+                  <td className="px-4 py-2.5 font-medium text-tc-text">{s.name}</td>
+                  <td className="px-4 py-2.5 font-mono tabular-nums text-tc-text-secondary whitespace-nowrap">{s.cuit ?? '—'}</td>
+                  <td className="px-4 py-2.5 text-tc-text-secondary text-xs hidden sm:table-cell">{VAT_LABELS[s.vatCondition]}</td>
                   <td className="px-4 py-2.5 text-right">
                     <div className="flex items-center justify-end gap-3 text-xs">
                       <button onClick={() => openEdit(s)} className="text-tc-purple hover:opacity-70">Editar</button>

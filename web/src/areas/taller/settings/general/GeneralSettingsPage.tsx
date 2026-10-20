@@ -149,19 +149,19 @@ export function GeneralSettingsPage() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <h1 className="text-lg font-bold tracking-wide text-slate-800 uppercase">Configuración general</h1>
+      <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Configuración general</h1>
 
       {/* Logo */}
       <section className="border border-tc-border bg-white">
         <div className="bg-tc-stub-bg border-b border-tc-border px-5 py-2.5">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Logo del taller</span>
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Logo del taller</span>
         </div>
         <div className="flex items-center gap-5 p-5">
           <div className="flex h-20 w-36 shrink-0 items-center justify-center border border-dashed border-tc-border-mid bg-tc-stub-bg">
             {data.logoUrl ? (
               <img src={data.logoUrl} alt="Logo del taller" className="h-full w-full object-contain" />
             ) : (
-              <span className="text-xs text-slate-400">Sin logo</span>
+              <span className="text-xs text-tc-text-muted">Sin logo</span>
             )}
           </div>
           <div className="space-y-2">
@@ -181,7 +181,7 @@ export function GeneralSettingsPage() {
               disabled={uploadingLogo}
               onClick={handlePickLogo}
               title="Seleccionar archivo de imagen"
-              className="inline-flex cursor-pointer items-center gap-2 border border-tc-border bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-tc-surface disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex cursor-pointer items-center gap-2 border border-tc-border bg-white px-4 py-2 text-sm font-medium text-tc-text-secondary transition-colors hover:bg-tc-surface disabled:cursor-not-allowed disabled:opacity-40"
             >
               {uploadingLogo ? (
                 <>
@@ -190,7 +190,7 @@ export function GeneralSettingsPage() {
                 </>
               ) : 'Cambiar logo'}
             </button>
-            <p className="text-xs text-slate-400">PNG, JPG o WebP · máx. 5 MB</p>
+            <p className="text-xs text-tc-text-muted">PNG, JPG o WebP · máx. 5 MB</p>
             {logoError && <p role="alert" className="text-xs text-tc-stamp-red">{logoError}</p>}
           </div>
         </div>
@@ -202,7 +202,7 @@ export function GeneralSettingsPage() {
         className="border border-tc-border bg-white overflow-hidden"
       >
         <div className="bg-tc-stub-bg border-b border-tc-border px-5 py-2.5">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Datos del taller</span>
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Datos del taller</span>
         </div>
 
         <div className="space-y-4 p-5">
@@ -222,7 +222,7 @@ export function GeneralSettingsPage() {
         <div className="h-px bg-tc-perf" />
 
         <div className="bg-tc-stub-bg border-b border-tc-border px-5 py-2.5">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Parámetros operativos</span>
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Parámetros operativos</span>
         </div>
 
         <div className="space-y-4 p-5">

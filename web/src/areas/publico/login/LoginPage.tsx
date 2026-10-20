@@ -52,10 +52,10 @@ export function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4">
       <div className="w-full max-w-sm border border-tc-border bg-white">
         <div className="border-b border-tc-border bg-tc-stub-bg px-6 py-3">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">TallerControl</span>
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">TallerControl</span>
         </div>
         <div className="px-6 py-8">
-          <h1 className="mb-6 text-xl font-bold tracking-tight text-slate-900">Ingresar</h1>
+          <h1 className="mb-6 text-xl font-bold tracking-tight text-tc-text">Ingresar</h1>
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
             <FormField
               label="Email"
@@ -71,7 +71,7 @@ export function LoginPage() {
               error={errors.password?.message}
               {...register('password')}
             />
-            <label className="flex items-center gap-2 text-sm text-slate-600">
+            <label className="flex items-center gap-2 text-sm text-tc-text-secondary">
               <input type="checkbox" {...register('rememberMe')} className="accent-tc-purple" />
               Recordarme
             </label>
@@ -86,12 +86,12 @@ export function LoginPage() {
               Ingresar
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-slate-500">
+          <p className="mt-4 text-center text-sm text-tc-text-secondary">
             <Link to="/forgot-password" className="text-tc-purple hover:opacity-70">
               ¿Olvidaste tu contraseña?
             </Link>
           </p>
-          <p className="mt-2 text-center text-sm text-slate-500">
+          <p className="mt-2 text-center text-sm text-tc-text-secondary">
             ¿No tenés cuenta?{' '}
             <Link to="/registro" className="text-tc-purple hover:opacity-70">
               Crear cuenta gratis

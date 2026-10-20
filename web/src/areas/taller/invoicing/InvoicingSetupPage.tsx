@@ -32,7 +32,7 @@ export function InvoicingSetupPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Configuración ARCA</h1>
+      <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Configuración ARCA</h1>
 
       <InvoicingTabs />
 
@@ -143,7 +143,7 @@ function CertificatesSection({
     <div className="space-y-4">
       <div className="border border-tc-border bg-white overflow-hidden">
         <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2 flex items-center justify-between">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Certificados ARCA</span>
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Certificados ARCA</span>
           {certs.length < 3 && (
             <Button size="sm" onClick={() => setShowForm(true)}>
               Nuevo certificado
@@ -159,15 +159,15 @@ function CertificatesSection({
               ))}
             </div>
           ) : certs.length === 0 ? (
-            <p className="text-sm text-slate-400">No hay certificados registrados.</p>
+            <p className="text-sm text-tc-text-muted">No hay certificados registrados.</p>
           ) : (
             <div className="space-y-2">
               {certs.map(cert => (
                 <div key={cert.id} className="border border-tc-border bg-white overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-sm text-slate-800">{cert.name}</span>
-                      <span className="font-mono text-xs text-slate-500">{cert.cuit}</span>
+                      <span className="font-medium text-sm text-tc-text">{cert.name}</span>
+                      <span className="font-mono text-xs text-tc-text-secondary">{cert.cuit}</span>
                       {cert.isPrimary && (
                         <span className="border border-blue-300 px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-blue-700">
                           Principal
@@ -212,7 +212,7 @@ function CertificatesSection({
       {certs.some(c => c.isActive) && (
         <div className="border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Probar conexión ARCA</span>
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Probar conexión ARCA</span>
           </div>
           <div className="p-4 space-y-2">
             <div className="flex gap-2">
@@ -253,10 +253,10 @@ function CertificatesSection({
       {csrResult && (
         <div className="border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">CSR generado</span>
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">CSR generado</span>
           </div>
           <div className="p-4 space-y-2">
-            <p className="text-sm text-slate-700">
+            <p className="text-sm text-tc-text-secondary">
               Presentá este CSR en el portal ARCA para obtener el certificado firmado:
             </p>
             <pre className="border border-tc-border bg-tc-stub-bg px-3 py-2 text-xs font-mono max-h-40 overflow-auto">
@@ -286,7 +286,7 @@ function CertificatesSection({
               onChange={e => setName(e.target.value)}
               required
             />
-            <label className="flex items-center gap-2 text-sm text-slate-700">
+            <label className="flex items-center gap-2 text-sm text-tc-text-secondary">
               <input
                 type="checkbox"
                 checked={isPrimary}
@@ -382,7 +382,7 @@ function PointsOfSaleSection({
   return (
     <div className="border border-tc-border bg-white overflow-hidden">
       <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2 flex items-center justify-between">
-        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Puntos de Venta</span>
+        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Puntos de Venta</span>
         <Button size="sm" onClick={() => setShowForm(true)}>
           Nuevo punto de venta
         </Button>
@@ -396,25 +396,25 @@ function PointsOfSaleSection({
             ))}
           </div>
         ) : points.length === 0 ? (
-          <p className="text-sm text-slate-400">No hay puntos de venta registrados.</p>
+          <p className="text-sm text-tc-text-muted">No hay puntos de venta registrados.</p>
         ) : (
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-tc-border">
-                <th className="pb-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Nº</th>
-                <th className="pb-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Nombre</th>
-                <th className="pb-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</th>
+                <th className="pb-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nº</th>
+                <th className="pb-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nombre</th>
+                <th className="pb-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
               </tr>
             </thead>
             <tbody>
               {points.map(pos => (
                 <tr key={pos.id} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                  <td className="py-2.5 pr-4 font-mono text-slate-800 tabular-nums">{String(pos.number).padStart(5, '0')}</td>
-                  <td className="py-2.5 pr-4 text-slate-700">{pos.name}</td>
+                  <td className="py-2.5 pr-4 font-mono text-tc-text tabular-nums">{String(pos.number).padStart(5, '0')}</td>
+                  <td className="py-2.5 pr-4 text-tc-text-secondary">{pos.name}</td>
                   <td className="py-2.5">
                     <span
                       className={`border px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
-                        pos.isActive ? 'border-green-300 text-green-700' : 'border-tc-border text-slate-400'
+                        pos.isActive ? 'border-green-300 text-green-700' : 'border-tc-border text-tc-text-muted'
                       }`}
                     >
                       {pos.isActive ? 'Activo' : 'Inactivo'}

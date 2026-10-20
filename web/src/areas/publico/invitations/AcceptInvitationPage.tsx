@@ -51,11 +51,11 @@ export function AcceptInvitationPage() {
     <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4">
       <div className="w-full max-w-sm border border-tc-border bg-white">
         <div className="border-b border-tc-border bg-tc-stub-bg px-6 py-3">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">TallerControl</span>
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">TallerControl</span>
         </div>
         <div className="px-6 py-8">
-          <h1 className="mb-2 text-xl font-bold tracking-tight text-slate-900">Activar cuenta</h1>
-          <p className="mb-6 text-sm text-slate-500">Elegí una contraseña para completar el registro.</p>
+          <h1 className="mb-2 text-xl font-bold tracking-tight text-tc-text">Activar cuenta</h1>
+          <p className="mb-6 text-sm text-tc-text-secondary">Elegí una contraseña para completar el registro.</p>
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
             <FormField
               label="Contraseña"

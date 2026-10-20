@@ -1,6 +1,7 @@
 // Service worker de TallerControl — área del mecánico (PWA F-51).
-// Estrategia: cache-first para assets estáticos del bundle; network-first para /api/*.
-const CACHE = 'tc-sw-v2'
+// Estrategia: network-first para navegaciones (HTML, así una versión nueva se ve sin recargar a mano),
+// cache-first para assets con hash y sin interceptar /api/*. Subir CACHE en cada release de UI.
+const CACHE = 'tc-sw-v3'
 
 self.addEventListener('install', () => self.skipWaiting())
 
@@ -21,7 +22,23 @@ self.addEventListener('fetch', event => {
   // API → network-first, sin cache
   if (url.pathname.startsWith('/api/')) return
 
-  // Assets estáticos → cache-first
+  // Navegaciones (HTML) → network-first; sin red, la última copia o la raíz de la SPA
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response.ok) {
+            const clone = response.clone()
+            caches.open(CACHE).then(cache => cache.put(event.request, clone))
+          }
+          return response
+        })
+        .catch(() => caches.match(event.request).then(cached => cached || caches.match('/')))
+    )
+    return
+  }
+
+  // Assets estáticos (con hash) → cache-first
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached

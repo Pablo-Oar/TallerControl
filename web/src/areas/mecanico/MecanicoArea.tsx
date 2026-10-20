@@ -10,7 +10,7 @@ const MechanicWorkOrderDetailPage = lazy(() => import('./MechanicWorkOrderDetail
 export function Component() {
   const navigate = useNavigate()
   return (
-    <div className="min-h-screen bg-tc-surface text-slate-900">
+    <div className="min-h-screen bg-tc-surface text-tc-text">
       <header className="bg-tc-navy px-4 h-[52px] flex items-center justify-between border-b border-tc-navy-mid">
         <span className="select-none text-sm font-bold tracking-widest text-white uppercase">
           TALLER<span className="text-tc-purple">CONTROL</span>

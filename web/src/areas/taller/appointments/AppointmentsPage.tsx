@@ -10,6 +10,7 @@ import { Button } from '../../../components/ui/Button'
 import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { AppointmentFormModal } from './AppointmentFormModal'
+import { inputCls } from '../../../lib/styles'
 
 const STATUS_OPTIONS: { value: AppointmentStatus | ''; label: string }[] = [
   { value: '', label: 'Todos' },
@@ -19,7 +20,6 @@ const STATUS_OPTIONS: { value: AppointmentStatus | ''; label: string }[] = [
   { value: 'cancelled', label: 'Cancelados' },
 ]
 
-const inputCls = 'border border-tc-border bg-white px-3 py-1.5 text-sm text-slate-800 outline-none focus:border-tc-border-mid transition-colors'
 
 export function AppointmentsPage() {
   const qc = useQueryClient()
@@ -62,7 +62,7 @@ export function AppointmentsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Agenda</h1>
+        <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Agenda</h1>
         <Button size="sm" onClick={() => setShowModal(true)}>Nuevo turno</Button>
       </div>
 
@@ -102,19 +102,19 @@ export function AppointmentsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-tc-stub-bg border-b border-tc-border">
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Fecha / hora</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 hidden sm:table-cell">Cliente</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Vehículo</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 hidden md:table-cell">Mecánico</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 hidden md:table-cell">Duración</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha / hora</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden sm:table-cell">Cliente</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Vehículo</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden md:table-cell">Mecánico</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden md:table-cell">Duración</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
                 <th className="px-4 py-2" />
               </tr>
             </thead>
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-sm text-slate-400">
+                  <td colSpan={7} className="px-4 py-10 text-center text-sm text-tc-text-muted">
                     No hay turnos para los filtros seleccionados.
                   </td>
                 </tr>
@@ -122,20 +122,20 @@ export function AppointmentsPage() {
                 items.map((appt, idx) => (
                   <tr key={appt.id} className={`border-b border-tc-border last:border-0 hover:bg-tc-surface ${idx % 2 === 0 ? '' : ''}`}>
                     <td className="px-4 py-2.5 tabular-nums">
-                      <span className="font-medium text-slate-800 whitespace-nowrap">
+                      <span className="font-medium text-tc-text whitespace-nowrap">
                         {new Date(appt.scheduledAt).toLocaleString('es-AR', {
                           dateStyle: 'short',
                           timeStyle: 'short',
                         })}
                       </span>
-                      <p className="mt-0.5 text-xs text-slate-500 sm:hidden">{appt.customerName}</p>
+                      <p className="mt-0.5 text-xs text-tc-text-secondary sm:hidden">{appt.customerName}</p>
                     </td>
-                    <td className="px-4 py-2.5 text-slate-700 hidden sm:table-cell">{appt.customerName}</td>
-                    <td className="px-4 py-2.5 font-mono tracking-widest text-sm text-slate-700">{appt.vehiclePlate}</td>
-                    <td className="px-4 py-2.5 text-slate-600 hidden md:table-cell">
-                      {appt.mechanicName ?? <span className="text-slate-400">—</span>}
+                    <td className="px-4 py-2.5 text-tc-text-secondary hidden sm:table-cell">{appt.customerName}</td>
+                    <td className="px-4 py-2.5 font-mono tracking-widest text-sm text-tc-text-secondary">{appt.vehiclePlate}</td>
+                    <td className="px-4 py-2.5 text-tc-text-secondary hidden md:table-cell">
+                      {appt.mechanicName ?? <span className="text-tc-text-muted">—</span>}
                     </td>
-                    <td className="px-4 py-2.5 text-slate-600 tabular-nums hidden md:table-cell">{appt.totalDurationMinutes} min</td>
+                    <td className="px-4 py-2.5 text-tc-text-secondary tabular-nums hidden md:table-cell">{appt.totalDurationMinutes} min</td>
                     <td className="px-4 py-2.5">
                       <StatusBadge status={appt.status} label={getAppointmentStatusLabel(appt.status)} />
                     </td>
@@ -158,8 +158,8 @@ export function AppointmentsPage() {
       )}
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-slate-500">
-          <span className="text-xs text-slate-400">{total} turnos en total</span>
+        <div className="flex items-center justify-between text-sm text-tc-text-secondary">
+          <span className="text-xs text-tc-text-muted">{total} turnos en total</span>
           <div className="flex gap-1">
             <button
               disabled={page <= 1}

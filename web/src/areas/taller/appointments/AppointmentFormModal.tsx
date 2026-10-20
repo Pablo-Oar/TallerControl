@@ -10,8 +10,8 @@ import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
+import { labelCls } from '../../../lib/styles'
 
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const serviceSchema = z.object({
   catalogItemId: z.string().min(1, 'Requerido'),
@@ -172,7 +172,7 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
               {fields.map((field, index) => (
                 <div key={field.id} className="border border-tc-border">
                   <div className="bg-tc-stub-bg border-b border-tc-border px-3 py-1 flex items-center justify-between">
-                    <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">
+                    <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
                       Servicio {index + 1}
                     </span>
                     {fields.length > 1 && (

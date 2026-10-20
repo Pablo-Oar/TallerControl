@@ -42,10 +42,10 @@ export function StockAdjustmentModal({ item, onSuccess, onClose }: Props) {
 
   return (
     <Modal title="Ajuste de stock" onClose={onClose} className="max-w-sm">
-      <p className="mb-4 text-sm text-slate-500">{item.name}</p>
+      <p className="mb-4 text-sm text-tc-text-secondary">{item.name}</p>
 
-      <div className="mb-4 border border-tc-border bg-tc-surface px-3 py-2 text-sm text-slate-700">
-        Stock actual: <span className="font-semibold tabular-nums text-slate-800">{item.stockQty}</span>
+      <div className="mb-4 border border-tc-border bg-tc-surface px-3 py-2 text-sm text-tc-text-secondary">
+        Stock actual: <span className="font-semibold tabular-nums text-tc-text">{item.stockQty}</span>
         {item.isLowStock && (
           <span className="ml-2 bg-amber-100 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-amber-700">
             Stock bajo

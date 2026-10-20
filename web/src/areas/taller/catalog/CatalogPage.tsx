@@ -57,7 +57,7 @@ export function CatalogPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-bold tracking-wide text-slate-800 uppercase">Catálogo</h1>
+        <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Catálogo</h1>
         <Button onClick={() => setCreating(true)} size="sm">Nuevo ítem</Button>
       </div>
 
@@ -67,18 +67,18 @@ export function CatalogPage() {
           value={q}
           onChange={e => setQ(e.target.value)}
           placeholder="Buscar por nombre o SKU…"
-          className="min-w-0 flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-tc-border-mid"
+          className="min-w-0 flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-border-mid"
         />
         <select
           value={kindFilter}
           onChange={e => { setKindFilter(e.target.value as CatalogItemKind | ''); setPage(1) }}
-          className="border border-tc-border bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-tc-border-mid"
+          className="border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-border-mid"
         >
           <option value="">Todos los tipos</option>
           <option value="service">Servicios</option>
           <option value="product">Productos</option>
         </select>
-        <label className="flex items-center gap-1.5 text-sm text-slate-600">
+        <label className="flex items-center gap-1.5 text-sm text-tc-text-secondary">
           <input
             type="checkbox"
             checked={activeOnly}
@@ -118,14 +118,14 @@ export function CatalogPage() {
                 ['Stock', 'text-right', true],
                 ['', '', false],
               ].map(([h, cls, hide], i) => (
-                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${cls} ${hide ? 'hidden md:block' : ''}`}>
+                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${cls} ${hide ? 'hidden md:block' : ''}`}>
                   {h}
                 </div>
               ))}
             </div>
 
             {data.items.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-slate-400">
+              <p className="px-4 py-8 text-center text-sm text-tc-text-muted">
                 No hay ítems{search ? ' para esa búsqueda' : ''}.
               </p>
             ) : (
@@ -139,18 +139,18 @@ export function CatalogPage() {
                     ].join(' ')}
                   >
                     <div className="px-4 py-3">
-                      <p className="text-sm font-medium text-slate-800 truncate">{item.name}</p>
+                      <p className="text-sm font-medium text-tc-text truncate">{item.name}</p>
                       {!item.isActive && (
-                        <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">Inactivo</span>
+                        <span className="text-[10px] font-bold tracking-wider text-tc-text-muted uppercase">Inactivo</span>
                       )}
                     </div>
 
                     <div className="px-4 py-3">
-                      <span className="text-xs text-slate-500">{KIND_LABELS[item.kind]}</span>
+                      <span className="text-xs text-tc-text-secondary">{KIND_LABELS[item.kind]}</span>
                     </div>
 
                     <div className="hidden md:block px-4 py-3">
-                      <span className="font-mono text-xs text-slate-400">{item.sku ?? '—'}</span>
+                      <span className="font-mono text-xs text-tc-text-muted">{item.sku ?? '—'}</span>
                     </div>
 
                     <div className="px-4 py-3 text-right">
@@ -158,12 +158,12 @@ export function CatalogPage() {
                     </div>
 
                     <div className="hidden md:block px-4 py-3 text-right">
-                      <span className="text-xs text-slate-500">{item.vatRate}%</span>
+                      <span className="text-xs text-tc-text-secondary">{item.vatRate}%</span>
                     </div>
 
                     <div className="hidden md:block px-4 py-3 text-right">
                       {item.trackStock ? (
-                        <span className={['tabular-nums text-sm', item.isLowStock ? 'font-semibold text-amber-600' : 'text-slate-700'].join(' ')}>
+                        <span className={['tabular-nums text-sm', item.isLowStock ? 'font-semibold text-amber-600' : 'text-tc-text-secondary'].join(' ')}>
                           {item.stockQty}
                           {item.isLowStock && <span className="ml-0.5 text-[10px]">▼</span>}
                         </span>
@@ -195,7 +195,7 @@ export function CatalogPage() {
           </div>
 
           {data.total > data.pageSize && (
-            <div className="flex items-center justify-between text-sm text-slate-500">
+            <div className="flex items-center justify-between text-sm text-tc-text-secondary">
               <span className="tabular-nums">{data.total} ítems</span>
               <div className="flex items-center gap-1">
                 <button

@@ -10,8 +10,8 @@ import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
+import { labelCls } from '../../../lib/styles'
 
-const labelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-slate-500'
 
 const itemSchema = z.object({
   catalogItemId: z.string().optional(),
@@ -201,7 +201,7 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="text-xs text-slate-400 hover:text-red-600 transition-colors"
+                      className="text-xs text-tc-text-muted hover:text-red-600 transition-colors"
                     >
                       ✕
                     </button>
@@ -218,7 +218,7 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
           <FormField label="Retenciones" type="number" step="0.01" min="0" placeholder="0,00" inputClassName="tabular-nums" {...register('retentions')} />
         </div>
 
-        <label className="flex items-center gap-2 text-sm text-slate-600">
+        <label className="flex items-center gap-2 text-sm text-tc-text-secondary">
           <input type="checkbox" {...register('isExcludedFromCiti')} className="h-4 w-4" />
           Excluir del CITI (sin datos fiscales completos)
         </label>

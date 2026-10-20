@@ -29,14 +29,14 @@ export function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center bg-tc-navy px-4">
       <div className="w-full max-w-sm border border-tc-border bg-white">
         <div className="border-b border-tc-border bg-tc-stub-bg px-6 py-3">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">TallerControl</span>
+          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">TallerControl</span>
         </div>
         <div className="px-6 py-8">
-          <h1 className="mb-2 text-xl font-bold tracking-tight text-slate-900">Recuperar contraseña</h1>
+          <h1 className="mb-2 text-xl font-bold tracking-tight text-tc-text">Recuperar contraseña</h1>
 
           {sent ? (
             <div className="mt-4">
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-tc-text-secondary">
                 Si el email está registrado, te enviamos un enlace para restablecer tu contraseña.
                 Revisá también tu carpeta de spam.
               </p>
@@ -46,7 +46,7 @@ export function ForgotPasswordPage() {
             </div>
           ) : (
             <>
-              <p className="mb-6 text-sm text-slate-500">
+              <p className="mb-6 text-sm text-tc-text-secondary">
                 Ingresá tu email y te enviaremos un enlace para restablecer la contraseña.
               </p>
               <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
@@ -61,7 +61,7 @@ export function ForgotPasswordPage() {
                   Enviar enlace
                 </Button>
               </form>
-              <p className="mt-4 text-center text-sm text-slate-500">
+              <p className="mt-4 text-center text-sm text-tc-text-secondary">
                 <Link to="/login" className="text-tc-purple hover:opacity-70">
                   Volver al inicio
                 </Link>

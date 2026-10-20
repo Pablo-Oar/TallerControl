@@ -21,13 +21,13 @@ function KpiStub({ label, value, to, alert, money }: KpiStubProps) {
       <div className="perf-line flex-none self-stretch" />
       {/* Body */}
       <div className="flex flex-1 flex-col gap-2 px-4 py-4">
-        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">
+        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
           {label}
         </span>
         <span
           className={[
             'tabular-nums text-2xl font-bold leading-none',
-            money ? 'text-tc-purple' : alert ? 'text-amber-600' : 'text-slate-800',
+            money ? 'text-tc-purple' : alert ? 'text-amber-600' : 'text-tc-text',
           ].join(' ')}
         >
           {value}
@@ -101,7 +101,7 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-lg font-bold tracking-wide text-slate-800 uppercase">Inicio</h1>
+      <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Inicio</h1>
 
       {/* KPI row — coupon stubs */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -121,7 +121,7 @@ export function DashboardPage() {
         <div className="border border-tc-border bg-white overflow-hidden">
           {/* Header stub */}
           <div className="flex items-center justify-between border-b border-tc-border bg-tc-stub-bg px-4 py-3">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-500">
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-secondary">
               Guía de inicio
             </span>
             <span className="text-[10px] font-bold tracking-wider text-tc-purple tabular-nums">
@@ -150,7 +150,7 @@ export function DashboardPage() {
                 )}
                 <span className={[
                   'text-sm',
-                  step.completed ? 'text-slate-400 line-through' : 'text-slate-700',
+                  step.completed ? 'text-tc-text-muted line-through' : 'text-tc-text-secondary',
                 ].join(' ')}>
                   {step.label}
                 </span>

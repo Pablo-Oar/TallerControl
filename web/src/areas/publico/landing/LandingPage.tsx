@@ -58,7 +58,7 @@ const plans = [
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="min-h-screen bg-white text-tc-text">
       {/* Nav */}
       <nav className="flex items-center justify-between border-b border-tc-border bg-tc-navy px-6 py-3">
         <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white">TallerControl</span>
@@ -77,11 +77,11 @@ export function LandingPage() {
 
       {/* Hero */}
       <section className="bg-tc-navy px-6 py-20 text-center">
-        <p className="mb-3 text-[10px] font-bold tracking-[0.2em] uppercase text-slate-400">Sistema de gestión para talleres mecánicos</p>
+        <p className="mb-3 text-[10px] font-bold tracking-[0.2em] uppercase text-tc-text-muted">Sistema de gestión para talleres mecánicos</p>
         <h1 className="mb-6 text-4xl font-bold leading-tight text-white sm:text-5xl">
           El control total de<br className="hidden sm:block" /> tu taller
         </h1>
-        <p className="mb-10 mx-auto max-w-2xl text-slate-400">
+        <p className="mb-10 mx-auto max-w-2xl text-tc-text-muted">
           Gestioná presupuestos, órdenes de trabajo y cobros. Dale a tus clientes un portal QR para
           seguir el estado de su vehículo. Todo desde el celular o la PC.
         </p>
@@ -104,8 +104,8 @@ export function LandingPage() {
       {/* Features */}
       <section className="bg-tc-surface px-6 py-16 border-t border-tc-border">
         <div className="mx-auto max-w-5xl">
-          <p className="mb-2 text-center text-[10px] font-bold tracking-[0.2em] uppercase text-slate-400">Funcionalidades</p>
-          <h2 className="mb-10 text-center text-2xl font-bold text-slate-900">
+          <p className="mb-2 text-center text-[10px] font-bold tracking-[0.2em] uppercase text-tc-text-muted">Funcionalidades</p>
+          <h2 className="mb-10 text-center text-2xl font-bold text-tc-text">
             Todo lo que necesitás en un solo lugar
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -116,9 +116,9 @@ export function LandingPage() {
               >
                 <div className="mb-3 flex items-center gap-2">
                   <span className="text-tc-navy text-xl font-mono">{f.icon}</span>
-                  <h3 className="font-bold text-slate-900">{f.title}</h3>
+                  <h3 className="font-bold text-tc-text">{f.title}</h3>
                 </div>
-                <p className="text-sm text-slate-600">{f.desc}</p>
+                <p className="text-sm text-tc-text-secondary">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -128,8 +128,8 @@ export function LandingPage() {
       {/* Pricing */}
       <section className="px-6 py-16 border-t border-tc-border">
         <div className="mx-auto max-w-3xl">
-          <p className="mb-2 text-center text-[10px] font-bold tracking-[0.2em] uppercase text-slate-400">Precios</p>
-          <h2 className="mb-10 text-center text-2xl font-bold text-slate-900">Planes</h2>
+          <p className="mb-2 text-center text-[10px] font-bold tracking-[0.2em] uppercase text-tc-text-muted">Precios</p>
+          <h2 className="mb-10 text-center text-2xl font-bold text-tc-text">Planes</h2>
           <div className="grid gap-6 sm:grid-cols-2">
             {plans.map((plan) => (
               <div
@@ -145,16 +145,16 @@ export function LandingPage() {
                     Próximamente
                   </span>
                 )}
-                <h3 className={`text-lg font-bold ${plan.highlight ? 'text-white' : 'text-slate-900'}`}>{plan.name}</h3>
+                <h3 className={`text-lg font-bold ${plan.highlight ? 'text-white' : 'text-tc-text'}`}>{plan.name}</h3>
                 <div className="my-2">
-                  <span className={`text-3xl font-bold ${plan.highlight ? 'text-white' : 'text-slate-900'}`}>{plan.price}</span>
-                  <span className={`ml-1 text-sm ${plan.highlight ? 'text-slate-400' : 'text-slate-500'}`}>{plan.period}</span>
+                  <span className={`text-3xl font-bold ${plan.highlight ? 'text-white' : 'text-tc-text'}`}>{plan.price}</span>
+                  <span className={`ml-1 text-sm ${plan.highlight ? 'text-tc-text-muted' : 'text-tc-text-secondary'}`}>{plan.period}</span>
                 </div>
-                <p className={`mb-4 text-sm ${plan.highlight ? 'text-slate-300' : 'text-slate-600'}`}>{plan.desc}</p>
+                <p className={`mb-4 text-sm ${plan.highlight ? 'text-slate-300' : 'text-tc-text-secondary'}`}>{plan.desc}</p>
                 <ul className="mb-6 space-y-2">
                   {plan.features.map((feat) => (
-                    <li key={feat} className={`flex items-center gap-2 text-sm ${plan.highlight ? 'text-slate-200' : 'text-slate-700'}`}>
-                      <span className={plan.highlight ? 'text-slate-400' : 'text-slate-400'}>—</span>
+                    <li key={feat} className={`flex items-center gap-2 text-sm ${plan.highlight ? 'text-slate-200' : 'text-tc-text-secondary'}`}>
+                      <span className={plan.highlight ? 'text-tc-text-muted' : 'text-tc-text-muted'}>—</span>
                       {feat}
                     </li>
                   ))}
@@ -163,7 +163,7 @@ export function LandingPage() {
                   to={plan.href}
                   className={`flex items-center justify-center w-full min-h-[44px] text-xs font-bold tracking-wider uppercase transition-colors ${
                     plan.highlight
-                      ? 'border border-slate-600 bg-transparent text-slate-400 cursor-not-allowed pointer-events-none'
+                      ? 'border border-slate-600 bg-transparent text-tc-text-muted cursor-not-allowed pointer-events-none'
                       : 'border border-tc-navy bg-tc-navy text-white hover:bg-transparent hover:text-tc-navy'
                   }`}
                 >
@@ -176,7 +176,7 @@ export function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-tc-border bg-tc-navy px-6 py-8 text-center text-xs text-slate-500">
+      <footer className="border-t border-tc-border bg-tc-navy px-6 py-8 text-center text-xs text-tc-text-secondary">
         <p className="font-bold tracking-wider uppercase">TallerControl</p>
         <p className="mt-2">© 2026</p>
         <p className="mt-1">

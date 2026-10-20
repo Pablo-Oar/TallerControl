@@ -82,7 +82,7 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false }: Props) {
   return (
     <div className="space-y-3">
       {photos.length === 0 ? (
-        <p className="text-sm text-slate-400">Sin fotos todavía.</p>
+        <p className="text-sm text-tc-text-muted">Sin fotos todavía.</p>
       ) : (
         <ul className="grid grid-cols-3 gap-2" aria-label="Fotos de la orden">
           {photos.map((p, i) => (

@@ -251,6 +251,10 @@ La API usa `ConnectionStrings:Default` con el rol **`tallercontrol_app`** (sin `
 - Ficha del vehículo `/app/vehicles/:id` (`VehicleDetailPage`, patente enlazada desde `VehiclesPage`): datos + historial paginado ("Cargar más"). Backend: `GET /api/v1/vehicles/{id}/history` (antes stub) devuelve órdenes y presupuestos por fecha desc (`IVehicleRepository.GetHistoryAsync`); el `total` es `null` sin `prices.view` (REQ-07 / T-VEH-08, 2 tests de integración). Vehículo de otro taller → 404.
 - Tests: T-UI-08 (`Timeline.test.tsx`); Vitest 64/64.
 
+**UI-R2 F4 — cierre (PR #51 mergeado 20/10/2026) y F5 — Cierre (rama `feature/ui-wm-closeout`):**
+- F4 mergeada: `Timeline` + ficha `/app/vehicles/:id` + `GET /vehicles/{id}/history` real (total oculto sin `prices.view`, T-VEH-08). Validada en Chrome real; E2E 14/14 (2 omitidos).
+- F5: `text-slate-*` migrado a `text-tc-text`/`-secondary`/`-muted` (900/800 → text, 700/600/500 → secondary, 400 → muted); `labelCls`/`inputCls`/`fieldCls` consolidados en `web/src/lib/styles.ts` (se eliminaron las copias locales de 10 pantallas). Service worker `tc-sw-v3`: **network-first para navegaciones** (con respaldo en caché) y cache-first para assets con hash. Bundle principal 107,22 kB gzip (D-27: ≤ 125). `watermelon/` queda solo con README + licencia: ningún componente se vendoreó. Pendiente manual: probar la PWA instalada en un celular real.
+
 **Post-E8 — bugfixes en Develop (14–15/10/2026, commits `27d0d01` / `3395d74` / `b87f7a7` / `ab4dee8` / `a229bcb` / `e46bd2c` / `09a8c7d`):**
 - fix(api): `CatalogItemKind`, `WorkOrderStatus` y `QuoteStatus` como `string?` + `Enum.TryParse(ignoreCase: true)` en todos los endpoints de búsqueda — ASP.NET Core 10 minimal APIs son case-sensitive para enum query params.
 - fix(api): `DevelopmentSeeder` crea `Branch.CreateMain` para tenants que no la tenían; middleware `ForwardedHeaders` para Cloudflare tunnel; defaults en `appsettings.Development.json`.

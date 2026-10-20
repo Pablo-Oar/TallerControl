@@ -156,7 +156,7 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
         </div>
 
         {(kind === 'product' || isEdit) && (
-          <label className="flex items-center gap-2 text-sm text-slate-600">
+          <label className="flex items-center gap-2 text-sm text-tc-text-secondary">
             <input type="checkbox" {...register('trackStock')} className="h-4 w-4" />
             Controlar stock
           </label>
@@ -170,7 +170,7 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
         )}
 
         {isEdit && (
-          <label className="flex items-center gap-2 text-sm text-slate-600">
+          <label className="flex items-center gap-2 text-sm text-tc-text-secondary">
             <input type="checkbox" {...register('isActive')} className="h-4 w-4" />
             Activo
           </label>

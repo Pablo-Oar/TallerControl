@@ -57,9 +57,9 @@ export function OwnerVehiclePage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-tc-navy px-4 text-center">
         <div className="border border-tc-border bg-white p-8 max-w-sm w-full space-y-3">
-          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Sesión expirada</p>
-          <p className="font-bold text-slate-900">Tu sesión venció</p>
-          <p className="text-sm text-slate-500">
+          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Sesión expirada</p>
+          <p className="font-bold text-tc-text">Tu sesión venció</p>
+          <p className="text-sm text-tc-text-secondary">
             Escaneá el código QR nuevamente para acceder.
           </p>
           <button
@@ -80,14 +80,14 @@ export function OwnerVehiclePage() {
       {/* Header */}
       <div className="bg-tc-navy border-b border-tc-border px-4 py-5">
         <div className="mx-auto max-w-md">
-          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">
+          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
             Portal del dueño
           </p>
           <h1 className="mt-1 text-xl font-bold text-white">{vehicleTitle}</h1>
           <p className="mt-0.5 font-mono font-bold text-tc-purple tracking-widest">
             {data.plate}
           </p>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-tc-text-muted">
             Odómetro: {data.odometerKm.toLocaleString('es-AR')} km
           </p>
         </div>
@@ -108,18 +108,18 @@ export function OwnerVehiclePage() {
         {data.activeQuotes.length > 0 && (
           <div className="border border-tc-border bg-white overflow-hidden">
             <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-              <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Presupuestos activos</span>
+              <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Presupuestos activos</span>
             </div>
             <div className="divide-y divide-tc-border">
               {data.activeQuotes.map((q) => (
                 <div key={q.number} className="px-4 py-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Presupuesto #{q.number}</span>
-                      <p className="mt-0.5 text-sm text-slate-700">{q.status.replace(/_/g, ' ')}</p>
+                      <span className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Presupuesto #{q.number}</span>
+                      <p className="mt-0.5 text-sm text-tc-text-secondary">{q.status.replace(/_/g, ' ')}</p>
                     </div>
                     {q.validUntil && (
-                      <span className="text-xs text-slate-400 shrink-0">
+                      <span className="text-xs text-tc-text-muted shrink-0">
                         Vence {new Date(q.validUntil).toLocaleDateString('es-AR')}
                       </span>
                     )}
@@ -141,10 +141,10 @@ export function OwnerVehiclePage() {
         {/* Historial de OTs */}
         <div className="border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Historial de órdenes de trabajo</span>
+            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Historial de órdenes de trabajo</span>
           </div>
           {data.workOrders.length === 0 ? (
-            <p className="px-4 py-6 text-sm text-slate-400">No hay órdenes registradas.</p>
+            <p className="px-4 py-6 text-sm text-tc-text-muted">No hay órdenes registradas.</p>
           ) : (
             <div className="px-4 py-4">
               <Timeline items={data.workOrders.map(toTimelineItem)} showTime={false} label="Historial de órdenes de trabajo" />
@@ -152,7 +152,7 @@ export function OwnerVehiclePage() {
           )}
         </div>
 
-        <p className="text-center text-xs text-slate-400">
+        <p className="text-center text-xs text-tc-text-muted">
           Esta sesión es válida por 30 minutos.
         </p>
       </div>

@@ -53,7 +53,7 @@ export function VehiclesPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-bold tracking-wide text-slate-800 uppercase">Vehículos</h1>
+        <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Vehículos</h1>
         <Button onClick={() => setCreating(true)} size="sm">Nuevo vehículo</Button>
       </div>
 
@@ -64,13 +64,13 @@ export function VehiclesPage() {
             value={q}
             onChange={e => setQ(e.target.value)}
             placeholder="Buscar por patente, marca o modelo…"
-            className="min-w-0 flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-tc-border-mid"
+            className="min-w-0 flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-border-mid"
           />
           <Button type="submit" variant="secondary" size="sm">Buscar</Button>
         </form>
         <button
           onClick={() => { setShowDeleted(v => !v); setPage(1) }}
-          className={`border px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-colors ${showDeleted ? 'border-red-300 bg-red-50 text-red-700' : 'border-tc-border bg-white text-slate-500 hover:bg-tc-surface'}`}
+          className={`border px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-colors ${showDeleted ? 'border-red-300 bg-red-50 text-red-700' : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'}`}
         >
           {showDeleted ? 'Ocultar eliminados' : 'Ver eliminados'}
         </button>
@@ -102,14 +102,14 @@ export function VehiclesPage() {
                 ['Cliente', '', true],
                 ['', '', false],
               ].map(([h, cls, hideOnMobile], i) => (
-                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${cls} ${hideOnMobile ? 'hidden md:block' : ''}`}>
+                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${cls} ${hideOnMobile ? 'hidden md:block' : ''}`}>
                   {h}
                 </div>
               ))}
             </div>
 
             {data.items.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-slate-400">
+              <p className="px-4 py-8 text-center text-sm text-tc-text-muted">
                 No hay vehículos{search ? ' para esa búsqueda' : ''}.
               </p>
             ) : (
@@ -121,27 +121,27 @@ export function VehiclesPage() {
                   >
                     <div className="px-4 py-3">
                       {v.isDeleted ? (
-                        <span className="font-mono text-sm font-bold tracking-widest text-slate-800">{v.plate}</span>
+                        <span className="font-mono text-sm font-bold tracking-widest text-tc-text">{v.plate}</span>
                       ) : (
                         <Link
                           to={`/app/vehicles/${v.id}`}
-                          className="font-mono text-sm font-bold tracking-widest text-slate-800 hover:text-tc-purple"
+                          className="font-mono text-sm font-bold tracking-widest text-tc-text hover:text-tc-purple"
                         >
                           {v.plate}
                         </Link>
                       )}
                     </div>
                     <div className="px-4 py-3">
-                      <p className="text-sm text-slate-700 truncate">
+                      <p className="text-sm text-tc-text-secondary truncate">
                         {[v.brand, v.model].filter(Boolean).join(' ') || <span className="text-slate-300">—</span>}
                       </p>
-                      <p className="mt-0.5 text-xs text-slate-400 truncate md:hidden">{v.customerName}</p>
+                      <p className="mt-0.5 text-xs text-tc-text-muted truncate md:hidden">{v.customerName}</p>
                     </div>
                     <div className="hidden md:block px-4 py-3 text-right">
-                      <span className="tabular-nums text-sm text-slate-500">{v.year ?? '—'}</span>
+                      <span className="tabular-nums text-sm text-tc-text-secondary">{v.year ?? '—'}</span>
                     </div>
                     <div className="hidden md:block px-4 py-3">
-                      <span className="text-sm text-slate-500 truncate">{v.customerName}</span>
+                      <span className="text-sm text-tc-text-secondary truncate">{v.customerName}</span>
                     </div>
                     <div className="flex h-full items-center justify-center border-l border-tc-border bg-tc-stub-bg">
                       {v.isDeleted ? (
@@ -167,7 +167,7 @@ export function VehiclesPage() {
           </div>
 
           {data.total > data.pageSize && (
-            <div className="flex items-center justify-between text-sm text-slate-500">
+            <div className="flex items-center justify-between text-sm text-tc-text-secondary">
               <span className="tabular-nums">{data.total} vehículos</span>
               <div className="flex items-center gap-1">
                 <button

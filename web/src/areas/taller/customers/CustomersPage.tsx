@@ -52,7 +52,7 @@ export function CustomersPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-bold tracking-wide text-slate-800 uppercase">Clientes</h1>
+        <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Clientes</h1>
         <Button onClick={() => setCreating(true)} size="sm">Nuevo cliente</Button>
       </div>
 
@@ -63,13 +63,13 @@ export function CustomersPage() {
             value={q}
             onChange={e => setQ(e.target.value)}
             placeholder="Buscar por nombre, teléfono o documento…"
-            className="min-w-0 flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-tc-border-mid"
+            className="min-w-0 flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-border-mid"
           />
           <Button type="submit" variant="secondary" size="sm">Buscar</Button>
         </form>
         <button
           onClick={() => { setShowDeleted(v => !v); setPage(1) }}
-          className={`border px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-colors ${showDeleted ? 'border-red-300 bg-red-50 text-red-700' : 'border-tc-border bg-white text-slate-500 hover:bg-tc-surface'}`}
+          className={`border px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-colors ${showDeleted ? 'border-red-300 bg-red-50 text-red-700' : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'}`}
         >
           {showDeleted ? 'Ocultar eliminados' : 'Ver eliminados'}
         </button>
@@ -95,14 +95,14 @@ export function CustomersPage() {
             {/* Header */}
             <div className="grid grid-cols-[1fr_6rem_3.5rem] md:grid-cols-[1fr_7rem_8rem_6rem_3.5rem] border-b border-tc-border bg-tc-stub-bg">
               {['Nombre', 'Teléfono', 'Documento', 'Saldo', ''].map((h, i) => (
-                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400 ${i === 3 ? 'text-right' : ''} ${i === 1 || i === 2 ? 'hidden md:block' : ''}`}>
+                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${i === 3 ? 'text-right' : ''} ${i === 1 || i === 2 ? 'hidden md:block' : ''}`}>
                   {h}
                 </div>
               ))}
             </div>
 
             {data.items.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-slate-400">
+              <p className="px-4 py-8 text-center text-sm text-tc-text-muted">
                 No hay clientes{search ? ' para esa búsqueda' : ''}.
               </p>
             ) : (
@@ -113,13 +113,13 @@ export function CustomersPage() {
                     className={`grid grid-cols-[1fr_6rem_3.5rem] md:grid-cols-[1fr_7rem_8rem_6rem_3.5rem] items-center transition-colors ${c.isDeleted ? 'bg-red-50 opacity-60' : 'hover:bg-tc-surface'}`}
                   >
                     <div className="px-4 py-3">
-                      <span className="text-sm font-medium text-slate-800">{c.name}</span>
+                      <span className="text-sm font-medium text-tc-text">{c.name}</span>
                     </div>
                     <div className="hidden md:block px-4 py-3">
-                      <span className="text-sm text-slate-500">{c.phone ?? '—'}</span>
+                      <span className="text-sm text-tc-text-secondary">{c.phone ?? '—'}</span>
                     </div>
                     <div className="hidden md:block px-4 py-3">
-                      <span className="text-sm text-slate-500">{c.docNumber ?? '—'}</span>
+                      <span className="text-sm text-tc-text-secondary">{c.docNumber ?? '—'}</span>
                     </div>
                     <div className="px-4 py-3 text-right">
                       {c.balance > 0 ? (
@@ -154,7 +154,7 @@ export function CustomersPage() {
           </div>
 
           {data.total > data.pageSize && (
-            <div className="flex items-center justify-between text-sm text-slate-500">
+            <div className="flex items-center justify-between text-sm text-tc-text-secondary">
               <span className="tabular-nums">{data.total} clientes</span>
               <div className="flex items-center gap-1">
                 <button

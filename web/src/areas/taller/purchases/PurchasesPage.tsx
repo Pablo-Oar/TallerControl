@@ -79,7 +79,7 @@ export function PurchasesPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Compras</h1>
+        <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Compras</h1>
         <Button onClick={() => setCreating(true)} size="sm">Nueva compra</Button>
       </div>
 
@@ -103,7 +103,7 @@ export function PurchasesPage() {
       )}
 
       {!isLoading && data && data.items.length === 0 && (
-        <div className="border border-dashed border-tc-border px-4 py-10 text-center text-sm text-slate-400">
+        <div className="border border-dashed border-tc-border px-4 py-10 text-center text-sm text-tc-text-muted">
           No hay compras registradas.
         </div>
       )}
@@ -113,19 +113,19 @@ export function PurchasesPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-tc-stub-bg border-b border-tc-border">
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Nº</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Fecha</th>
-                <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Total</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Estado</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">CITI</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nº</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
+                <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Total</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
+                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">CITI</th>
                 <th className="px-4 py-2" />
               </tr>
             </thead>
             <tbody>
               {data.items.map(p => (
                 <tr key={p.id} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                  <td className="px-4 py-2.5 font-mono font-bold text-slate-800 tabular-nums">#{p.documentNumber}</td>
-                  <td className="px-4 py-2.5 text-slate-600 tabular-nums">
+                  <td className="px-4 py-2.5 font-mono font-bold text-tc-text tabular-nums">#{p.documentNumber}</td>
+                  <td className="px-4 py-2.5 text-tc-text-secondary tabular-nums">
                     {new Date(p.invoiceDate).toLocaleDateString('es-AR')}
                   </td>
                   <td className="px-4 py-2.5 text-right font-bold text-tc-purple tabular-nums">{fmtARS(p.total)}</td>
@@ -189,15 +189,15 @@ export function PurchasesPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2 border border-tc-border bg-tc-stub-bg p-3">
               <div>
-                <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Estado</p>
+                <p className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Estado</p>
                 <StatusBadge status={detail.status} label={STATUS_LABELS[detail.status]} />
               </div>
               <div>
-                <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Fecha</p>
-                <p className="text-sm text-slate-800 tabular-nums">{new Date(detail.invoiceDate).toLocaleDateString('es-AR')}</p>
+                <p className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Fecha</p>
+                <p className="text-sm text-tc-text tabular-nums">{new Date(detail.invoiceDate).toLocaleDateString('es-AR')}</p>
               </div>
               <div>
-                <p className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Total</p>
+                <p className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Total</p>
                 <p className="text-sm font-bold text-tc-purple tabular-nums">{fmtARS(detail.total)}</p>
               </div>
             </div>
@@ -211,21 +211,21 @@ export function PurchasesPage() {
             {detail.items.length > 0 && (
               <div className="border border-tc-border bg-white overflow-hidden">
                 <div className="bg-tc-stub-bg border-b border-tc-border px-3 py-1.5">
-                  <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Ítems</span>
+                  <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ítems</span>
                 </div>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-tc-border">
-                      <th className="px-3 py-1.5 text-left text-[10px] font-bold tracking-wider uppercase text-slate-400">Descripción</th>
-                      <th className="px-3 py-1.5 text-right text-[10px] font-bold tracking-wider uppercase text-slate-400">Cant.</th>
-                      <th className="px-3 py-1.5 text-right text-[10px] font-bold tracking-wider uppercase text-slate-400">Total</th>
+                      <th className="px-3 py-1.5 text-left text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Descripción</th>
+                      <th className="px-3 py-1.5 text-right text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Cant.</th>
+                      <th className="px-3 py-1.5 text-right text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     {detail.items.map(i => (
                       <tr key={i.id} className="border-b border-tc-border last:border-0">
-                        <td className="px-3 py-2 text-slate-700">{i.description}</td>
-                        <td className="px-3 py-2 text-right tabular-nums text-slate-600">{i.quantity}</td>
+                        <td className="px-3 py-2 text-tc-text-secondary">{i.description}</td>
+                        <td className="px-3 py-2 text-right tabular-nums text-tc-text-secondary">{i.quantity}</td>
                         <td className="px-3 py-2 text-right tabular-nums font-medium text-tc-purple">{fmtARS(i.total)}</td>
                       </tr>
                     ))}
