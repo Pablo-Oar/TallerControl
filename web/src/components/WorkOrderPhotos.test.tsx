@@ -64,4 +64,25 @@ describe('WorkOrderPhotos', () => {
     await waitFor(() => expect(api.upload).toHaveBeenCalledTimes(1))
     expect(api.upload.mock.calls[0].slice(0, 2)).toEqual(['work_order', 'wo1'])
   })
+
+  it('en escritorio (puntero fino) ofrece un solo botón "Adjuntar imágenes" y sube varias', async () => {
+    vi.stubGlobal('matchMedia', (q: string) => ({ matches: false, media: q, addEventListener() {}, removeEventListener() {} }))
+    try {
+      renderIt()
+      await screen.findByText(/sin fotos todavía/i)
+      expect(screen.getByRole('button', { name: /adjuntar imágenes/i })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /sacar foto/i })).toBeNull()
+
+      const input = screen.getByLabelText('Adjuntar imágenes')
+      expect(input).toHaveAttribute('multiple')
+      expect(input).not.toHaveAttribute('capture')
+      await userEvent.upload(input, [
+        new File(['a'], 'a.jpg', { type: 'image/jpeg' }),
+        new File(['b'], 'b.png', { type: 'image/png' }),
+      ])
+      await waitFor(() => expect(api.upload).toHaveBeenCalledTimes(2))
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
 })

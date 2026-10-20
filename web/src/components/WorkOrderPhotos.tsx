@@ -67,26 +67,53 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false }: Props) {
     onError: e => setError(e instanceof ApiError ? e.detail : 'No se pudo quitar la foto.'),
   })
 
-  function onPick(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    e.target.value = '' // permite volver a elegir el mismo archivo
-    if (!file) return
+  // Celular/tablet (puntero táctil): "Sacar foto" + "Desde la galería". Escritorio: un solo "Adjuntar imágenes"
+  // (varias a la vez, también arrastrando). Sin `matchMedia` (jsdom) se asume táctil.
+  const touch = typeof window.matchMedia !== 'function' || window.matchMedia('(pointer: coarse)').matches
+  const [dragging, setDragging] = useState(false)
+
+  async function uploadFiles(files: File[]) {
     setError(null)
-    if (!ACCEPTED.includes(file.type)) {
-      setError('La foto debe ser JPG, PNG o WebP.')
-      return
+    const valid = files.filter(f => ACCEPTED.includes(f.type))
+    if (valid.length < files.length) setError('Las fotos deben ser JPG, PNG o WebP.')
+    for (const file of valid) {
+      try {
+        await upload.mutateAsync(file)
+      } catch {
+        break // el error ya lo muestra la mutación
+      }
     }
-    upload.mutate(file)
+  }
+
+  function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? [])
+    e.target.value = '' // permite volver a elegir el mismo archivo
+    if (files.length) void uploadFiles(files)
+  }
+
+  function onDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setDragging(false)
+    if (!touch) void uploadFiles(Array.from(e.dataTransfer.files))
   }
 
   const photos = (attachments ?? []).filter(a => a.status === 'ready' && a.contentType.startsWith('image/') && a.downloadUrl)
 
   return (
-    <div className="space-y-3">
+    <div
+      className={`space-y-3 ${dragging ? 'outline-2 outline-dashed outline-tc-purple' : ''}`}
+      onDragOver={e => {
+        if (touch) return
+        e.preventDefault()
+        setDragging(true)
+      }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={onDrop}
+    >
       {photos.length === 0 ? (
         <p className="text-sm text-tc-text-muted">Sin fotos todavía.</p>
       ) : (
-        <ul className="grid grid-cols-3 gap-2" aria-label="Fotos de la orden">
+        <ul className="grid grid-cols-3 gap-2 md:grid-cols-6 xl:grid-cols-8" aria-label="Fotos de la orden">
           {photos.map((p, i) => (
             <li key={p.id} className="relative">
               <a href={p.downloadUrl!} target="_blank" rel="noreferrer" className="block border border-tc-border bg-tc-surface">
@@ -120,34 +147,61 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false }: Props) {
         </ul>
       )}
 
-      {/* Dos entradas: `capture` fuerza la cámara en Android; sin él se abre la galería/archivos. */}
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="sr-only"
-        aria-label="Sacar foto"
-        tabIndex={-1}
-        onChange={onPick}
-      />
-      <input
-        ref={galleryRef}
-        type="file"
-        accept="image/*"
-        className="sr-only"
-        aria-label="Elegir de la galería"
-        tabIndex={-1}
-        onChange={onPick}
-      />
-      <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="secondary" loading={upload.isPending} onClick={() => inputRef.current?.click()}>
-          Sacar foto
-        </Button>
-        <Button size="sm" variant="secondary" disabled={upload.isPending} onClick={() => galleryRef.current?.click()}>
-          Desde la galería
-        </Button>
-      </div>
+      {touch ? (
+        <>
+          {/* `capture` fuerza la cámara en Android; sin él se abre la galería/archivos. */}
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="sr-only"
+            aria-hidden="true"
+            aria-label="Sacar foto"
+            tabIndex={-1}
+            onChange={onPick}
+          />
+          <input
+            ref={galleryRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="sr-only"
+            aria-hidden="true"
+            aria-label="Elegir de la galería"
+            tabIndex={-1}
+            onChange={onPick}
+          />
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="secondary" loading={upload.isPending} onClick={() => inputRef.current?.click()}>
+              Sacar foto
+            </Button>
+            <Button size="sm" variant="secondary" disabled={upload.isPending} onClick={() => galleryRef.current?.click()}>
+              Desde la galería
+            </Button>
+          </div>
+        </>
+      ) : (
+        <>
+          <input
+            ref={galleryRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            className="sr-only"
+            aria-hidden="true"
+            aria-label="Adjuntar imágenes"
+            tabIndex={-1}
+            onChange={onPick}
+          />
+          <div className="flex flex-wrap items-center gap-3">
+            <Button size="sm" variant="secondary" loading={upload.isPending} onClick={() => galleryRef.current?.click()}>
+              Adjuntar imágenes
+            </Button>
+            <span className="text-xs text-tc-text-muted">o arrastralas acá (JPG, PNG o WebP)</span>
+          </div>
+        </>
+      )}
       {error && (
         <p role="alert" className="text-xs text-tc-stamp-red">
           {error}
