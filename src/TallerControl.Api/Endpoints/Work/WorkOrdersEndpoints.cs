@@ -1,5 +1,6 @@
 using TallerControl.Api.Identity;
 using TallerControl.Application.Auth;
+using TallerControl.Application.Common;
 using TallerControl.Application.Work;
 using TallerControl.Domain.Users;
 using TallerControl.Domain.Work;
@@ -32,7 +33,7 @@ internal static class WorkOrdersEndpoints
                  HttpContext ctx, CancellationToken ct,
                  string? status = null, Guid? mechanicId = null, Guid? vehicleId = null,
                  bool? withBalance = null, DateTimeOffset? from = null, DateTimeOffset? to = null,
-                 string? assignment = null, int page = 1, int pageSize = 25) =>
+                 string? assignment = null, string? sort = null, string? dir = null, int page = 1, int pageSize = 25) =>
                 {
                     WorkOrderStatus? parsedStatus = status is not null
                         && EnumQuery.TryParse<WorkOrderStatus>(status, out var s)
@@ -40,7 +41,7 @@ internal static class WorkOrdersEndpoints
                     var parsedAssignment = assignment is not null
                         && EnumQuery.TryParse<AssignmentFilter>(assignment, out var a)
                         ? a : AssignmentFilter.Any;
-                    return SearchAsync(handler, auth, ctx, parsedStatus, mechanicId, vehicleId, withBalance, from, to, parsedAssignment, page, pageSize, ct);
+                    return SearchAsync(handler, auth, ctx, parsedStatus, mechanicId, vehicleId, withBalance, from, to, parsedAssignment, SortSpec.Parse(sort, dir), page, pageSize, ct);
                 })
             .RequirePermission(Permission.WorkOrdersRead);
 
@@ -113,12 +114,13 @@ internal static class WorkOrdersEndpoints
         WorkOrderStatus? status, Guid? mechanicId, Guid? vehicleId,
         bool? withBalance, DateTimeOffset? from, DateTimeOffset? to,
         AssignmentFilter assignment,
+        SortSpec sort,
         int page, int pageSize, CancellationToken ct)
     {
         var (isMechanic, membershipId, includePrices) = await ResolveSessionAsync(auth, ctx, ct);
         var result = await handler.HandleAsync(
             status, mechanicId, vehicleId, withBalance, from, to, assignment,
-            isMechanic, membershipId, includePrices, page, pageSize, ct);
+            isMechanic, membershipId, includePrices, page, pageSize, sort, ct);
         return Results.Ok(result);
     }
 

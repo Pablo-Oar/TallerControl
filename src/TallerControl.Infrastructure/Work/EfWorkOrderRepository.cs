@@ -34,6 +34,7 @@ internal sealed class EfWorkOrderRepository : IWorkOrderRepository
         int page,
         int pageSize,
         bool includePrices,
+        SortSpec sort,
         CancellationToken ct)
     {
         var query = _db.Set<WorkOrder>().AsNoTracking();
@@ -72,8 +73,21 @@ internal sealed class EfWorkOrderRepository : IWorkOrderRepository
 
         var total = await query.CountAsync(ct);
 
-        var raw = await query
-            .OrderByDescending(w => w.CreatedAt)
+        // Claves permitidas: lista cerrada (nunca SQL con texto del cliente). El desempate por Id vuelve estable la paginación.
+        var ordered = sort.Key switch
+        {
+            "number" => sort.Descending ? query.OrderByDescending(w => w.Number) : query.OrderBy(w => w.Number),
+            "status" => sort.Descending ? query.OrderByDescending(w => w.Status) : query.OrderBy(w => w.Status),
+            "total" => sort.Descending ? query.OrderByDescending(w => w.Total) : query.OrderBy(w => w.Total),
+            "balance" => sort.Descending
+                ? query.OrderByDescending(w => EF.Property<decimal>(w, "Balance"))
+                : query.OrderBy(w => EF.Property<decimal>(w, "Balance")),
+            "createdat" => sort.Descending ? query.OrderByDescending(w => w.CreatedAt) : query.OrderBy(w => w.CreatedAt),
+            _ => query.OrderByDescending(w => w.CreatedAt),
+        };
+
+        var raw = await ordered
+            .ThenBy(w => w.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(w => new

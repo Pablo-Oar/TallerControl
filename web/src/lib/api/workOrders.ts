@@ -168,9 +168,15 @@ export const workOrdersApi = {
     pageSize = 25,
     /** Pestañas del portal del mecánico: "mine" (mías) / "unassigned" (sin asignar). */
     assignment?: 'mine' | 'unassigned' | null,
+    /** Orden en el servidor (`number|status|total|balance|createdat`). */
+    sort?: { key: string; dir: 'asc' | 'desc' } | null,
   ) => {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
     if (assignment) params.set('assignment', assignment)
+    if (sort) {
+      params.set('sort', sort.key)
+      params.set('dir', sort.dir)
+    }
     if (status) params.set('status', status)
     if (mechanicId) params.set('mechanicId', mechanicId)
     if (vehicleId) params.set('vehicleId', vehicleId)

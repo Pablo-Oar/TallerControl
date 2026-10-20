@@ -118,7 +118,7 @@ export async function createWorkOrder(
 }
 
 /** Fila (li) de la lista de órdenes que contiene la patente. */
-export const workOrderRow = (page: Page, plate: string) => page.getByRole('listitem').filter({ hasText: plate })
+export const workOrderRow = (page: Page, plate: string) => page.getByRole('row').filter({ hasText: plate })
 
 /** Abre el detalle de la OT de una patente desde la lista. */
 export async function openWorkOrder(page: Page, plate: string) {

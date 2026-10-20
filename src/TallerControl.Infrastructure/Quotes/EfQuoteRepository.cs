@@ -27,6 +27,7 @@ internal sealed class EfQuoteRepository : IQuoteRepository
         DateOnly? to,
         int page,
         int pageSize,
+        SortSpec sort,
         CancellationToken ct)
     {
         var query = _db.Set<Quote>().AsNoTracking();
@@ -44,8 +45,18 @@ internal sealed class EfQuoteRepository : IQuoteRepository
 
         var total = await query.CountAsync(ct);
 
-        var raw = await query
-            .OrderByDescending(q => q.CreatedAt)
+        var ordered = sort.Key switch
+        {
+            "number" => sort.Descending ? query.OrderByDescending(q => q.Number) : query.OrderBy(q => q.Number),
+            "status" => sort.Descending ? query.OrderByDescending(q => q.Status) : query.OrderBy(q => q.Status),
+            "total" => sort.Descending ? query.OrderByDescending(q => q.Total) : query.OrderBy(q => q.Total),
+            "validuntil" => sort.Descending ? query.OrderByDescending(q => q.ValidUntil) : query.OrderBy(q => q.ValidUntil),
+            "createdat" => sort.Descending ? query.OrderByDescending(q => q.CreatedAt) : query.OrderBy(q => q.CreatedAt),
+            _ => query.OrderByDescending(q => q.CreatedAt),
+        };
+
+        var raw = await ordered
+            .ThenBy(q => q.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(q => new

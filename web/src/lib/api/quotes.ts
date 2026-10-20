@@ -224,8 +224,14 @@ export const quotesApi = {
     to?: string | null,
     page = 1,
     pageSize = 25,
+    /** Orden en el servidor (`number|status|total|validuntil|createdat`). */
+    sort?: { key: string; dir: 'asc' | 'desc' } | null,
   ) => {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
+    if (sort) {
+      params.set('sort', sort.key)
+      params.set('dir', sort.dir)
+    }
     if (status) params.set('status', status)
     if (customerId) params.set('customerId', customerId)
     if (vehicleId) params.set('vehicleId', vehicleId)

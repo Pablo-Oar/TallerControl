@@ -82,6 +82,33 @@ public sealed class QuotesEndpointsTests : IAsyncLifetime
 
     // ── Regresión: crear con descuento global no debe perder los ítems ────────
 
+    [Fact(DisplayName = "T-QUO-01c: GET /quotes ordena por total en el servidor (sort/dir)")]
+    public async Task Get_ordena_por_total_en_el_servidor()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, QuotesWebApplicationFactory.OwnerEmail, QuotesWebApplicationFactory.Password);
+
+        object[] Item(decimal price) => new object[]
+        {
+            new { kind = "service", description = "Servicio", catalogItemId = _factory.CatalogItemId, quantity = 1m, unitNetPrice = price, vatRate = 21m, requiredForApproval = true },
+        };
+        var cheap = (await CreateQuoteAsync(client, Item(100m))).GetProperty("id").GetGuid();
+        var dear = (await CreateQuoteAsync(client, Item(9000m))).GetProperty("id").GetGuid();
+
+        async Task<List<Guid>> IdsAsync(string dir)
+        {
+            var resp = await client.GetAsync($"/api/v1/quotes?sort=total&dir={dir}&pageSize=100");
+            resp.EnsureSuccessStatusCode();
+            return (await resp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("items")
+                .EnumerateArray().Select(i => i.GetProperty("id").GetGuid()).ToList();
+        }
+
+        var asc = await IdsAsync("asc");
+        Assert.True(asc.IndexOf(cheap) < asc.IndexOf(dear));
+        var desc = await IdsAsync("desc");
+        Assert.True(desc.IndexOf(dear) < desc.IndexOf(cheap));
+    }
+
     [Fact(DisplayName = "T-QUO-04b: POST /quotes con descuento global conserva los ítems y calcula el total")]
     public async Task Post_con_descuento_conserva_items()
     {
