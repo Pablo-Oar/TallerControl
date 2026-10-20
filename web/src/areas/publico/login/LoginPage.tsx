@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router'
-import { Input } from '../../../components/ui/Input'
+import { FormField } from '../../../components/ui/FormField'
 import { Button } from '../../../components/ui/Button'
 import { authApi } from '../../../lib/api/auth'
 import { useAuth } from '../../../lib/auth/AuthContext'
@@ -57,14 +57,14 @@ export function LoginPage() {
         <div className="px-6 py-8">
           <h1 className="mb-6 text-xl font-bold tracking-tight text-slate-900">Ingresar</h1>
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-            <Input
+            <FormField
               label="Email"
               type="email"
               autoComplete="email"
               error={errors.email?.message}
               {...register('email')}
             />
-            <Input
+            <FormField
               label="Contraseña"
               type="password"
               autoComplete="current-password"

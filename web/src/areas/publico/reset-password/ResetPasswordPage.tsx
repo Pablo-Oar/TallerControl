@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
 import { useSearchParams, Link, useNavigate } from 'react-router'
-import { Input } from '../../../components/ui/Input'
+import { FormField } from '../../../components/ui/FormField'
 import { Button } from '../../../components/ui/Button'
 import { authApi } from '../../../lib/api/auth'
 import { ApiError } from '../../../lib/api/client'
@@ -66,14 +66,14 @@ export function ResetPasswordPage() {
         <div className="px-6 py-8">
           <h1 className="mb-6 text-xl font-bold tracking-tight text-slate-900">Nueva contraseña</h1>
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-            <Input
+            <FormField
               label="Contraseña"
               type="password"
               autoComplete="new-password"
               error={errors.password?.message}
               {...register('password')}
             />
-            <Input
+            <FormField
               label="Confirmar contraseña"
               type="password"
               autoComplete="new-password"

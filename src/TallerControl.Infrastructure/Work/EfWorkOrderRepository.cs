@@ -30,6 +30,7 @@ internal sealed class EfWorkOrderRepository : IWorkOrderRepository
         DateTimeOffset? to,
         bool mechanicFilterForced,
         Guid? forcedMechanicId,
+        AssignmentFilter assignment,
         int page,
         int pageSize,
         bool includePrices,
@@ -44,6 +45,12 @@ internal sealed class EfWorkOrderRepository : IWorkOrderRepository
             query = query.Where(w => w.AssignedMechanicId == forcedMechanicId || w.AssignedMechanicId == null);
         else if (mechanicId.HasValue)
             query = query.Where(w => w.AssignedMechanicId == mechanicId.Value);
+
+        // Pestañas del portal del mecánico: "Mías" (asignadas a la sesión) y "Sin asignar".
+        if (assignment == AssignmentFilter.Unassigned)
+            query = query.Where(w => w.AssignedMechanicId == null);
+        else if (assignment == AssignmentFilter.Mine && forcedMechanicId.HasValue)
+            query = query.Where(w => w.AssignedMechanicId == forcedMechanicId);
 
         if (vehicleId.HasValue)
             query = query.Where(w => w.VehicleId == vehicleId.Value);

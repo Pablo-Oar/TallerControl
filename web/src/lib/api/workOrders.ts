@@ -156,8 +156,11 @@ export const workOrdersApi = {
     to?: string | null,
     page = 1,
     pageSize = 25,
+    /** Pestañas del portal del mecánico: "mine" (mías) / "unassigned" (sin asignar). */
+    assignment?: 'mine' | 'unassigned' | null,
   ) => {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
+    if (assignment) params.set('assignment', assignment)
     if (status) params.set('status', status)
     if (mechanicId) params.set('mechanicId', mechanicId)
     if (vehicleId) params.set('vehicleId', vehicleId)

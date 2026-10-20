@@ -6,6 +6,7 @@ import {
   createCustomer,
   createVehicle,
   createWorkOrder,
+  customerRow,
   loginAsOwner,
   openWorkOrder,
   readReceivable,
@@ -45,8 +46,7 @@ async function cancelOrderWithProduct(page: Page) {
   expect(await readReceivable(page)).toBeCloseTo(receivableBefore + 7260, 2)
 
   // El saldo del cliente suma la orden abierta (misma definición que "Por cobrar")
-  await page.goto('/app/customers')
-  await expect(page.getByRole('listitem').filter({ hasText: customerName })).toContainText(/7\.260/)
+  await expect(await customerRow(page, customerName)).toContainText(/7\.260/)
 
   await openWorkOrder(page, plate)
   await changeStatus(page, /cancelada/i, { cancelReason: 'Prueba E2E cancelación' })
@@ -65,8 +65,7 @@ test.describe('E2E-07: Cancelar OT', () => {
     const { receivableBefore, customerName } = await cancelOrderWithProduct(page)
     // Regla V2: "por cobrar" y el saldo del cliente = saldo de las OT no canceladas
     expect(await readReceivable(page)).toBeCloseTo(receivableBefore, 2)
-    await page.goto('/app/customers')
-    await expect(page.getByRole('listitem').filter({ hasText: customerName })).not.toContainText(/7\.260/)
+    await expect(await customerRow(page, customerName)).not.toContainText(/7\.260/)
   })
 
   test('cancelar una OT con producto repone el stock', async ({ page }) => {

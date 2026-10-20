@@ -15,6 +15,7 @@ import {
   STATUS_LABELS as PAYMENT_STATUS_LABELS,
 } from '../../../lib/api/payments'
 import { Button } from '../../../components/ui/Button'
+import { WorkOrderPhotos } from '../../../components/WorkOrderPhotos'
 import { FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { ApiError } from '../../../lib/api/client'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
@@ -269,6 +270,10 @@ export function WorkOrderDetailPage() {
       )}
 
       {/* Cobros */}
+      <Section title="Fotos">
+        <WorkOrderPhotos workOrderId={order.id} canDelete />
+      </Section>
+
       <Section title="Cobros">
         {payments && (
           <div className="mb-3 flex flex-wrap gap-6 text-sm border-b border-tc-perf pb-3">

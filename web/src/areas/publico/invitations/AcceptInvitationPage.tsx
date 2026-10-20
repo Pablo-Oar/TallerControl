@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
-import { Input } from '../../../components/ui/Input'
+import { FormField } from '../../../components/ui/FormField'
 import { Button } from '../../../components/ui/Button'
 import { invitationsApi } from '../../../lib/api/users'
 import { useAuth } from '../../../lib/auth/AuthContext'
@@ -57,14 +57,14 @@ export function AcceptInvitationPage() {
           <h1 className="mb-2 text-xl font-bold tracking-tight text-slate-900">Activar cuenta</h1>
           <p className="mb-6 text-sm text-slate-500">Elegí una contraseña para completar el registro.</p>
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-            <Input
+            <FormField
               label="Contraseña"
               type="password"
               autoComplete="new-password"
               error={errors.password?.message}
               {...register('password')}
             />
-            <Input
+            <FormField
               label="Confirmar contraseña"
               type="password"
               autoComplete="new-password"

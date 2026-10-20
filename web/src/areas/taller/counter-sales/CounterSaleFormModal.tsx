@@ -4,10 +4,10 @@ import { z } from 'zod'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { counterSalesApi, type CounterSaleDto } from '../../../lib/api/counterSales'
-import { customersApi } from '../../../lib/api/customers'
 import { catalogApi } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect } from '../../../components/ui/FormField'
+import { CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
@@ -37,17 +37,12 @@ interface Props {
 export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
   const [serverError, setServerError] = useState<string | null>(null)
 
-  const { data: customersPage } = useQuery({
-    queryKey: ['customers-picker'],
-    queryFn: () => customersApi.search(null, 1, 100),
-  })
-
   const { data: catalogPage } = useQuery({
     queryKey: ['catalog-picker-products-services'],
     queryFn: () => catalogApi.search(null, undefined, true, 1, 100),
   })
 
-  const { register, handleSubmit, control, setValue, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
+  const { register, handleSubmit, control, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       customerId: '',
@@ -92,16 +87,11 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
           <p className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
         )}
 
-        <FormSelect
-          key={customersPage ? 'loaded' : 'loading'}
+        <CustomerPicker
           label="Cliente (opcional)"
-          {...register('customerId')}
-        >
-          <option value="">— Sin cliente —</option>
-          {customersPage?.items.map(c => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </FormSelect>
+          value={watch('customerId') ?? ''}
+          onChange={id => setValue('customerId', id)}
+        />
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">

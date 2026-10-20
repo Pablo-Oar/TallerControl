@@ -20,9 +20,14 @@ test.describe('E2E-02: Cliente → vehículo → OT → historial', () => {
     await loginAsOwner(page)
 
     await createCustomer(page, customerName, `e2e${suffix}@test.com`)
+    // la lista está paginada y ordenada por nombre: se busca el cliente nuevo
+    await page.getByPlaceholder(/buscar por nombre/i).fill(customerName)
+    await page.getByRole('button', { name: /^buscar$/i }).click()
     await expect(page.getByText(customerName).first()).toBeVisible()
 
     await createVehicle(page, customerName, plate, { brand: 'Toyota', model: 'Corolla', year: 2020 })
+    await page.getByPlaceholder(/buscar por patente/i).fill(plate)
+    await page.getByRole('button', { name: /^buscar$/i }).click()
     await expect(page.getByText(plate).first()).toBeVisible()
 
     await createWorkOrder(page, customerName, plate)
