@@ -36,7 +36,7 @@ describe('LoginPage', () => {
     vi.mocked(authModule.authApi.login).mockRejectedValue(new ApiError(401, 'Unauthorized'))
     renderPage()
     await userEvent.type(screen.getByLabelText(/email/i), 'a@b.com')
-    await userEvent.type(screen.getByLabelText(/contraseña/i), 'pass1234')
+    await userEvent.type(screen.getByLabelText(/^contraseña$/i), 'pass1234')
     await userEvent.click(screen.getByRole('button', { name: /ingresar/i }))
     expect(await screen.findByRole('alert')).toHaveTextContent(/email o contraseña incorrectos/i)
   })
@@ -45,7 +45,7 @@ describe('LoginPage', () => {
     vi.mocked(authModule.authApi.login).mockRejectedValue(new ApiError(423, 'Locked'))
     renderPage()
     await userEvent.type(screen.getByLabelText(/email/i), 'a@b.com')
-    await userEvent.type(screen.getByLabelText(/contraseña/i), 'pass1234')
+    await userEvent.type(screen.getByLabelText(/^contraseña$/i), 'pass1234')
     await userEvent.click(screen.getByRole('button', { name: /ingresar/i }))
     expect(await screen.findByRole('alert')).toHaveTextContent(/bloqueada/i)
   })
@@ -54,7 +54,7 @@ describe('LoginPage', () => {
     vi.mocked(authModule.authApi.login).mockResolvedValue(undefined)
     renderPage()
     await userEvent.type(screen.getByLabelText(/email/i), 'dueno@taller.com')
-    await userEvent.type(screen.getByLabelText(/contraseña/i), 'MiPass123!')
+    await userEvent.type(screen.getByLabelText(/^contraseña$/i), 'MiPass123!')
     await userEvent.click(screen.getByRole('button', { name: /ingresar/i }))
     await waitFor(() =>
       expect(vi.mocked(authModule.authApi.login)).toHaveBeenCalledWith({

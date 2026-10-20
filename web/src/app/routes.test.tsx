@@ -36,7 +36,7 @@ describe('shell de la SPA', () => {
   it('/app sin sesión redirige a /login', async () => {
     renderEn('/app')
     // Sin sesión, RequireAuth redirige a /login → aparece la pantalla de ingreso
-    expect(await screen.findByRole('heading', { name: /ingresar/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /bienvenido de nuevo/i })).toBeInTheDocument()
   })
 
   it('/m muestra el área del mecánico', async () => {
@@ -46,6 +46,6 @@ describe('shell de la SPA', () => {
 
   it('/login muestra la página de ingreso', async () => {
     renderEn('/login')
-    expect(await screen.findByRole('heading', { name: /ingresar/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /bienvenido de nuevo/i })).toBeInTheDocument()
   })
 })
