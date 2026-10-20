@@ -4,8 +4,9 @@ import { EyeIcon, EyeOffIcon } from './icons'
 
 /**
  * Tarjeta de autenticación (UI-R2, bloques `auth-01`/`auth-02` de Watermelon): bisel exterior con la tarjeta blanca
- * adentro, título centrado, campos con ícono y pie fuera de la tarjeta. Código propio con los tokens `tc-*`
- * (esquinas rectas por D-26); sin proveedores sociales hasta que exista el login con Google (E18).
+ * adentro, título centrado, campos con ícono y pie fuera de la tarjeta. Código propio con los tokens `tc-*`.
+ * Las pantallas de acceso llevan bordes redondeados con radios explícitos (el resto de la app mantiene D-26,
+ * `--radius: 0`); sin proveedores sociales hasta que exista el login con Google (E18).
  */
 export function AuthCard({
   title,
@@ -22,8 +23,8 @@ export function AuthCard({
 }) {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-tc-navy px-4 py-10">
-      <div className={cn('w-full max-w-sm border border-tc-navy-mid bg-tc-stub-bg p-2', className)}>
-        <div className="border border-tc-border bg-white px-5 py-7 shadow-sm sm:px-7">
+      <div className={cn('w-full max-w-sm rounded-[28px] border border-tc-navy-mid bg-tc-stub-bg p-2', className)}>
+        <div className="rounded-[22px] border border-tc-border bg-white px-5 py-7 shadow-sm sm:px-7">
           <div className="mb-6 text-center">
             <p className="mb-3 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">TallerControl</p>
             <h1 className="text-xl font-extrabold tracking-tight text-tc-text sm:text-2xl">{title}</h1>
@@ -72,7 +73,7 @@ export const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(function A
           aria-invalid={error ? true : undefined}
           aria-describedby={error || hint ? descId : undefined}
           className={cn(
-            'block h-11 w-full border bg-tc-surface pl-10 text-sm text-tc-text outline-none transition-colors',
+            'block h-11 w-full rounded-xl border bg-tc-surface pl-10 text-sm text-tc-text outline-none transition-colors',
             'placeholder:text-tc-text-muted focus:border-tc-purple focus:bg-white',
             isPassword ? 'pr-11' : 'pr-3',
             error ? 'border-tc-stamp-red' : 'border-tc-border-mid',
@@ -85,7 +86,7 @@ export const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(function A
             onClick={() => setShown(v => !v)}
             aria-label={shown ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             aria-pressed={shown}
-            className="absolute top-1/2 right-0 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-tc-text-muted hover:text-tc-text"
+            className="absolute top-1/2 right-0 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-tc-text-muted hover:text-tc-text"
           >
             {shown ? <EyeOffIcon /> : <EyeIcon />}
           </button>
@@ -99,3 +100,12 @@ export const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(function A
     </div>
   )
 })
+
+/** Aviso de error del servidor dentro de una pantalla de acceso (mismo radio que los campos). */
+export function AuthAlert({ children }: { children: ReactNode }) {
+  return (
+    <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+      {children}
+    </p>
+  )
+}
