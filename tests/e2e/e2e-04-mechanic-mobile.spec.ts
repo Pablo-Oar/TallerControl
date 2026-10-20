@@ -16,7 +16,7 @@ import {
  * El mecánico ve las OT sin asignar, trabaja una (en proceso → nota → completada) y no ve precios.
  * Requiere E2E_MECHANIC_EMAIL y E2E_MECHANIC_PASSWORD.
  *
- * La foto adjunta desde /m no tiene pantalla todavía (ver test.fixme).
+ * Incluye las pestañas "Mías" / "Sin asignar" y las fotos desde el celular.
  */
 
 const E2E_RUN = process.env.E2E_RUN === '1'
@@ -45,7 +45,10 @@ test.describe('E2E-04: Mecánico móvil', () => {
     const m = await mechCtx.newPage()
     await loginAsMechanic(m)
 
-    // La OT sin asignar aparece en su lista
+    // La OT sin asignar aparece en la pestaña "Sin asignar" (y no en "Mías")
+    await expect(m.getByRole('tab', { name: /^mías$/i })).toHaveAttribute('aria-selected', 'true')
+    await expect(m.getByRole('link').filter({ hasText: plate })).toHaveCount(0)
+    await m.getByRole('tab', { name: /sin asignar/i }).click()
     const card = m.getByRole('link').filter({ hasText: plate })
     await expect(card).toBeVisible()
     await expect(card.getByText(/sin asignar/i)).toBeVisible()
@@ -59,6 +62,15 @@ test.describe('E2E-04: Mecánico móvil', () => {
     await expect(m.getByText(/no tiene mecánico asignado/i)).toBeVisible()
     await m.getByRole('button', { name: /^asignarme$/i }).click()
     await expect(m.getByText(/no tiene mecánico asignado/i)).toHaveCount(0)
+
+    // Foto desde el celular (PNG real de 1×1 px: el servidor valida el tipo por magic bytes)
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      'base64',
+    )
+    await expect(m.getByLabel('Elegir foto')).toHaveAttribute('capture', 'environment')
+    await m.getByLabel('Elegir foto').setInputFiles({ name: 'foto.png', mimeType: 'image/png', buffer: png })
+    await expect(m.getByRole('img', { name: /foto 1 de la orden/i })).toBeVisible()
 
     // Iniciar el trabajo
     await m.getByRole('button', { name: /→ en proceso/i }).click()
@@ -95,9 +107,5 @@ test.describe('E2E-04: Mecánico móvil', () => {
     await page.getByLabel(/^asignar a/i).selectOption({ index: 1 })
     await expect(page.getByText(/sin asignar/i)).toHaveCount(0)
     await expect(page.getByLabel(/^reasignar a/i)).toBeVisible()
-  })
-
-  test.fixme('el mecánico adjunta una foto desde el celular', async () => {
-    // Sin UI: no hay carga de fotos en /m (doc 06: <input capture>). La API de adjuntos ya existe.
   })
 })
