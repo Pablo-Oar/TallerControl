@@ -116,7 +116,7 @@ Paleta de cabina y papel: navy profundo, blancos fríos y un único acento viole
 - **Paper White** (#ffffff) y **Paper Surface** (#f8fafc): fondos de contenido y hover de filas/secundarios.
 - **Paper Border** (#e2e8f0) y **Border Mid** (#cbd5e1): bordes de tarjetas, tablas e inputs.
 - **Stub Blue** (#f0f4fb): columna talón y track de scrollbar. **Perforation** (#c7d3e8): línea punteada del ticket.
-- **Ink** (#0f172a), **Ink Secondary** (#475569), **Ink Muted** (#94a3b8): jerarquía de texto (tokens `tc-text*`; aún conviven con usos de `text-slate-*`).
+- **Ink** (#0f172a), **Ink Secondary** (#475569), **Ink Muted** (#94a3b8): jerarquía de texto (tokens `tc-text*`, migrados desde `text-slate-*` en F5).
 
 ### Stamps (estado)
 - Pendiente (#fef3c7 / #92400e), En progreso (#dbeafe / #1e40af), Completada (#d1fae5 / #065f46), Anulada (gris sobre blanco, tachado) y **Stamp Red** (#d32f2f) para acciones destructivas y rechazo.
@@ -157,7 +157,7 @@ Plano por defecto. La profundidad se logra con contraste de superficies (navy / 
 
 ## Shapes
 
-Esquinas rectas (`--radius: 0px`, puente shadcn → `tc-*`). Bordes de 1px; la forma distintiva es el ticket: línea perforada punteada (1px, 4px/4px) y talón lateral. Excepción puntual: píldoras o círculos solo en spinners y avatares. Hay residuos históricos de `rounded-md/xl` en unas pocas pantallas; se corrigen en UI-R2 F5.
+Esquinas rectas (`--radius: 0px`, puente shadcn → `tc-*`). Bordes de 1px; la forma distintiva es el ticket: línea perforada punteada (1px, 4px/4px) y talón lateral. Excepción puntual: píldoras o círculos solo en spinners y avatares. 
 
 ## Components
 
@@ -170,15 +170,23 @@ Esquinas rectas (`--radius: 0px`, puente shadcn → `tc-*`). Bordes de 1px; la f
 
 ### Status Stamp
 - Mayúsculas, 10px, negrita, tracking amplio, borde + fondo suave del color semántico; la anulación va tachada.
+- **Sello editable** (`EditableStatusBadge`): en el encabezado de la OT ofrece solo las transiciones válidas; "Anulada" pide motivo en un diálogo.
 
 ### Modal
 - Encabezado navy con título en mayúsculas espaciadas y botón de cierre; línea perforada bajo el encabezado; cuerpo blanco de 20px de relleno; velo negro 60%.
+- Pila de diálogos: Escape cierra solo el superior, el foco queda atrapado y vuelve al disparador, el fondo se marca `inert`. Bajo 640px es una hoja inferior (`max-h-[92dvh]`). `EditDialog` es el marco de edición: Guardar deshabilitado sin cambios y confirmación al descartar.
 
 ### Inputs / Fields
-- Borde Paper Border, fondo blanco, texto 14px; foco con el anillo global violeta; error con borde rojo y mensaje de 12px. (UI-R2 reemplaza el control por `FormField` de etiqueta flotante.)
+- Borde Paper Border, fondo blanco, texto 14px; foco con el anillo global violeta; error con borde rojo y mensaje de 12px. Todos los formularios usan `FormField`/`FormSelect`/`FormTextarea` (etiqueta flotante por CSS, `htmlFor`/`id`, `aria-invalid`/`aria-describedby`). Firma manuscrita: `SignaturePad` (Pointer Events, PNG).
 
 ### Navigation
 - Sidebar navy profundo de 220px con grupos por rol; header navy con búsqueda por patente y chip de rol; en `/m` navegación inferior táctil.
+
+### Tabs
+- `Tabs` (controlado) y `TabNav` (rutas): subrayado violeta que se desliza, flechas/Home/End, `aria-current` en navegación. Objetivo táctil ≥44px.
+
+### Timeline
+- Lista `ol` con marcadores cuadrados por tipo (estado, orden, presupuesto, respuesta), fecha en `time`, título enlazable, sello a la derecha y detalle plegable (`aria-expanded`). La usan historial de OT, respuestas del presupuesto, ficha del vehículo y portal del dueño (sin hora).
 
 ### Ticket (signature)
 - Tarjeta de documento con talón de 20% a la izquierda (Stub Blue), línea perforada vertical y sello de estado; la usan OT, presupuestos y cobros.
@@ -197,4 +205,5 @@ Esquinas rectas (`--radius: 0px`, puente shadcn → `tc-*`). Bordes de 1px; la f
 - **Don't** usar el violeta como relleno decorativo ni para estados.
 - **Don't** introducir fuentes web ni iconos de bibliotecas pesadas sin decisión explícita (D-25).
 - **Don't** comunicar estado solo con color de texto.
-- **Don't** usar `text-slate-*` en código nuevo: usar los tokens `tc-text*` (pendiente de migrar en F5).
+- **Don't** usar `text-slate-*` en código nuevo: usar los tokens `tc-text*`.
+- **Don't** vendorear código de Watermelon sin decisión: los componentes son propios (ver `web/src/components/watermelon/README.md`).
