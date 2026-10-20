@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   quotesApi,
@@ -9,6 +8,8 @@ import {
 } from '../../../lib/api/quotes'
 import { Button } from '../../../components/ui/Button'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { DataTable, type DataTableColumn, type SortState } from '../../../components/ui/DataTable'
+import { Pagination } from '../../../components/ui/Pagination'
 import { QuoteFormModal } from './QuoteFormModal'
 import { formatDateOnly } from '../../../lib/dates'
 
@@ -19,15 +20,68 @@ const STATUS_OPTIONS: QuoteStatus[] = [
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
 
+/** Columnas de la lista; el orden es del servidor (`number|status|total|validuntil|createdat`). */
+const COLUMNS: DataTableColumn<QuoteListDto>[] = [
+  {
+    key: 'number',
+    header: '#',
+    align: 'center',
+    widthClass: 'w-20',
+    sortable: true,
+    cell: q => <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{q.number}</span>,
+  },
+  {
+    key: 'customer',
+    header: 'Cliente / Vehículo',
+    cell: q => (
+      <div className="min-w-0">
+        <p className="truncate font-medium text-tc-text">{q.customerName}</p>
+        <p className="mt-0.5 font-mono text-[11px] font-bold tracking-widest text-tc-text-muted">{q.vehiclePlate}</p>
+      </div>
+    ),
+  },
+  {
+    key: 'status',
+    header: 'Estado',
+    align: 'center',
+    widthClass: 'w-40',
+    sortable: true,
+    cell: q => <StatusBadge status={q.status} />,
+  },
+  {
+    key: 'total',
+    header: 'Total',
+    align: 'right',
+    widthClass: 'w-32',
+    sortable: true,
+    cell: q => <span className="tabular-nums font-medium text-tc-purple">{fmtARS(q.total)}</span>,
+  },
+  {
+    key: 'validuntil',
+    header: 'Válido hasta',
+    widthClass: 'w-36',
+    sortable: true,
+    cell: q => <span className="text-xs text-tc-text-secondary">{formatDateOnly(q.validUntil)}</span>,
+  },
+  {
+    key: 'createdat',
+    header: 'Creado',
+    widthClass: 'w-36',
+    sortable: true,
+    cell: q => <span className="text-xs text-tc-text-muted">{new Date(q.createdAt).toLocaleDateString('es-AR')}</span>,
+  },
+]
+
 export function QuotesPage() {
   const queryClient = useQueryClient()
   const [statusFilter, setStatusFilter] = useState<QuoteStatus | ''>('')
   const [page, setPage] = useState(1)
+  const [sort, setSort] = useState<SortState | null>(null)
   const [creating, setCreating] = useState(false)
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['quotes', statusFilter, page],
-    queryFn: () => quotesApi.search(statusFilter || null, null, null, null, null, page),
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['quotes', statusFilter, page, sort],
+    queryFn: () => quotesApi.search(statusFilter || null, null, null, null, null, page, 25, sort),
   })
 
   function handleSuccess() {
@@ -55,129 +109,43 @@ export function QuotesPage() {
         </select>
       </div>
 
-      {isLoading && (
-        <div className="space-y-1">
-          {[0, 1, 2, 3].map(i => (
-            <div key={i} className="h-14 animate-pulse bg-slate-50 border border-tc-border" />
-          ))}
-        </div>
-      )}
-
-      {error && (
-        <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          No se pudo cargar los presupuestos.
-        </p>
-      )}
+      <DataTable<QuoteListDto>
+        label="Presupuestos"
+        columns={COLUMNS}
+        rows={data?.items ?? []}
+        getRowId={q => q.id}
+        rowHref={q => `/app/quotes/${q.id}`}
+        rowLabel={q => `Ver presupuesto #${q.number}`}
+        cardStub={q => <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{q.number}</span>}
+        renderCard={q => (
+          <>
+            <p className="truncate text-sm font-medium text-tc-text">{q.customerName}</p>
+            <p className="mt-0.5 font-mono text-[11px] font-bold tracking-widest text-tc-text-muted">{q.vehiclePlate}</p>
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <StatusBadge status={q.status} />
+              <span className="tabular-nums text-sm font-medium text-tc-purple">{fmtARS(q.total)}</span>
+            </div>
+          </>
+        )}
+        sort={sort}
+        onSortChange={s => { setSort(s); setPage(1) }}
+        loading={isLoading}
+        error={!!error}
+        onRetry={() => refetch()}
+        emptyMessage="No hay presupuestos."
+      />
 
       {data && (
-        <>
-          <div className="border border-tc-border bg-white overflow-hidden">
-            {/* Header */}
-            <div className="hidden md:grid md:grid-cols-[4rem_minmax(0,1fr)_9rem_8rem_8rem_8rem_3rem] border-b border-tc-border bg-tc-stub-bg">
-              {[['#', 'text-center', false], ['Cliente / Vehículo', '', false], ['Estado', 'text-center', false], ['Total', 'text-right', false], ['Válido hasta', '', true], ['Creado', '', true], ['', '', true]].map(([h, cls, hide], i) => (
-                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${cls} ${hide ? 'hidden md:block' : ''}`}>
-                  {h}
-                </div>
-              ))}
-            </div>
-
-            {data.items.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-tc-text-muted">No hay presupuestos.</p>
-            ) : (
-              <ul className="divide-y divide-tc-border">
-                {data.items.map((q: QuoteListDto) => (
-                  <li
-                    key={q.id}
-                    className="grid grid-cols-[3.5rem_minmax(0,1fr)_2.75rem] md:grid-cols-[4rem_minmax(0,1fr)_9rem_8rem_8rem_8rem_3rem] items-center hover:bg-tc-surface transition-colors"
-                  >
-                    {/* Stub: number */}
-                    <div className="flex h-full min-h-[44px] items-center justify-center border-r border-tc-border bg-tc-stub-bg px-2 py-3">
-                      <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{q.number}</span>
-                    </div>
-
-                    {/* Customer + vehicle */}
-                    <div className="min-w-0 px-3 py-3 md:px-4">
-                      <p className="text-sm font-medium text-tc-text truncate">{q.customerName}</p>
-                      <p className="mt-0.5 text-[11px] font-bold tracking-widest text-tc-text-muted font-mono">{q.vehiclePlate}</p>
-                      {/* Móvil: estado y total debajo, sin columnas que se recorten */}
-                      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 md:hidden">
-                        <StatusBadge status={q.status} />
-                        <span className="tabular-nums text-sm font-medium text-tc-purple">{fmtARS(q.total)}</span>
-                      </div>
-                    </div>
-
-                    {/* Status */}
-                    <div className="hidden md:block px-2 py-3">
-                      <StatusBadge status={q.status} />
-                    </div>
-
-                    {/* Total */}
-                    <div className="hidden md:block px-4 py-3 text-right">
-                      <span className="tabular-nums text-sm font-medium text-tc-purple">
-                        {fmtARS(q.total)}
-                      </span>
-                    </div>
-
-                    {/* Valid until */}
-                    <div className="hidden md:block px-4 py-3">
-                      <span className="text-xs text-tc-text-secondary">
-                        {formatDateOnly(q.validUntil)}
-                      </span>
-                    </div>
-
-                    {/* Created */}
-                    <div className="hidden md:block px-4 py-3">
-                      <span className="text-xs text-tc-text-muted">
-                        {new Date(q.createdAt).toLocaleDateString('es-AR')}
-                      </span>
-                    </div>
-
-                    {/* Flecha: entrar al presupuesto (igual que Órdenes) */}
-                    <div className="flex h-full min-h-[44px] items-center justify-center border-l border-tc-border bg-tc-stub-bg px-1">
-                      <Link
-                        to={`/app/quotes/${q.id}`}
-                        className="flex h-full w-full items-center justify-center text-tc-navy-text-dim hover:text-tc-purple transition-colors"
-                        aria-label={`Ver presupuesto #${q.number}`}
-                      >
-                        <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                          <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </Link>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          {data.total > data.pageSize && (
-            <div className="flex items-center justify-between text-sm text-tc-text-secondary">
-              <span className="tabular-nums">{data.total} presupuesto{data.total !== 1 ? 's' : ''}</span>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setPage(p => p - 1)}
-                  disabled={page === 1}
-                  className="border border-tc-border px-3 py-1 text-xs hover:bg-tc-surface disabled:opacity-40 transition-colors"
-                >
-                  Anterior
-                </button>
-                <span className="px-2 text-xs tabular-nums">Pág. {page} / {Math.ceil(data.total / (data.pageSize || 25))}</span>
-                <button
-                  onClick={() => setPage(p => p + 1)}
-                  disabled={page * (data.pageSize || 25) >= data.total}
-                  className="border border-tc-border px-3 py-1 text-xs hover:bg-tc-surface disabled:opacity-40 transition-colors"
-                >
-                  Siguiente
-                </button>
-              </div>
-            </div>
-          )}
-        </>
+        <Pagination
+          page={page}
+          pageSize={data.pageSize}
+          total={data.total}
+          noun={`presupuesto${data.total !== 1 ? 's' : ''}`}
+          onPage={setPage}
+        />
       )}
 
-      {creating && (
-        <QuoteFormModal onSuccess={handleSuccess} onClose={() => setCreating(false)} />
-      )}
+      {creating && <QuoteFormModal onSuccess={handleSuccess} onClose={() => setCreating(false)} />}
     </div>
   )
 }

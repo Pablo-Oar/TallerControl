@@ -705,6 +705,38 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
 
     // ── REQ-07 / T-VEH-08: historial del vehículo ────────────────────────────
 
+    [Theory(DisplayName = "T-WO-15: GET /work-orders ordena por total en el servidor (sort/dir)")]
+    [InlineData("asc")]
+    [InlineData("desc")]
+    public async Task Listado_ordena_por_total_en_el_servidor(string dir)
+    {
+        using var ownerClient = CreateClient();
+        await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+
+        object[] Item(decimal price) => new object[] { new { kind = "service", description = "Orden", quantity = 1m, unitNetPrice = price, vatRate = 21m } };
+        var cheap = (await CreateOrderAsync(ownerClient, items: Item(100m))).GetProperty("id").GetGuid();
+        var dear = (await CreateOrderAsync(ownerClient, items: Item(9000m))).GetProperty("id").GetGuid();
+
+        var resp = await ownerClient.GetAsync($"/api/v1/work-orders?sort=total&dir={dir}&pageSize=100");
+        resp.EnsureSuccessStatusCode();
+        var ids = (await resp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("items")
+            .EnumerateArray().Select(i => i.GetProperty("id").GetGuid()).ToList();
+
+        var (first, second) = dir == "asc" ? (cheap, dear) : (dear, cheap);
+        Assert.True(ids.IndexOf(first) < ids.IndexOf(second));
+    }
+
+    [Fact(DisplayName = "T-WO-15b: una clave de orden desconocida no rompe el listado (cae al orden por defecto)")]
+    public async Task Listado_ignora_claves_de_orden_desconocidas()
+    {
+        using var ownerClient = CreateClient();
+        await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        await CreateOrderAsync(ownerClient);
+
+        var resp = await ownerClient.GetAsync("/api/v1/work-orders?sort=1;drop table work_orders&dir=desc");
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+    }
+
     [Fact(DisplayName = "T-VEH-08: El historial del vehículo mezcla órdenes y presupuestos por fecha desc, con km y total")]
     public async Task Historial_del_vehiculo_lista_ordenes_y_presupuestos_por_fecha()
     {

@@ -1,4 +1,5 @@
 using TallerControl.Api.Identity;
+using TallerControl.Application.Common;
 using TallerControl.Application.Quotes;
 using TallerControl.Domain.Quotes;
 using TallerControl.Domain.Users;
@@ -27,12 +28,13 @@ internal static class QuotesEndpoints
                 (SearchQuotesHandler handler, CancellationToken ct,
                  string? status = null, Guid? customerId = null, Guid? vehicleId = null,
                  DateOnly? from = null, DateOnly? to = null,
+                 string? sort = null, string? dir = null,
                  int page = 1, int pageSize = 25) =>
                 {
                     QuoteStatus? parsedStatus = status is not null
                         && EnumQuery.TryParse<QuoteStatus>(status, out var s)
                         ? s : null;
-                    return handler.HandleAsync(parsedStatus, customerId, vehicleId, from, to, page, pageSize, ct);
+                    return handler.HandleAsync(parsedStatus, customerId, vehicleId, from, to, page, pageSize, SortSpec.Parse(sort, dir), ct);
                 })
             .RequirePermission(Permission.QuotesRead);
 

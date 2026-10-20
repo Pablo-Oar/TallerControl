@@ -18,6 +18,7 @@ public sealed class SearchQuotesHandler
         DateOnly? to,
         int page,
         int pageSize,
+        SortSpec sort,
         CancellationToken ct)
-        => _repo.SearchAsync(status, customerId, vehicleId, from, to, page, pageSize, ct);
+        => _repo.SearchAsync(status, customerId, vehicleId, from, to, page, pageSize, sort, ct);
 }

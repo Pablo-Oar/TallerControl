@@ -13,6 +13,7 @@ public interface IQuoteRepository
         DateOnly? to,
         int page,
         int pageSize,
+        SortSpec sort,
         CancellationToken ct);
 
     Task<QuoteDto?> GetFullAsync(Guid id, CancellationToken ct);

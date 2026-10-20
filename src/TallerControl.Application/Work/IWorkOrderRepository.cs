@@ -18,6 +18,7 @@ public interface IWorkOrderRepository
         int page,
         int pageSize,
         bool includePrices,
+        SortSpec sort,
         CancellationToken ct);
 
     Task<WorkOrderDto?> GetFullAsync(Guid id, bool includePrices, CancellationToken ct);
