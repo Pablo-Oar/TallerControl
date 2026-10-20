@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { reportsApi } from '../../../lib/api/reports'
 import { Button } from '../../../components/ui/Button'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { Tabs, TabPanel } from '../../../components/ui/Tabs'
 
 type Tab = 'revenue' | 'receivables' | 'stock' | 'purchases'
 
@@ -66,23 +67,15 @@ export function ReportsPage() {
     <div className="space-y-4">
       <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Reportes</h1>
 
-      {/* Tabs — scrollable on mobile */}
-      <div className="flex overflow-x-auto border-b border-tc-border">
-        {(Object.keys(TAB_LABELS) as Tab[]).map(t => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`shrink-0 px-4 py-2 text-xs font-bold tracking-wider uppercase transition-colors border-b-2 -mb-px whitespace-nowrap ${
-              tab === t
-                ? 'border-tc-purple text-tc-purple'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            {TAB_LABELS[t]}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        label="Reportes"
+        idPrefix="reports"
+        value={tab}
+        onChange={setTab}
+        items={(Object.keys(TAB_LABELS) as Tab[]).map(t => ({ id: t, label: TAB_LABELS[t] }))}
+      />
 
+      <TabPanel idPrefix="reports" tabId={tab} active>
       {isDateRange && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex items-center gap-2">
@@ -241,6 +234,7 @@ export function ReportsPage() {
           )}
         </ReportSection>
       )}
+      </TabPanel>
     </div>
   )
 }

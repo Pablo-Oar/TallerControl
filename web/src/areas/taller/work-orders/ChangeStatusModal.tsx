@@ -2,20 +2,11 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { workOrdersApi, type WorkOrderStatus, STATUS_LABELS } from '../../../lib/api/workOrders'
+import { workOrdersApi, type WorkOrderStatus, STATUS_LABELS, WORK_ORDER_TRANSITIONS } from '../../../lib/api/workOrders'
 import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
-
-const TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
-  pending: ['in_progress', 'cancelled'],
-  in_progress: ['waiting_parts', 'completed', 'cancelled'],
-  waiting_parts: ['in_progress', 'cancelled'],
-  completed: ['delivered', 'cancelled'],
-  delivered: [],
-  cancelled: [],
-}
 
 const schema = z.object({
   toStatus: z.string().min(1, 'Seleccioná un estado'),
@@ -29,17 +20,23 @@ type FormData = z.infer<typeof schema>
 interface Props {
   orderId: string
   currentStatus: WorkOrderStatus
+  /** Estado preseleccionado (p. ej. "cancelled" cuando se delega desde el badge editable). */
+  initialStatus?: WorkOrderStatus
   onSuccess: () => void
   onClose: () => void
 }
 
-export function ChangeStatusModal({ orderId, currentStatus, onSuccess, onClose }: Props) {
+export function ChangeStatusModal({ orderId, currentStatus, initialStatus, onSuccess, onClose }: Props) {
   const [serverError, setServerError] = useState<string | null>(null)
-  const transitions = TRANSITIONS[currentStatus]
+  const transitions = WORK_ORDER_TRANSITIONS[currentStatus]
 
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { toStatus: transitions[0] ?? '', note: '', cancelReason: '' },
+    defaultValues: {
+      toStatus: initialStatus && transitions.includes(initialStatus) ? initialStatus : (transitions[0] ?? ''),
+      note: '',
+      cancelReason: '',
+    },
   })
 
   const toStatus = watch('toStatus') as WorkOrderStatus

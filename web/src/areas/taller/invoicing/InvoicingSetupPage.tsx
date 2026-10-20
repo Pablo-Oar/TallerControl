@@ -11,6 +11,7 @@ import {
   type FiscalPointOfSaleDto,
 } from '../../../lib/api/invoicing'
 import { Button } from '../../../components/ui/Button'
+import { InvoicingTabs } from './InvoicingTabs'
 import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
@@ -32,6 +33,8 @@ export function InvoicingSetupPage() {
   return (
     <div className="space-y-8">
       <h1 className="text-xl font-bold tracking-widest text-slate-900 uppercase">Configuración ARCA</h1>
+
+      <InvoicingTabs />
 
       <CertificatesSection
         certs={certs ?? []}
