@@ -10,6 +10,7 @@ import {
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { FormTextarea } from '../../components/ui/FormField'
 import { Button } from '../../components/ui/Button'
+import { Modal } from '../../components/ui/Modal'
 import { WorkOrderPhotos } from '../../components/WorkOrderPhotos'
 import { ApiError } from '../../lib/api/client'
 
@@ -236,38 +237,35 @@ export function MechanicWorkOrderDetailPage() {
       )}
 
       {changingStatus && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4">
-          <div className="w-full max-w-sm border border-tc-border bg-white shadow-xl">
-            <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-              <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">
-                Cambiar a: <span className="text-slate-700">{STATUS_LABELS[changingStatus]}</span>
-              </span>
-            </div>
-            <div className="p-4 space-y-3">
-              <FormTextarea
-                label="Nota (opcional)"
-                value={note}
-                onChange={e => setNote(e.target.value)}
-                rows={2}
-                placeholder="Nota (opcional)…"
-              />
-              {statusError && <p className="text-xs text-tc-stamp-red">{statusError}</p>}
-              <div className="flex gap-2">
-                <Button size="sm" loading={savingStatus} onClick={handleChangeStatus} className="flex-1">
-                  Confirmar
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => { setChangingStatus(null); setNote('') }}
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
-              </div>
+        <Modal
+          title={`Cambiar a: ${STATUS_LABELS[changingStatus]}`}
+          onClose={() => { setChangingStatus(null); setNote('') }}
+          className="max-w-sm"
+        >
+          <div className="space-y-3">
+            <FormTextarea
+              label="Nota (opcional)"
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              rows={2}
+              placeholder="Nota (opcional)…"
+            />
+            {statusError && <p role="alert" className="text-xs text-tc-stamp-red">{statusError}</p>}
+            <div className="flex gap-2">
+              <Button size="sm" loading={savingStatus} onClick={handleChangeStatus} className="flex-1">
+                Confirmar
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => { setChangingStatus(null); setNote('') }}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   )
