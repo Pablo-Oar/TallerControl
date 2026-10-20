@@ -63,9 +63,7 @@ interface ModalProps {
   className?: string
 }
 
-export function Modal({ title, onClose, children, className: rawClassName = 'max-w-lg' }: ModalProps) {
-  // El tope de ancho solo rige desde `sm`: en móvil el diálogo es una hoja a ancho completo.
-  const className = rawClassName.replace(/(^|\s)max-w-/g, '$1sm:max-w-')
+export function Modal({ title, onClose, children, className = 'max-w-lg' }: ModalProps) {
   const id = useId()
   const titleId = `${id}-title`
   const panelRef = useRef<HTMLDivElement>(null)
@@ -150,7 +148,7 @@ export function Modal({ title, onClose, children, className: rawClassName = 'max
         tabIndex={-1}
         // Un diálogo que no es el superior queda inerte: el foco y los clics solo llegan al de arriba.
         inert={!isTop}
-        className={`tc-modal-panel relative flex max-h-[92dvh] w-full flex-col bg-white shadow-2xl outline-none sm:max-h-none ${className}`}
+        className={`tc-modal-panel relative flex max-h-[92dvh] w-full flex-col bg-white shadow-2xl outline-none max-sm:max-w-none sm:max-h-none ${className}`}
       >
         {/* Header */}
         <div className="flex flex-none items-center justify-between bg-tc-navy px-5 py-3">
