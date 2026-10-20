@@ -11,6 +11,7 @@ import { FormField, FormTextarea } from '../../../components/ui/FormField'
 import { SignaturePad, type SignaturePadHandle } from '../../../components/ui/SignaturePad'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { labelCls } from '../../../lib/styles'
+import { formatDateOnly, localDateISO } from '../../../lib/dates'
 
 
 const fmtARS = (n: number) =>
@@ -78,7 +79,7 @@ export function PublicQuotePage() {
   }
 
   const canRespond = data.status === 'sent'
-  const isExpired = new Date(data.validUntil) < new Date()
+  const isExpired = data.validUntil.slice(0, 10) < localDateISO()
 
   if (submitted) {
     return (
@@ -160,7 +161,7 @@ export function PublicQuotePage() {
               <div>
                 <dt className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted mb-1">Válido hasta</dt>
                 <dd className={isExpired ? 'text-tc-stamp-red font-bold' : 'text-tc-text'}>
-                  {new Date(data.validUntil).toLocaleDateString('es-AR')}
+                  {formatDateOnly(data.validUntil)}
                   {isExpired && ' — vencido'}
                 </dd>
               </div>
@@ -323,7 +324,7 @@ export function PublicQuotePage() {
 
         {canRespond && isExpired && (
           <div className="border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            Este presupuesto venció el {new Date(data.validUntil).toLocaleDateString('es-AR')}.
+            Este presupuesto venció el {formatDateOnly(data.validUntil)}.
             Contacte al taller para obtener un nuevo presupuesto.
           </div>
         )}

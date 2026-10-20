@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -54,6 +54,25 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
   const { fields, append, remove } = useFieldArray({ control, name: 'services' })
 
   const customerId = watch('customerId')
+
+  // Duración y margen salen del catálogo (el servidor los copia de ahí); avisamos si un servicio no los tiene.
+  const [missingDuration, setMissingDuration] = useState<Record<number, string>>({})
+  async function applyCatalogTiming(index: number, catalogItemId: string) {
+    if (!catalogItemId) return
+    try {
+      const dto = await catalogApi.get(catalogItemId)
+      setValue(`services.${index}.durationMinutes`, dto.durationMinutes ?? 0)
+      setValue(`services.${index}.bufferMinutes`, dto.bufferMinutes ?? 0)
+      setMissingDuration(m => {
+        const next = { ...m }
+        if (dto.durationMinutes && dto.durationMinutes > 0) delete next[index]
+        else next[index] = dto.name
+        return next
+      })
+    } catch {
+      /* el servidor valida igual al crear */
+    }
+  }
 
   const { data: customerDetail } = useQuery({
     queryKey: ['customer', customerId],
@@ -188,18 +207,27 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
                       requiredMark
                       size="sm"
                       error={errors.services?.[index]?.catalogItemId?.message}
-                      {...register(`services.${index}.catalogItemId`)}
+                      {...register(`services.${index}.catalogItemId`, {
+                        onChange: e => applyCatalogTiming(index, e.target.value),
+                      })}
                     >
                       <option value="">Seleccionar servicio…</option>
                       {catalogPage?.items.map(c => (
                         <option key={c.id} value={c.id}>{c.name}</option>
                       ))}
                     </FormSelect>
+                    {missingDuration[index] && (
+                      <p role="alert" className="border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs text-amber-900">
+                        «{missingDuration[index]}» no tiene duración en el catálogo. Cargala en Catálogo → Editar para poder reservar el turno.
+                      </p>
+                    )}
                     <div className="grid grid-cols-2 gap-2">
                       <FormField
                         label="Duración (minutos)"
                         size="sm"
                         type="number"
+                        readOnly
+                        hint="Del catálogo"
                         inputClassName="tabular-nums"
                         {...register(`services.${index}.durationMinutes`, { valueAsNumber: true })}
                       />
@@ -207,6 +235,8 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
                         label="Buffer (minutos)"
                         size="sm"
                         type="number"
+                        readOnly
+                        hint="Del catálogo"
                         inputClassName="tabular-nums"
                         {...register(`services.${index}.bufferMinutes`, { valueAsNumber: true })}
                       />

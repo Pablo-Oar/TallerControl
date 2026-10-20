@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getOwnerVehicle, type OwnerWorkOrderDto } from '../../../lib/api/qrCards'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { Timeline, type TimelineItem } from '../../../components/ui/Timeline'
+import { formatDateOnly } from '../../../lib/dates'
 
 const WO_STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
@@ -120,7 +121,7 @@ export function OwnerVehiclePage() {
                     </div>
                     {q.validUntil && (
                       <span className="text-xs text-tc-text-muted shrink-0">
-                        Vence {new Date(q.validUntil).toLocaleDateString('es-AR')}
+                        Vence {formatDateOnly(q.validUntil)}
                       </span>
                     )}
                   </div>

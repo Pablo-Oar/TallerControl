@@ -27,7 +27,7 @@ internal static class QrCardsEndpoints
                 (string? status, string? q, int page = 1, int pageSize = 25,
                  SearchQrCardsHandler handler = default!, CancellationToken ct = default) =>
                 {
-                    var s = status is not null && Enum.TryParse<QrCardStatus>(status, ignoreCase: true, out var parsed)
+                    var s = status is not null && EnumQuery.TryParse<QrCardStatus>(status, out var parsed)
                         ? (QrCardStatus?)parsed : null;
                     return SearchAsync(s, q, page, pageSize, handler, ct);
                 })

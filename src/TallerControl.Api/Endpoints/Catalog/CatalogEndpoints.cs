@@ -26,7 +26,7 @@ internal static class CatalogEndpoints
                  int page = 1, int pageSize = 25) =>
                 {
                     CatalogItemKind? parsedKind = kind is not null
-                        && Enum.TryParse<CatalogItemKind>(kind, ignoreCase: true, out var k)
+                        && EnumQuery.TryParse<CatalogItemKind>(kind, out var k)
                         ? k : null;
                     return handler.HandleAsync(q, parsedKind, activeOnly, page, pageSize, ct);
                 })

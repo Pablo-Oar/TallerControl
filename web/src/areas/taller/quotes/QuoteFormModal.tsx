@@ -12,6 +12,7 @@ import { CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 import { labelCls } from '../../../lib/styles'
+import { localDateISO } from '../../../lib/dates'
 
 
 const itemSchema = z.object({
@@ -109,9 +110,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
 
   useEffect(() => {
     if (!isEditing) {
-      const d = new Date()
-      d.setDate(d.getDate() + 15)
-      setValue('validUntil', d.toISOString().slice(0, 10))
+      setValue('validUntil', localDateISO(15))
     }
   }, [isEditing, setValue])
 

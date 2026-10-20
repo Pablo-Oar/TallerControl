@@ -29,11 +29,19 @@ export class ApiError extends Error {
   }
 }
 
+/** El servidor rechazó la petición por la cabecera antiforgery (token vencido o de otra sesión). */
+function isCsrfFailure(status: number, json: { detail?: string } | null) {
+  return status === 400 && /antiforgery/i.test(json?.detail ?? '')
+}
+
+const CSRF_MESSAGE = 'Tu sesión cambió o venció. Volvé a intentar la acción.'
+
 async function request<T>(
   method: string,
   url: string,
   body?: unknown,
   requiresCsrf = false,
+  retried = false,
 ): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
 
@@ -55,8 +63,12 @@ async function request<T>(
   const json = await res.json().catch(() => null)
 
   if (!res.ok) {
-    // Si el CSRF expiró, limpiar para que se renueve en el próximo intento
-    if (res.status === 400 && requiresCsrf) csrfToken = null
+    if (requiresCsrf && isCsrfFailure(res.status, json)) {
+      // El token cacheado ya no vale: se descarta y se reintenta una vez con uno nuevo.
+      csrfToken = null
+      if (!retried) return request<T>(method, url, body, requiresCsrf, true)
+      throw new ApiError(res.status, CSRF_MESSAGE, json ? { ...json } : undefined)
+    }
     const detail = json?.detail ?? res.statusText
     const extensions = json ? { ...json } : undefined
     throw new ApiError(res.status, detail, extensions)
@@ -66,7 +78,13 @@ async function request<T>(
 }
 
 /** `version` es el valor crudo (sin comillas); acá se arma el ETag como pide HTTP. */
-async function requestWithIfMatch<T>(method: string, url: string, body: unknown, version: string): Promise<T> {
+async function requestWithIfMatch<T>(
+  method: string,
+  url: string,
+  body: unknown,
+  version: string,
+  retried = false,
+): Promise<T> {
   const res = await fetch(url, {
     method,
     credentials: 'include',
@@ -80,7 +98,14 @@ async function requestWithIfMatch<T>(method: string, url: string, body: unknown,
 
   if (res.status === 204) return undefined as T
   const json = await res.json().catch(() => null)
-  if (!res.ok) throw new ApiError(res.status, json?.detail ?? res.statusText, json ?? undefined)
+  if (!res.ok) {
+    if (isCsrfFailure(res.status, json)) {
+      csrfToken = null
+      if (!retried) return requestWithIfMatch<T>(method, url, body, version, true)
+      throw new ApiError(res.status, CSRF_MESSAGE, json ?? undefined)
+    }
+    throw new ApiError(res.status, json?.detail ?? res.statusText, json ?? undefined)
+  }
   return json as T
 }
 

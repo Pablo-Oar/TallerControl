@@ -57,7 +57,7 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
     if (item) {
       setValue(`items.${index}.description`, item.name)
       setValue(`items.${index}.unitPrice`, String(item.netPrice) as unknown as number)
-      setValue(`items.${index}.vatRate`, String(item.vatRate * 100) as unknown as number)
+      setValue(`items.${index}.vatRate`, String(item.vatRate) as unknown as number)
     }
   }
 

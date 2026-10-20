@@ -12,6 +12,7 @@ import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { Timeline } from '../../../components/ui/Timeline'
 import { ApiError } from '../../../lib/api/client'
 import { QuoteFormModal } from './QuoteFormModal'
+import { formatDateOnly } from '../../../lib/dates'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -182,7 +183,7 @@ export function QuoteDetailPage() {
             )}
           </DataCell>
           <DataCell label="Válido hasta">
-            {new Date(quote.validUntil).toLocaleDateString('es-AR')}
+            {formatDateOnly(quote.validUntil)}
           </DataCell>
           {quote.globalDiscountPct > 0 && (
             <DataCell label="Descuento">{quote.globalDiscountPct}%</DataCell>

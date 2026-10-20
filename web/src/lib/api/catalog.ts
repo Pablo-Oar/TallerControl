@@ -38,6 +38,11 @@ export interface CatalogItemDto {
   stockQty: number
   minStockQty: number | null
   maxStockQty: number | null
+  /** El API devuelve el mínimo como `stockMin`. */
+  stockMin?: number | null
+  /** Duración y buffer en minutos (servicios): los usa la agenda al reservar. */
+  durationMinutes?: number | null
+  bufferMinutes?: number | null
   isLowStock: boolean
   version: number
 }
@@ -52,6 +57,9 @@ export interface CreateCatalogItemRequest {
   trackStock: boolean
   minStockQty?: number | null
   maxStockQty?: number | null
+  stockMin?: number | null
+  durationMinutes?: number | null
+  bufferMinutes?: number | null
   isActive?: boolean
 }
 
@@ -63,6 +71,9 @@ export interface UpdateCatalogItemRequest {
   trackStock: boolean
   minStockQty?: number | null
   maxStockQty?: number | null
+  stockMin?: number | null
+  durationMinutes?: number | null
+  bufferMinutes?: number | null
   isActive: boolean
 }
 

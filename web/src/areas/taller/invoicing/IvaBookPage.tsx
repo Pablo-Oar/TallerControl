@@ -42,9 +42,20 @@ export function IvaBookPage() {
       <InvoicingTabs />
 
       <div className="flex justify-end">
-        <Button variant="secondary" size="sm" loading={downloading} onClick={handleDownloadCiti}>
-          Descargar CITI (.zip)
-        </Button>
+        <div className="flex flex-col items-end gap-1">
+          <Button
+            variant="secondary"
+            size="sm"
+            loading={downloading}
+            disabled={!!data && data.sales.count === 0 && data.purchases.count === 0}
+            onClick={handleDownloadCiti}
+          >
+            Descargar CITI (.zip)
+          </Button>
+          {data && data.sales.count === 0 && data.purchases.count === 0 && (
+            <p className="text-xs text-tc-text-secondary">No hay comprobantes en el período: no hay nada para exportar.</p>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">

@@ -54,7 +54,7 @@ public sealed class QuotesEndpointsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.NoContent, resp.StatusCode);
     }
 
-    private async Task<JsonElement> CreateQuoteAsync(HttpClient client, object[]? items = null)
+    private async Task<JsonElement> CreateQuoteAsync(HttpClient client, object[]? items = null, decimal discountPct = 0m)
     {
         var csrf = await FetchCsrfAsync(client);
         var validUntil = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(15)).ToString("yyyy-MM-dd");
@@ -63,7 +63,7 @@ public sealed class QuotesEndpointsTests : IAsyncLifetime
             customerId = _factory.CustomerId,
             vehicleId = _factory.VehicleId,
             validUntil,
-            globalDiscountPct = 0m,
+            globalDiscountPct = discountPct,
             customerNotes = (string?)null,
             internalNotes = (string?)null,
             items = items ?? Array.Empty<object>(),
@@ -78,6 +78,46 @@ public sealed class QuotesEndpointsTests : IAsyncLifetime
         var resp = await client.SendAsync(req);
         Assert.Equal(HttpStatusCode.Created, resp.StatusCode);
         return await resp.Content.ReadFromJsonAsync<JsonElement>();
+    }
+
+    // ── Regresión: crear con descuento global no debe perder los ítems ────────
+
+    [Fact(DisplayName = "T-QUO-04b: POST /quotes con descuento global conserva los ítems y calcula el total")]
+    public async Task Post_con_descuento_conserva_items()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, QuotesWebApplicationFactory.OwnerEmail, QuotesWebApplicationFactory.Password);
+
+        var items = new object[]
+        {
+            new { kind = "service", description = "Cambio de aceite", catalogItemId = _factory.CatalogItemId, quantity = 1m, unitNetPrice = 1000m, vatRate = 21m, requiredForApproval = true },
+            new { kind = "service", description = "Alineación", catalogItemId = _factory.CatalogItemId, quantity = 1m, unitNetPrice = 1000m, vatRate = 21m, requiredForApproval = true },
+        };
+        var quote = await CreateQuoteAsync(client, items, discountPct: 10m);
+
+        Assert.Equal(2, quote.GetProperty("items").GetArrayLength());
+        Assert.Equal(10m, quote.GetProperty("globalDiscountPct").GetDecimal());
+        Assert.True(quote.GetProperty("total").GetDecimal() > 0m);
+    }
+
+    // ── Regresión: el filtro de estado acepta snake_case (partially_approved) ──
+
+    [Theory(DisplayName = "T-QUO-01b: GET /quotes?status= acepta snake_case y PascalCase")]
+    [InlineData("partially_approved")]
+    [InlineData("PartiallyApproved")]
+    [InlineData("draft")]
+    public async Task Get_filtra_por_estado_en_cualquier_formato(string status)
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, QuotesWebApplicationFactory.OwnerEmail, QuotesWebApplicationFactory.Password);
+        await CreateQuoteAsync(client);
+
+        var resp = await client.GetAsync($"/api/v1/quotes?status={status}");
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var page = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        var statuses = page.GetProperty("items").EnumerateArray().Select(i => i.GetProperty("status").GetString()).ToList();
+        var expected = status.Replace("_", "").ToLowerInvariant();
+        Assert.All(statuses, s => Assert.Equal(expected, (s ?? "").Replace("_", "").ToLowerInvariant()));
     }
 
     // ── T-QUO-01: listado paginado ────────────────────────────────────────────
