@@ -129,4 +129,17 @@ describe('Modal: foco perdido', () => {
     await userEvent.tab()
     expect(screen.getByRole('dialog').contains(document.activeElement)).toBe(true)
   })
+
+  it('el tope de ancho del llamador rige en escritorio (clase literal) y en móvil es hoja a ancho completo', () => {
+    render(
+      <Modal title="Ancho" onClose={() => {}} className="max-w-sm">
+        contenido
+      </Modal>,
+    )
+    const panel = screen.getByRole('dialog')
+    // `max-w-sm` tiene que llegar tal cual: Tailwind solo genera clases que aparecen literales en el código.
+    expect(panel.className).toContain('max-w-sm')
+    expect(panel.className).not.toContain('sm:max-w-sm')
+    expect(panel.className).toContain('max-sm:max-w-none')
+  })
 })
