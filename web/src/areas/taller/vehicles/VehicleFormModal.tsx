@@ -2,11 +2,10 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useQuery } from '@tanstack/react-query'
 import { vehiclesApi, type FuelType, type VehicleUsageProfile, type VehicleDto, type VehicleUpsertRequest } from '../../../lib/api/vehicles'
-import { customersApi } from '../../../lib/api/customers'
 import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect } from '../../../components/ui/FormField'
+import { CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 
@@ -75,12 +74,7 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
   const [deleteLoading, setDeleteLoading] = useState(false)
   const isEdit = !!vehicle
 
-  const { data: customersPage } = useQuery({
-    queryKey: ['customers-picker'],
-    queryFn: () => customersApi.search(null, 1, 100),
-  })
-
-  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
+  const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: vehicle ? toFormData(vehicle) : { odometerKm: 0, customerId: '' },
   })
@@ -124,19 +118,13 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
             {...register('plate')}
             onChange={e => setValue('plate', e.target.value.toUpperCase().replace(/[\s-]/g, ''))}
           />
-          {/* key: las opciones llegan async; al montar de nuevo con la lista cargada RHF re-aplica el cliente actual. */}
-          <FormSelect
-            key={customersPage ? 'loaded' : 'loading'}
-            label="Cliente"
+          {/* Buscador (no un select con la primera página): un taller puede tener cientos de clientes. */}
+          <CustomerPicker
+            value={watch('customerId') ?? ''}
             requiredMark
             error={errors.customerId?.message}
-            {...register('customerId')}
-          >
-            <option value="">Seleccioná un cliente</option>
-            {customersPage?.items.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </FormSelect>
+            onChange={id => setValue('customerId', id, { shouldValidate: !!id, shouldDirty: true })}
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4">

@@ -230,6 +230,11 @@ La API usa `ConnectionStrings:Default` con el rol **`tallercontrol_app`** (sin `
 - CSRF: `AuthProvider.invalidate()` descarta el token antiforgery al cambiar la sesión (el cacheado antes del login dejaba de valer).
 - E2E: suite reescrita contra la UI real; correr con `E2E_RUN=1 E2E_CHANNEL=chrome` + credenciales por variables de entorno (14 pasan, 3 omitidos: token de invitación y foto desde `/m` sin pantalla).
 
+**Fotos y pestañas del mecánico + lote F de UI-R2 (rama `feature/ui-wm-mechanic-photos-tabs-batch-f`, 20/10/2026):**
+- `/m`: pestañas "Mías" / "Sin asignar" (`GET /api/v1/work-orders?assignment=mine|unassigned`, filtrado en servidor) y fotos de la OT (`WorkOrderPhotos`: cámara trasera, se reduce a 1600 px antes de subir; el dueño las ve y puede quitarlas en el detalle de la OT).
+- Almacenamiento local: las URLs prefirmadas seguían el esquema HTTPS por defecto aunque RustFS sea http (`ERR_SSL_PROTOCOL_ERROR`); ahora siguen el `ServiceUrl`. `docker-compose.yml` agrega `RUSTFS_CORS_ALLOWED_ORIGINS` (orígenes de Vite) para que el navegador pueda subir directo; recrear el contenedor con `docker compose up -d storage`. `scripts/dev-api.ps1` reinicia solo la API con la configuración de `dev.ps1` (con `dotnet run` a mano faltan las variables de almacenamiento).
+- UI-R2 F1 completa: todos los formularios usan `FormField`/`FormSelect`/`FormTextarea`; `Input.tsx` eliminado. El cliente en vehículo y mostrador se elige con `CustomerPicker` (el `select` anterior solo listaba la primera página de clientes).
+
 **Post-E8 — bugfixes en Develop (14–15/10/2026, commits `27d0d01` / `3395d74` / `b87f7a7` / `ab4dee8` / `a229bcb` / `e46bd2c` / `09a8c7d`):**
 - fix(api): `CatalogItemKind`, `WorkOrderStatus` y `QuoteStatus` como `string?` + `Enum.TryParse(ignoreCase: true)` en todos los endpoints de búsqueda — ASP.NET Core 10 minimal APIs son case-sensitive para enum query params.
 - fix(api): `DevelopmentSeeder` crea `Branch.CreateMain` para tenants que no la tenían; middleware `ForwardedHeaders` para Cloudflare tunnel; defaults en `appsettings.Development.json`.

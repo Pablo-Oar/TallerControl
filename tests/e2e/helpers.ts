@@ -77,7 +77,8 @@ export async function createVehicle(
   await page.goto('/app/vehicles')
   await page.getByRole('button', { name: /nuevo veh[ií]culo/i }).first().click()
   const d = dialog(page)
-  await d.getByLabel(/^cliente/i).selectOption({ label: customerName })
+  await d.getByRole('combobox', { name: /^cliente/i }).fill(customerName)
+  await d.getByRole('option', { name: new RegExp(customerName, 'i') }).first().click()
   await d.getByLabel(/^patente/i).fill(plate)
   if (opts.brand) await d.getByLabel(/^marca/i).fill(opts.brand)
   if (opts.model) await d.getByLabel(/^modelo/i).fill(opts.model)
@@ -133,8 +134,14 @@ export async function changeStatus(page: Page, label: RegExp, extra?: { cancelRe
   if (!match) throw new Error(`Estado ${label} no disponible: ${options.join(', ')}`)
   await select.selectOption({ label: match })
   if (extra?.cancelReason) await d.getByLabel(/motivo de cancelación/i).fill(extra.cancelReason)
+  // La página se refresca en varias consultas (orden, historial, cobros): el siguiente cambio de estado arma sus
+  // opciones con la orden, así que se espera a que ESA consulta vuelva con el estado nuevo.
+  const orderRefreshed = page.waitForResponse(
+    r => r.request().method() === 'GET' && /\/api\/v1\/work-orders\/[0-9a-f-]+$/.test(r.url()),
+  )
   await d.getByRole('button', { name: /confirmar/i }).click()
   await d.waitFor({ state: 'detached' })
+  await orderRefreshed
 }
 
 /** Producto con control de stock desde /app/catalog. */
@@ -189,4 +196,12 @@ export async function readReceivable(page: Page): Promise<number> {
   const m = text.match(/\$\s*([\d.]+)(?:,(\d+))?/)
   if (!m) throw new Error(`No se pudo leer "Por cobrar": ${text}`)
   return Number(m[1].replace(/\./g, '') + '.' + (m[2] ?? '0'))
+}
+
+/** Fila del cliente en /app/customers: la lista está paginada, así que se busca por nombre. */
+export async function customerRow(page: Page, name: string) {
+  await page.goto('/app/customers')
+  await page.getByPlaceholder(/buscar por nombre/i).fill(name)
+  await page.getByRole('button', { name: /^buscar$/i }).click()
+  return page.getByRole('listitem').filter({ hasText: name })
 }
