@@ -21,6 +21,7 @@ import { FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { ApiError } from '../../../lib/api/client'
 import { EditableStatusBadge } from '../../../components/ui/EditableStatusBadge'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { Timeline } from '../../../components/ui/Timeline'
 import { Modal } from '../../../components/ui/Modal'
 import { ChangeStatusModal } from './ChangeStatusModal'
 import { CreatePaymentModal } from './CreatePaymentModal'
@@ -374,25 +375,22 @@ export function WorkOrderDetailPage() {
       {/* Historial */}
       {history && history.length > 0 && (
         <Section title="Historial de estados">
-          <ol className="space-y-2">
-            {history.map(change => (
-              <li key={change.id} className="flex items-start gap-3 text-sm">
-                <span className="mt-0.5 text-xs text-slate-400 tabular-nums whitespace-nowrap">
-                  {new Date(change.changedAt).toLocaleString('es-AR')}
-                </span>
-                <span className="text-slate-700">
-                  {change.fromStatus && (
-                    <>{STATUS_LABELS[change.fromStatus as WorkOrderStatus]} → </>
-                  )}
-                  <strong>{STATUS_LABELS[change.toStatus as WorkOrderStatus]}</strong>
-                  {change.note && <span className="ml-1 text-slate-500">— {change.note}</span>}
-                  {change.changedByName && (
-                    <span className="ml-1 text-slate-400 text-xs">por {change.changedByName}</span>
-                  )}
-                </span>
-              </li>
-            ))}
-          </ol>
+          <Timeline
+            label="Historial de estados"
+            items={history.map(change => ({
+              id: change.id,
+              date: change.changedAt,
+              kind: 'status' as const,
+              title: (
+                <>
+                  {change.fromStatus && <>{STATUS_LABELS[change.fromStatus as WorkOrderStatus]} → </>}
+                  {STATUS_LABELS[change.toStatus as WorkOrderStatus]}
+                </>
+              ),
+              detail: change.note,
+              author: change.changedByName,
+            }))}
+          />
         </Section>
       )}
 

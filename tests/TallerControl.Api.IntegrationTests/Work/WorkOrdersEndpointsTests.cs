@@ -697,6 +697,65 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.DoesNotContain(other, freeIds);
     }
 
+    // ── REQ-07 / T-VEH-08: historial del vehículo ────────────────────────────
+
+    [Fact(DisplayName = "T-VEH-08: El historial del vehículo mezcla órdenes y presupuestos por fecha desc, con km y total")]
+    public async Task Historial_del_vehiculo_lista_ordenes_y_presupuestos_por_fecha()
+    {
+        using var ownerClient = CreateClient();
+        await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+
+        var first = (await CreateOrderAsync(ownerClient, odometerKm: 10_000, items: new object[]
+        {
+            new { kind = "service", description = "Historial 1", quantity = 1m, unitNetPrice = 100m, vatRate = 21m },
+        })).GetProperty("id").GetGuid();
+        var second = (await CreateOrderAsync(ownerClient, odometerKm: 12_000)).GetProperty("id").GetGuid();
+
+        var resp = await ownerClient.GetAsync($"/api/v1/vehicles/{_factory.VehicleId}/history?pageSize=100");
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var page = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        var items = page.GetProperty("items").EnumerateArray().ToList();
+        Assert.True(page.GetProperty("total").GetInt32() >= 2);
+
+        // Orden descendente por fecha; las dos órdenes recién creadas aparecen con tipo, km y total.
+        var dates = items.Select(i => i.GetProperty("date").GetDateTimeOffset()).ToList();
+        Assert.Equal(dates.OrderByDescending(d => d).ToList(), dates);
+        var e1 = items.First(i => i.GetProperty("id").GetGuid() == first);
+        Assert.Equal("work_order", e1.GetProperty("type").GetString());
+        Assert.Equal(10_000, e1.GetProperty("odometerKm").GetInt32());
+        Assert.Equal(121m, e1.GetProperty("total").GetDecimal());
+        Assert.StartsWith("OT-", e1.GetProperty("number").GetString());
+        Assert.Contains(items, i => i.GetProperty("id").GetGuid() == second);
+
+        // Paginación: pageSize=1 devuelve una sola fila pero el total completo.
+        var one = await (await ownerClient.GetAsync($"/api/v1/vehicles/{_factory.VehicleId}/history?pageSize=1"))
+            .Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(1, one.GetProperty("items").GetArrayLength());
+        Assert.Equal(page.GetProperty("total").GetInt32(), one.GetProperty("total").GetInt32());
+    }
+
+    [Fact(DisplayName = "T-VEH-08: Al mecánico (sin prices.view) el total del historial no viaja; otro taller → 404")]
+    public async Task Historial_del_vehiculo_oculta_precios_al_mecanico()
+    {
+        using var ownerClient = CreateClient();
+        using var mechanicClient = CreateClient();
+        await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        await LoginAsync(mechanicClient, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
+        await CreateOrderAsync(ownerClient, items: new object[]
+        {
+            new { kind = "service", description = "Historial precios", quantity = 1m, unitNetPrice = 100m, vatRate = 21m },
+        });
+
+        var resp = await mechanicClient.GetAsync($"/api/v1/vehicles/{_factory.VehicleId}/history?pageSize=100");
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var items = (await resp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("items").EnumerateArray().ToList();
+        Assert.NotEmpty(items);
+        Assert.All(items, i => AssertNullOrMissing(i, "total"));
+
+        Assert.Equal(HttpStatusCode.NotFound,
+            (await ownerClient.GetAsync($"/api/v1/vehicles/{Guid.NewGuid()}/history")).StatusCode);
+    }
+
     // ── T-WO-13: Mecánico asignado actualiza sus notas ───────────────────────
 
     [Fact(DisplayName = "T-WO-13: Mecánico asignado puede actualizar sus notas de trabajo → 204")]

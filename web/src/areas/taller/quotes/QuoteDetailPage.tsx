@@ -9,6 +9,7 @@ import {
 import { Button } from '../../../components/ui/Button'
 import { FormField } from '../../../components/ui/FormField'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { Timeline } from '../../../components/ui/Timeline'
 import { ApiError } from '../../../lib/api/client'
 import { QuoteFormModal } from './QuoteFormModal'
 
@@ -376,27 +377,26 @@ export function QuoteDetailPage() {
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
             <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">Respuestas del cliente</span>
           </div>
-          <div className="divide-y divide-tc-border">
-            {responses.map(r => (
-              <div key={r.id} className={`px-4 py-3 ${r.isCurrent ? 'bg-tc-done-bg' : ''}`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-800">{r.signerName}</span>
-                  <div className="flex items-center gap-2">
-                    <StatusBadge
-                      status={r.decision}
-                      label={DECISION_LABEL[r.decision] ?? r.decision}
-                    />
+          <div className="px-4 py-4">
+            <Timeline
+              label="Respuestas del cliente"
+              items={responses.map(r => ({
+                id: r.id,
+                date: r.createdAt,
+                title: r.signerName,
+                kind: 'response' as const,
+                emphasis: r.isCurrent,
+                detail: r.comment,
+                badge: (
+                  <>
+                    <StatusBadge status={r.decision} label={DECISION_LABEL[r.decision] ?? r.decision} />
                     {r.isCurrent && (
                       <span className="text-[10px] font-bold tracking-wider uppercase text-tc-done-text">Vigente</span>
                     )}
-                  </div>
-                </div>
-                {r.comment && <p className="mt-1 text-sm text-slate-600">{r.comment}</p>}
-                <p className="mt-1 text-xs text-slate-400">
-                  {new Date(r.createdAt).toLocaleString('es-AR')}
-                </p>
-              </div>
-            ))}
+                  </>
+                ),
+              }))}
+            />
           </div>
         </div>
       )}

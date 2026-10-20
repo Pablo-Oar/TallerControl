@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { vehiclesApi, type VehicleDto, type VehicleListDto } from '../../../lib/api/vehicles'
 import { Button } from '../../../components/ui/Button'
+import { Link } from 'react-router'
 import { VehicleFormModal } from './VehicleFormModal'
 
 export function VehiclesPage() {
@@ -119,7 +120,16 @@ export function VehiclesPage() {
                     className={`grid grid-cols-[7rem_1fr_3.5rem] md:grid-cols-[7rem_1fr_3.5rem_1fr_3.5rem] items-center transition-colors ${v.isDeleted ? 'bg-red-50 opacity-60' : 'hover:bg-tc-surface'}`}
                   >
                     <div className="px-4 py-3">
-                      <span className="font-mono text-sm font-bold tracking-widest text-slate-800">{v.plate}</span>
+                      {v.isDeleted ? (
+                        <span className="font-mono text-sm font-bold tracking-widest text-slate-800">{v.plate}</span>
+                      ) : (
+                        <Link
+                          to={`/app/vehicles/${v.id}`}
+                          className="font-mono text-sm font-bold tracking-widest text-slate-800 hover:text-tc-purple"
+                        >
+                          {v.plate}
+                        </Link>
+                      )}
                     </div>
                     <div className="px-4 py-3">
                       <p className="text-sm text-slate-700 truncate">

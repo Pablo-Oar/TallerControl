@@ -246,6 +246,11 @@ La API usa `ConnectionStrings:Default` con el rol **`tallercontrol_app`** (sin `
 - Tests: T-UI-06 (`Tabs.test.tsx`), T-UI-07 (`EditableStatusBadge.test.tsx`); Vitest 59/59; E2E sin cambios de selectores.
 - **D-28 (Command Search): decidida el 20/10/2026 → diferida a E19**, cuando exista búsqueda de entidades; hoy la navegación por rol está en el sidebar y la búsqueda por patente en el header.
 
+**UI-R2 F4 — Timeline (rama `feature/ui-wm-timeline`, 20/10/2026):**
+- `components/ui/Timeline.tsx` (propio; `activities-card` exige motion/react-icons): cada pantalla mapea su DTO a `TimelineItem`; el componente no conoce endpoints. Detalles largos plegables (`aria-expanded`). Consumidores: historial de estados de la OT, respuestas del cliente en `QuoteDetailPage`, portal público del dueño (`OwnerVehiclePage`, solo campos del DTO público ya existente, sin hora) y ficha del vehículo.
+- Ficha del vehículo `/app/vehicles/:id` (`VehicleDetailPage`, patente enlazada desde `VehiclesPage`): datos + historial paginado ("Cargar más"). Backend: `GET /api/v1/vehicles/{id}/history` (antes stub) devuelve órdenes y presupuestos por fecha desc (`IVehicleRepository.GetHistoryAsync`); el `total` es `null` sin `prices.view` (REQ-07 / T-VEH-08, 2 tests de integración). Vehículo de otro taller → 404.
+- Tests: T-UI-08 (`Timeline.test.tsx`); Vitest 64/64.
+
 **Post-E8 — bugfixes en Develop (14–15/10/2026, commits `27d0d01` / `3395d74` / `b87f7a7` / `ab4dee8` / `a229bcb` / `e46bd2c` / `09a8c7d`):**
 - fix(api): `CatalogItemKind`, `WorkOrderStatus` y `QuoteStatus` como `string?` + `Enum.TryParse(ignoreCase: true)` en todos los endpoints de búsqueda — ASP.NET Core 10 minimal APIs son case-sensitive para enum query params.
 - fix(api): `DevelopmentSeeder` crea `Branch.CreateMain` para tenants que no la tenían; middleware `ForwardedHeaders` para Cloudflare tunnel; defaults en `appsettings.Development.json`.

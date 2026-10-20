@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { getOwnerVehicle, type OwnerWorkOrderDto } from '../../../lib/api/qrCards'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { Timeline, type TimelineItem } from '../../../components/ui/Timeline'
 
 const WO_STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
@@ -15,31 +16,20 @@ const WO_STATUS_LABELS: Record<string, string> = {
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
 
-function WorkOrderCard({ wo }: { wo: OwnerWorkOrderDto }) {
-  const status = WO_STATUS_LABELS[wo.status] ?? wo.status
-  const date = new Date(wo.createdAt).toLocaleDateString('es-AR')
-  return (
-    <div className="flex items-stretch border border-tc-border bg-white hover:bg-tc-surface transition-colors">
-      <div className="w-1.5 shrink-0 bg-tc-stub-bg border-r border-tc-border" />
-      <div className="flex-1 px-4 py-3">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <div className="flex items-center gap-2">
-            <span className="font-mono font-bold text-xs text-slate-700">OT #{wo.number}</span>
-            <StatusBadge status={wo.status} label={status} />
-          </div>
-          {wo.total != null && (
-            <span className="text-sm font-bold text-tc-purple tabular-nums shrink-0">{fmtARS(wo.total)}</span>
-          )}
-        </div>
-        <div className="flex items-center gap-3 text-xs text-slate-400">
-          <span>Ingreso: {date}</span>
-          {wo.completedAt && (
-            <span>Entrega: {new Date(wo.completedAt).toLocaleDateString('es-AR')}</span>
-          )}
-        </div>
-      </div>
-    </div>
-  )
+/** Solo los campos que ya expone el DTO público (número, estado, fechas y total): el Timeline no recibe nada más. */
+function toTimelineItem(wo: OwnerWorkOrderDto): TimelineItem {
+  const parts = [
+    wo.completedAt ? `Entrega: ${new Date(wo.completedAt).toLocaleDateString('es-AR')}` : null,
+    wo.total != null ? `Total: ${fmtARS(wo.total)}` : null,
+  ].filter(Boolean)
+  return {
+    id: String(wo.number),
+    date: wo.createdAt,
+    title: `OT #${wo.number}`,
+    kind: 'order',
+    badge: <StatusBadge status={wo.status} label={WO_STATUS_LABELS[wo.status] ?? wo.status} />,
+    detail: parts.length ? parts.join(' · ') : null,
+  }
 }
 
 export function OwnerVehiclePage() {
@@ -156,10 +146,8 @@ export function OwnerVehiclePage() {
           {data.workOrders.length === 0 ? (
             <p className="px-4 py-6 text-sm text-slate-400">No hay órdenes registradas.</p>
           ) : (
-            <div className="divide-y divide-tc-border">
-              {data.workOrders.map((wo) => (
-                <WorkOrderCard key={wo.number} wo={wo} />
-              ))}
+            <div className="px-4 py-4">
+              <Timeline items={data.workOrders.map(toTimelineItem)} showTime={false} label="Historial de órdenes de trabajo" />
             </div>
           )}
         </div>
