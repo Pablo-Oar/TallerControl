@@ -169,13 +169,36 @@ internal sealed class EfIvaBookRepository : IIvaBookRepository
         List<IvaBookEntryDto> sales,
         List<IvaBookEntryDto> purchases)
     {
+        // Un comprobante sin punto de venta y número no se puede informar: queda afuera del archivo y se lista
+        // en LEEME.txt para que se complete la factura del proveedor.
+        var includedSales = sales.Where(e => e.InvoiceNumber is not null).ToList();
+        var includedPurchases = purchases.Where(e => e.InvoiceNumber is not null).ToList();
+        var excluded = purchases.Where(e => e.InvoiceNumber is null).ToList();
+
         using var ms = new MemoryStream();
         using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
         {
-            AddCitiEntry(zip, $"REGINFO_CV_VENTAS_CBTE.txt", sales, isSales: true);
-            AddCitiEntry(zip, $"REGINFO_CV_COMPRAS_CBTE.txt", purchases, isSales: false);
+            AddCitiEntry(zip, "REGINFO_CV_VENTAS_CBTE.txt", includedSales, isSales: true);
+            AddCitiEntry(zip, "REGINFO_CV_COMPRAS_CBTE.txt", includedPurchases, isSales: false);
+            AddReadme(zip, year, month, excluded);
         }
         return ms.ToArray();
+    }
+
+    private static void AddReadme(ZipArchive zip, int year, int month, List<IvaBookEntryDto> excludedPurchases)
+    {
+        var entry = zip.CreateEntry("LEEME.txt", CompressionLevel.Optimal);
+        using var writer = new StreamWriter(entry.Open(), Encoding.UTF8);
+        writer.WriteLine($"TallerControl - exportación CITI {year:D4}-{month:D2}");
+        writer.WriteLine();
+        writer.WriteLine("ATENCIÓN: estos archivos usan un formato simplificado propio (fecha|numero|cuit|neto|iva|total).");
+        writer.WriteLine("NO son los registros oficiales de ARCA. Consultá con tu contador antes de presentarlos.");
+        writer.WriteLine("Los importes están en centavos, con 15 dígitos y en valor absoluto.");
+        if (excludedPurchases.Count == 0) return;
+        writer.WriteLine();
+        writer.WriteLine("Compras que NO se incluyeron por falta de punto de venta o número de factura:");
+        foreach (var e in excludedPurchases)
+            writer.WriteLine($"- {e.Date:yyyy-MM-dd} {e.CounterpartyName} total {e.TotalAmount:0.00}");
     }
 
     private static void AddCitiEntry(ZipArchive zip, string entryName, List<IvaBookEntryDto> entries, bool isSales)

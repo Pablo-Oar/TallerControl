@@ -57,6 +57,9 @@ export function IvaBookPage() {
           )}
         </div>
       </div>
+      <p className="border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+        El archivo CITI usa un formato simplificado propio: <b>no es el registro oficial de ARCA</b>. Consultá con tu contador antes de presentarlo. Las compras sin punto de venta y número de factura quedan afuera y se listan en el LEEME del zip.
+      </p>
 
       <div className="flex items-center gap-2 flex-wrap">
         <select value={month} onChange={e => setMonth(Number(e.target.value))} className={selectCls}>

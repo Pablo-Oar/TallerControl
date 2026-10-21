@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
+using TallerControl.Application.Common;
 using TallerControl.Application.Invoicing;
 
 namespace TallerControl.Infrastructure.Invoicing;
@@ -53,4 +54,35 @@ internal sealed class FiscalCertificateEncryptor : IFiscalCertificateEncryptor
 
     public byte[] DecryptPrivateKey(byte[] encryptedPrivateKey)
         => _protector.Unprotect(encryptedPrivateKey);
+
+    public DateTimeOffset? InspectCertificate(byte[] encryptedPrivateKey, string certificatePem)
+    {
+        X509Certificate2 certificate;
+        try
+        {
+            certificate = X509Certificate2.CreateFromPem(certificatePem.Trim());
+        }
+        catch (CryptographicException)
+        {
+            throw new BusinessRuleException(
+                "El certificado no es válido. Pegá el texto completo, desde «-----BEGIN CERTIFICATE-----» hasta «-----END CERTIFICATE-----».");
+        }
+
+        using (certificate)
+        {
+            if (certificate.NotAfter.ToUniversalTime() <= DateTime.UtcNow)
+                throw new BusinessRuleException("El certificado está vencido.");
+
+            using var certKey = certificate.GetRSAPublicKey()
+                ?? throw new BusinessRuleException("El certificado no tiene una clave RSA.");
+            using var ownKey = RSA.Create();
+            ownKey.ImportPkcs8PrivateKey(DecryptPrivateKey(encryptedPrivateKey), out _);
+
+            if (!certKey.ExportSubjectPublicKeyInfo().AsSpan().SequenceEqual(ownKey.ExportSubjectPublicKeyInfo()))
+                throw new BusinessRuleException(
+                    "Este certificado no corresponde al CSR generado acá. Usá el que ARCA emitió para ese CSR.");
+
+            return new DateTimeOffset(certificate.NotAfter.ToUniversalTime(), TimeSpan.Zero);
+        }
+    }
 }
