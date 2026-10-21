@@ -25,6 +25,7 @@ import { Timeline } from '../../../components/ui/Timeline'
 import { Modal } from '../../../components/ui/Modal'
 import { ChangeStatusModal } from './ChangeStatusModal'
 import { CreatePaymentModal } from './CreatePaymentModal'
+import { InvoiceSection } from '../invoicing/InvoiceSection'
 import { useCan } from '../../../lib/auth/permissions'
 
 const fmtARS = (n: number) =>
@@ -397,6 +398,15 @@ export function WorkOrderDetailPage() {
           />
         </Section>
       )}
+
+      <Section title="Facturación">
+        <InvoiceSection
+          sourceType="work_order"
+          sourceId={order.id}
+          eligible={order.status !== 'cancelled'}
+          ineligibleReason="Una orden cancelada no se factura."
+        />
+      </Section>
 
       {/* Modales */}
       {changingStatus && (

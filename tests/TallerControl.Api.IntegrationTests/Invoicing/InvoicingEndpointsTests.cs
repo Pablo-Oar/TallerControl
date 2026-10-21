@@ -361,6 +361,27 @@ public sealed class InvoicingEndpointsTests : IAsyncLifetime
         }
     }
 
+    [Fact(DisplayName = "T-INV-09: Listar facturas filtra por documento de origen (sourceType snake_case + sourceId)")]
+    public async Task Listar_facturas_filtra_por_origen()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, InvoicingWebApplicationFactory.OwnerEmail, InvoicingWebApplicationFactory.Password);
+
+        // Garantiza que la orden sembrada tenga al menos una factura (409 si otra prueba ya la emitió).
+        var emitBody = new { fiscalPointOfSaleId = _factory.PointOfSaleId, concept = 1 };
+        await PostWithCsrfRawAsync(client, $"/api/v1/work-orders/{_factory.WorkOrderId}/invoice", emitBody);
+
+        var mine = await client.GetFromJsonAsync<JsonElement>(
+            $"/api/v1/invoicing/invoices?sourceType=work_order&sourceId={_factory.WorkOrderId}");
+        var items = mine.GetProperty("items").EnumerateArray().ToList();
+        Assert.NotEmpty(items);
+        Assert.All(items, i => Assert.Equal(_factory.WorkOrderId, i.GetProperty("sourceId").GetGuid()));
+
+        var none = await client.GetFromJsonAsync<JsonElement>(
+            $"/api/v1/invoicing/invoices?sourceType=work_order&sourceId={Guid.NewGuid()}");
+        Assert.Empty(none.GetProperty("items").EnumerateArray());
+    }
+
     // ── T-INV-08: Contador solo puede leer, no emitir ────────────────────────
 
     [Fact(DisplayName = "T-INV-08: Contador puede listar facturas pero no puede emitir (403)")]
