@@ -61,34 +61,18 @@ export const STATUS_LABELS: Record<PaymentStatus, string> = {
 export const getPayments = (workOrderId: string) =>
   api.get<WorkOrderPaymentsDto>(`/api/v1/work-orders/${workOrderId}/payments`)
 
-export async function createPayment(
+export function createPayment(
   workOrderId: string,
   request: CreatePaymentRequest,
   idempotencyKey?: string,
 ): Promise<CreatePaymentResult> {
-  // El cliente no soporta cabeceras extras; si hay clave de idempotencia usamos fetch directo.
-  if (!idempotencyKey) {
-    return api.post<CreatePaymentResult>(
-      `/api/v1/work-orders/${workOrderId}/payments`,
-      request,
-      true,
-    )
-  }
-
-  const csrfRes = await fetch('/api/v1/auth/antiforgery-token', { credentials: 'include' })
-  const { token } = await csrfRes.json()
-  const res = await fetch(`/api/v1/work-orders/${workOrderId}/payments`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': token as string,
-      'Idempotency-Key': idempotencyKey,
-    },
-    body: JSON.stringify(request),
-  })
-  if (!res.ok) throw new Error(await res.text())
-  return res.json() as Promise<CreatePaymentResult>
+  // Con clave de idempotencia, repetir el envío (doble toque, reintento) devuelve el mismo cobro.
+  return api.post<CreatePaymentResult>(
+    `/api/v1/work-orders/${workOrderId}/payments`,
+    request,
+    true,
+    idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined,
+  )
 }
 
 export const voidPayment = (workOrderId: string, paymentId: string, reason: string) =>
@@ -103,3 +87,13 @@ export const getPaymentPdfUrl = (workOrderId: string, paymentId: string) =>
 
 export const getPublicPayment = (token: string) =>
   api.get<PublicPaymentDto>(`/api/public/v1/payments/${token}`)
+
+/** Emite un enlace nuevo del comprobante (el anterior deja de servir). Devuelve la dirección completa. */
+export async function createPaymentPublicLink(workOrderId: string, paymentId: string): Promise<string> {
+  const { publicToken } = await api.post<{ publicToken: string }>(
+    `/api/v1/work-orders/${workOrderId}/payments/${paymentId}/public-link`,
+    undefined,
+    true,
+  )
+  return `${window.location.origin}/c/${publicToken}`
+}

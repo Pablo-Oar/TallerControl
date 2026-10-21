@@ -228,6 +228,34 @@ public sealed class PaymentsEndpointsTests : IAsyncLifetime
         Assert.Equal(2, movements.GetArrayLength());
     }
 
+    // ── F-03: enlace público del comprobante ─────────────────────────────────
+
+    [Fact(DisplayName = "T-PAY-08: POST /payments/{id}/public-link emite un enlace que abre el comprobante y anula el anterior")]
+    public async Task Enlace_publico_del_comprobante_se_regenera_y_el_anterior_deja_de_servir()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, PaymentsWebApplicationFactory.OwnerEmail, PaymentsWebApplicationFactory.Password);
+        using var anonymous = _factory.CreateClient();
+
+        var created = await CreatePaymentAsync(client, amount: 120m);
+        var payment = created.GetProperty("payment");
+        var paymentId = payment.GetProperty("id").GetString()!;
+        var firstToken = payment.GetProperty("publicToken").GetString()!;
+        Assert.Equal(HttpStatusCode.OK, (await anonymous.GetAsync($"/api/public/v1/payments/{firstToken}")).StatusCode);
+
+        var csrf = await FetchCsrfAsync(client);
+        var req = new HttpRequestMessage(HttpMethod.Post,
+            $"/api/v1/work-orders/{_factory.WorkOrderId}/payments/{paymentId}/public-link");
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        var resp = await client.SendAsync(req);
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var newToken = (await resp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("publicToken").GetString()!;
+
+        Assert.NotEqual(firstToken, newToken);
+        Assert.Equal(HttpStatusCode.OK, (await anonymous.GetAsync($"/api/public/v1/payments/{newToken}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await anonymous.GetAsync($"/api/public/v1/payments/{firstToken}")).StatusCode);
+    }
+
     // ── T-PAY-06: anular pago ya anulado ─────────────────────────────────────
 
     [Fact(DisplayName = "T-PAY-06: anular un pago ya anulado devuelve 409")]

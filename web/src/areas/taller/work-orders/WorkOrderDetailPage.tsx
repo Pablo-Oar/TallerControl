@@ -12,6 +12,7 @@ import {
   getPayments,
   voidPayment,
   getPaymentPdfUrl,
+  createPaymentPublicLink,
   METHOD_LABELS,
   STATUS_LABELS as PAYMENT_STATUS_LABELS,
 } from '../../../lib/api/payments'
@@ -19,6 +20,7 @@ import { Button } from '../../../components/ui/Button'
 import { WorkOrderPhotos } from '../../../components/WorkOrderPhotos'
 import { FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { ApiError } from '../../../lib/api/client'
+import { notify } from '../../../components/ui/dialogs'
 import { EditableStatusBadge } from '../../../components/ui/EditableStatusBadge'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { Timeline } from '../../../components/ui/Timeline'
@@ -26,6 +28,7 @@ import { Modal } from '../../../components/ui/Modal'
 import { ChangeStatusModal } from './ChangeStatusModal'
 import { CreatePaymentModal } from './CreatePaymentModal'
 import { InvoiceSection } from '../invoicing/InvoiceSection'
+import { ShareLink } from '../../../components/ShareLink'
 import { useCan } from '../../../lib/auth/permissions'
 
 const fmtARS = (n: number) =>
@@ -34,6 +37,15 @@ const fmtARS = (n: number) =>
 export function WorkOrderDetailPage() {
   const { id } = useParams<{ id: string }>()
   const can = useCan()
+  const [receipt, setReceipt] = useState<{ number: number; url: string } | null>(null)
+
+  async function shareReceipt(paymentId: string, number: number) {
+    try {
+      setReceipt({ number, url: await createPaymentPublicLink(id!, paymentId) })
+    } catch (err) {
+      notify(err instanceof ApiError ? err.detail : 'No se pudo generar el enlace del comprobante')
+    }
+  }
   const queryClient = useQueryClient()
   const [changingStatus, setChangingStatus] = useState(false)
   const [creatingPayment, setCreatingPayment] = useState(false)
@@ -349,6 +361,12 @@ export function WorkOrderDetailPage() {
                       >
                         PDF
                       </a>
+                      <button
+                        onClick={() => shareReceipt(pay.id, pay.number)}
+                        className="text-[10px] font-bold tracking-wider uppercase text-tc-navy-text-dim hover:text-tc-purple transition-colors"
+                      >
+                        Enlace
+                      </button>
                       {pay.status === 'valid' && can('payments.void') && (
                         <button
                           onClick={() => setVoidingPaymentId(pay.id)}
@@ -426,6 +444,18 @@ export function WorkOrderDetailPage() {
           onSuccess={handlePaymentSuccess}
           onClose={() => setCreatingPayment(false)}
         />
+      )}
+
+      {receipt && (
+        <Modal title={`Comprobante #${String(receipt.number).padStart(4, '0')}`} onClose={() => setReceipt(null)} className="max-w-md">
+          <div className="space-y-4">
+            <p className="text-sm text-tc-text-secondary">Este enlace reemplaza al anterior del comprobante.</p>
+            <ShareLink url={receipt.url} whatsappText="Comprobante de pago:" />
+            <div className="flex justify-end">
+              <Button size="sm" onClick={() => setReceipt(null)}>Cerrar</Button>
+            </div>
+          </div>
+        </Modal>
       )}
 
       {voidingPaymentId && (

@@ -68,6 +68,9 @@ public sealed class Payment : Entity, ITenantOwned, IAudited, IAuditable
     public DateTimeOffset? UpdatedAt { get; private set; }
     public Guid? UpdatedBy { get; private set; }
 
+    /// <summary>Reemplaza el enlace público del comprobante: el anterior deja de servir.</summary>
+    public void ReplacePublicToken(byte[] publicTokenHash) => PublicTokenHash = publicTokenHash;
+
     /// <summary>Vincula el pago a una cuenta de caja (E11, D-16).</summary>
     public void SetAccountId(Guid accountId) => AccountId = accountId;
 

@@ -42,8 +42,9 @@ async function request<T>(
   body?: unknown,
   requiresCsrf = false,
   retried = false,
+  extraHeaders?: Record<string, string>,
 ): Promise<T> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  const headers: Record<string, string> = { 'Content-Type': 'application/json', ...extraHeaders }
 
   if (requiresCsrf) {
     headers['X-CSRF-TOKEN'] = await ensureCsrfToken()
@@ -66,7 +67,7 @@ async function request<T>(
     if (requiresCsrf && isCsrfFailure(res.status, json)) {
       // El token cacheado ya no vale: se descarta y se reintenta una vez con uno nuevo.
       csrfToken = null
-      if (!retried) return request<T>(method, url, body, requiresCsrf, true)
+      if (!retried) return request<T>(method, url, body, requiresCsrf, true, extraHeaders)
       throw new ApiError(res.status, CSRF_MESSAGE, json ? { ...json } : undefined)
     }
     const detail = json?.detail ?? res.statusText
@@ -111,7 +112,8 @@ async function requestWithIfMatch<T>(
 
 export const api = {
   get: <T>(url: string) => request<T>('GET', url),
-  post: <T>(url: string, body?: unknown, csrf = false) => request<T>('POST', url, body, csrf),
+  post: <T>(url: string, body?: unknown, csrf = false, headers?: Record<string, string>) =>
+    request<T>('POST', url, body, csrf, false, headers),
   put: <T>(url: string, body: unknown, ifMatch: string) => requestWithIfMatch<T>('PUT', url, body, ifMatch),
   patch: <T>(url: string, body: unknown, ifMatch: string) => requestWithIfMatch<T>('PATCH', url, body, ifMatch),
   patchJson: <T>(url: string, body?: unknown, csrf = false) => request<T>('PATCH', url, body, csrf),

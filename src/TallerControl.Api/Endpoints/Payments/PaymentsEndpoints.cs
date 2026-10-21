@@ -10,6 +10,7 @@ namespace TallerControl.Api.Endpoints.Payments;
 /// POST /api/v1/work-orders/{workOrderId}/payments               → payments.write (O, A)
 /// POST /api/v1/work-orders/{workOrderId}/payments/{id}/void     → payments.void  (O)
 /// GET  /api/v1/work-orders/{workOrderId}/payments/{id}/pdf      → payments.read  (O, A)
+/// POST /api/v1/work-orders/{workOrderId}/payments/{id}/public-link → payments.read  (O, A) [emite un enlace nuevo]
 /// </summary>
 internal static class PaymentsEndpoints
 {
@@ -38,6 +39,15 @@ internal static class PaymentsEndpoints
                 (Guid workOrderId, Guid id, GetPaymentPdfHandler handler, CancellationToken ct) =>
                     GetPdfAsync(workOrderId, id, handler, ct))
             .RequirePermission(Permission.PaymentsRead);
+
+        app.MapPost("/api/v1/work-orders/{workOrderId:guid}/payments/{id:guid}/public-link",
+                async (Guid workOrderId, Guid id, GetPaymentPublicLinkHandler handler, CancellationToken ct) =>
+                {
+                    _ = workOrderId; // el handler verifica que el pago exista en el taller
+                    return Results.Ok(await handler.HandleAsync(id, ct));
+                })
+            .RequirePermission(Permission.PaymentsRead)
+            .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
         return app;
     }
