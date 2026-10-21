@@ -311,7 +311,8 @@ export function WorkOrderDetailPage() {
         )}
 
         {payments && payments.payments.length > 0 && (
-          <table className="mb-3 w-full text-sm">
+          <div className="mb-3 overflow-x-auto">
+          <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-tc-border">
                 {['#', 'Método', 'Monto', 'Fecha', 'Estado', ''].map((h, i) => (
@@ -359,6 +360,7 @@ export function WorkOrderDetailPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
 
         {!payments?.payments.length && (
