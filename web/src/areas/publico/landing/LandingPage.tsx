@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { Pricing3, type PricingPlan } from '../../../components/ui/Pricing3'
 import { SignalPulse } from '../../../components/ui/SignalPulse'
 
 const features = [
@@ -34,26 +35,40 @@ const features = [
   },
 ]
 
-const plans = [
+const plans: PricingPlan[] = [
   {
-    name: 'Gratis',
+    id: 'trial',
+    name: 'Prueba gratis',
     price: '$0',
-    period: 'para siempre',
-    desc: 'Para talleres que están empezando.',
-    features: ['1 sucursal', 'Hasta 100 órdenes/mes', 'Portal QR incluido', 'Soporte por email'],
-    cta: 'Empezar gratis',
+    period: 'durante 10 días',
+    description: 'Probá TallerControl con tu taller real, sin tarjeta y sin compromiso.',
+    features: [
+      'Acceso completo durante 10 días',
+      'Órdenes, presupuestos y cobros',
+      'Portal QR para tus clientes',
+      'Portal del mecánico en el celular',
+      'Soporte por email',
+    ],
+    buttonText: 'Probar gratis',
     href: '/registro',
-    highlight: false,
   },
   {
-    name: 'Pro',
-    price: '$9.990',
+    id: 'pro',
+    name: 'Inicia ahora',
+    price: '$50.000',
     period: 'por mes',
-    desc: 'Para talleres en crecimiento.',
-    features: ['Sucursales ilimitadas', 'Órdenes ilimitadas', 'Reportes avanzados', 'Soporte prioritario'],
-    cta: 'Próximamente',
-    href: '#',
-    highlight: true,
+    description: 'Todo lo que necesita tu taller para trabajar sin papeles ni planillas.',
+    features: [
+      'Sucursales y usuarios ilimitados',
+      'Órdenes y presupuestos ilimitados',
+      'Facturación electrónica ARCA',
+      'Caja, compras y reportes con Excel',
+      'Soporte prioritario',
+    ],
+    buttonText: 'Iniciar ahora',
+    href: '/registro',
+    isPopular: true,
+    popularBadgeText: 'Recomendado',
   },
 ]
 
@@ -130,54 +145,13 @@ export function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section className="px-6 py-16 border-t border-tc-border">
-        <div className="mx-auto max-w-3xl">
-          <p className="mb-2 text-center text-[10px] font-bold tracking-[0.2em] uppercase text-tc-text-muted">Precios</p>
-          <h2 className="mb-10 text-center text-2xl font-bold text-tc-text">Planes</h2>
-          <div className="grid gap-6 sm:grid-cols-2">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={`border p-6 ${
-                  plan.highlight
-                    ? 'border-tc-navy bg-tc-navy text-white'
-                    : 'border-tc-border bg-white'
-                }`}
-              >
-                {plan.highlight && (
-                  <span className="mb-3 inline-block border border-white px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase text-white">
-                    Próximamente
-                  </span>
-                )}
-                <h3 className={`text-lg font-bold ${plan.highlight ? 'text-white' : 'text-tc-text'}`}>{plan.name}</h3>
-                <div className="my-2">
-                  <span className={`text-3xl font-bold ${plan.highlight ? 'text-white' : 'text-tc-text'}`}>{plan.price}</span>
-                  <span className={`ml-1 text-sm ${plan.highlight ? 'text-tc-text-muted' : 'text-tc-text-secondary'}`}>{plan.period}</span>
-                </div>
-                <p className={`mb-4 text-sm ${plan.highlight ? 'text-slate-300' : 'text-tc-text-secondary'}`}>{plan.desc}</p>
-                <ul className="mb-6 space-y-2">
-                  {plan.features.map((feat) => (
-                    <li key={feat} className={`flex items-center gap-2 text-sm ${plan.highlight ? 'text-slate-200' : 'text-tc-text-secondary'}`}>
-                      <span className={plan.highlight ? 'text-tc-text-muted' : 'text-tc-text-muted'}>—</span>
-                      {feat}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  to={plan.href}
-                  className={`flex items-center justify-center w-full min-h-[44px] text-xs font-bold tracking-wider uppercase transition-colors ${
-                    plan.highlight
-                      ? 'border border-slate-600 bg-transparent text-tc-text-muted cursor-not-allowed pointer-events-none'
-                      : 'border border-tc-navy bg-tc-navy text-white hover:bg-transparent hover:text-tc-navy'
-                  }`}
-                >
-                  {plan.cta}
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <Pricing3
+        badgeText="Planes"
+        title="Empezá gratis, seguí cuando te convenza"
+        subtitle="Diez días con todo incluido para probarlo en tu taller. Después, un único plan sin letra chica."
+        plans={plans}
+        footerText="Precios en pesos argentinos."
+      />
 
       {/* Footer */}
       <footer className="border-t border-tc-border bg-tc-navy px-6 py-8 text-center text-xs text-tc-text-secondary">
