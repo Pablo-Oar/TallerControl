@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -8,6 +8,7 @@ import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 import { useCashAccountChoice } from '../../../components/CashAccountSelect'
+import { ShareLink } from '../../../components/ShareLink'
 
 const schema = z.object({
   method: z.enum(['cash', 'transfer', 'debit', 'credit']),
@@ -30,6 +31,9 @@ interface Props {
 
 export function CreatePaymentModal({ workOrderId, balance, onSuccess, onClose }: Props) {
   const [serverError, setServerError] = useState<string | null>(null)
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null)
+  // Una clave por apertura del modal: si se envía dos veces (doble toque, reintento) se registra un solo cobro.
+  const idempotencyKey = useRef(crypto.randomUUID())
   const { accountId, field: cashField } = useCashAccountChoice('Ingresa a la cuenta')
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
@@ -40,16 +44,31 @@ export function CreatePaymentModal({ workOrderId, balance, onSuccess, onClose }:
   async function onSubmit(data: FormData) {
     setServerError(null)
     try {
-      await createPayment(workOrderId, {
-        method: data.method,
-        amount: data.amount,
-        reference: data.reference || undefined,
-        accountId,
-      })
-      onSuccess()
+      const result = await createPayment(
+        workOrderId,
+        { method: data.method, amount: data.amount, reference: data.reference || undefined, accountId },
+        idempotencyKey.current,
+      )
+      setReceiptUrl(`${window.location.origin}/c/${result.payment.publicToken}`)
     } catch (e) {
       setServerError(e instanceof ApiError ? e.detail : 'Error inesperado')
     }
+  }
+
+  if (receiptUrl) {
+    return (
+      <Modal title="Cobro registrado" onClose={onSuccess} className="max-w-md">
+        <div className="space-y-4">
+          <p className="text-sm text-tc-text-secondary">
+            El cobro quedó registrado. Si querés, mandale el comprobante al cliente.
+          </p>
+          <ShareLink url={receiptUrl} whatsappText="Comprobante de pago:" />
+          <div className="flex justify-end">
+            <Button size="sm" onClick={onSuccess}>Listo</Button>
+          </div>
+        </div>
+      </Modal>
+    )
   }
 
   return (

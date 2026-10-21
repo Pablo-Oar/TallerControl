@@ -43,6 +43,7 @@ test.describe('E2E-05: Cobros y entrega', () => {
     await page.getByRole('button', { name: /registrar cobro/i }).click()
     await dialog(page).getByLabel(/^monto/i).fill('5000')
     await dialog(page).getByRole('button', { name: /^registrar$/i }).click()
+    await dialog(page).getByRole('button', { name: /^listo$/i }).click()
     await dialog(page).waitFor({ state: 'detached' })
     await expect(page.getByText(/7\.100/).first()).toBeVisible() // saldo pendiente
 
@@ -50,6 +51,7 @@ test.describe('E2E-05: Cobros y entrega', () => {
     await page.getByRole('button', { name: /registrar cobro/i }).click()
     await dialog(page).getByLabel(/^monto/i).fill('7100')
     await dialog(page).getByRole('button', { name: /^registrar$/i }).click()
+    await dialog(page).getByRole('button', { name: /^listo$/i }).click()
     await dialog(page).waitFor({ state: 'detached' })
 
     // Saldo cubierto: ya no se ofrece registrar más cobros

@@ -187,6 +187,7 @@ public static class DependencyInjection
         services.AddScoped<CreatePaymentHandler>();
         services.AddScoped<VoidPaymentHandler>();
         services.AddScoped<GetPaymentPdfHandler>();
+        services.AddScoped<GetPaymentPublicLinkHandler>();
         services.AddScoped<GetPublicPaymentHandler>();
 
         services.AddScoped<IPublicLinkRepository, EfPublicLinkRepository>();
