@@ -14,7 +14,7 @@ const schema = z
     workshopName: z.string().min(2, 'El nombre del taller debe tener al menos 2 caracteres'),
     displayName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
     email: z.string().email('Email inválido'),
-    password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
+    password: z.string().min(10, 'La contraseña debe tener al menos 10 caracteres'),
     confirmPassword: z.string(),
   })
   .refine((d) => d.password === d.confirmPassword, {
@@ -125,8 +125,8 @@ export function RegisterPage() {
           type="password"
           icon={<LockIcon />}
           autoComplete="new-password"
-          placeholder="Mínimo 8 caracteres"
-          hint="Usá al menos 8 caracteres."
+          placeholder="Mínimo 10 caracteres"
+          hint="Usá al menos 10 caracteres."
           error={errors.password?.message}
           {...register('password')}
         />

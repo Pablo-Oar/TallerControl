@@ -11,7 +11,7 @@ import { ApiError } from '../../../lib/api/client'
 
 const schema = z
   .object({
-    password: z.string().min(8, 'Mínimo 8 caracteres'),
+    password: z.string().min(10, 'Mínimo 10 caracteres'),
     confirm: z.string(),
   })
   .refine((d) => d.password === d.confirm, {
@@ -61,7 +61,7 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <AuthCard title="Nueva contraseña" subtitle="Elegí una contraseña de al menos 8 caracteres.">
+    <AuthCard title="Nueva contraseña" subtitle="Elegí una contraseña de al menos 10 caracteres.">
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         <AuthInput
           label="Contraseña"
@@ -69,7 +69,7 @@ export function ResetPasswordPage() {
           type="password"
           icon={<LockIcon />}
           autoComplete="new-password"
-          placeholder="Mínimo 8 caracteres"
+          placeholder="Mínimo 10 caracteres"
           error={errors.password?.message}
           {...register('password')}
         />

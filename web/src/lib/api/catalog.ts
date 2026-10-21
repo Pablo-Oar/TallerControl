@@ -40,6 +40,8 @@ export interface CatalogItemDto {
   maxStockQty: number | null
   /** El API devuelve el mínimo como `stockMin`. */
   stockMin?: number | null
+  /** Costo unitario: la pantalla no lo edita, pero se reenvía al guardar para no borrarlo. */
+  cost?: number | null
   /** Duración y buffer en minutos (servicios): los usa la agenda al reservar. */
   durationMinutes?: number | null
   bufferMinutes?: number | null
@@ -65,6 +67,9 @@ export interface CreateCatalogItemRequest {
 
 export interface UpdateCatalogItemRequest {
   name: string
+  /** Se reenvía el actual: el servidor reemplaza el valor, así que omitirlo lo borraría. */
+  sku?: string | null
+  cost?: number | null
   description?: string | null
   netPrice: number
   vatRate: number

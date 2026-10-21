@@ -83,6 +83,8 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
       if (isEdit) {
         const result = await catalogApi.update(item.id, {
           name: data.name,
+          sku: item.sku,
+          cost: item.cost ?? null,
           description: data.description || null,
           netPrice: data.netPrice,
           vatRate: data.vatRate,
