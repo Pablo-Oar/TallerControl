@@ -10,6 +10,7 @@ import { ApiError } from '../../../lib/api/client'
 import { CounterSaleFormModal } from './CounterSaleFormModal'
 import { InvoiceSection } from '../invoicing/InvoiceSection'
 import { confirmDialog, notify } from '../../../components/ui/dialogs'
+import { ConfirmWithCashModal } from '../../../components/ConfirmWithCashModal'
 
 const STATUS_LABELS: Record<CounterSaleStatus, string> = {
   draft: 'Borrador',
@@ -62,6 +63,7 @@ export function CounterSalesPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<CounterSaleDto | null>(null)
+  const [confirming, setConfirming] = useState<CounterSaleDto | null>(null)
   const [creating, setCreating] = useState(false)
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -81,15 +83,12 @@ export function CounterSalesPage() {
     setPage(1)
   }
 
-  async function handleConfirm(s: CounterSaleDto) {
-    if (!(await confirmDialog('¿Confirmar la venta? Se descontará el stock.', { danger: false }))) return
-    try {
-      await counterSalesApi.confirm(s.id, { accountId: null, version: s.version })
-      queryClient.invalidateQueries({ queryKey: ['counter-sales'] })
-      setSelected(null)
-    } catch (err) {
-      notify(err instanceof ApiError ? err.detail : 'Error al confirmar la venta')
-    }
+  async function confirmSale(s: CounterSaleDto, accountId: string | null) {
+    await counterSalesApi.confirm(s.id, { accountId, version: s.version })
+    queryClient.invalidateQueries({ queryKey: ['counter-sales'] })
+    queryClient.invalidateQueries({ queryKey: ['cash-accounts'] })
+    setConfirming(null)
+    setSelected(null)
   }
 
   async function handleCancel(s: CounterSaleDto) {
@@ -224,7 +223,7 @@ export function CounterSalesPage() {
             <div className="flex justify-end gap-2">
               {detail.status === 'draft' && (
                 <>
-                  <Button size="sm" onClick={() => handleConfirm(detail)}>Confirmar</Button>
+                  <Button size="sm" onClick={() => setConfirming(detail)}>Confirmar</Button>
                   <Button size="sm" variant="secondary" onClick={() => handleCancel(detail)}>Cancelar</Button>
                   <Button size="sm" variant="danger" onClick={() => handleDelete(detail)}>Eliminar</Button>
                 </>
@@ -233,6 +232,17 @@ export function CounterSalesPage() {
             </div>
           </div>
         </Modal>
+      )}
+
+      {confirming && (
+        <ConfirmWithCashModal
+          title={`Confirmar venta #${confirming.documentNumber}`}
+          message="Se descuenta el stock de los productos con control. Si elegís una cuenta, se registra el ingreso en la Caja."
+          confirmLabel="Confirmar venta"
+          accountLabel="Ingresa a la cuenta"
+          onConfirm={accountId => confirmSale(confirming, accountId)}
+          onClose={() => setConfirming(null)}
+        />
       )}
     </div>
   )

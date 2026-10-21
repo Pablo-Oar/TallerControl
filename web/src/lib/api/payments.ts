@@ -37,6 +37,8 @@ export interface CreatePaymentRequest {
   amount: number
   paidAt?: string
   reference?: string
+  /** Cuenta de caja donde entra el cobro (opcional). */
+  accountId?: string | null
 }
 
 export interface CreatePaymentResult {

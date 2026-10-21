@@ -7,6 +7,7 @@ import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
+import { useCashAccountChoice } from '../../../components/CashAccountSelect'
 
 const schema = z.object({
   method: z.enum(['cash', 'transfer', 'debit', 'credit']),
@@ -29,6 +30,7 @@ interface Props {
 
 export function CreatePaymentModal({ workOrderId, balance, onSuccess, onClose }: Props) {
   const [serverError, setServerError] = useState<string | null>(null)
+  const { accountId, field: cashField } = useCashAccountChoice('Ingresa a la cuenta')
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -42,6 +44,7 @@ export function CreatePaymentModal({ workOrderId, balance, onSuccess, onClose }:
         method: data.method,
         amount: data.amount,
         reference: data.reference || undefined,
+        accountId,
       })
       onSuccess()
     } catch (e) {
@@ -72,6 +75,8 @@ export function CreatePaymentModal({ workOrderId, balance, onSuccess, onClose }:
           error={errors.amount?.message}
           {...register('amount', { valueAsNumber: true })}
         />
+
+        {cashField}
 
         <FormField label="Referencia (opcional)" type="text" placeholder="N° de transferencia, etc." {...register('reference')} />
 

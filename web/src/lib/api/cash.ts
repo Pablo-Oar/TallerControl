@@ -3,7 +3,7 @@ import { api } from './client'
 export type CashAccountKind = 'cash' | 'bank' | 'digital'
 export type CashSessionStatus = 'open' | 'closed'
 export type CashMovementDirection = 'in' | 'out'
-export type CashMovementReason = 'manual_in' | 'manual_out' | 'purchase_payment' | 'counter_sale_income' | 'work_order_payment'
+export type CashMovementReason = 'payment' | 'purchase_payment' | 'counter_sale_income' | 'manual_income' | 'manual_expense'
 
 export interface CashAccountDto {
   id: string
@@ -12,6 +12,10 @@ export interface CashAccountDto {
   kind: CashAccountKind
   isActive: boolean
   version: number
+  /** Suma de los movimientos (ingresos − egresos). */
+  balance: number
+  /** Desde cuándo está abierta la sesión; null si no hay ninguna abierta. */
+  sessionOpenedAt: string | null
 }
 
 export interface CashSessionDto {
@@ -56,6 +60,8 @@ export interface OpenCashSessionRequest {
 
 export interface CloseCashSessionRequest {
   closingNote?: string | null
+  /** Efectivo contado: el sistema registra lo esperado y la diferencia en la nota de cierre. */
+  countedAmount?: number | null
 }
 
 export interface ManualCashMovementRequest {
