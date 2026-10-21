@@ -106,7 +106,7 @@ internal sealed class OutboxDispatcher : BackgroundService
             return null;
         }
 
-        var link = $"{payload.FrontendBaseUrl}/invitaciones/{payload.Token}";
+        var link = $"{payload.FrontendBaseUrl}/invitations/{Uri.EscapeDataString(payload.Token)}/accept";
         return new EmailMessage(
             To: payload.To,
             Subject: "Te invitaron a TallerControl",
@@ -126,7 +126,7 @@ internal sealed class OutboxDispatcher : BackgroundService
             return null;
         }
 
-        var link = $"{payload.FrontendBaseUrl}/restablecer-password/{payload.Token}";
+        var link = $"{payload.FrontendBaseUrl}/reset-password?token={Uri.EscapeDataString(payload.Token)}";
         return new EmailMessage(
             To: payload.To,
             Subject: "Restablecimiento de contraseña — TallerControl",
