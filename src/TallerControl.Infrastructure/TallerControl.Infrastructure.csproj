@@ -35,4 +35,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="TallerControl.Api.IntegrationTests" />
+  </ItemGroup>
+
 </Project>

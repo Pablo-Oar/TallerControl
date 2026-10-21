@@ -382,6 +382,24 @@ public sealed class InvoicingEndpointsTests : IAsyncLifetime
         Assert.Empty(none.GetProperty("items").EnumerateArray());
     }
 
+    [Fact(DisplayName = "T-INV-10: El zip CITI incluye un LEEME que avisa que el formato no es el oficial")]
+    public async Task Citi_zip_incluye_leeme_con_aviso()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, InvoicingWebApplicationFactory.OwnerEmail, InvoicingWebApplicationFactory.Password);
+
+        var now = DateTime.UtcNow;
+        var resp = await client.GetAsync($"/api/v1/invoicing/citi-export?year={now.Year}&month={now.Month}");
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+
+        using var zip = new System.IO.Compression.ZipArchive(await resp.Content.ReadAsStreamAsync());
+        var readme = zip.GetEntry("LEEME.txt");
+        Assert.NotNull(readme);
+        using var reader = new StreamReader(readme!.Open());
+        Assert.Contains("NO son los registros oficiales", await reader.ReadToEndAsync());
+        Assert.NotNull(zip.GetEntry("REGINFO_CV_VENTAS_CBTE.txt"));
+    }
+
     // ── T-INV-08: Contador solo puede leer, no emitir ────────────────────────
 
     [Fact(DisplayName = "T-INV-08: Contador puede listar facturas pero no puede emitir (403)")]

@@ -73,7 +73,6 @@ function CertificatesSection({
 
   const [uploadId, setUploadId] = useState<string | null>(null)
   const [certPem, setCertPem] = useState('')
-  const [expiresAt, setExpiresAt] = useState('')
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
 
@@ -110,12 +109,10 @@ function CertificatesSection({
     try {
       await uploadCertificate(uploadId, {
         certificatePem: certPem,
-        expiresAt: new Date(expiresAt).toISOString(),
       })
       onUpdated()
       setUploadId(null)
       setCertPem('')
-      setExpiresAt('')
     } catch (err) {
       setUploadError(err instanceof ApiError ? err.detail : 'Error al subir certificado')
     } finally {
@@ -322,13 +319,9 @@ function CertificatesSection({
               placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"
               required
             />
-            <FormField
-              label="Fecha de vencimiento"
-              type="date"
-              value={expiresAt}
-              onChange={e => setExpiresAt(e.target.value)}
-              required
-            />
+            <p className="text-xs text-tc-text-muted">
+              El vencimiento se lee del propio certificado, y se verifica que corresponda al CSR que generaste acá.
+            </p>
             {uploadError && <p className="text-sm text-tc-stamp-red">{uploadError}</p>}
             <div className="flex justify-end gap-2">
               <Button variant="secondary" type="button" onClick={() => setUploadId(null)}>

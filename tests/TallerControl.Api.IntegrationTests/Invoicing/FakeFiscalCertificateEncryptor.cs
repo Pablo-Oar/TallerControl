@@ -18,4 +18,7 @@ internal sealed class FakeFiscalCertificateEncryptor : IFiscalCertificateEncrypt
         $"-----BEGIN CERTIFICATE REQUEST-----\nFAKECSR_{cuit}\n-----END CERTIFICATE REQUEST-----";
 
     public byte[] DecryptPrivateKey(byte[] encryptedPrivateKey) => FakePrivateKeyDer;
+
+    // Los certificados de prueba no son reales: se usa el vencimiento que informa el test.
+    public DateTimeOffset? InspectCertificate(byte[] encryptedPrivateKey, string certificatePem) => null;
 }

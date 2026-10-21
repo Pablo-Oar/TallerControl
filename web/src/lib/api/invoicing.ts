@@ -30,7 +30,8 @@ export interface CreateFiscalCertificateRequest {
 
 export interface UploadFiscalCertificateRequest {
   certificatePem: string
-  expiresAt: string
+  /** Opcional: el servidor lee el vencimiento del certificado. */
+  expiresAt?: string
 }
 
 export interface TestFiscalConnectionResponse {

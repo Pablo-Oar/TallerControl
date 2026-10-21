@@ -18,7 +18,8 @@ public sealed record FiscalCertificateDto(
 
 public sealed record CreateFiscalCertificateRequest(string Cuit, string Name, bool IsPrimary);
 
-public sealed record UploadFiscalCertificateRequest(string CertificatePem, DateTimeOffset ExpiresAt);
+/// <summary>El vencimiento se lee del propio certificado; <c>ExpiresAt</c> solo se usa si no se puede leer.</summary>
+public sealed record UploadFiscalCertificateRequest(string CertificatePem, DateTimeOffset? ExpiresAt = null);
 
 public sealed record TestFiscalConnectionResponse(
     bool Success,
