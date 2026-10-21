@@ -148,6 +148,39 @@ public sealed class CashEndpointsTests : IAsyncLifetime
         Assert.Equal("Caja GET T-CAJ-01b", dto.GetProperty("name").GetString());
     }
 
+    // ── F-02: cierre con efectivo contado y saldo en el listado ──────────────
+
+    [Fact(DisplayName = "T-CAJ-05: El listado informa saldo y sesión abierta; cerrar con efectivo contado registra la diferencia")]
+    public async Task Cierre_con_contado_registra_esperado_y_diferencia()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CashWebApplicationFactory.OwnerEmail, CashWebApplicationFactory.OwnerPassword);
+
+        var account = await (await PostCashAccountAsync(client, "Caja T-CAJ-05")).Content.ReadFromJsonAsync<JsonElement>();
+        var accountId = account.GetProperty("id").GetGuid();
+        (await PostOpenSessionAsync(client, accountId, "Apertura")).EnsureSuccessStatusCode();
+        (await PostManualMovementAsync(client, accountId, 100m, "in", "Fondo inicial")).EnsureSuccessStatusCode();
+
+        var accounts = await client.GetFromJsonAsync<JsonElement>("/api/v1/cash/accounts");
+        var row = accounts.EnumerateArray().First(a => a.GetProperty("id").GetGuid() == accountId);
+        Assert.Equal(100m, row.GetProperty("balance").GetDecimal());
+        Assert.NotEqual(JsonValueKind.Null, row.GetProperty("sessionOpenedAt").ValueKind);
+
+        var csrf = await FetchCsrfAsync(client);
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/cash/accounts/{accountId}/close")
+        {
+            Content = JsonContent.Create(new { closingNote = "Cierre del día", countedAmount = 90m }),
+        };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        var resp = await client.SendAsync(req);
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var note = (await resp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("closingNote").GetString()!;
+        Assert.Contains("Cierre del día", note);
+        Assert.Contains("Esperado 100.00", note);
+        Assert.Contains("Diferencia -10.00", note);
+    }
+
     // ── T-CAJ-02: mecánico no puede crear ni manejar cuentas ────────────────
 
     [Fact(DisplayName = "T-CAJ-02: mecánico recibe 403 al intentar crear una cuenta de caja")]

@@ -8,7 +8,11 @@ public sealed record CashAccountDto(
     string Name,
     CashAccountKind Kind,
     bool IsActive,
-    uint Version
+    uint Version,
+    /// <summary>Saldo = suma de los movimientos (ingresos − egresos). Solo lo completa el listado y el detalle.</summary>
+    decimal Balance = 0m,
+    /// <summary>Si hay una sesión abierta, desde cuándo.</summary>
+    DateTimeOffset? SessionOpenedAt = null
 );
 
 public sealed record CashSessionDto(
@@ -52,7 +56,9 @@ public sealed record OpenCashSessionRequest(
 );
 
 public sealed record CloseCashSessionRequest(
-    string? ClosingNote
+    string? ClosingNote,
+    /// <summary>Efectivo contado al cerrar: si se informa, la nota de cierre registra el esperado y la diferencia.</summary>
+    decimal? CountedAmount = null
 );
 
 public sealed record ManualCashMovementRequest(

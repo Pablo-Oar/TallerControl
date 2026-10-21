@@ -9,6 +9,7 @@ import { Pagination } from '../../../components/ui/Pagination'
 import { ApiError } from '../../../lib/api/client'
 import { PurchaseFormModal } from './PurchaseFormModal'
 import { confirmDialog, notify } from '../../../components/ui/dialogs'
+import { ConfirmWithCashModal } from '../../../components/ConfirmWithCashModal'
 
 const STATUS_LABELS: Record<PurchaseStatus, string> = {
   draft: 'Borrador',
@@ -72,6 +73,7 @@ export function PurchasesPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<PurchaseDto | null>(null)
+  const [confirming, setConfirming] = useState<PurchaseDto | null>(null)
   const [creating, setCreating] = useState(false)
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -91,15 +93,12 @@ export function PurchasesPage() {
     setPage(1)
   }
 
-  async function handleConfirm(p: PurchaseDto) {
-    if (!(await confirmDialog('¿Confirmar la compra? Se actualizará el stock.', { danger: false }))) return
-    try {
-      await purchasesApi.confirm(p.id, { accountId: null, version: p.version })
-      queryClient.invalidateQueries({ queryKey: ['purchases'] })
-      setSelected(null)
-    } catch (err) {
-      notify(err instanceof ApiError ? err.detail : 'Error al confirmar la compra')
-    }
+  async function confirmPurchase(p: PurchaseDto, accountId: string | null) {
+    await purchasesApi.confirm(p.id, { accountId, version: p.version })
+    queryClient.invalidateQueries({ queryKey: ['purchases'] })
+    queryClient.invalidateQueries({ queryKey: ['cash-accounts'] })
+    setConfirming(null)
+    setSelected(null)
   }
 
   async function handleCancel(p: PurchaseDto) {
@@ -230,7 +229,7 @@ export function PurchasesPage() {
             <div className="flex justify-end gap-2">
               {detail.status === 'draft' && (
                 <>
-                  <Button size="sm" onClick={() => handleConfirm(detail)}>Confirmar</Button>
+                  <Button size="sm" onClick={() => setConfirming(detail)}>Confirmar</Button>
                   <Button size="sm" variant="secondary" onClick={() => handleCancel(detail)}>Cancelar</Button>
                   <Button size="sm" variant="danger" onClick={() => handleDelete(detail)}>Eliminar</Button>
                 </>
@@ -239,6 +238,17 @@ export function PurchasesPage() {
             </div>
           </div>
         </Modal>
+      )}
+
+      {confirming && (
+        <ConfirmWithCashModal
+          title={`Confirmar compra #${confirming.documentNumber}`}
+          message="Se suma el stock de los productos con control. Si elegís una cuenta, se registra el egreso en la Caja."
+          confirmLabel="Confirmar compra"
+          accountLabel="Sale de la cuenta"
+          onConfirm={accountId => confirmPurchase(confirming, accountId)}
+          onClose={() => setConfirming(null)}
+        />
       )}
     </div>
   )

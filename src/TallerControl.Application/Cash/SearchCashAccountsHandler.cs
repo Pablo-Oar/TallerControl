@@ -23,6 +23,14 @@ public sealed class SearchCashAccountsHandler
             ?? await _repo.GetMainBranchIdAsync(tenantId, ct)
             ?? throw new InvalidOperationException("El taller no tiene una sucursal principal configurada.");
         var accounts = await _repo.SearchAccountsAsync(tenantId, branchId, ct);
-        return accounts.Select(CreateCashAccountHandler.MapToDto).ToList();
+
+        var result = new List<CashAccountDto>(accounts.Count);
+        foreach (var a in accounts)
+        {
+            var balance = await _repo.GetBalanceAsync(tenantId, a.Id, ct);
+            var open = await _repo.FindOpenSessionAsync(tenantId, a.Id, ct);
+            result.Add(CreateCashAccountHandler.MapToDto(a) with { Balance = balance, SessionOpenedAt = open?.OpenedAt });
+        }
+        return result;
     }
 }
