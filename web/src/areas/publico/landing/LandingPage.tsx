@@ -1,39 +1,7 @@
 import { Link } from 'react-router'
 import { Pricing3, type PricingPlan } from '../../../components/ui/Pricing3'
+import { FeatureShowcase } from './FeatureShowcase'
 import { SignalPulse } from '../../../components/ui/SignalPulse'
-
-const features = [
-  {
-    icon: '⊙',
-    title: 'Historial del vehículo',
-    desc: 'Registrá cada servicio, reparación y cambio de aceite. Todo el historial del vehículo en un solo lugar.',
-  },
-  {
-    icon: '≡',
-    title: 'Presupuestos y órdenes',
-    desc: 'Generá presupuestos profesionales, convertílos en órdenes de trabajo y facturá en segundos.',
-  },
-  {
-    icon: '◈',
-    title: 'Cobros y pagos',
-    desc: 'Registrá pagos parciales o totales, emitís comprobantes y controlás la deuda de cada cliente.',
-  },
-  {
-    icon: '▣',
-    title: 'Portal QR seguro',
-    desc: 'El dueño del vehículo escanea el QR y ve el estado de su auto. Sin contraseñas ni apps extra.',
-  },
-  {
-    icon: '⊞',
-    title: 'Catálogo y stock',
-    desc: 'Controlá repuestos y servicios. Alertas de stock bajo para que nunca te falte lo que necesitás.',
-  },
-  {
-    icon: '◧',
-    title: 'Portal del mecánico',
-    desc: 'Vista optimizada para el celular: las OT asignadas, notas del trabajo y estado actualizado.',
-  },
-]
 
 const plans: PricingPlan[] = [
   {
@@ -120,29 +88,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Features */}
-      <section className="bg-tc-surface px-6 py-16 border-t border-tc-border">
-        <div className="mx-auto max-w-5xl">
-          <p className="mb-2 text-center text-[10px] font-bold tracking-[0.2em] uppercase text-tc-text-muted">Funcionalidades</p>
-          <h2 className="mb-10 text-center text-2xl font-bold text-tc-text">
-            Todo lo que necesitás en un solo lugar
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f) => (
-              <div
-                key={f.title}
-                className="border border-tc-border bg-white p-6"
-              >
-                <div className="mb-3 flex items-center gap-2">
-                  <span className="text-tc-navy text-xl font-mono">{f.icon}</span>
-                  <h3 className="font-bold text-tc-text">{f.title}</h3>
-                </div>
-                <p className="text-sm text-tc-text-secondary">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FeatureShowcase />
 
       {/* Pricing */}
       <Pricing3
