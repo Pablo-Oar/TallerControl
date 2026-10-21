@@ -11,6 +11,9 @@ public interface IVehicleRepository
 
     Task<Vehicle?> FindByIdAsync(Guid id, CancellationToken ct);
 
+    /// <summary>Busca también entre los borrados, para restaurar.</summary>
+    Task<Vehicle?> FindAnyByIdAsync(Guid id, CancellationToken ct);
+
     Task<bool> PlateExistsAsync(Guid? excludeId, string normalizedPlate, CancellationToken ct);
 
     Task<bool> CustomerExistsAsync(Guid customerId, CancellationToken ct);

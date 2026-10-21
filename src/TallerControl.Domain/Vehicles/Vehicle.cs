@@ -120,6 +120,13 @@ public sealed class Vehicle : Entity, ITenantOwned, IVersioned, IAudited, IAudit
         DeleteReason = reason?.Trim();
     }
 
+    public void Restore()
+    {
+        DeletedAt = null;
+        DeletedBy = null;
+        DeleteReason = null;
+    }
+
     /// <summary>Normaliza la patente: mayúsculas y sin espacios ni guiones (REQ-06 CA-1).</summary>
     public static string NormalizePlate(string plate)
     {

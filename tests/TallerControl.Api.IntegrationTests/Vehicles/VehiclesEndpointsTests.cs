@@ -324,4 +324,65 @@ public sealed class VehiclesEndpointsTests : IAsyncLifetime
         var deleteResp = await DeleteVehicleAsync(client, id, "Test T-VEH-09");
         Assert.Equal(HttpStatusCode.NoContent, deleteResp.StatusCode);
     }
+
+    // ── T-VEH-10: restaurar un vehículo borrado ──────────────────────────────
+
+    private static async Task<HttpResponseMessage> RestoreVehicleAsync(HttpClient client, Guid id)
+    {
+        var csrf = await FetchCsrfAsync(client);
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/vehicles/{id}/restore");
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        return await client.SendAsync(req);
+    }
+
+    [Fact(DisplayName = "T-VEH-10: POST /vehicles/{id}/restore recupera un vehículo borrado")]
+    public async Task Restore_vehiculo_borrado_lo_vuelve_a_listar()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CustomersVehiclesWebApplicationFactory.OwnerEmail,
+            CustomersVehiclesWebApplicationFactory.OwnerPassword);
+
+        var customerId = await CreateSupportCustomerAsync(client, "T-VEH-10");
+        var created = await (await PostVehicleAsync(client, "TVH010", customerId)).Content.ReadFromJsonAsync<JsonElement>();
+        var id = created.GetProperty("id").GetGuid();
+        Assert.Equal(HttpStatusCode.NoContent, (await DeleteVehicleAsync(client, id, "Prueba restaurar")).StatusCode);
+
+        var resp = await RestoreVehicleAsync(client, id);
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/api/v1/vehicles/{id}")).StatusCode);
+    }
+
+    [Fact(DisplayName = "T-VEH-10b: restaurar un vehículo cuya patente fue reutilizada devuelve 409")]
+    public async Task Restore_con_patente_reutilizada_devuelve_409()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CustomersVehiclesWebApplicationFactory.OwnerEmail,
+            CustomersVehiclesWebApplicationFactory.OwnerPassword);
+
+        var customerId = await CreateSupportCustomerAsync(client, "T-VEH-10b");
+        var first = await (await PostVehicleAsync(client, "TVH011", customerId)).Content.ReadFromJsonAsync<JsonElement>();
+        var id = first.GetProperty("id").GetGuid();
+        await DeleteVehicleAsync(client, id, "Prueba patente reutilizada");
+        (await PostVehicleAsync(client, "TVH011", customerId)).EnsureSuccessStatusCode();
+
+        var resp = await RestoreVehicleAsync(client, id);
+
+        Assert.Equal(HttpStatusCode.Conflict, resp.StatusCode);
+    }
+
+    [Fact(DisplayName = "T-VEH-10c: restaurar un vehículo que no está borrado devuelve 409")]
+    public async Task Restore_de_vehiculo_activo_devuelve_409()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CustomersVehiclesWebApplicationFactory.OwnerEmail,
+            CustomersVehiclesWebApplicationFactory.OwnerPassword);
+
+        var customerId = await CreateSupportCustomerAsync(client, "T-VEH-10c");
+        var created = await (await PostVehicleAsync(client, "TVH012", customerId)).Content.ReadFromJsonAsync<JsonElement>();
+
+        var resp = await RestoreVehicleAsync(client, created.GetProperty("id").GetGuid());
+
+        Assert.Equal(HttpStatusCode.Conflict, resp.StatusCode);
+    }
 }

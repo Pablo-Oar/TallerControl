@@ -95,8 +95,8 @@ internal static class WorkOrdersEndpoints
             .RequirePermission(Permission.WorkOrdersRead);
 
         app.MapGet("/api/v1/work-orders/{id:guid}/pdf",
-                (Guid id, GetWorkOrderPdfHandler handler, CancellationToken ct) =>
-                    PdfAsync(id, handler, ct))
+                (Guid id, GetWorkOrderPdfHandler handler, IAuthRepository auth, HttpContext ctx, CancellationToken ct) =>
+                    PdfAsync(id, handler, auth, ctx, ct))
             .RequirePermission(Permission.WorkOrdersRead);
 
         app.MapGet("/api/v1/work-orders/{id:guid}/public-link",
@@ -212,9 +212,12 @@ internal static class WorkOrdersEndpoints
     private static async Task<IResult> PdfAsync(
         Guid id,
         GetWorkOrderPdfHandler handler,
+        IAuthRepository auth,
+        HttpContext ctx,
         CancellationToken ct)
     {
-        var bytes = await handler.HandleAsync(id, ct);
+        var (isMechanic, membershipId, includePrices) = await ResolveSessionAsync(auth, ctx, ct);
+        var bytes = await handler.HandleAsync(id, isMechanic, membershipId, includePrices, ct);
         return Results.File(bytes, "application/pdf", $"orden-{id}.pdf");
     }
 

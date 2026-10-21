@@ -15,6 +15,7 @@ namespace TallerControl.Api.Endpoints.Vehicles;
 /// GET    /api/v1/vehicles/{id}                  → vehicles.read  (O, A, M)
 /// PUT    /api/v1/vehicles/{id}                  → vehicles.write (O, A)
 /// DELETE /api/v1/vehicles/{id}                  → vehicles.write (O) [plan dice O]
+/// POST   /api/v1/vehicles/{id}/restore          → vehicles.write (O, A, M)
 /// GET    /api/v1/vehicles/{id}/history          → vehicles.read  (O, A, M)
 /// </summary>
 internal static class VehiclesEndpoints
@@ -51,6 +52,12 @@ internal static class VehiclesEndpoints
                 (Guid id, [Microsoft.AspNetCore.Mvc.FromBody] DeleteVehicleRequest request,
                  DeleteVehicleHandler handler, CancellationToken ct) =>
                     DeleteAsync(id, request.Reason, handler, ct))
+            .RequirePermission(Permission.VehiclesWrite)
+            .AddEndpointFilter<AntiforgeryEndpointFilter>();
+
+        app.MapPost("/api/v1/vehicles/{id:guid}/restore",
+                async (Guid id, RestoreVehicleHandler handler, CancellationToken ct) =>
+                    Results.Ok(await handler.HandleAsync(id, ct)))
             .RequirePermission(Permission.VehiclesWrite)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
