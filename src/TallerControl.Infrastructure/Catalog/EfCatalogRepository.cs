@@ -19,7 +19,7 @@ internal sealed class EfCatalogRepository : ICatalogRepository
     }
 
     public async Task<Page<CatalogItemListDto>> SearchAsync(
-        string? q, CatalogItemKind? kind, bool? activeOnly, int page, int pageSize, CancellationToken ct)
+        string? q, CatalogItemKind? kind, bool? activeOnly, int page, int pageSize, SortSpec sort, CancellationToken ct)
     {
         var query = _db.Set<CatalogItem>().AsNoTracking();
 
@@ -39,8 +39,19 @@ internal sealed class EfCatalogRepository : ICatalogRepository
 
         var total = await query.CountAsync(ct);
 
-        var items = await query
-            .OrderBy(c => c.Name)
+        var ordered = sort.Key switch
+        {
+            "name" => sort.Descending ? query.OrderByDescending(c => c.Name) : query.OrderBy(c => c.Name),
+            "kind" => sort.Descending ? query.OrderByDescending(c => c.Kind) : query.OrderBy(c => c.Kind),
+            "sku" => sort.Descending ? query.OrderByDescending(c => c.Sku) : query.OrderBy(c => c.Sku),
+            "price" => sort.Descending ? query.OrderByDescending(c => c.NetPrice) : query.OrderBy(c => c.NetPrice),
+            "vat" => sort.Descending ? query.OrderByDescending(c => c.VatRate) : query.OrderBy(c => c.VatRate),
+            "stock" => sort.Descending ? query.OrderByDescending(c => c.StockQty) : query.OrderBy(c => c.StockQty),
+            _ => query.OrderBy(c => c.Name),
+        };
+
+        var items = await ordered
+            .ThenBy(c => c.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(c => new CatalogItemListDto(

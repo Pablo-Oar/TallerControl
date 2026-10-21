@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { vehiclesApi, type VehicleDto, type VehicleListDto } from '../../../lib/api/vehicles'
 import { Button } from '../../../components/ui/Button'
-import { DataTable, RowAction, type DataTableColumn } from '../../../components/ui/DataTable'
+import { DataTable, RowAction, type DataTableColumn, type SortState } from '../../../components/ui/DataTable'
 import { Pagination } from '../../../components/ui/Pagination'
 import { notify } from '../../../components/ui/dialogs'
 import { VehicleFormModal } from './VehicleFormModal'
@@ -12,12 +12,14 @@ const COLUMNS: DataTableColumn<VehicleListDto>[] = [
   {
     key: 'plate',
     header: 'Patente',
+    sortable: true,
     widthClass: 'w-36',
     cell: v => <span className="font-mono text-sm font-bold tracking-widest text-tc-text">{v.plate}</span>,
   },
   {
-    key: 'model',
+    key: 'brand',
     header: 'Marca / Modelo',
+    sortable: true,
     cell: v => (
       <span className="truncate text-tc-text-secondary">
         {[v.brand, v.model].filter(Boolean).join(' ') || <span className="text-tc-text-muted">—</span>}
@@ -27,11 +29,12 @@ const COLUMNS: DataTableColumn<VehicleListDto>[] = [
   {
     key: 'year',
     header: 'Año',
+    sortable: true,
     align: 'right',
     widthClass: 'w-24',
     cell: v => <span className="tabular-nums text-tc-text-secondary">{v.year ?? '—'}</span>,
   },
-  { key: 'customer', header: 'Cliente', cell: v => <span className="text-tc-text-secondary">{v.customerName}</span> },
+  { key: 'customer', header: 'Cliente', sortable: true, cell: v => <span className="text-tc-text-secondary">{v.customerName}</span> },
 ]
 
 export function VehiclesPage() {
@@ -44,10 +47,11 @@ export function VehiclesPage() {
   const [creating, setCreating] = useState(false)
   const [editing, setEditing] = useState<VehicleListDto | null>(null)
   const [showDeleted, setShowDeleted] = useState(false)
+  const [sort, setSort] = useState<SortState | null>(null)
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['vehicles', search, page, showDeleted],
-    queryFn: () => vehiclesApi.search(search || null, page, 25, showDeleted),
+    queryKey: ['vehicles', search, page, showDeleted, sort],
+    queryFn: () => vehiclesApi.search(search || null, page, 25, showDeleted, sort),
   })
 
   const { data: editVehicle } = useQuery({
@@ -107,6 +111,8 @@ export function VehiclesPage() {
       <DataTable<VehicleListDto>
         label="Vehículos"
         columns={COLUMNS}
+        sort={sort}
+        onSortChange={s => { setSort(s); setPage(1) }}
         rows={data?.items ?? []}
         getRowId={v => v.id}
         rowHref={v => (v.isDeleted ? null : `/app/vehicles/${v.id}`)}

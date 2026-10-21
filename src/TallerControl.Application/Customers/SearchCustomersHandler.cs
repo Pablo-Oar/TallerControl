@@ -9,10 +9,10 @@ public sealed class SearchCustomersHandler
 
     public SearchCustomersHandler(ICustomerRepository repo) => _repo = repo;
 
-    public Task<Page<CustomerListDto>> HandleAsync(string? q, int page, int pageSize, CancellationToken ct)
+    public Task<Page<CustomerListDto>> HandleAsync(string? q, int page, int pageSize, SortSpec sort, CancellationToken ct)
     {
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 1, 100);
-        return _repo.SearchAsync(q, page, pageSize, ct);
+        return _repo.SearchAsync(q, page, pageSize, sort, ct);
     }
 }

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { catalogApi, type CatalogItemDto, type CatalogItemKind, type CatalogItemListDto } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
-import { DataTable, RowAction, type DataTableColumn } from '../../../components/ui/DataTable'
+import { DataTable, RowAction, type DataTableColumn, type SortState } from '../../../components/ui/DataTable'
 import { Pagination } from '../../../components/ui/Pagination'
 import { CatalogFormModal } from './CatalogFormModal'
 import { StockAdjustmentModal } from './StockAdjustmentModal'
@@ -19,6 +19,7 @@ const COLUMNS: DataTableColumn<CatalogItemListDto>[] = [
   {
     key: 'name',
     header: 'Nombre',
+    sortable: true,
     cell: i => (
       <div className="min-w-0">
         <p className="truncate font-medium text-tc-text">{i.name}</p>
@@ -26,21 +27,23 @@ const COLUMNS: DataTableColumn<CatalogItemListDto>[] = [
       </div>
     ),
   },
-  { key: 'kind', header: 'Tipo', widthClass: 'w-28', cell: i => <span className="text-xs text-tc-text-secondary">{KIND_LABELS[i.kind]}</span> },
-  { key: 'sku', header: 'SKU', widthClass: 'w-32', cell: i => <span className="font-mono text-xs text-tc-text-muted">{i.sku ?? '—'}</span> },
+  { key: 'kind', header: 'Tipo', widthClass: 'w-28', sortable: true, cell: i => <span className="text-xs text-tc-text-secondary">{KIND_LABELS[i.kind]}</span> },
+  { key: 'sku', header: 'SKU', widthClass: 'w-32', sortable: true, cell: i => <span className="font-mono text-xs text-tc-text-muted">{i.sku ?? '—'}</span> },
   {
     key: 'price',
     header: 'Precio neto',
     align: 'right',
     widthClass: 'w-32',
+    sortable: true,
     cell: i => <span className="tabular-nums text-tc-purple">{fmtARS(i.netPrice)}</span>,
   },
-  { key: 'vat', header: 'IVA', align: 'right', widthClass: 'w-20', cell: i => <span className="text-xs text-tc-text-secondary">{i.vatRate}%</span> },
+  { key: 'vat', header: 'IVA', align: 'right', widthClass: 'w-20', sortable: true, cell: i => <span className="text-xs text-tc-text-secondary">{i.vatRate}%</span> },
   {
     key: 'stock',
     header: 'Stock',
     align: 'right',
     widthClass: 'w-24',
+    sortable: true,
     cell: i =>
       i.trackStock ? (
         <span className={['tabular-nums', i.isLowStock ? 'font-semibold text-amber-600' : 'text-tc-text-secondary'].join(' ')}>
@@ -60,14 +63,15 @@ export function CatalogPage() {
   const [kindFilter, setKindFilter] = useState<CatalogItemKind | ''>('')
   const [activeOnly, setActiveOnly] = useState<boolean>(true)
   const [page, setPage] = useState(1)
+  const [sort, setSort] = useState<SortState | null>(null)
 
   const [creating, setCreating] = useState(false)
   const [editing, setEditing] = useState<CatalogItemListDto | null>(null)
   const [adjusting, setAdjusting] = useState<CatalogItemListDto | null>(null)
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['catalog', search, kindFilter, activeOnly, page],
-    queryFn: () => catalogApi.search(search || null, kindFilter || null, activeOnly ? true : null, page),
+    queryKey: ['catalog', search, kindFilter, activeOnly, page, sort],
+    queryFn: () => catalogApi.search(search || null, kindFilter || null, activeOnly ? true : null, page, 25, sort),
   })
 
   const { data: editItem } = useQuery({
@@ -133,6 +137,8 @@ export function CatalogPage() {
       <DataTable<CatalogItemListDto>
         label="Catálogo"
         columns={COLUMNS}
+        sort={sort}
+        onSortChange={s => { setSort(s); setPage(1) }}
         rows={data?.items ?? []}
         getRowId={i => i.id}
         rowClassName={i => (!i.isActive ? 'opacity-60' : undefined)}

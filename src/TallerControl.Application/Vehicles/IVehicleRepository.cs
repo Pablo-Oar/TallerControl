@@ -5,7 +5,7 @@ namespace TallerControl.Application.Vehicles;
 
 public interface IVehicleRepository
 {
-    Task<Page<VehicleListDto>> SearchAsync(string? q, int page, int pageSize, CancellationToken ct);
+    Task<Page<VehicleListDto>> SearchAsync(string? q, int page, int pageSize, SortSpec sort, CancellationToken ct);
 
     Task<VehicleDto?> GetFullAsync(Guid id, CancellationToken ct);
 

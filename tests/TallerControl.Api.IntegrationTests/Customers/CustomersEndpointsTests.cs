@@ -324,4 +324,44 @@ public sealed class CustomersEndpointsTests : IAsyncLifetime
         var getResp = await GetCustomerAsync(client, Guid.NewGuid());
         Assert.Equal(HttpStatusCode.NotFound, getResp.StatusCode);
     }
+
+    // ── Orden en el servidor (sort/dir) ──────────────────────────────────────
+
+    [Theory(DisplayName = "T-CUS-09: GET /customers ordena por nombre en el servidor (sort/dir)")]
+    [InlineData("asc")]
+    [InlineData("desc")]
+    public async Task Listado_ordena_por_nombre_en_el_servidor(string dir)
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CustomersVehiclesWebApplicationFactory.OwnerEmail,
+            CustomersVehiclesWebApplicationFactory.OwnerPassword);
+
+        var low = $"Aaa orden {Guid.NewGuid():N}";
+        var high = $"Zzz orden {Guid.NewGuid():N}";
+        (await PostCustomerAsync(client, low)).EnsureSuccessStatusCode();
+        (await PostCustomerAsync(client, high)).EnsureSuccessStatusCode();
+
+        var resp = await client.GetAsync($"/api/v1/customers?sort=name&dir={dir}&pageSize=100");
+        resp.EnsureSuccessStatusCode();
+        var names = (await resp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("items")
+            .EnumerateArray().Select(i => i.GetProperty("name").GetString()).ToList();
+
+        var (first, second) = dir == "asc" ? (low, high) : (high, low);
+        Assert.True(names.IndexOf(first) < names.IndexOf(second));
+    }
+
+    [Fact(DisplayName = "T-CUS-09b: una clave de orden desconocida no rompe el listado de clientes")]
+    public async Task Listado_de_clientes_ignora_claves_de_orden_desconocidas()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CustomersVehiclesWebApplicationFactory.OwnerEmail,
+            CustomersVehiclesWebApplicationFactory.OwnerPassword);
+
+        var resp = await client.GetAsync("/api/v1/customers?sort=1;drop table customers&dir=desc");
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+
+        // El saldo se ordena con una subconsulta: debe traducirse a SQL.
+        var balance = await client.GetAsync("/api/v1/customers?sort=balance&dir=desc");
+        Assert.Equal(HttpStatusCode.OK, balance.StatusCode);
+    }
 }

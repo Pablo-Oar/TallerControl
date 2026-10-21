@@ -60,10 +60,21 @@ export interface VehicleUpsertRequest {
 }
 
 export const vehiclesApi = {
-  search: (q?: string | null, page = 1, pageSize = 25, includeDeleted = false) => {
+  search: (
+    q?: string | null,
+    page = 1,
+    pageSize = 25,
+    includeDeleted = false,
+    /** Orden en el servidor (ver los nombres de columna del listado). */
+    sort?: { key: string; dir: 'asc' | 'desc' } | null,
+  ) => {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
     if (q) params.set('q', q)
     if (includeDeleted) params.set('includeDeleted', 'true')
+    if (sort) {
+      params.set('sort', sort.key)
+      params.set('dir', sort.dir)
+    }
     return api.get<Page<VehicleListDto>>(`/api/v1/vehicles?${params}`)
   },
   get: (id: string) => api.get<VehicleDto>(`/api/v1/vehicles/${id}`),

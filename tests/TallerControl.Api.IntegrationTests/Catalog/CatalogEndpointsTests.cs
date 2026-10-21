@@ -393,4 +393,40 @@ public sealed class CatalogEndpointsTests : IAsyncLifetime
         var resp = await client.GetAsync("/api/v1/catalog");
         Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
     }
+
+    // ── Orden en el servidor (sort/dir) ──────────────────────────────────────
+
+    [Theory(DisplayName = "T-CAT-07: GET /catalog ordena por precio en el servidor (sort/dir)")]
+    [InlineData("asc")]
+    [InlineData("desc")]
+    public async Task Listado_ordena_por_precio_en_el_servidor(string dir)
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CatalogWebApplicationFactory.OwnerEmail,
+            CatalogWebApplicationFactory.OwnerPassword);
+
+        var cheap = $"Barato {Guid.NewGuid():N}";
+        var dear = $"Caro {Guid.NewGuid():N}";
+        (await PostCatalogItemAsync(client, cheap, netPrice: 1m)).EnsureSuccessStatusCode();
+        (await PostCatalogItemAsync(client, dear, netPrice: 9_999_999m)).EnsureSuccessStatusCode();
+
+        var resp = await client.GetAsync($"/api/v1/catalog?sort=price&dir={dir}&pageSize=100");
+        resp.EnsureSuccessStatusCode();
+        var names = (await resp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("items")
+            .EnumerateArray().Select(i => i.GetProperty("name").GetString()).ToList();
+
+        var (first, second) = dir == "asc" ? (cheap, dear) : (dear, cheap);
+        Assert.True(names.IndexOf(first) < names.IndexOf(second));
+    }
+
+    [Fact(DisplayName = "T-CAT-07b: una clave de orden desconocida no rompe el listado del catálogo")]
+    public async Task Listado_del_catalogo_ignora_claves_de_orden_desconocidas()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CatalogWebApplicationFactory.OwnerEmail,
+            CatalogWebApplicationFactory.OwnerPassword);
+
+        var resp = await client.GetAsync("/api/v1/catalog?sort=1;drop table catalog_items&dir=desc");
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+    }
 }

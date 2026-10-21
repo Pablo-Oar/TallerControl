@@ -1,5 +1,6 @@
 using TallerControl.Api.Identity;
 using TallerControl.Application.Catalog;
+using TallerControl.Application.Common;
 using TallerControl.Domain.Catalog;
 using TallerControl.Domain.Users;
 
@@ -23,12 +24,12 @@ internal static class CatalogEndpoints
         app.MapGet("/api/v1/catalog",
                 (SearchCatalogHandler handler, CancellationToken ct,
                  string? q = null, string? kind = null, bool? activeOnly = null,
-                 int page = 1, int pageSize = 25) =>
+                 int page = 1, int pageSize = 25, string? sort = null, string? dir = null) =>
                 {
                     CatalogItemKind? parsedKind = kind is not null
                         && EnumQuery.TryParse<CatalogItemKind>(kind, out var k)
                         ? k : null;
-                    return handler.HandleAsync(q, parsedKind, activeOnly, page, pageSize, ct);
+                    return handler.HandleAsync(q, parsedKind, activeOnly, page, pageSize, SortSpec.Parse(sort, dir), ct);
                 })
             .RequirePermission(Permission.CatalogRead);
 

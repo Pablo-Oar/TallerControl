@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { customersApi, type CustomerDto, type CustomerListDto } from '../../../lib/api/customers'
 import { Button } from '../../../components/ui/Button'
-import { DataTable, RowAction, type DataTableColumn } from '../../../components/ui/DataTable'
+import { DataTable, RowAction, type DataTableColumn, type SortState } from '../../../components/ui/DataTable'
 import { Pagination } from '../../../components/ui/Pagination'
 import { CustomerFormModal } from './CustomerFormModal'
 import { notify } from '../../../components/ui/dialogs'
@@ -18,10 +18,11 @@ export function CustomersPage() {
   const [creating, setCreating] = useState(false)
   const [editing, setEditing] = useState<CustomerListDto | null>(null)
   const [showDeleted, setShowDeleted] = useState(false)
+  const [sort, setSort] = useState<SortState | null>(null)
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['customers', search, page, showDeleted],
-    queryFn: () => customersApi.search(search || null, page, 25, showDeleted),
+    queryKey: ['customers', search, page, showDeleted, sort],
+    queryFn: () => customersApi.search(search || null, page, 25, showDeleted, sort),
   })
 
   const { data: editCustomer } = useQuery({
@@ -53,14 +54,15 @@ export function CustomersPage() {
   }
 
   const columns: DataTableColumn<CustomerListDto>[] = [
-    { key: 'name', header: 'Nombre', cell: c => <span className="font-medium text-tc-text">{c.name}</span> },
-    { key: 'phone', header: 'Teléfono', widthClass: 'w-44', cell: c => <span className="text-tc-text-secondary">{c.phone ?? '—'}</span> },
-    { key: 'doc', header: 'Documento', widthClass: 'w-40', cell: c => <span className="text-tc-text-secondary">{c.docNumber ?? '—'}</span> },
+    { key: 'name', header: 'Nombre', sortable: true, cell: c => <span className="font-medium text-tc-text">{c.name}</span> },
+    { key: 'phone', header: 'Teléfono', widthClass: 'w-44', sortable: true, cell: c => <span className="text-tc-text-secondary">{c.phone ?? '—'}</span> },
+    { key: 'doc', header: 'Documento', widthClass: 'w-40', sortable: true, cell: c => <span className="text-tc-text-secondary">{c.docNumber ?? '—'}</span> },
     {
       key: 'balance',
       header: 'Saldo',
       align: 'right',
       widthClass: 'w-32',
+      sortable: true,
       cell: c =>
         c.balance > 0 ? (
           <span className="tabular-nums font-semibold text-tc-stamp-red">{fmtARS(c.balance)}</span>
@@ -99,6 +101,8 @@ export function CustomersPage() {
       <DataTable<CustomerListDto>
         label="Clientes"
         columns={columns}
+        sort={sort}
+        onSortChange={s => { setSort(s); setPage(1) }}
         rows={data?.items ?? []}
         getRowId={c => c.id}
         rowClassName={c => (c.isDeleted ? 'opacity-60' : undefined)}
