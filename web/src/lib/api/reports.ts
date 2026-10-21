@@ -5,10 +5,18 @@ export interface RevenueReportRow {
   amount: number
   paymentCount: number
 }
+export interface RevenueBreakdownRow {
+  /** Método de pago de las órdenes (`cash`, `transfer`…) o `counter_sale`. */
+  source: string
+  amount: number
+  count: number
+}
+
 export interface RevenueReportDto {
   rows: RevenueReportRow[]
   total: number
   count: number
+  breakdown?: RevenueBreakdownRow[] | null
 }
 
 export interface ReceivablesReportRow {
