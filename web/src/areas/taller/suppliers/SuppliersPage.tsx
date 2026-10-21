@@ -4,6 +4,8 @@ import { suppliersApi, type SupplierDto, type VatCondition } from '../../../lib/
 import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
+import { DataTable, RowAction, sortableWhen, type DataTableColumn } from '../../../components/ui/DataTable'
+import { Pagination } from '../../../components/ui/Pagination'
 import { ApiError } from '../../../lib/api/client'
 import { confirmDialog, notify } from '../../../components/ui/dialogs'
 
@@ -14,6 +16,24 @@ const VAT_LABELS: Record<VatCondition, string> = {
   consumidor_final: 'Consumidor Final',
   no_categorizado: 'No categorizado',
 }
+
+const COLUMNS: DataTableColumn<SupplierDto>[] = [
+  { key: 'name', header: 'Nombre', sortable: true, sortValue: s => s.name, cell: s => <span className="font-medium text-tc-text">{s.name}</span> },
+  {
+    key: 'cuit',
+    header: 'CUIT',
+    widthClass: 'w-44',
+    cell: s => <span className="whitespace-nowrap font-mono tabular-nums text-tc-text-secondary">{s.cuit ?? '—'}</span>,
+  },
+  {
+    key: 'vat',
+    header: 'Condición IVA',
+    widthClass: 'w-56',
+    sortable: true,
+    sortValue: s => VAT_LABELS[s.vatCondition],
+    cell: s => <span className="text-xs text-tc-text-secondary">{VAT_LABELS[s.vatCondition]}</span>,
+  },
+]
 
 const filterInputCls = 'border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text outline-none focus:border-tc-border-mid transition-colors flex-1'
 
@@ -31,7 +51,7 @@ export function SuppliersPage() {
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['suppliers', search, page],
     queryFn: () => suppliersApi.search(search || null, page),
   })
@@ -96,7 +116,6 @@ export function SuppliersPage() {
   }
 
   const showForm = creating || editing !== null
-  const totalPages = data ? Math.ceil(data.total / data.pageSize) : 1
 
   return (
     <div className="space-y-4">
@@ -165,71 +184,31 @@ export function SuppliersPage() {
         </Modal>
       )}
 
-      {isLoading && (
-        <div className="border border-tc-border bg-white">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-10 animate-pulse border-b border-tc-border bg-tc-surface last:border-0" />
-          ))}
-        </div>
-      )}
+      <DataTable<SupplierDto>
+        label="Proveedores"
+        columns={sortableWhen(COLUMNS, (data?.total ?? 0) <= (data?.pageSize ?? 25))}
+        rows={data?.items ?? []}
+        getRowId={s => s.id}
+        actions={s => (
+          <>
+            <RowAction tone="purple" onClick={() => openEdit(s)}>Editar</RowAction>
+            <RowAction tone="danger" onClick={() => handleDelete(s)}>Baja</RowAction>
+          </>
+        )}
+        renderCard={s => (
+          <>
+            <p className="truncate text-sm font-medium text-tc-text">{s.name}</p>
+            <p className="font-mono text-xs tabular-nums text-tc-text-muted">{s.cuit ?? '—'}</p>
+            <p className="text-xs text-tc-text-secondary">{VAT_LABELS[s.vatCondition]}</p>
+          </>
+        )}
+        loading={isLoading}
+        error={!!error}
+        onRetry={() => refetch()}
+        emptyMessage="No hay proveedores."
+      />
 
-      {!isLoading && data && data.items.length === 0 && (
-        <div className="border border-dashed border-tc-border px-4 py-10 text-center text-sm text-tc-text-muted">
-          No hay proveedores.
-        </div>
-      )}
-
-      {!isLoading && data && data.items.length > 0 && (
-        <div className="border border-tc-border bg-white overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-tc-stub-bg border-b border-tc-border">
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nombre</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">CUIT</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden sm:table-cell">Condición IVA</th>
-                <th className="px-4 py-2" />
-              </tr>
-            </thead>
-            <tbody>
-              {data.items.map(s => (
-                <tr key={s.id} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                  <td className="px-4 py-2.5 font-medium text-tc-text">{s.name}</td>
-                  <td className="px-4 py-2.5 font-mono tabular-nums text-tc-text-secondary whitespace-nowrap">{s.cuit ?? '—'}</td>
-                  <td className="px-4 py-2.5 text-tc-text-secondary text-xs hidden sm:table-cell">{VAT_LABELS[s.vatCondition]}</td>
-                  <td className="px-4 py-2.5 text-right">
-                    <div className="flex items-center justify-end gap-3 text-xs">
-                      <button onClick={() => openEdit(s)} className="text-tc-purple hover:opacity-70">Editar</button>
-                      <button onClick={() => handleDelete(s)} className="text-tc-stamp-red hover:opacity-70">Baja</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {data.total > data.pageSize && (
-            <div className="flex items-center gap-1 border-t border-tc-border px-4 py-2">
-              <button
-                className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
-                disabled={page <= 1}
-                onClick={() => setPage(p => p - 1)}
-              >
-                ← Anterior
-              </button>
-              <span className="border border-tc-border bg-tc-stub-bg px-3 py-1 text-xs tabular-nums">
-                {page} / {totalPages}
-              </span>
-              <button
-                className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
-                disabled={page * data.pageSize >= data.total}
-                onClick={() => setPage(p => p + 1)}
-              >
-                Siguiente →
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+      {data && <Pagination page={page} pageSize={data.pageSize} total={data.total} noun="proveedores" onPage={setPage} />}
     </div>
   )
 }

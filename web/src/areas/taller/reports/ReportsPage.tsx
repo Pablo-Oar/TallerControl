@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { reportsApi } from '../../../lib/api/reports'
 import { Button } from '../../../components/ui/Button'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { DataTable } from '../../../components/ui/DataTable'
 import { Tabs, TabPanel } from '../../../components/ui/Tabs'
 import { inputCls } from '../../../lib/styles'
 import { localDateISO } from '../../../lib/dates'
@@ -95,24 +96,23 @@ export function ReportsPage() {
             : undefined}
         >
           {revenueQuery.data && (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-tc-stub-bg border-b border-tc-border">
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Cobros</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Monto</th>
-                </tr>
-              </thead>
-              <tbody>
-                {revenueQuery.data.rows.map(r => (
-                  <tr key={r.date} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                    <td className="px-4 py-2 text-tc-text-secondary tabular-nums">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</td>
-                    <td className="px-4 py-2 text-right tabular-nums text-tc-text-secondary">{r.paymentCount}</td>
-                    <td className="px-4 py-2 text-right font-bold text-tc-purple tabular-nums">{fmtARS(r.amount)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <DataTable
+              label="Ingresos por día"
+              rows={revenueQuery.data.rows}
+              getRowId={r => r.date}
+              columns={[
+                { key: 'date', header: 'Fecha', sortable: true, sortValue: r => r.date, cell: r => <span className="tabular-nums text-tc-text-secondary">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</span> },
+                { key: 'count', header: 'Cobros', align: 'right', sortable: true, sortValue: r => r.paymentCount, cell: r => <span className="tabular-nums text-tc-text-secondary">{r.paymentCount}</span> },
+                { key: 'amount', header: 'Monto', align: 'right', sortable: true, sortValue: r => r.amount, cell: r => <span className="font-bold tabular-nums text-tc-purple">{fmtARS(r.amount)}</span> },
+              ]}
+              renderCard={r => (
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="tabular-nums text-sm text-tc-text-secondary">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')} · {r.paymentCount} cobro{r.paymentCount !== 1 ? 's' : ''}</span>
+                  <span className="font-bold tabular-nums text-tc-purple">{fmtARS(r.amount)}</span>
+                </div>
+              )}
+              emptyMessage="Sin cobros en el período."
+            />
           )}
         </ReportSection>
       )}
@@ -128,28 +128,27 @@ export function ReportsPage() {
             : undefined}
         >
           {receivablesQuery.data && (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-tc-stub-bg border-b border-tc-border">
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">N° OT</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Cliente</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Vehículo</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Saldo</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
-                </tr>
-              </thead>
-              <tbody>
-                {receivablesQuery.data.rows.map(r => (
-                  <tr key={r.workOrderId} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                    <td className="px-4 py-2 font-mono font-bold tabular-nums text-tc-text">#{r.workOrderNumber}</td>
-                    <td className="px-4 py-2 text-tc-text-secondary">{r.customerName}</td>
-                    <td className="px-4 py-2 font-mono tracking-widest text-sm text-tc-text-secondary">{r.vehiclePlate}</td>
-                    <td className="px-4 py-2 text-right font-bold text-tc-stamp-red tabular-nums">{fmtARS(r.balance)}</td>
-                    <td className="px-4 py-2 text-tc-text-secondary tabular-nums">{new Date(r.createdAt).toLocaleDateString('es-AR')}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <DataTable
+              label="Cuentas por cobrar"
+              rows={receivablesQuery.data.rows}
+              getRowId={r => r.workOrderId}
+              columns={[
+                { key: 'number', header: 'N° OT', widthClass: 'w-24', sortable: true, sortValue: r => r.workOrderNumber, cell: r => <span className="font-mono font-bold tabular-nums text-tc-text">#{r.workOrderNumber}</span> },
+                { key: 'customer', header: 'Cliente', sortable: true, sortValue: r => r.customerName, cell: r => <span className="text-tc-text-secondary">{r.customerName}</span> },
+                { key: 'plate', header: 'Vehículo', widthClass: 'w-32', cell: r => <span className="font-mono tracking-widest text-tc-text-secondary">{r.vehiclePlate}</span> },
+                { key: 'balance', header: 'Saldo', align: 'right', widthClass: 'w-36', sortable: true, sortValue: r => r.balance, cell: r => <span className="font-bold tabular-nums text-tc-stamp-red">{fmtARS(r.balance)}</span> },
+                { key: 'date', header: 'Fecha', widthClass: 'w-32', sortable: true, sortValue: r => r.createdAt, cell: r => <span className="tabular-nums text-tc-text-secondary">{new Date(r.createdAt).toLocaleDateString('es-AR')}</span> },
+              ]}
+              cardStub={r => <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{r.workOrderNumber}</span>}
+              renderCard={r => (
+                <>
+                  <p className="truncate text-sm text-tc-text">{r.customerName}</p>
+                  <p className="font-mono text-xs tracking-widest text-tc-text-muted">{r.vehiclePlate} · {new Date(r.createdAt).toLocaleDateString('es-AR')}</p>
+                  <p className="mt-1 font-bold tabular-nums text-tc-stamp-red">{fmtARS(r.balance)}</p>
+                </>
+              )}
+              emptyMessage="No hay saldos por cobrar."
+            />
           )}
         </ReportSection>
       )}
@@ -165,34 +164,28 @@ export function ReportsPage() {
             : undefined}
         >
           {stockQuery.data && (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-tc-stub-bg border-b border-tc-border">
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nombre</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">SKU</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Tipo</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Stock</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Mín.</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Costo unit.</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stockQuery.data.rows.map(r => (
-                  <tr key={r.catalogItemId} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                    <td className="px-4 py-2 font-medium text-tc-text">{r.name}</td>
-                    <td className="px-4 py-2 font-mono text-tc-text-secondary text-xs">{r.sku ?? '—'}</td>
-                    <td className="px-4 py-2 text-tc-text-secondary text-xs">{r.kind.toLowerCase() === 'service' ? 'Servicio' : r.kind.toLowerCase() === 'product' ? 'Producto' : r.kind}</td>
-                    <td className="px-4 py-2 text-right tabular-nums text-tc-text-secondary">{r.stockQty}</td>
-                    <td className="px-4 py-2 text-right tabular-nums text-tc-text-muted">{r.stockMin ?? '—'}</td>
-                    <td className="px-4 py-2 text-right tabular-nums text-tc-purple font-medium">{fmtARS(r.unitCost)}</td>
-                    <td className="px-4 py-2">
-                      <StatusBadge status={r.isLowStock ? 'low_stock' : 'ok'} label={r.isLowStock ? 'Bajo' : 'OK'} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <DataTable
+              label="Stock"
+              rows={stockQuery.data.rows}
+              getRowId={r => r.catalogItemId}
+              columns={[
+                { key: 'name', header: 'Nombre', sortable: true, sortValue: r => r.name, cell: r => <span className="font-medium text-tc-text">{r.name}</span> },
+                { key: 'sku', header: 'SKU', widthClass: 'w-32', cell: r => <span className="font-mono text-xs text-tc-text-secondary">{r.sku ?? '—'}</span> },
+                { key: 'kind', header: 'Tipo', widthClass: 'w-28', cell: r => <span className="text-xs text-tc-text-secondary">{r.kind.toLowerCase() === 'service' ? 'Servicio' : r.kind.toLowerCase() === 'product' ? 'Producto' : r.kind}</span> },
+                { key: 'qty', header: 'Stock', align: 'right', widthClass: 'w-24', sortable: true, sortValue: r => r.stockQty, cell: r => <span className="tabular-nums text-tc-text-secondary">{r.stockQty}</span> },
+                { key: 'min', header: 'Mín.', align: 'right', widthClass: 'w-24', cell: r => <span className="tabular-nums text-tc-text-muted">{r.stockMin ?? '—'}</span> },
+                { key: 'cost', header: 'Costo unit.', align: 'right', widthClass: 'w-32', sortable: true, sortValue: r => r.unitCost, cell: r => <span className="font-medium tabular-nums text-tc-purple">{fmtARS(r.unitCost)}</span> },
+                { key: 'status', header: 'Estado', align: 'center', widthClass: 'w-40', sortable: true, sortValue: r => (r.isLowStock ? 0 : 1), cell: r => <StatusBadge status={r.isLowStock ? 'low_stock' : 'ok'} label={r.isLowStock ? 'Bajo' : 'OK'} /> },
+              ]}
+              renderCard={r => (
+                <>
+                  <p className="truncate text-sm font-medium text-tc-text">{r.name}</p>
+                  <p className="text-xs text-tc-text-secondary">Stock {r.stockQty}{r.stockMin != null ? ` · mín. ${r.stockMin}` : ''}</p>
+                  <div className="mt-1.5"><StatusBadge status={r.isLowStock ? 'low_stock' : 'ok'} label={r.isLowStock ? 'Bajo' : 'OK'} /></div>
+                </>
+              )}
+              emptyMessage="No hay ítems con control de stock."
+            />
           )}
         </ReportSection>
       )}
@@ -208,28 +201,27 @@ export function ReportsPage() {
             : undefined}
         >
           {purchasesQuery.data && (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-tc-stub-bg border-b border-tc-border">
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nº</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Proveedor</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
-                  <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Total</th>
-                  <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {purchasesQuery.data.rows.map(r => (
-                  <tr key={r.purchaseId} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                    <td className="px-4 py-2 font-mono font-bold tabular-nums text-tc-text">#{r.purchaseNumber}</td>
-                    <td className="px-4 py-2 text-tc-text-secondary">{r.supplierName ?? '—'}</td>
-                    <td className="px-4 py-2 tabular-nums text-tc-text-secondary">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</td>
-                    <td className="px-4 py-2 text-right font-bold text-tc-purple tabular-nums">{fmtARS(r.total)}</td>
-                    <td className="px-4 py-2 text-xs text-tc-text-secondary">{r.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <DataTable
+              label="Compras"
+              rows={purchasesQuery.data.rows}
+              getRowId={r => r.purchaseId}
+              columns={[
+                { key: 'number', header: 'Nº', widthClass: 'w-24', sortable: true, sortValue: r => r.purchaseNumber, cell: r => <span className="font-mono font-bold tabular-nums text-tc-text">#{r.purchaseNumber}</span> },
+                { key: 'supplier', header: 'Proveedor', sortable: true, sortValue: r => r.supplierName ?? '', cell: r => <span className="text-tc-text-secondary">{r.supplierName ?? '—'}</span> },
+                { key: 'date', header: 'Fecha', widthClass: 'w-32', sortable: true, sortValue: r => r.date, cell: r => <span className="tabular-nums text-tc-text-secondary">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</span> },
+                { key: 'total', header: 'Total', align: 'right', widthClass: 'w-36', sortable: true, sortValue: r => r.total, cell: r => <span className="font-bold tabular-nums text-tc-purple">{fmtARS(r.total)}</span> },
+                { key: 'status', header: 'Estado', widthClass: 'w-32', cell: r => <span className="text-xs text-tc-text-secondary">{r.status}</span> },
+              ]}
+              cardStub={r => <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{r.purchaseNumber}</span>}
+              renderCard={r => (
+                <>
+                  <p className="truncate text-sm text-tc-text">{r.supplierName ?? '—'}</p>
+                  <p className="text-xs tabular-nums text-tc-text-muted">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</p>
+                  <p className="mt-1 font-bold tabular-nums text-tc-purple">{fmtARS(r.total)}</p>
+                </>
+              )}
+              emptyMessage="Sin compras en el período."
+            />
           )}
         </ReportSection>
       )}
@@ -263,21 +255,21 @@ function ReportSection({
           Exportar Excel
         </Button>
       </div>
-      <div className="border border-tc-border bg-white overflow-x-auto">
-        {error ? (
-          <p role="alert" className="px-4 py-6 text-sm text-red-700">
+      {error ? (
+        <div className="rounded-2xl border border-tc-border bg-white p-1.5">
+          <p role="alert" className="rounded-xl bg-red-50 px-4 py-6 text-sm text-red-700">
             No se pudo cargar el reporte. Volvé a intentar en un momento.
           </p>
-        ) : loading ? (
-          <div className="space-y-0">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-10 animate-pulse border-b border-tc-border bg-tc-surface last:border-0" />
-            ))}
-          </div>
-        ) : (
-          children
-        )}
-      </div>
+        </div>
+      ) : loading ? (
+        <div className="rounded-2xl border border-tc-border bg-white p-1.5" aria-busy="true">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="mb-1.5 h-10 animate-pulse rounded-xl bg-tc-surface last:mb-0" />
+          ))}
+        </div>
+      ) : (
+        children
+      )}
     </div>
   )
 }

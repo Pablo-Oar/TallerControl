@@ -4,6 +4,8 @@ import { purchasesApi, type PurchaseDto, type PurchaseStatus } from '../../../li
 import { Button } from '../../../components/ui/Button'
 import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { DataTable, RowAction, sortableWhen, type DataTableColumn } from '../../../components/ui/DataTable'
+import { Pagination } from '../../../components/ui/Pagination'
 import { ApiError } from '../../../lib/api/client'
 import { PurchaseFormModal } from './PurchaseFormModal'
 import { confirmDialog, notify } from '../../../components/ui/dialogs'
@@ -17,6 +19,53 @@ const STATUS_LABELS: Record<PurchaseStatus, string> = {
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
 
+const COLUMNS: DataTableColumn<PurchaseDto>[] = [
+  {
+    key: 'number',
+    header: 'Nº',
+    widthClass: 'w-24',
+    sortable: true,
+    sortValue: p => p.documentNumber,
+    cell: p => <span className="font-mono font-bold tabular-nums text-tc-text">#{p.documentNumber}</span>,
+  },
+  {
+    key: 'date',
+    header: 'Fecha',
+    widthClass: 'w-36',
+    sortable: true,
+    sortValue: p => p.invoiceDate,
+    cell: p => <span className="tabular-nums text-tc-text-secondary">{new Date(p.invoiceDate).toLocaleDateString('es-AR')}</span>,
+  },
+  {
+    key: 'total',
+    header: 'Total',
+    align: 'right',
+    sortable: true,
+    sortValue: p => p.total,
+    cell: p => <span className="font-bold tabular-nums text-tc-purple">{fmtARS(p.total)}</span>,
+  },
+  {
+    key: 'status',
+    header: 'Estado',
+    align: 'center',
+    widthClass: 'w-40',
+    sortable: true,
+    sortValue: p => p.status,
+    cell: p => <StatusBadge status={p.status} label={STATUS_LABELS[p.status]} />,
+  },
+  {
+    key: 'citi',
+    header: 'CITI',
+    widthClass: 'w-28',
+    cell: p =>
+      p.isExcludedFromCiti ? (
+        <span className="text-[10px] font-bold tracking-wider uppercase text-amber-600">Excluida</span>
+      ) : (
+        <span className="text-[10px] font-bold tracking-wider uppercase text-green-700">Incluida</span>
+      ),
+  },
+]
+
 export function PurchasesPage() {
   const queryClient = useQueryClient()
   const [q, setQ] = useState('')
@@ -25,7 +74,7 @@ export function PurchasesPage() {
   const [selected, setSelected] = useState<PurchaseDto | null>(null)
   const [creating, setCreating] = useState(false)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['purchases', search, page],
     queryFn: () => purchasesApi.search(search || null, page),
   })
@@ -75,8 +124,6 @@ export function PurchasesPage() {
     }
   }
 
-  const totalPages = data ? Math.ceil(data.total / data.pageSize) : 1
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -95,84 +142,29 @@ export function PurchasesPage() {
         <Button type="submit" variant="secondary" size="sm">Buscar</Button>
       </form>
 
-      {isLoading && (
-        <div className="border border-tc-border bg-white">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-10 animate-pulse border-b border-tc-border bg-tc-surface last:border-0" />
-          ))}
-        </div>
-      )}
-
-      {!isLoading && data && data.items.length === 0 && (
-        <div className="border border-dashed border-tc-border px-4 py-10 text-center text-sm text-tc-text-muted">
-          No hay compras registradas.
-        </div>
-      )}
-
-      {!isLoading && data && data.items.length > 0 && (
-        <div className="border border-tc-border bg-white overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-tc-stub-bg border-b border-tc-border">
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nº</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
-                <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Total</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">CITI</th>
-                <th className="px-4 py-2" />
-              </tr>
-            </thead>
-            <tbody>
-              {data.items.map(p => (
-                <tr key={p.id} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                  <td className="px-4 py-2.5 font-mono font-bold text-tc-text tabular-nums">#{p.documentNumber}</td>
-                  <td className="px-4 py-2.5 text-tc-text-secondary tabular-nums">
-                    {new Date(p.invoiceDate).toLocaleDateString('es-AR')}
-                  </td>
-                  <td className="px-4 py-2.5 text-right font-bold text-tc-purple tabular-nums">{fmtARS(p.total)}</td>
-                  <td className="px-4 py-2.5">
-                    <StatusBadge status={p.status} label={STATUS_LABELS[p.status]} />
-                  </td>
-                  <td className="px-4 py-2.5">
-                    {p.isExcludedFromCiti ? (
-                      <span className="text-[10px] font-bold tracking-wider uppercase text-amber-600">Excluida</span>
-                    ) : (
-                      <span className="text-[10px] font-bold tracking-wider uppercase text-green-700">Incluida</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-2.5 text-right">
-                    <button onClick={() => setSelected(p)} className="text-xs text-tc-purple hover:opacity-70">
-                      Ver
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {data.total > data.pageSize && (
-            <div className="flex items-center gap-1 border-t border-tc-border px-4 py-2">
-              <button
-                className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
-                disabled={page <= 1}
-                onClick={() => setPage(p => p - 1)}
-              >
-                ← Anterior
-              </button>
-              <span className="border border-tc-border bg-tc-stub-bg px-3 py-1 text-xs tabular-nums">
-                {page} / {totalPages}
-              </span>
-              <button
-                className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
-                disabled={page * data.pageSize >= data.total}
-                onClick={() => setPage(p => p + 1)}
-              >
-                Siguiente →
-              </button>
+      <DataTable<PurchaseDto>
+        label="Compras"
+        columns={sortableWhen(COLUMNS, (data?.total ?? 0) <= (data?.pageSize ?? 25))}
+        rows={data?.items ?? []}
+        getRowId={p => p.id}
+        actions={p => <RowAction tone="purple" onClick={() => setSelected(p)}>Ver</RowAction>}
+        cardStub={p => <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{p.documentNumber}</span>}
+        renderCard={p => (
+          <>
+            <p className="text-sm tabular-nums text-tc-text-secondary">{new Date(p.invoiceDate).toLocaleDateString('es-AR')}</p>
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <StatusBadge status={p.status} label={STATUS_LABELS[p.status]} />
+              <span className="text-sm font-bold tabular-nums text-tc-purple">{fmtARS(p.total)}</span>
             </div>
-          )}
-        </div>
-      )}
+          </>
+        )}
+        loading={isLoading}
+        error={!!error}
+        onRetry={() => refetch()}
+        emptyMessage="No hay compras registradas."
+      />
+
+      {data && <Pagination page={page} pageSize={data.pageSize} total={data.total} noun="compras" onPage={setPage} />}
 
       {creating && (
         <PurchaseFormModal

@@ -16,6 +16,8 @@ import { FormField, FormTextarea } from '../../../components/ui/FormField'
 import { VehiclePicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { DataTable, RowAction, RowActionLink, type DataTableColumn } from '../../../components/ui/DataTable'
+import { Pagination } from '../../../components/ui/Pagination'
 import { QrScannerModal } from './QrScannerModal'
 import { inputCls } from '../../../lib/styles'
 
@@ -26,6 +28,41 @@ const STATUS_LABELS: Record<QrCardStatus, string> = {
   revoked: 'Revocada',
 }
 
+const COLUMNS: DataTableColumn<QrCardListDto>[] = [
+  {
+    key: 'code',
+    header: 'Código',
+    widthClass: 'w-48',
+    cell: c => <span className="font-mono text-sm font-bold tracking-widest text-tc-text">{c.code}</span>,
+  },
+  {
+    key: 'status',
+    header: 'Estado',
+    align: 'center',
+    widthClass: 'w-40',
+    cell: c => <StatusBadge status={c.status} label={STATUS_LABELS[c.status]} />,
+  },
+  {
+    key: 'plate',
+    header: 'Vehículo',
+    cell: c => (
+      <span className="font-mono tracking-widest text-tc-text-secondary">
+        {c.vehiclePlate ?? <span className="font-sans tracking-normal text-tc-text-muted">—</span>}
+      </span>
+    ),
+  },
+  {
+    key: 'assigned',
+    header: 'Asignada',
+    widthClass: 'w-36',
+    cell: c =>
+      c.assignedAt ? (
+        <span className="tabular-nums text-tc-text-secondary">{new Date(c.assignedAt).toLocaleDateString('es-AR')}</span>
+      ) : (
+        <span className="text-tc-text-muted">—</span>
+      ),
+  },
+]
 
 export function QrCardsPage() {
   const qc = useQueryClient()
@@ -94,7 +131,6 @@ export function QrCardsPage() {
     onError: (e: Error) => setError(e.message),
   })
 
-  const totalPages = data ? Math.ceil(data.total / data.pageSize) : 1
 
   return (
     <div className="space-y-4">
@@ -138,65 +174,45 @@ export function QrCardsPage() {
         </select>
       </div>
 
-      <div className="border border-tc-border bg-white overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-tc-stub-bg border-b border-tc-border">
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Código</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Vehículo</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden sm:table-cell">Asignada</th>
-              <th className="px-4 py-2" />
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading && (
-              <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-sm text-tc-text-muted">Cargando…</td>
-              </tr>
+      <DataTable<QrCardListDto>
+        label="Tarjetas QR"
+        columns={COLUMNS}
+        rows={data?.items ?? []}
+        getRowId={c => c.id}
+        actions={c => (
+          <>
+            {c.status === 'assigned' && (
+              <>
+                <RowAction tone="warn" onClick={() => markLostMut.mutate({ id: c.id, lost: true })}>Marcar perdida</RowAction>
+                <RowAction onClick={() => unassignMut.mutate(c.id)}>Desasignar</RowAction>
+                <RowActionLink tone="purple" href={getQrCardPrintUrl(c.id)} target="_blank" rel="noreferrer">PDF</RowActionLink>
+              </>
             )}
-            {data?.items.map((card) => (
-              <QrCardRow
-                key={card.id}
-                card={card}
-                onUnassign={() => unassignMut.mutate(card.id)}
-                onMarkLost={() => markLostMut.mutate({ id: card.id, lost: true })}
-                onUnmarkLost={() => markLostMut.mutate({ id: card.id, lost: false })}
-                onRevoke={() => setRevokeCardId(card.id)}
-              />
-            ))}
-            {data?.items.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-sm text-tc-text-muted">
-                  No hay tarjetas.
-                </td>
-              </tr>
+            {c.status === 'lost' && (
+              <>
+                <RowAction tone="success" onClick={() => markLostMut.mutate({ id: c.id, lost: false })}>Desmarcar perdida</RowAction>
+                <RowAction onClick={() => unassignMut.mutate(c.id)}>Desasignar</RowAction>
+              </>
             )}
-          </tbody>
-        </table>
-      </div>
+            {c.status !== 'revoked' && (
+              <RowAction tone="danger" onClick={() => setRevokeCardId(c.id)}>Revocar</RowAction>
+            )}
+          </>
+        )}
+        renderCard={c => (
+          <>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="font-mono text-sm font-bold tracking-widest text-tc-text">{c.code}</span>
+              <StatusBadge status={c.status} label={STATUS_LABELS[c.status]} />
+            </div>
+            {c.vehiclePlate && <p className="mt-0.5 font-mono text-xs tracking-widest text-tc-text-secondary">{c.vehiclePlate}</p>}
+          </>
+        )}
+        loading={isLoading}
+        emptyMessage="No hay tarjetas."
+      />
 
-      {data && data.total > data.pageSize && (
-        <div className="flex items-center gap-1 text-sm">
-          <button
-            className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
-            disabled={page === 1}
-            onClick={() => setPage((p) => p - 1)}
-          >
-            ← Anterior
-          </button>
-          <span className="border border-tc-border bg-tc-stub-bg px-3 py-1 text-xs tabular-nums">
-            {page} / {totalPages}
-          </span>
-          <button
-            className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
-            disabled={page >= totalPages}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            Siguiente →
-          </button>
-        </div>
-      )}
+      {data && <Pagination page={page} pageSize={data.pageSize} total={data.total} noun="tarjetas" onPage={setPage} />}
 
       {showBatchModal && (
         <Modal title="Generar lote de tarjetas" onClose={() => setShowBatchModal(false)} className="max-w-xs">
@@ -284,88 +300,5 @@ export function QrCardsPage() {
         </Modal>
       )}
     </div>
-  )
-}
-
-function QrCardRow({
-  card,
-  onUnassign,
-  onMarkLost,
-  onUnmarkLost,
-  onRevoke,
-}: {
-  card: QrCardListDto
-  onUnassign: () => void
-  onMarkLost: () => void
-  onUnmarkLost: () => void
-  onRevoke: () => void
-}) {
-  const btn = 'min-h-[44px] px-3 text-xs font-bold hover:opacity-70 sm:min-h-0 sm:px-0 sm:font-normal'
-  const actions = (
-    <>
-      {card.status === 'assigned' && (
-        <>
-          <button className={`${btn} text-amber-600`} onClick={onMarkLost}>
-            Marcar perdida
-          </button>
-          <button className={`${btn} text-tc-text-secondary`} onClick={onUnassign}>
-            Desasignar
-          </button>
-          <a
-            href={getQrCardPrintUrl(card.id)}
-            target="_blank"
-            rel="noreferrer"
-            className={`${btn} inline-flex items-center text-tc-purple`}
-          >
-            PDF
-          </a>
-        </>
-      )}
-      {card.status === 'lost' && (
-        <>
-          <button className={`${btn} text-green-700`} onClick={onUnmarkLost}>
-            Desmarcar perdida
-          </button>
-          <button className={`${btn} text-tc-text-secondary`} onClick={onUnassign}>
-            Desasignar
-          </button>
-        </>
-      )}
-      {card.status !== 'revoked' && (
-        <button className={`${btn} text-tc-stamp-red`} onClick={onRevoke}>
-          Revocar
-        </button>
-      )}
-    </>
-  )
-
-  return (
-    <>
-      <tr className="border-b border-tc-border hover:bg-tc-surface sm:last:border-0">
-        <td className="px-3 py-2.5 font-mono text-sm font-bold tracking-widest text-tc-text sm:px-4">
-          {card.code}
-        </td>
-        <td className="px-3 py-2.5 sm:px-4">
-          <StatusBadge status={card.status} label={STATUS_LABELS[card.status]} />
-        </td>
-        <td className="px-3 py-2.5 font-mono tracking-widest text-sm text-tc-text-secondary sm:px-4">
-          {card.vehiclePlate ?? <span className="text-tc-text-muted font-sans tracking-normal">—</span>}
-        </td>
-        <td className="px-4 py-2.5 text-sm text-tc-text-secondary tabular-nums hidden sm:table-cell">
-          {card.assignedAt
-            ? new Date(card.assignedAt).toLocaleDateString('es-AR')
-            : <span className="text-tc-text-muted">—</span>}
-        </td>
-        <td className="hidden px-4 py-2.5 text-right sm:table-cell">
-          <div className="flex items-center justify-end gap-3 text-xs whitespace-nowrap">{actions}</div>
-        </td>
-      </tr>
-      {/* Móvil: acciones en su propia fila, con objetivos táctiles de 44 px y sin scroll horizontal */}
-      <tr className="border-b border-tc-border last:border-0 sm:hidden">
-        <td colSpan={5} className="px-2 pb-1">
-          <div className="flex flex-wrap items-center">{actions}</div>
-        </td>
-      </tr>
-    </>
   )
 }
