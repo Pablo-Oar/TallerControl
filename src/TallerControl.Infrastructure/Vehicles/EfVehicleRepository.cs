@@ -15,7 +15,7 @@ internal sealed class EfVehicleRepository : IVehicleRepository
 
     public EfVehicleRepository(AppDbContext db) => _db = db;
 
-    public async Task<Page<VehicleListDto>> SearchAsync(string? q, int page, int pageSize, CancellationToken ct)
+    public async Task<Page<VehicleListDto>> SearchAsync(string? q, int page, int pageSize, SortSpec sort, CancellationToken ct)
     {
         var query = _db.Set<Vehicle>()
             .AsNoTracking()
@@ -38,8 +38,18 @@ internal sealed class EfVehicleRepository : IVehicleRepository
 
         var total = await query.CountAsync(ct);
 
-        var items = await query
-            .OrderBy(x => x.Vehicle.Plate)
+        var ordered = sort.Key switch
+        {
+            "plate" => sort.Descending ? query.OrderByDescending(x => x.Vehicle.Plate) : query.OrderBy(x => x.Vehicle.Plate),
+            "brand" => sort.Descending ? query.OrderByDescending(x => x.Vehicle.Brand) : query.OrderBy(x => x.Vehicle.Brand),
+            "model" => sort.Descending ? query.OrderByDescending(x => x.Vehicle.Model) : query.OrderBy(x => x.Vehicle.Model),
+            "year" => sort.Descending ? query.OrderByDescending(x => x.Vehicle.Year) : query.OrderBy(x => x.Vehicle.Year),
+            "customer" => sort.Descending ? query.OrderByDescending(x => x.CustomerName) : query.OrderBy(x => x.CustomerName),
+            _ => query.OrderBy(x => x.Vehicle.Plate),
+        };
+
+        var items = await ordered
+            .ThenBy(x => x.Vehicle.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(x => new VehicleListDto(

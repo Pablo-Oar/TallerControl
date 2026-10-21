@@ -83,11 +83,23 @@ export interface ManualStockAdjustmentRequest {
 }
 
 export const catalogApi = {
-  search: (q?: string | null, kind?: CatalogItemKind | null, activeOnly?: boolean | null, page = 1, pageSize = 25) => {
+  search: (
+    q?: string | null,
+    kind?: CatalogItemKind | null,
+    activeOnly?: boolean | null,
+    page = 1,
+    pageSize = 25,
+    /** Orden en el servidor (ver los nombres de columna del listado). */
+    sort?: { key: string; dir: 'asc' | 'desc' } | null,
+  ) => {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
     if (q) params.set('q', q)
     if (kind) params.set('kind', kind)
     if (activeOnly != null) params.set('activeOnly', String(activeOnly))
+    if (sort) {
+      params.set('sort', sort.key)
+      params.set('dir', sort.dir)
+    }
     return api.get<Page<CatalogItemListDto>>(`/api/v1/catalog?${params}`)
   },
   get: (id: string) => api.get<CatalogItemDto>(`/api/v1/catalog/${id}`),

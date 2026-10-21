@@ -1,4 +1,5 @@
 using TallerControl.Api.Identity;
+using TallerControl.Application.Common;
 using TallerControl.Application.Customers;
 using TallerControl.Application.Qr;
 using TallerControl.Domain.Users;
@@ -21,8 +22,8 @@ internal static class CustomersEndpoints
     {
         app.MapGet("/api/v1/customers",
                 (SearchCustomersHandler handler, CancellationToken ct,
-                 string? q = null, int page = 1, int pageSize = 25) =>
-                    handler.HandleAsync(q, page, pageSize, ct))
+                 string? q = null, int page = 1, int pageSize = 25, string? sort = null, string? dir = null) =>
+                    handler.HandleAsync(q, page, pageSize, SortSpec.Parse(sort, dir), ct))
             .RequirePermission(Permission.CustomersRead);
 
         app.MapPost("/api/v1/customers",

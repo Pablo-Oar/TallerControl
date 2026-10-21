@@ -5,7 +5,7 @@ namespace TallerControl.Application.Catalog;
 
 public interface ICatalogRepository
 {
-    Task<Page<CatalogItemListDto>> SearchAsync(string? q, CatalogItemKind? kind, bool? activeOnly, int page, int pageSize, CancellationToken ct);
+    Task<Page<CatalogItemListDto>> SearchAsync(string? q, CatalogItemKind? kind, bool? activeOnly, int page, int pageSize, SortSpec sort, CancellationToken ct);
 
     Task<CatalogItemDto?> GetFullAsync(Guid id, CancellationToken ct);
 

@@ -278,6 +278,8 @@ La API usa `ConnectionStrings:Default` con el rol **`tallercontrol_app`** (sin `
 
 **DataTable PR B (20/10/2026):** convertidas al componente Clientes, Vehículos (flecha a la ficha), Catálogo, Agenda, Mostrador, Compras, Proveedores, Tarjetas QR, Recordatorios, Facturación, Reportes (4 tablas) y Usuarios. Las listas paginadas sin orden en servidor tienen columnas no ordenables hasta el PR C; las cortas usan `sortableWhen`. Sin convertir: Caja, configuración ARCA, Libro IVA y tablas de ítems dentro de detalles/modales.
 
+**DataTable PR C (21/10/2026):** orden en el servidor (`?sort=&dir=`, lista cerrada) para Clientes (`name|phone|doc|balance`, el saldo con la misma subconsulta de la proyección), Vehículos (`plate|brand|model|year|customer`) y Catálogo (`name|kind|sku|price|vat|stock`); `ThenBy(Id)` estable. Tests T-CUS-09/09b, T-CAT-07/07b. Reiniciar la API (`.\scripts\dev-api.ps1`) para que el orden actúe en local.
+
 **Post-E8 — bugfixes en Develop (14–15/10/2026, commits `27d0d01` / `3395d74` / `b87f7a7` / `ab4dee8` / `a229bcb` / `e46bd2c` / `09a8c7d`):**
 - fix(api): `CatalogItemKind`, `WorkOrderStatus` y `QuoteStatus` como `string?` + `Enum.TryParse(ignoreCase: true)` en todos los endpoints de búsqueda — ASP.NET Core 10 minimal APIs son case-sensitive para enum query params.
 - fix(api): `DevelopmentSeeder` crea `Branch.CreateMain` para tenants que no la tenían; middleware `ForwardedHeaders` para Cloudflare tunnel; defaults en `appsettings.Development.json`.

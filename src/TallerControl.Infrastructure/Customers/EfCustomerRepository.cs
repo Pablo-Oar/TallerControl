@@ -19,7 +19,7 @@ internal sealed class EfCustomerRepository : ICustomerRepository
         _tenantContext = tenantContext;
     }
 
-    public async Task<Page<CustomerListDto>> SearchAsync(string? q, int page, int pageSize, CancellationToken ct)
+    public async Task<Page<CustomerListDto>> SearchAsync(string? q, int page, int pageSize, SortSpec sort, CancellationToken ct)
     {
         var query = _db.Set<Customer>().AsNoTracking();
 
@@ -34,8 +34,20 @@ internal sealed class EfCustomerRepository : ICustomerRepository
 
         var total = await query.CountAsync(ct);
 
-        var items = await query
-            .OrderBy(c => c.Name)
+        // El saldo se ordena con la misma subconsulta de la proyección (V2: una sola definición de deuda).
+        var ordered = sort.Key switch
+        {
+            "name" => sort.Descending ? query.OrderByDescending(c => c.Name) : query.OrderBy(c => c.Name),
+            "phone" => sort.Descending ? query.OrderByDescending(c => c.Phone) : query.OrderBy(c => c.Phone),
+            "doc" => sort.Descending ? query.OrderByDescending(c => c.DocNumber) : query.OrderBy(c => c.DocNumber),
+            "balance" => sort.Descending
+                ? query.OrderByDescending(c => _db.Set<WorkOrder>().Where(w => w.CustomerId == c.Id && w.Status != WorkOrderStatus.Cancelled).Sum(w => w.Total - w.PaidAmount))
+                : query.OrderBy(c => _db.Set<WorkOrder>().Where(w => w.CustomerId == c.Id && w.Status != WorkOrderStatus.Cancelled).Sum(w => w.Total - w.PaidAmount)),
+            _ => query.OrderBy(c => c.Name),
+        };
+
+        var items = await ordered
+            .ThenBy(c => c.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(c => new CustomerListDto(

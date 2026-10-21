@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using TallerControl.Api.Identity;
 using TallerControl.Application.Auth;
+using TallerControl.Application.Common;
 using TallerControl.Application.Vehicles;
 using TallerControl.Domain.Users;
 using TallerControl.Infrastructure.Identity;
@@ -22,8 +23,8 @@ internal static class VehiclesEndpoints
     {
         app.MapGet("/api/v1/vehicles",
                 (SearchVehiclesHandler handler, CancellationToken ct,
-                 string? q = null, int page = 1, int pageSize = 25) =>
-                    handler.HandleAsync(q, page, pageSize, ct))
+                 string? q = null, int page = 1, int pageSize = 25, string? sort = null, string? dir = null) =>
+                    handler.HandleAsync(q, page, pageSize, SortSpec.Parse(sort, dir), ct))
             .RequirePermission(Permission.VehiclesRead);
 
         app.MapPost("/api/v1/vehicles",
