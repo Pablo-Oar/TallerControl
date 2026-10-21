@@ -185,6 +185,49 @@ public sealed class PaymentsEndpointsTests : IAsyncLifetime
         Assert.Equal("voided", voided.GetProperty("status").GetString());
     }
 
+    // ── F-02 (D-31): el cobro asienta en la caja y la anulación deja el movimiento inverso ──
+
+    [Fact(DisplayName = "T-PAY-07: Un cobro con cuenta suma al saldo de la caja y anularlo lo devuelve a su valor")]
+    public async Task Cobro_con_cuenta_asienta_en_caja_y_su_anulacion_lo_revierte()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, PaymentsWebApplicationFactory.OwnerEmail, PaymentsWebApplicationFactory.Password);
+
+        async Task<HttpResponseMessage> PostAsync(string url, object body)
+        {
+            var csrf = await FetchCsrfAsync(client);
+            var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = JsonContent.Create(body) };
+            req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+            return await client.SendAsync(req);
+        }
+
+        async Task<decimal> BalanceAsync(Guid accountId)
+        {
+            var accounts = await client.GetFromJsonAsync<JsonElement>("/api/v1/cash/accounts");
+            return accounts.EnumerateArray().First(a => a.GetProperty("id").GetGuid() == accountId)
+                .GetProperty("balance").GetDecimal();
+        }
+
+        var account = await (await PostAsync("/api/v1/cash/accounts", new { name = "Caja T-PAY-07", kind = "cash" }))
+            .Content.ReadFromJsonAsync<JsonElement>();
+        var accountId = account.GetProperty("id").GetGuid();
+        Assert.Equal(0m, await BalanceAsync(accountId));
+
+        var payResp = await PostAsync($"/api/v1/work-orders/{_factory.WorkOrderId}/payments",
+            new { method = "cash", amount = 250m, accountId });
+        Assert.Equal(HttpStatusCode.OK, payResp.StatusCode);
+        var paymentId = (await payResp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("payment").GetProperty("id").GetString()!;
+        Assert.Equal(250m, await BalanceAsync(accountId));
+
+        var voidResp = await PostAsync($"/api/v1/work-orders/{_factory.WorkOrderId}/payments/{paymentId}/void",
+            new { reason = "Prueba de contraasiento" });
+        Assert.Equal(HttpStatusCode.OK, voidResp.StatusCode);
+        Assert.Equal(0m, await BalanceAsync(accountId));
+
+        var movements = await client.GetFromJsonAsync<JsonElement>($"/api/v1/cash/accounts/{accountId}/movements");
+        Assert.Equal(2, movements.GetArrayLength());
+    }
+
     // ── T-PAY-06: anular pago ya anulado ─────────────────────────────────────
 
     [Fact(DisplayName = "T-PAY-06: anular un pago ya anulado devuelve 409")]

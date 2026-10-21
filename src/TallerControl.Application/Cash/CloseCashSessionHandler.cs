@@ -28,9 +28,21 @@ public sealed class CloseCashSessionHandler
         var actorId = _actor.ActorId
             ?? throw new InvalidOperationException("No hay usuario en la sesión.");
 
+        // Con el efectivo contado, la nota deja asentado lo esperado y la diferencia (el saldo es la suma de movimientos).
+        var closingNote = request.ClosingNote?.Trim();
+        if (request.CountedAmount.HasValue)
+        {
+            var expected = await _repo.GetBalanceAsync(tenantId, accountId, ct);
+            var difference = request.CountedAmount.Value - expected;
+            var count = string.Create(
+                System.Globalization.CultureInfo.InvariantCulture,
+                $"Contado {request.CountedAmount.Value:0.00} · Esperado {expected:0.00} · Diferencia {difference:+0.00;-0.00;0.00}");
+            closingNote = string.IsNullOrWhiteSpace(closingNote) ? count : $"{closingNote} | {count}";
+        }
+
         try
         {
-            session.Close(actorId, request.ClosingNote, _clock.GetUtcNow());
+            session.Close(actorId, closingNote, _clock.GetUtcNow());
         }
         catch (InvalidOperationException ex)
         {
