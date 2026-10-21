@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { SignalPulse } from '../../../components/ui/SignalPulse'
 
 const features = [
   {
@@ -76,7 +77,9 @@ export function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="bg-tc-navy px-6 py-20 text-center">
+      <section className="relative isolate overflow-hidden bg-tc-navy px-6 py-20 text-center">
+        <SignalPulse accentColor="#8b5cf6" className="absolute inset-0 -z-10 text-white" />
+        <div className="relative">
         <p className="mb-3 text-[10px] font-bold tracking-[0.2em] uppercase text-tc-text-muted">Sistema de gestión para talleres mecánicos</p>
         <h1 className="mb-6 text-4xl font-bold leading-tight text-white sm:text-5xl">
           El control total de<br className="hidden sm:block" /> tu taller
@@ -98,6 +101,7 @@ export function LandingPage() {
           >
             Ya tengo cuenta
           </Link>
+        </div>
         </div>
       </section>
 
