@@ -31,6 +31,12 @@ function downloadExcel(url: string, filename: string) {
   a.click()
 }
 
+const PURCHASE_STATUS_LABEL: Record<string, string> = {
+  draft: 'Borrador',
+  confirmed: 'Confirmada',
+  cancelled: 'Cancelada',
+}
+
 export function ReportsPage() {
   const [tab, setTab] = useState<Tab>('revenue')
   const [from, setFrom] = useState(monthAgoStr)
@@ -210,7 +216,7 @@ export function ReportsPage() {
                 { key: 'supplier', header: 'Proveedor', sortable: true, sortValue: r => r.supplierName ?? '', cell: r => <span className="text-tc-text-secondary">{r.supplierName ?? '—'}</span> },
                 { key: 'date', header: 'Fecha', widthClass: 'w-32', sortable: true, sortValue: r => r.date, cell: r => <span className="tabular-nums text-tc-text-secondary">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</span> },
                 { key: 'total', header: 'Total', align: 'right', widthClass: 'w-36', sortable: true, sortValue: r => r.total, cell: r => <span className="font-bold tabular-nums text-tc-purple">{fmtARS(r.total)}</span> },
-                { key: 'status', header: 'Estado', widthClass: 'w-32', cell: r => <span className="text-xs text-tc-text-secondary">{r.status}</span> },
+                { key: 'status', header: 'Estado', widthClass: 'w-32', cell: r => <span className="text-xs text-tc-text-secondary">{PURCHASE_STATUS_LABEL[r.status.toLowerCase()] ?? r.status}</span> },
               ]}
               cardStub={r => <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{r.purchaseNumber}</span>}
               renderCard={r => (

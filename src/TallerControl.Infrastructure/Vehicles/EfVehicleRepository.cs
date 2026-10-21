@@ -143,6 +143,11 @@ internal sealed class EfVehicleRepository : IVehicleRepository
     public Task<Vehicle?> FindByIdAsync(Guid id, CancellationToken ct) =>
         _db.Set<Vehicle>().FirstOrDefaultAsync(v => v.Id == id, ct);
 
+    public Task<Vehicle?> FindAnyByIdAsync(Guid id, CancellationToken ct) =>
+        _db.Set<Vehicle>()
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(v => v.Id == id && v.TenantId == _tenantContext.TenantId, ct);
+
     public Task<bool> PlateExistsAsync(Guid? excludeId, string normalizedPlate, CancellationToken ct) =>
         _db.Set<Vehicle>()
             .AnyAsync(v => v.Plate == normalizedPlate

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router'
 import { useAuth } from '../../lib/auth/AuthContext'
+import { hasPermissions } from '../../lib/auth/permissions'
 import { PlateSearchBar } from '../../components/PlateSearchBar'
 import { useState } from 'react'
 
@@ -8,53 +9,51 @@ interface NavItem {
   to: string
   label: string
   end?: boolean
-  roles?: string[]
+  /** Permisos que hacen falta (todos) para ver la opción. */
+  perms?: string[]
 }
 
 interface NavGroup {
   label: string
   items: NavItem[]
-  roles?: string[]
 }
 
 const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Operaciones',
     items: [
-      { to: '/app', label: 'Inicio', end: true },
-      { to: '/app/customers', label: 'Clientes' },
-      { to: '/app/vehicles', label: 'Vehículos' },
-      { to: '/app/work-orders', label: 'Órdenes' },
-      { to: '/app/quotes', label: 'Presupuestos' },
-      { to: '/app/appointments', label: 'Agenda' },
+      { to: '/app', label: 'Inicio', end: true, perms: ['workorders.read', 'payments.read'] },
+      { to: '/app/customers', label: 'Clientes', perms: ['customers.read'] },
+      { to: '/app/vehicles', label: 'Vehículos', perms: ['vehicles.read'] },
+      { to: '/app/work-orders', label: 'Órdenes', perms: ['workorders.read'] },
+      { to: '/app/quotes', label: 'Presupuestos', perms: ['quotes.read'] },
+      { to: '/app/appointments', label: 'Agenda', perms: ['appointments.read'] },
     ],
   },
   {
     label: 'Taller',
-    roles: ['owner', 'admin_staff'],
     items: [
-      { to: '/app/catalog', label: 'Catálogo' },
-      { to: '/app/cash', label: 'Caja' },
-      { to: '/app/purchases', label: 'Compras' },
-      { to: '/app/counter-sales', label: 'Mostrador' },
-      { to: '/app/suppliers', label: 'Proveedores' },
+      { to: '/app/catalog', label: 'Catálogo', perms: ['catalog.read'] },
+      { to: '/app/cash', label: 'Caja', perms: ['cash.read'] },
+      { to: '/app/purchases', label: 'Compras', perms: ['purchases.read'] },
+      { to: '/app/counter-sales', label: 'Mostrador', perms: ['counter_sales.read'] },
+      { to: '/app/suppliers', label: 'Proveedores', perms: ['suppliers.read'] },
     ],
   },
   {
     label: 'Gestión',
     items: [
-      { to: '/app/reports', label: 'Reportes', roles: ['owner', 'admin_staff'] },
-      { to: '/app/invoicing', label: 'Facturación', roles: ['owner', 'admin_staff', 'accountant'] },
-      { to: '/app/qr', label: 'Tarjetas QR', roles: ['owner', 'admin_staff'] },
-      { to: '/app/reminders', label: 'Recordatorios', roles: ['owner', 'admin_staff'] },
+      { to: '/app/reports', label: 'Reportes', perms: ['workorders.read', 'payments.read'] },
+      { to: '/app/invoicing', label: 'Facturación', perms: ['invoicing.read'] },
+      { to: '/app/qr', label: 'Tarjetas QR', perms: ['qr.manage'] },
+      { to: '/app/reminders', label: 'Recordatorios', perms: ['reminders.manage'] },
     ],
   },
   {
     label: 'Configuración',
-    roles: ['owner'],
     items: [
-      { to: '/app/settings/general', label: 'General' },
-      { to: '/app/settings/users', label: 'Usuarios' },
+      { to: '/app/settings/general', label: 'General', perms: ['settings.manage'] },
+      { to: '/app/settings/users', label: 'Usuarios', perms: ['users.manage'] },
     ],
   },
 ]
@@ -75,6 +74,15 @@ function SidebarLink({ to, label, end }: NavItem) {
   )
 }
 
+/** Primera pantalla del panel a la que la sesión tiene acceso (p. ej. Facturación para un Contador). */
+export function firstAllowedPath(user: { permissions?: string[] } | null): string {
+  for (const group of NAV_GROUPS) {
+    const item = group.items.find(i => hasPermissions(user, ...(i.perms ?? [])))
+    if (item) return item.to
+  }
+  return '/login'
+}
+
 export function TallerLayout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -93,14 +101,8 @@ export function TallerLayout({ children }: { children: ReactNode }) {
     }
   }
 
-  function groupVisible(group: NavGroup): boolean {
-    if (!group.roles) return true
-    return group.roles.includes(role)
-  }
-
   function itemVisible(item: NavItem): boolean {
-    if (!item.roles) return true
-    return item.roles.includes(role)
+    return hasPermissions(user, ...(item.perms ?? []))
   }
 
   return (
@@ -184,8 +186,6 @@ export function TallerLayout({ children }: { children: ReactNode }) {
         >
           <nav className="flex flex-col gap-6 py-5 px-2" onClick={() => setSidebarOpen(false)}>
             {NAV_GROUPS.map(group => {
-              if (!groupVisible(group)) return null
-
               const visibleItems = group.items.filter(item => itemVisible(item))
               if (visibleItems.length === 0) return null
 
@@ -205,7 +205,7 @@ export function TallerLayout({ children }: { children: ReactNode }) {
           {/* Role chip at bottom of sidebar */}
           <div className="mt-auto px-4 pb-5">
             <span className="inline-flex items-center border border-tc-navy-mid px-2 py-0.5 text-[10px] font-bold tracking-widest text-tc-navy-text uppercase">
-              {({ owner: 'Dueño', admin_staff: 'Administrador', mechanic: 'Mecánico', accountant: 'Contador' } as Record<string, string>)[role] ?? role}
+              {({ owner: 'Dueño', admin_staff: 'Administrativo', mechanic: 'Mecánico', accountant: 'Contador' } as Record<string, string>)[role] ?? role}
             </span>
           </div>
         </aside>

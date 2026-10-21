@@ -105,4 +105,6 @@ public sealed record IvaBookEntryDto(
     decimal NetAmount,
     decimal VatAmount,
     decimal TotalAmount,
-    string? Observations);
+    string? Observations,
+    string? InvoiceType = null,
+    string? Cae = null);

@@ -2,10 +2,12 @@ using System.IO.Compression;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using TallerControl.Application.Invoicing;
+using TallerControl.Domain.CounterSales;
 using TallerControl.Domain.Customers;
 using TallerControl.Domain.Invoicing;
 using TallerControl.Domain.Purchases;
 using TallerControl.Domain.Suppliers;
+using TallerControl.Domain.Work;
 using TallerControl.Infrastructure.Persistence;
 
 namespace TallerControl.Infrastructure.Invoicing;
@@ -76,21 +78,48 @@ internal sealed class EfIvaBookRepository : IIvaBookRepository
                     i.NetAmount,
                     i.VatAmount,
                     i.TotalAmount,
-                    i.IsCredit
+                    i.IsCredit,
+                    i.Cae,
+                    i.SourceType,
+                    i.SourceId
                 })
             .OrderBy(r => r.IssuedAt)
             .ToListAsync(ct);
 
-        return rows.Select(r => new IvaBookEntryDto(
-            r.IssuedAt,
-            r.Number != null ? $"{r.PosNumber:D4}-{r.Number:D8}" : null,
-            null,
-            "Factura " + r.InvoiceType.ToString(),
-            r.NetAmount,
-            r.VatAmount,
-            r.TotalAmount,
-            r.IsCredit ? "Nota de crédito" : null)
-        ).ToList();
+        // Cliente de cada comprobante: sale del documento de origen (orden o venta de mostrador).
+        var workOrderIds = rows.Where(r => r.SourceType == InvoiceSourceType.WorkOrder).Select(r => r.SourceId).ToList();
+        var counterSaleIds = rows.Where(r => r.SourceType == InvoiceSourceType.CounterSale).Select(r => r.SourceId).ToList();
+
+        var workOrderCustomers = await _db.Set<WorkOrder>()
+            .Where(w => workOrderIds.Contains(w.Id))
+            .Join(_db.Set<Customer>().IgnoreQueryFilters(), w => w.CustomerId, c => c.Id,
+                (w, c) => new { w.Id, c.Name, c.DocNumber })
+            .ToDictionaryAsync(x => x.Id, x => (x.Name, x.DocNumber), ct);
+
+        var counterSaleCustomers = await _db.Set<CounterSale>()
+            .Where(s => counterSaleIds.Contains(s.Id) && s.CustomerId != null)
+            .Join(_db.Set<Customer>().IgnoreQueryFilters(), s => s.CustomerId, c => c.Id,
+                (s, c) => new { s.Id, c.Name, c.DocNumber })
+            .ToDictionaryAsync(x => x.Id, x => (x.Name, x.DocNumber), ct);
+
+        return rows.Select(r =>
+        {
+            var customers = r.SourceType == InvoiceSourceType.WorkOrder ? workOrderCustomers : counterSaleCustomers;
+            customers.TryGetValue(r.SourceId, out var customer);
+            // Las notas de crédito restan en el libro (sus importes se informan en negativo).
+            var sign = r.IsCredit ? -1m : 1m;
+            return new IvaBookEntryDto(
+                r.IssuedAt,
+                r.Number != null ? $"{r.PosNumber:D4}-{r.Number:D8}" : null,
+                customer.DocNumber,
+                customer.Name ?? "Consumidor Final",
+                r.NetAmount * sign,
+                r.VatAmount * sign,
+                r.TotalAmount * sign,
+                r.IsCredit ? "Nota de crédito" : null,
+                r.InvoiceType.ToString(),
+                r.Cae);
+        }).ToList();
     }
 
     private async Task<List<IvaBookEntryDto>> GetPurchasesEntriesAsync(
@@ -168,6 +197,7 @@ internal sealed class EfIvaBookRepository : IIvaBookRepository
         }
     }
 
+    // El formato simplificado no admite signo: los importes se informan en valor absoluto.
     private static string FormatAmount(decimal amount) =>
-        ((long)(amount * 100)).ToString().PadLeft(15, '0');
+        ((long)(Math.Abs(amount) * 100)).ToString().PadLeft(15, '0');
 }

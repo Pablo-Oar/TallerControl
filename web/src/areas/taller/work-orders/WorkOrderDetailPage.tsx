@@ -25,12 +25,14 @@ import { Timeline } from '../../../components/ui/Timeline'
 import { Modal } from '../../../components/ui/Modal'
 import { ChangeStatusModal } from './ChangeStatusModal'
 import { CreatePaymentModal } from './CreatePaymentModal'
+import { useCan } from '../../../lib/auth/permissions'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
 
 export function WorkOrderDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const can = useCan()
   const queryClient = useQueryClient()
   const [changingStatus, setChangingStatus] = useState(false)
   const [creatingPayment, setCreatingPayment] = useState(false)
@@ -346,7 +348,7 @@ export function WorkOrderDetailPage() {
                       >
                         PDF
                       </a>
-                      {pay.status === 'valid' && (
+                      {pay.status === 'valid' && can('payments.void') && (
                         <button
                           onClick={() => setVoidingPaymentId(pay.id)}
                           className="text-[10px] font-bold tracking-wider uppercase text-tc-stamp-red hover:text-red-700 transition-colors"

@@ -17,9 +17,24 @@ public sealed class GetWorkOrderPdfHandler
         _pdfGenerator = pdfGenerator;
     }
 
-    public async Task<byte[]> HandleAsync(Guid id, CancellationToken ct)
+    /// <summary>
+    /// El PDF sigue las mismas reglas que el detalle (REQ-14): un mecánico solo obtiene las órdenes propias o sin
+    /// asignar, y los montos solo viajan a quien tiene <c>prices.view</c> (si no, el PDF sale sin importes).
+    /// </summary>
+    public async Task<byte[]> HandleAsync(
+        Guid id,
+        bool isMechanic,
+        Guid? mechanicMembershipId,
+        bool includePrices,
+        CancellationToken ct)
     {
-        var order = await _repo.GetFullAsync(id, includePrices: true, ct)
+        if (isMechanic && mechanicMembershipId.HasValue)
+        {
+            _ = await _repo.FindVisibleToMechanicAsync(id, mechanicMembershipId.Value, ct)
+                ?? throw new NotFoundException("La orden no existe.");
+        }
+
+        var order = await _repo.GetFullAsync(id, includePrices, ct)
             ?? throw new NotFoundException("La orden no existe.");
 
         return await _pdfGenerator.GenerateAsync(order, ct);

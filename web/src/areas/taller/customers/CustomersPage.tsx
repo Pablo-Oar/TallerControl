@@ -6,11 +6,13 @@ import { DataTable, RowAction, type DataTableColumn, type SortState } from '../.
 import { Pagination } from '../../../components/ui/Pagination'
 import { CustomerFormModal } from './CustomerFormModal'
 import { notify } from '../../../components/ui/dialogs'
+import { useCan } from '../../../lib/auth/permissions'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
 
 export function CustomersPage() {
+  const can = useCan()
   const queryClient = useQueryClient()
   const [q, setQ] = useState('')
   const [search, setSearch] = useState('')
@@ -108,7 +110,7 @@ export function CustomersPage() {
         rowClassName={c => (c.isDeleted ? 'opacity-60' : undefined)}
         actions={c =>
           c.isDeleted ? (
-            <RowAction tone="success" onClick={() => handleRestore(c)}>Restaurar</RowAction>
+            can('customers.delete') ? <RowAction tone="success" onClick={() => handleRestore(c)}>Restaurar</RowAction> : null
           ) : (
             <RowAction onClick={() => setEditing(c)}>Editar</RowAction>
           )

@@ -944,4 +944,41 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         }
         // Si la propiedad no aparece en el JSON, también se considera correcta (campo omitido).
     }
+
+    // ── T-DOC-02: el PDF de la orden respeta visibilidad y precios (REQ-14) ────
+
+    [Fact(DisplayName = "T-DOC-02: Mecánico no obtiene el PDF de una orden asignada a otro → 404")]
+    public async Task Pdf_de_orden_ajena_para_mecanico_devuelve_404()
+    {
+        using var ownerClient = CreateClient();
+        using var mechanicClient = CreateClient();
+        await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        await LoginAsync(mechanicClient, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
+
+        var order = await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.AdminMembershipId);
+        var resp = await mechanicClient.GetAsync($"/api/v1/work-orders/{order.GetProperty("id").GetGuid()}/pdf");
+
+        Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
+    }
+
+    [Fact(DisplayName = "T-DOC-02: El PDF del mecánico sale sin importes (más corto que el del dueño)")]
+    public async Task Pdf_para_mecanico_no_incluye_importes()
+    {
+        using var ownerClient = CreateClient();
+        using var mechanicClient = CreateClient();
+        await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        await LoginAsync(mechanicClient, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
+
+        object[] items = { new { kind = "service", description = "Alineación y balanceo", quantity = 2m, unitNetPrice = 123456m, vatRate = 21m } };
+        var order = await CreateOrderAsync(ownerClient, items: items, assignedMechanicId: _factory.MechanicMembershipId);
+        var url = $"/api/v1/work-orders/{order.GetProperty("id").GetGuid()}/pdf";
+
+        var ownerPdf = await (await ownerClient.GetAsync(url)).Content.ReadAsByteArrayAsync();
+        var mechanicResp = await mechanicClient.GetAsync(url);
+        var mechanicPdf = await mechanicResp.Content.ReadAsByteArrayAsync();
+
+        Assert.Equal(HttpStatusCode.OK, mechanicResp.StatusCode);
+        Assert.True(mechanicPdf.Length < ownerPdf.Length,
+            "El PDF del mecánico debería omitir subtotal, IVA y total.");
+    }
 }

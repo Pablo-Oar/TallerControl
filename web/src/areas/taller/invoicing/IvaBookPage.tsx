@@ -104,8 +104,7 @@ export function IvaBookPage() {
                   <thead>
                     <tr className="border-b border-tc-border">
                       <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
-                      <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">PV</th>
-                      <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nº</th>
+                      <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Comprobante</th>
                       <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Tipo</th>
                       <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">CAE</th>
                       <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Cliente</th>
@@ -117,12 +116,14 @@ export function IvaBookPage() {
                   <tbody>
                     {data.sales.entries.map((entry, i) => (
                       <tr key={i} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                        <td className="px-3 py-2 font-mono text-xs tabular-nums">{entry.invoiceDate.slice(0, 10)}</td>
-                        <td className="px-3 py-2 font-mono text-xs tabular-nums">{String(entry.pointOfSaleNumber).padStart(5, '0')}</td>
-                        <td className="px-3 py-2 font-mono text-xs tabular-nums">{String(entry.invoiceNumber).padStart(8, '0')}</td>
-                        <td className="px-3 py-2 uppercase text-xs text-tc-text-secondary">{entry.invoiceType}</td>
-                        <td className="px-3 py-2 font-mono text-xs text-tc-text-secondary">{entry.cae}</td>
-                        <td className="px-3 py-2 text-tc-text-secondary">{entry.customerName}</td>
+                        <td className="px-3 py-2 font-mono text-xs tabular-nums">{entry.date.slice(0, 10)}</td>
+                        <td className="px-3 py-2 font-mono text-xs tabular-nums">{entry.invoiceNumber ?? '—'}</td>
+                        <td className="px-3 py-2 text-xs text-tc-text-secondary">
+                          {entry.invoiceType ?? '—'}
+                          {entry.observations && <span className="ml-1 font-bold text-tc-stamp-red">NC</span>}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-xs text-tc-text-secondary">{entry.cae ?? '—'}</td>
+                        <td className="px-3 py-2 text-tc-text-secondary">{entry.counterpartyName}</td>
                         <td className="px-3 py-2 text-right tabular-nums text-tc-text-secondary">{fmtARS(entry.netAmount)}</td>
                         <td className="px-3 py-2 text-right tabular-nums text-tc-text-secondary">{fmtARS(entry.vatAmount)}</td>
                         <td className="px-3 py-2 text-right tabular-nums font-bold text-tc-purple">{fmtARS(entry.totalAmount)}</td>
@@ -131,7 +132,7 @@ export function IvaBookPage() {
                   </tbody>
                   <tfoot>
                     <tr className="border-t border-tc-border bg-tc-stub-bg">
-                      <td colSpan={6} className="px-3 py-2 text-right text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Totales</td>
+                      <td colSpan={5} className="px-3 py-2 text-right text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Totales</td>
                       <td className="px-3 py-2 text-right tabular-nums font-bold text-tc-text-secondary">{fmtARS(data.sales.totalNet)}</td>
                       <td className="px-3 py-2 text-right tabular-nums font-bold text-tc-text-secondary">{fmtARS(data.sales.totalVat)}</td>
                       <td className="px-3 py-2 text-right tabular-nums font-bold text-tc-purple">{fmtARS(data.sales.totalAmount)}</td>
@@ -160,8 +161,7 @@ export function IvaBookPage() {
                     <tr className="border-b border-tc-border">
                       <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
                       <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Proveedor</th>
-                      <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">PV</th>
-                      <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nº</th>
+                      <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Comprobante</th>
                       <th className="px-3 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Neto</th>
                       <th className="px-3 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">IVA</th>
                       <th className="px-3 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Total</th>
@@ -170,10 +170,11 @@ export function IvaBookPage() {
                   <tbody>
                     {data.purchases.entries.map((entry, i) => (
                       <tr key={i} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                        <td className="px-3 py-2 font-mono text-xs tabular-nums">{entry.invoiceDate.slice(0, 10)}</td>
-                        <td className="px-3 py-2 text-tc-text-secondary">{entry.customerName}</td>
-                        <td className="px-3 py-2 font-mono text-xs tabular-nums">{String(entry.pointOfSaleNumber).padStart(5, '0')}</td>
-                        <td className="px-3 py-2 font-mono text-xs tabular-nums">{String(entry.invoiceNumber).padStart(8, '0')}</td>
+                        <td className="px-3 py-2 font-mono text-xs tabular-nums">{entry.date.slice(0, 10)}</td>
+                        <td className="px-3 py-2 text-tc-text-secondary">{entry.counterpartyName}</td>
+                        <td className="px-3 py-2 font-mono text-xs tabular-nums">
+                          {entry.invoiceNumber ?? <span className="text-tc-stamp-red">Sin datos fiscales</span>}
+                        </td>
                         <td className="px-3 py-2 text-right tabular-nums text-tc-text-secondary">{fmtARS(entry.netAmount)}</td>
                         <td className="px-3 py-2 text-right tabular-nums text-tc-text-secondary">{fmtARS(entry.vatAmount)}</td>
                         <td className="px-3 py-2 text-right tabular-nums font-bold text-tc-purple">{fmtARS(entry.totalAmount)}</td>

@@ -331,6 +331,36 @@ public sealed class InvoicingEndpointsTests : IAsyncLifetime
         Assert.True(result.TryGetProperty("sales", out _), "La respuesta debe tener propiedad 'sales'.");
     }
 
+    [Fact(DisplayName = "T-INV-07b: El libro IVA informa tipo, CAE y cliente, y las notas de crédito restan")]
+    public async Task Libro_iva_informa_campos_y_resta_notas_de_credito()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, InvoicingWebApplicationFactory.OwnerEmail, InvoicingWebApplicationFactory.Password);
+
+        // Emite (puede responder 409 si otra prueba ya facturó la orden) y la anula con nota de crédito.
+        var emitBody = new { fiscalPointOfSaleId = _factory.PointOfSaleId, concept = 1 };
+        var emitResp = await PostWithCsrfRawAsync(client, $"/api/v1/work-orders/{_factory.WorkOrderId}/invoice", emitBody);
+        if (emitResp.StatusCode == HttpStatusCode.Created)
+        {
+            var invoiceId = (await emitResp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+            await PostWithCsrfRawAsync(client, $"/api/v1/invoicing/invoices/{invoiceId}/void", new { });
+        }
+
+        var now = DateTime.UtcNow;
+        var book = await client.GetFromJsonAsync<JsonElement>($"/api/v1/invoicing/iva-book?year={now.Year}&month={now.Month}");
+        var entries = book.GetProperty("sales").GetProperty("entries").EnumerateArray().ToList();
+
+        foreach (var e in entries)
+        {
+            Assert.True(e.TryGetProperty("date", out _));
+            Assert.False(string.IsNullOrEmpty(e.GetProperty("invoiceType").GetString()));
+            Assert.False(string.IsNullOrEmpty(e.GetProperty("cae").GetString()));
+            Assert.False(string.IsNullOrEmpty(e.GetProperty("counterpartyName").GetString()));
+            if (e.GetProperty("observations").GetString() == "Nota de crédito")
+                Assert.True(e.GetProperty("totalAmount").GetDecimal() < 0, "La nota de crédito debe restar.");
+        }
+    }
+
     // ── T-INV-08: Contador solo puede leer, no emitir ────────────────────────
 
     [Fact(DisplayName = "T-INV-08: Contador puede listar facturas pero no puede emitir (403)")]

@@ -1,7 +1,9 @@
 import { lazy, Suspense } from 'react'
-import { Route, Routes } from 'react-router'
+import { Navigate, Route, Routes } from 'react-router'
 import { RequireAuth } from '../../lib/auth/RequireAuth'
-import { TallerLayout } from './TallerLayout'
+import { TallerLayout, firstAllowedPath } from './TallerLayout'
+import { useAuth } from '../../lib/auth/AuthContext'
+import { hasPermissions } from '../../lib/auth/permissions'
 
 const DashboardPage = lazy(() => import('./DashboardPage').then(m => ({ default: m.DashboardPage })))
 const CustomersPage = lazy(() => import('./customers/CustomersPage').then(m => ({ default: m.CustomersPage })))
@@ -26,6 +28,15 @@ const IvaBookPage = lazy(() => import('./invoicing/IvaBookPage').then(m => ({ de
 const GeneralSettingsPage = lazy(() => import('./settings/general/GeneralSettingsPage').then(m => ({ default: m.GeneralSettingsPage })))
 const UsersSettingsPage = lazy(() => import('./settings/users/UsersSettingsPage').then(m => ({ default: m.UsersSettingsPage })))
 
+/** Inicio del panel: el resumen si la sesión puede verlo; si no (p. ej. Contador), su primera pantalla permitida. */
+function AppHome() {
+  const { user } = useAuth()
+  if (!hasPermissions(user, 'workorders.read', 'payments.read')) {
+    return <Navigate to={firstAllowedPath(user)} replace />
+  }
+  return <DashboardPage />
+}
+
 function PageFallback() {
   return (
     <div className="flex items-center justify-center py-16">
@@ -41,7 +52,7 @@ export function Component() {
       <TallerLayout>
         <Suspense fallback={<PageFallback />}>
           <Routes>
-            <Route index element={<DashboardPage />} />
+            <Route index element={<AppHome />} />
             <Route path="customers" element={<CustomersPage />} />
             <Route path="vehicles" element={<VehiclesPage />} />
             <Route path="vehicles/:id" element={<VehicleDetailPage />} />

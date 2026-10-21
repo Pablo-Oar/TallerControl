@@ -4,6 +4,7 @@ import { catalogApi, type CatalogItemDto, type CatalogItemKind, type CatalogItem
 import { Button } from '../../../components/ui/Button'
 import { DataTable, RowAction, type DataTableColumn, type SortState } from '../../../components/ui/DataTable'
 import { Pagination } from '../../../components/ui/Pagination'
+import { useCan } from '../../../lib/auth/permissions'
 import { CatalogFormModal } from './CatalogFormModal'
 import { StockAdjustmentModal } from './StockAdjustmentModal'
 
@@ -57,6 +58,7 @@ const COLUMNS: DataTableColumn<CatalogItemListDto>[] = [
 ]
 
 export function CatalogPage() {
+  const can = useCan()
   const queryClient = useQueryClient()
   const [q, setQ] = useState('')
   const [search, setSearch] = useState('')
@@ -144,7 +146,7 @@ export function CatalogPage() {
         rowClassName={i => (!i.isActive ? 'opacity-60' : undefined)}
         actions={i => (
           <>
-            {i.trackStock && i.isActive && (
+            {i.trackStock && i.isActive && can('stock.adjust') && (
               <RowAction tone="warn" onClick={() => setAdjusting(i)}>Stock</RowAction>
             )}
             <RowAction onClick={() => setEditing(i)}>Editar</RowAction>

@@ -95,16 +95,20 @@ export interface EmitInvoiceRequest {
 // ── Libro IVA ─────────────────────────────────────────────────────────────────
 
 export interface IvaBookEntryDto {
-  invoiceDate: string
-  pointOfSaleNumber: number
-  invoiceNumber: number
-  invoiceType: string
-  cae: string
-  customerName: string
-  customerCuit: string | null
+  date: string
+  /** «0001-00000012»; null si falta el punto de venta o el número. */
+  invoiceNumber: string | null
+  counterpartyCuit: string | null
+  /** Cliente (ventas) o proveedor (compras). */
+  counterpartyName: string
   netAmount: number
   vatAmount: number
   totalAmount: number
+  /** «Nota de crédito» o «Excluido CITI» cuando corresponde. */
+  observations: string | null
+  /** Tipo de factura (A, B…): solo ventas. */
+  invoiceType?: string | null
+  cae?: string | null
 }
 
 export interface IvaBookSalesDto {

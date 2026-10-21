@@ -129,6 +129,7 @@ public static class DependencyInjection
         services.AddScoped<GetVehicleHandler>();
         services.AddScoped<UpdateVehicleHandler>();
         services.AddScoped<DeleteVehicleHandler>();
+        services.AddScoped<RestoreVehicleHandler>();
         services.AddScoped<GetVehicleHistoryHandler>();
 
         services.AddScoped<ICatalogRepository, EfCatalogRepository>();
