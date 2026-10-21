@@ -84,8 +84,8 @@ internal static class InvoicingEndpoints
 
         app.MapGet("/api/v1/invoicing/invoices",
                 (SearchInvoicesHandler handler, CancellationToken ct,
-                 string? status = null, string? sourceType = null, int page = 1, int pageSize = 25) =>
-                    SearchInvoicesAsync(status, sourceType, page, pageSize, handler, ct))
+                 string? status = null, string? sourceType = null, Guid? sourceId = null, int page = 1, int pageSize = 25) =>
+                    SearchInvoicesAsync(status, sourceType, sourceId, page, pageSize, handler, ct))
             .RequirePermission(Permission.InvoicingRead);
 
         app.MapGet("/api/v1/invoicing/invoices/{id:guid}",
@@ -167,13 +167,13 @@ internal static class InvoicingEndpoints
     }
 
     private static Task<IResult> SearchInvoicesAsync(
-        string? status, string? sourceType, int page, int pageSize,
+        string? status, string? sourceType, Guid? sourceId, int page, int pageSize,
         SearchInvoicesHandler handler, CancellationToken ct)
     {
         InvoiceStatus? statusEnum = null;
         if (!string.IsNullOrEmpty(status))
         {
-            if (!Enum.TryParse<InvoiceStatus>(status, ignoreCase: true, out var s))
+            if (!EnumQuery.TryParse<InvoiceStatus>(status, out var s))
                 return Task.FromResult(Results.BadRequest(new { message = $"Estado inválido: {status}" }));
             statusEnum = s;
         }
@@ -181,19 +181,19 @@ internal static class InvoicingEndpoints
         InvoiceSourceType? sourceTypeEnum = null;
         if (!string.IsNullOrEmpty(sourceType))
         {
-            if (!Enum.TryParse<InvoiceSourceType>(sourceType, ignoreCase: true, out var st))
+            if (!EnumQuery.TryParse<InvoiceSourceType>(sourceType, out var st))
                 return Task.FromResult(Results.BadRequest(new { message = $"Tipo de fuente inválido: {sourceType}" }));
             sourceTypeEnum = st;
         }
 
-        return ExecuteSearchAsync(statusEnum, sourceTypeEnum, page, pageSize, handler, ct);
+        return ExecuteSearchAsync(statusEnum, sourceTypeEnum, sourceId, page, pageSize, handler, ct);
     }
 
     private static async Task<IResult> ExecuteSearchAsync(
-        InvoiceStatus? status, InvoiceSourceType? sourceType, int page, int pageSize,
+        InvoiceStatus? status, InvoiceSourceType? sourceType, Guid? sourceId, int page, int pageSize,
         SearchInvoicesHandler handler, CancellationToken ct)
     {
-        var result = await handler.HandleAsync(status, sourceType, page, pageSize, ct);
+        var result = await handler.HandleAsync(status, sourceType, sourceId, page, pageSize, ct);
         return Results.Ok(result);
     }
 

@@ -125,7 +125,7 @@ internal sealed class EfInvoicingRepository : IInvoicingRepository
             .FirstOrDefaultAsync(ct);
 
     public async Task<Page<InvoiceListDto>> SearchInvoicesAsync(
-        InvoiceStatus? status, InvoiceSourceType? sourceType, int page, int pageSize, CancellationToken ct)
+        InvoiceStatus? status, InvoiceSourceType? sourceType, Guid? sourceId, int page, int pageSize, CancellationToken ct)
     {
         var query = _db.Set<Invoice>().AsQueryable();
 
@@ -133,6 +133,8 @@ internal sealed class EfInvoicingRepository : IInvoicingRepository
             query = query.Where(i => i.Status == status.Value);
         if (sourceType.HasValue)
             query = query.Where(i => i.SourceType == sourceType.Value);
+        if (sourceId.HasValue)
+            query = query.Where(i => i.SourceId == sourceId.Value);
 
         var total = await query.CountAsync(ct);
         var items = await query

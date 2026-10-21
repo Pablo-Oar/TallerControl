@@ -24,6 +24,7 @@ const CounterSalesPage = lazy(() => import('./counter-sales/CounterSalesPage').t
 const ReportsPage = lazy(() => import('./reports/ReportsPage').then(m => ({ default: m.ReportsPage })))
 const InvoicingPage = lazy(() => import('./invoicing/InvoicingPage').then(m => ({ default: m.InvoicingPage })))
 const InvoicingSetupPage = lazy(() => import('./invoicing/InvoicingSetupPage').then(m => ({ default: m.InvoicingSetupPage })))
+const InvoiceDetailPage = lazy(() => import('./invoicing/InvoiceDetailPage').then(m => ({ default: m.InvoiceDetailPage })))
 const IvaBookPage = lazy(() => import('./invoicing/IvaBookPage').then(m => ({ default: m.IvaBookPage })))
 const GeneralSettingsPage = lazy(() => import('./settings/general/GeneralSettingsPage').then(m => ({ default: m.GeneralSettingsPage })))
 const UsersSettingsPage = lazy(() => import('./settings/users/UsersSettingsPage').then(m => ({ default: m.UsersSettingsPage })))
@@ -71,6 +72,7 @@ export function Component() {
             <Route path="reports" element={<ReportsPage />} />
             <Route path="invoicing" element={<InvoicingPage />} />
             <Route path="invoicing/setup" element={<InvoicingSetupPage />} />
+            <Route path="invoicing/invoices/:id" element={<InvoiceDetailPage />} />
             <Route path="invoicing/iva-book" element={<IvaBookPage />} />
             <Route
               path="settings/general"

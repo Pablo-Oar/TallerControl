@@ -8,6 +8,7 @@ import { DataTable, RowAction, sortableWhen, type DataTableColumn } from '../../
 import { Pagination } from '../../../components/ui/Pagination'
 import { ApiError } from '../../../lib/api/client'
 import { CounterSaleFormModal } from './CounterSaleFormModal'
+import { InvoiceSection } from '../invoicing/InvoiceSection'
 import { confirmDialog, notify } from '../../../components/ui/dialogs'
 
 const STATUS_LABELS: Record<CounterSaleStatus, string> = {
@@ -209,6 +210,16 @@ export function CounterSalesPage() {
                 </table>
               </div>
             )}
+
+            <div>
+              <p className="mb-1 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Facturación</p>
+              <InvoiceSection
+                sourceType="counter_sale"
+                sourceId={detail.id}
+                eligible={detail.status === 'confirmed'}
+                ineligibleReason="Se puede facturar una vez confirmada la venta."
+              />
+            </div>
 
             <div className="flex justify-end gap-2">
               {detail.status === 'draft' && (

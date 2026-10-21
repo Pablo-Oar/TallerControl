@@ -169,10 +169,11 @@ export const updatePointOfSale = (id: string, req: UpdateFiscalPointOfSaleReques
   api.put<FiscalPointOfSaleDto>(`/api/v1/invoicing/points-of-sale/${id}`, req, String(req.version))
 
 // Facturas
-export const searchInvoices = (params: { status?: string; sourceType?: string; page?: number; pageSize?: number }): Promise<Page<InvoiceListDto>> => {
+export const searchInvoices = (params: { status?: string; sourceType?: string; sourceId?: string; page?: number; pageSize?: number }): Promise<Page<InvoiceListDto>> => {
   const sp = new URLSearchParams()
   if (params.status) sp.set('status', params.status)
   if (params.sourceType) sp.set('sourceType', params.sourceType)
+  if (params.sourceId) sp.set('sourceId', params.sourceId)
   if (params.page) sp.set('page', String(params.page))
   if (params.pageSize) sp.set('pageSize', String(params.pageSize))
   return api.get<Page<InvoiceListDto>>(`/api/v1/invoicing/invoices?${sp}`)

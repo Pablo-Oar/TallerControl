@@ -6,15 +6,12 @@ import { DataTable, sortableWhen, type DataTableColumn } from '../../../componen
 import { Pagination } from '../../../components/ui/Pagination'
 import { NavLink } from 'react-router'
 import { InvoicingTabs } from './InvoicingTabs'
+import { INVOICE_STATUS_LABELS } from './invoiceLabels'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
 
-const STATUS_LABELS: Record<InvoiceStatus, string> = {
-  pending: 'Pendiente',
-  authorized: 'Autorizada',
-  rejected: 'Rechazada',
-}
+const STATUS_LABELS = INVOICE_STATUS_LABELS
 
 const SOURCE_LABELS: Record<InvoiceSourceType, string> = {
   work_order: 'Orden de Trabajo',
@@ -119,6 +116,8 @@ export function InvoicingPage() {
             columns={sortableWhen(COLUMNS, data.totalCount <= 25)}
             rows={data.items}
             getRowId={i => i.id}
+            rowHref={i => `/app/invoicing/invoices/${i.id}`}
+            rowLabel={i => `Ver factura ${i.number ?? ""}`}
             cardStub={i => <span className="px-1 text-center font-mono text-[11px] font-bold text-tc-text-secondary">{i.number ?? '—'}</span>}
             renderCard={i => (
               <>

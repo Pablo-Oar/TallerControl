@@ -39,7 +39,7 @@ public interface IInvoicingRepository
 
     Task<Invoice?> FindInvoiceByIdAsync(Guid id, CancellationToken ct);
     Task<Invoice?> FindAuthorizedInvoiceBySourceAsync(InvoiceSourceType sourceType, Guid sourceId, CancellationToken ct);
-    Task<Page<InvoiceListDto>> SearchInvoicesAsync(InvoiceStatus? status, InvoiceSourceType? sourceType, int page, int pageSize, CancellationToken ct);
+    Task<Page<InvoiceListDto>> SearchInvoicesAsync(InvoiceStatus? status, InvoiceSourceType? sourceType, Guid? sourceId, int page, int pageSize, CancellationToken ct);
     Task<InvoiceDto?> GetInvoiceDtoAsync(Guid id, CancellationToken ct);
     Task AddInvoiceAsync(Invoice invoice, CancellationToken ct);
 

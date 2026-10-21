@@ -25,10 +25,11 @@ public sealed class SearchInvoicesHandler
     public Task<Page<InvoiceListDto>> HandleAsync(
         InvoiceStatus? status,
         InvoiceSourceType? sourceType,
+        Guid? sourceId,
         int page,
         int pageSize,
         CancellationToken ct)
-        => _repo.SearchInvoicesAsync(status, sourceType, page, pageSize, ct);
+        => _repo.SearchInvoicesAsync(status, sourceType, sourceId, page, pageSize, ct);
 }
 
 public sealed class ListFiscalCertificatesHandler
