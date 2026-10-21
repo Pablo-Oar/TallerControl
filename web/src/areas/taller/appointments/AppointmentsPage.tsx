@@ -9,6 +9,8 @@ import {
 import { Button } from '../../../components/ui/Button'
 import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { DataTable, RowAction, sortableWhen, type DataTableColumn } from '../../../components/ui/DataTable'
+import { Pagination } from '../../../components/ui/Pagination'
 import { AppointmentFormModal } from './AppointmentFormModal'
 import { inputCls } from '../../../lib/styles'
 
@@ -20,6 +22,34 @@ const STATUS_OPTIONS: { value: AppointmentStatus | ''; label: string }[] = [
   { value: 'cancelled', label: 'Cancelados' },
 ]
 
+const fmtWhen = (iso: string) =>
+  new Date(iso).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
+
+const canCancel = (a: AppointmentListDto) => a.status === 'pending' || a.status === 'confirmed'
+
+const COLUMNS: DataTableColumn<AppointmentListDto>[] = [
+  {
+    key: 'when',
+    header: 'Fecha / hora',
+    widthClass: 'w-44',
+    sortable: true,
+    sortValue: a => a.scheduledAt,
+    cell: a => <span className="whitespace-nowrap font-medium tabular-nums text-tc-text">{fmtWhen(a.scheduledAt)}</span>,
+  },
+  { key: 'customer', header: 'Cliente', sortable: true, sortValue: a => a.customerName, cell: a => <span className="text-tc-text-secondary">{a.customerName}</span> },
+  { key: 'plate', header: 'Vehículo', widthClass: 'w-32', cell: a => <span className="font-mono tracking-widest text-tc-text-secondary">{a.vehiclePlate}</span> },
+  { key: 'mechanic', header: 'Mecánico', widthClass: 'w-40', cell: a => <span className="text-tc-text-secondary">{a.mechanicName ?? <span className="text-tc-text-muted">—</span>}</span> },
+  { key: 'duration', header: 'Duración', widthClass: 'w-28', cell: a => <span className="tabular-nums text-tc-text-secondary">{a.totalDurationMinutes} min</span> },
+  {
+    key: 'status',
+    header: 'Estado',
+    align: 'center',
+    widthClass: 'w-40',
+    sortable: true,
+    sortValue: a => a.status,
+    cell: a => <StatusBadge status={a.status} label={getAppointmentStatusLabel(a.status)} />,
+  },
+]
 
 export function AppointmentsPage() {
   const qc = useQueryClient()
@@ -57,7 +87,6 @@ export function AppointmentsPage() {
 
   const items: AppointmentListDto[] = data?.items ?? []
   const total = data?.total ?? 0
-  const totalPages = Math.ceil(total / 25) || 1
 
   return (
     <div className="space-y-4">
@@ -91,97 +120,32 @@ export function AppointmentsPage() {
         </select>
       </div>
 
-      {isLoading ? (
-        <div className="border border-tc-border bg-white">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-10 animate-pulse border-b border-tc-border bg-tc-surface last:border-0" />
-          ))}
-        </div>
-      ) : (
-        <div className="border border-tc-border bg-white overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-tc-stub-bg border-b border-tc-border">
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha / hora</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden sm:table-cell">Cliente</th>
-                <th className="hidden px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted sm:table-cell">Vehículo</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden md:table-cell">Mecánico</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden md:table-cell">Duración</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
-                <th className="px-4 py-2" />
-              </tr>
-            </thead>
-            <tbody>
-              {items.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-sm text-tc-text-muted">
-                    No hay turnos para los filtros seleccionados.
-                  </td>
-                </tr>
-              ) : (
-                items.map((appt, idx) => (
-                  <tr key={appt.id} className={`border-b border-tc-border last:border-0 hover:bg-tc-surface ${idx % 2 === 0 ? '' : ''}`}>
-                    <td className="px-4 py-2.5 tabular-nums">
-                      <span className="font-medium text-tc-text whitespace-nowrap">
-                        {new Date(appt.scheduledAt).toLocaleString('es-AR', {
-                          dateStyle: 'short',
-                          timeStyle: 'short',
-                        })}
-                      </span>
-                      <p className="mt-0.5 text-xs text-tc-text-secondary sm:hidden">{appt.customerName}</p>
-                      <p className="font-mono text-xs tracking-widest text-tc-text-secondary sm:hidden">{appt.vehiclePlate}</p>
-                    </td>
-                    <td className="px-4 py-2.5 text-tc-text-secondary hidden sm:table-cell">{appt.customerName}</td>
-                    <td className="hidden px-4 py-2.5 font-mono tracking-widest text-sm text-tc-text-secondary sm:table-cell">{appt.vehiclePlate}</td>
-                    <td className="px-4 py-2.5 text-tc-text-secondary hidden md:table-cell">
-                      {appt.mechanicName ?? <span className="text-tc-text-muted">—</span>}
-                    </td>
-                    <td className="px-4 py-2.5 text-tc-text-secondary tabular-nums hidden md:table-cell">{appt.totalDurationMinutes} min</td>
-                    <td className="px-4 py-2.5">
-                      <StatusBadge status={appt.status} label={getAppointmentStatusLabel(appt.status)} />
-                    </td>
-                    <td className="px-4 py-2.5 text-right">
-                      {(appt.status === 'pending' || appt.status === 'confirmed') && (
-                        <button
-                          onClick={() => { setCancellingId(appt.id); setCancelReason('') }}
-                          className="min-h-[44px] px-2 text-xs font-bold text-tc-stamp-red hover:opacity-70"
-                        >
-                          Cancelar
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DataTable<AppointmentListDto>
+        label="Agenda"
+        columns={sortableWhen(COLUMNS, total <= 25)}
+        rows={items}
+        getRowId={a => a.id}
+        actions={a =>
+          canCancel(a) ? (
+            <RowAction tone="danger" onClick={() => { setCancellingId(a.id); setCancelReason('') }}>
+              Cancelar
+            </RowAction>
+          ) : null
+        }
+        cardStub={a => <span className="text-center text-[11px] font-bold leading-tight tabular-nums text-tc-text-secondary">{new Date(a.scheduledAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</span>}
+        renderCard={a => (
+          <>
+            <p className="text-sm font-medium tabular-nums text-tc-text">{fmtWhen(a.scheduledAt)}</p>
+            <p className="truncate text-sm text-tc-text-secondary">{a.customerName}</p>
+            <p className="font-mono text-xs tracking-widest text-tc-text-muted">{a.vehiclePlate} · {a.totalDurationMinutes} min</p>
+            <div className="mt-1.5"><StatusBadge status={a.status} label={getAppointmentStatusLabel(a.status)} /></div>
+          </>
+        )}
+        loading={isLoading}
+        emptyMessage="No hay turnos para los filtros seleccionados."
+      />
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-tc-text-secondary">
-          <span className="text-xs text-tc-text-muted">{total} turnos en total</span>
-          <div className="flex gap-1">
-            <button
-              disabled={page <= 1}
-              onClick={() => setPage(p => p - 1)}
-              className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
-            >
-              ← Anterior
-            </button>
-            <span className="border border-tc-border bg-tc-stub-bg px-3 py-1 text-xs tabular-nums">
-              {page} / {totalPages}
-            </span>
-            <button
-              disabled={page >= totalPages}
-              onClick={() => setPage(p => p + 1)}
-              className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
-            >
-              Siguiente →
-            </button>
-          </div>
-        </div>
-      )}
+      <Pagination page={page} pageSize={25} total={total} noun="turnos" onPage={setPage} />
 
       {showModal && (
         <AppointmentFormModal onClose={() => { setShowModal(false); invalidate() }} />

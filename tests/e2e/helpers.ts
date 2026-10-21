@@ -165,7 +165,7 @@ async function openStockModal(page: Page, name: string) {
   await page.goto('/app/catalog')
   await page.getByPlaceholder(/buscar por nombre/i).fill(name)
   await page.getByRole('button', { name: /^buscar$/i }).click()
-  await page.getByRole('listitem').filter({ hasText: name }).getByRole('button', { name: /stock/i }).click()
+  await page.getByRole('row').filter({ hasText: name }).getByRole('button', { name: /stock/i }).click()
 }
 
 /** Suma (o resta, con negativo) stock con una nota. */
@@ -206,5 +206,5 @@ export async function customerRow(page: Page, name: string) {
   await page.goto('/app/customers')
   await page.getByPlaceholder(/buscar por nombre/i).fill(name)
   await page.getByRole('button', { name: /^buscar$/i }).click()
-  return page.getByRole('listitem').filter({ hasText: name })
+  return page.getByRole('row').filter({ hasText: name })
 }

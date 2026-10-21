@@ -39,8 +39,12 @@ interface DataTableProps<T> {
   rows: T[]
   getRowId: (row: T) => string
   /** Enlace de la fila: agrega la columna con la flecha. */
-  rowHref?: (row: T) => string
+  rowHref?: (row: T) => string | null
   rowLabel?: (row: T) => string
+  /** Acciones de la fila (Editar, Baja…): última columna en escritorio, fila de botones bajo la tarjeta en celular. */
+  actions?: (row: T) => ReactNode
+  /** Clases extra de la fila (p. ej. atenuar eliminados). */
+  rowClassName?: (row: T) => string | undefined
   /** Tarjeta móvil: talón (número) y cuerpo. */
   cardStub?: (row: T) => ReactNode
   renderCard: (row: T) => ReactNode
@@ -74,6 +78,8 @@ export function DataTable<T>({
   getRowId,
   rowHref,
   rowLabel,
+  actions,
+  rowClassName,
   cardStub,
   renderCard,
   sort: sortProp,
@@ -184,6 +190,11 @@ export function DataTable<T>({
                 </th>
               )
             })}
+            {actions && (
+              <th scope="col" className={cn('bg-tc-stub-bg px-3', !rowHref && 'rounded-r-xl')}>
+                <span className="sr-only">Acciones</span>
+              </th>
+            )}
             {rowHref && (
               <th scope="col" className="w-12 rounded-r-xl bg-tc-stub-bg">
                 <span className="sr-only">Abrir</span>
@@ -193,23 +204,34 @@ export function DataTable<T>({
         </thead>
         <tbody className="[&>tr:not(:first-child)>td]:border-t [&>tr:not(:first-child)>td]:border-tc-border/70">
           {shown.map(row => (
-            <tr key={getRowId(row)} className="group">
+            <tr key={getRowId(row)} className={cn('group', rowClassName?.(row))}>
               {columns.map(col => (
                 <td
                   key={col.key}
                   className={cn(
                     'px-3 py-3 align-middle transition-colors group-hover:bg-tc-surface first:rounded-l-xl',
                     ALIGN[col.align ?? 'left'],
-                    !rowHref && 'last:rounded-r-xl',
+                    !rowHref && !actions && 'last:rounded-r-xl',
                   )}
                 >
                   {col.cell(row)}
                 </td>
               ))}
+              {actions && (
+                <td
+                  className={cn(
+                    'whitespace-nowrap px-2 py-2 text-right align-middle transition-colors group-hover:bg-tc-surface',
+                    !rowHref && 'rounded-r-xl',
+                  )}
+                >
+                  <div className="flex items-center justify-end gap-1">{actions(row)}</div>
+                </td>
+              )}
               {rowHref && (
                 <td className="w-12 rounded-r-xl p-0 align-middle transition-colors group-hover:bg-tc-surface">
+                  {rowHref(row) && (
                   <Link
-                    to={rowHref(row)}
+                    to={rowHref(row)!}
                     aria-label={rowLabel?.(row) ?? 'Abrir'}
                     className="flex h-11 w-12 items-center justify-center text-tc-navy-text-dim transition-colors hover:text-tc-purple"
                   >
@@ -217,6 +239,7 @@ export function DataTable<T>({
                       <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </Link>
+                  )}
                 </td>
               )}
             </tr>
@@ -227,16 +250,19 @@ export function DataTable<T>({
       {/* Celular: tarjetas */}
       <ul aria-label={label} className="space-y-1.5 md:hidden">
         {shown.map(row => (
-          <li key={getRowId(row)} className="flex items-stretch overflow-hidden rounded-xl border border-tc-border bg-white">
+          <li key={getRowId(row)} className={cn('flex items-stretch overflow-hidden rounded-xl border border-tc-border bg-white', rowClassName?.(row))}>
             {cardStub && (
               <div className="flex w-14 shrink-0 items-center justify-center border-r border-tc-border bg-tc-stub-bg px-1">
                 {cardStub(row)}
               </div>
             )}
-            <div className="min-w-0 flex-1 px-3 py-3">{renderCard(row)}</div>
-            {rowHref && (
+            <div className="min-w-0 flex-1 px-3 py-3">
+              {renderCard(row)}
+              {actions && <div className="-mx-2 mt-1 flex flex-wrap items-center">{actions(row)}</div>}
+            </div>
+            {rowHref && rowHref(row) && (
               <Link
-                to={rowHref(row)}
+                to={rowHref(row)!}
                 aria-label={rowLabel?.(row) ?? 'Abrir'}
                 className="flex min-h-[44px] w-11 shrink-0 items-center justify-center border-l border-tc-border bg-tc-stub-bg text-tc-navy-text-dim hover:text-tc-purple"
               >
@@ -249,5 +275,58 @@ export function DataTable<T>({
         ))}
       </ul>
     </div>
+  )
+}
+
+const TONE = {
+  default: 'text-tc-navy-text-dim hover:text-tc-purple',
+  danger: 'text-tc-stamp-red hover:opacity-70',
+  success: 'text-green-700 hover:text-green-900',
+  warn: 'text-amber-600 hover:text-amber-800',
+  purple: 'text-tc-purple hover:opacity-70',
+} as const
+
+/** Acción de texto de una fila: 44 px de alto táctil en celular, compacta en escritorio. */
+export function RowAction({
+  tone = 'default',
+  className,
+  ...rest
+}: { tone?: keyof typeof TONE } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      type="button"
+      className={cn(
+        'min-h-11 rounded-md px-3 text-[11px] font-bold tracking-wider uppercase transition-colors md:min-h-8 md:px-2',
+        TONE[tone],
+        className,
+      )}
+      {...rest}
+    />
+  )
+}
+
+/**
+ * Orden en el navegador solo cuando la lista entra en una página: si hay más páginas, ordenar lo cargado
+ * confunde (la primera fila no sería la menor del total). Las listas largas ordenan en el servidor.
+ */
+export function sortableWhen<T>(columns: DataTableColumn<T>[], enabled: boolean): DataTableColumn<T>[] {
+  return enabled ? columns : columns.map(c => ({ ...c, sortable: false }))
+}
+
+/** Igual que `RowAction` pero como enlace (p. ej. descargar un PDF en otra pestaña). */
+export function RowActionLink({
+  tone = 'default',
+  className,
+  ...rest
+}: { tone?: keyof typeof TONE } & React.AnchorHTMLAttributes<HTMLAnchorElement>) {
+  return (
+    <a
+      className={cn(
+        'inline-flex min-h-11 items-center rounded-md px-3 text-[11px] font-bold tracking-wider uppercase transition-colors md:min-h-8 md:px-2',
+        TONE[tone],
+        className,
+      )}
+      {...rest}
+    />
   )
 }

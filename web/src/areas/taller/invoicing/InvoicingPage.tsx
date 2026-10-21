@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { searchInvoices, type InvoiceStatus, type InvoiceSourceType } from '../../../lib/api/invoicing'
+import { searchInvoices, type InvoiceListDto, type InvoiceStatus, type InvoiceSourceType } from '../../../lib/api/invoicing'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { DataTable, sortableWhen, type DataTableColumn } from '../../../components/ui/DataTable'
+import { Pagination } from '../../../components/ui/Pagination'
 import { NavLink } from 'react-router'
 import { InvoicingTabs } from './InvoicingTabs'
 
@@ -18,6 +20,52 @@ const SOURCE_LABELS: Record<InvoiceSourceType, string> = {
   work_order: 'Orden de Trabajo',
   counter_sale: 'Venta Mostrador',
 }
+
+const COLUMNS: DataTableColumn<InvoiceListDto>[] = [
+  {
+    key: 'number',
+    header: 'Nº',
+    widthClass: 'w-48',
+    sortable: true,
+    sortValue: i => i.number ?? '',
+    cell: i => (
+      <span className="font-mono text-tc-text">
+        {i.number ?? '—'}
+        {i.isCredit && (
+          <span className="ml-2 rounded-md border border-amber-300 px-1 py-0.5 text-[10px] font-bold tracking-wider uppercase text-amber-700">NC</span>
+        )}
+      </span>
+    ),
+  },
+  { key: 'type', header: 'Tipo', widthClass: 'w-28', cell: i => <span className="font-mono text-xs uppercase text-tc-text-secondary">Fcta. {i.invoiceType}</span> },
+  { key: 'source', header: 'Origen', cell: i => <span className="text-xs text-tc-text-secondary">{SOURCE_LABELS[i.sourceType]}</span> },
+  {
+    key: 'status',
+    header: 'Estado',
+    align: 'center',
+    widthClass: 'w-40',
+    sortable: true,
+    sortValue: i => i.status,
+    cell: i => <StatusBadge status={i.status} label={STATUS_LABELS[i.status]} />,
+  },
+  {
+    key: 'total',
+    header: 'Total',
+    align: 'right',
+    widthClass: 'w-36',
+    sortable: true,
+    sortValue: i => i.totalAmount,
+    cell: i => <span className="font-bold tabular-nums text-tc-purple">{fmtARS(i.totalAmount)}</span>,
+  },
+  {
+    key: 'date',
+    header: 'Fecha',
+    widthClass: 'w-32',
+    sortable: true,
+    sortValue: i => i.issuedAt,
+    cell: i => <span className="tabular-nums text-tc-text-secondary">{new Date(i.issuedAt).toLocaleDateString('es-AR')}</span>,
+  },
+]
 
 export function InvoicingPage() {
   const [status, setStatus] = useState<InvoiceStatus | ''>('')
@@ -65,65 +113,29 @@ export function InvoicingPage() {
           </NavLink>
         </div>
       ) : (
-        <div className="border border-tc-border bg-white overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-tc-stub-bg border-b border-tc-border">
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nº</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Tipo</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Origen</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
-                <th className="px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Total</th>
-                <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.items.map(inv => (
-                <tr key={inv.id} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                  <td className="px-4 py-2.5 font-mono text-tc-text">
-                    {inv.number ?? '—'}
-                    {inv.isCredit && (
-                      <span className="ml-2 border border-amber-300 px-1 py-0.5 text-[10px] font-bold tracking-wider uppercase text-amber-700">
-                        NC
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-2.5 font-mono text-xs uppercase text-tc-text-secondary">Fcta. {inv.invoiceType}</td>
-                  <td className="px-4 py-2.5 text-tc-text-secondary text-xs">{SOURCE_LABELS[inv.sourceType]}</td>
-                  <td className="px-4 py-2.5">
-                    <StatusBadge status={inv.status} label={STATUS_LABELS[inv.status]} />
-                  </td>
-                  <td className="px-4 py-2.5 text-right font-bold text-tc-purple tabular-nums">{fmtARS(inv.totalAmount)}</td>
-                  <td className="px-4 py-2.5 text-tc-text-secondary tabular-nums">
-                    {new Date(inv.issuedAt).toLocaleDateString('es-AR')}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {data && data.totalCount > 25 && (
-            <div className="flex items-center gap-1 border-t border-tc-border px-4 py-2">
-              <button
-                onClick={() => setPage(p => p - 1)}
-                disabled={page <= 1}
-                className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
-              >
-                ← Anterior
-              </button>
-              <span className="border border-tc-border bg-tc-stub-bg px-3 py-1 text-xs tabular-nums">
-                Pág. {page}
-              </span>
-              <button
-                onClick={() => setPage(p => p + 1)}
-                disabled={page * 25 >= data.totalCount}
-                className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
-              >
-                Siguiente →
-              </button>
-            </div>
-          )}
-        </div>
+        <>
+          <DataTable<InvoiceListDto>
+            label="Facturas"
+            columns={sortableWhen(COLUMNS, data.totalCount <= 25)}
+            rows={data.items}
+            getRowId={i => i.id}
+            cardStub={i => <span className="px-1 text-center font-mono text-[11px] font-bold text-tc-text-secondary">{i.number ?? '—'}</span>}
+            renderCard={i => (
+              <>
+                <p className="text-sm text-tc-text-secondary">
+                  Fcta. {i.invoiceType.toUpperCase()} · {SOURCE_LABELS[i.sourceType]}
+                  {i.isCredit && <span className="ml-2 text-[10px] font-bold text-amber-700">NC</span>}
+                </p>
+                <p className="text-xs tabular-nums text-tc-text-muted">{new Date(i.issuedAt).toLocaleDateString('es-AR')}</p>
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <StatusBadge status={i.status} label={STATUS_LABELS[i.status]} />
+                  <span className="text-sm font-bold tabular-nums text-tc-purple">{fmtARS(i.totalAmount)}</span>
+                </div>
+              </>
+            )}
+          />
+          <Pagination page={page} pageSize={25} total={data.totalCount} noun="facturas" onPage={setPage} />
+        </>
       )}
     </div>
   )

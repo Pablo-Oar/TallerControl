@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { catalogApi, type CatalogItemDto, type CatalogItemKind, type CatalogItemListDto } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
+import { DataTable, RowAction, type DataTableColumn } from '../../../components/ui/DataTable'
+import { Pagination } from '../../../components/ui/Pagination'
 import { CatalogFormModal } from './CatalogFormModal'
 import { StockAdjustmentModal } from './StockAdjustmentModal'
 
@@ -12,6 +14,44 @@ const KIND_LABELS: Record<CatalogItemKind, string> = {
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
+
+const COLUMNS: DataTableColumn<CatalogItemListDto>[] = [
+  {
+    key: 'name',
+    header: 'Nombre',
+    cell: i => (
+      <div className="min-w-0">
+        <p className="truncate font-medium text-tc-text">{i.name}</p>
+        {!i.isActive && <span className="text-[10px] font-bold tracking-wider text-tc-text-muted uppercase">Inactivo</span>}
+      </div>
+    ),
+  },
+  { key: 'kind', header: 'Tipo', widthClass: 'w-28', cell: i => <span className="text-xs text-tc-text-secondary">{KIND_LABELS[i.kind]}</span> },
+  { key: 'sku', header: 'SKU', widthClass: 'w-32', cell: i => <span className="font-mono text-xs text-tc-text-muted">{i.sku ?? '—'}</span> },
+  {
+    key: 'price',
+    header: 'Precio neto',
+    align: 'right',
+    widthClass: 'w-32',
+    cell: i => <span className="tabular-nums text-tc-purple">{fmtARS(i.netPrice)}</span>,
+  },
+  { key: 'vat', header: 'IVA', align: 'right', widthClass: 'w-20', cell: i => <span className="text-xs text-tc-text-secondary">{i.vatRate}%</span> },
+  {
+    key: 'stock',
+    header: 'Stock',
+    align: 'right',
+    widthClass: 'w-24',
+    cell: i =>
+      i.trackStock ? (
+        <span className={['tabular-nums', i.isLowStock ? 'font-semibold text-amber-600' : 'text-tc-text-secondary'].join(' ')}>
+          {i.stockQty}
+          {i.isLowStock && <span className="ml-0.5 text-[10px]">▼</span>}
+        </span>
+      ) : (
+        <span className="text-tc-text-muted">—</span>
+      ),
+  },
+]
 
 export function CatalogPage() {
   const queryClient = useQueryClient()
@@ -25,7 +65,7 @@ export function CatalogPage() {
   const [editing, setEditing] = useState<CatalogItemListDto | null>(null)
   const [adjusting, setAdjusting] = useState<CatalogItemListDto | null>(null)
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['catalog', search, kindFilter, activeOnly, page],
     queryFn: () => catalogApi.search(search || null, kindFilter || null, activeOnly ? true : null, page),
   })
@@ -90,147 +130,43 @@ export function CatalogPage() {
         <Button type="submit" variant="secondary" size="sm">Buscar</Button>
       </form>
 
-      {isLoading && (
-        <div className="space-y-1">
-          {[0, 1, 2, 3].map(i => (
-            <div key={i} className="h-14 animate-pulse bg-slate-50 border border-tc-border" />
-          ))}
-        </div>
-      )}
-
-      {error && (
-        <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          No se pudo cargar el catálogo.
-        </p>
-      )}
-
-      {data && (
-        <>
-          <div className="border border-tc-border bg-white overflow-hidden">
-            {/* Header */}
-            <div className="hidden md:grid md:grid-cols-[minmax(0,1fr)_5rem_6rem_6rem_4rem_5rem_8rem] border-b border-tc-border bg-tc-stub-bg">
-              {[
-                ['Nombre', '', false],
-                ['Tipo', '', false],
-                ['SKU', '', true],
-                ['Precio neto', 'text-right', false],
-                ['IVA', 'text-right', true],
-                ['Stock', 'text-right', true],
-                ['', '', false],
-              ].map(([h, cls, hide], i) => (
-                <div key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${cls} ${hide ? 'hidden md:block' : ''}`}>
-                  {h}
-                </div>
-              ))}
-            </div>
-
-            {data.items.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-tc-text-muted">
-                No hay ítems{search ? ' para esa búsqueda' : ''}.
-              </p>
-            ) : (
-              <ul className="divide-y divide-tc-border">
-                {data.items.map(item => (
-                  <li
-                    key={item.id}
-                    className={[
-                      'grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(0,1fr)_5rem_6rem_6rem_4rem_5rem_8rem] items-center hover:bg-tc-surface transition-colors',
-                      !item.isActive ? 'opacity-60' : '',
-                    ].join(' ')}
-                  >
-                    <div className="min-w-0 px-3 py-3 md:px-4">
-                      <p className="text-sm font-medium text-tc-text truncate">{item.name}</p>
-                      {!item.isActive && (
-                        <span className="text-[10px] font-bold tracking-wider text-tc-text-muted uppercase">Inactivo</span>
-                      )}
-                      {/* Móvil: tipo, precio y stock debajo del nombre */}
-                      <p className="mt-0.5 text-xs text-tc-text-secondary md:hidden">
-                        {KIND_LABELS[item.kind]} · <span className="tabular-nums text-tc-purple">{fmtARS(item.netPrice)}</span>
-                        {item.trackStock && (
-                          <span className={item.isLowStock ? ' font-semibold text-amber-600' : ''}>
-                            {' '}· Stock {item.stockQty}{item.isLowStock ? ' ▼' : ''}
-                          </span>
-                        )}
-                      </p>
-                    </div>
-
-                    <div className="hidden md:block px-4 py-3">
-                      <span className="text-xs text-tc-text-secondary">{KIND_LABELS[item.kind]}</span>
-                    </div>
-
-                    <div className="hidden md:block px-4 py-3">
-                      <span className="font-mono text-xs text-tc-text-muted">{item.sku ?? '—'}</span>
-                    </div>
-
-                    <div className="hidden md:block px-4 py-3 text-right">
-                      <span className="tabular-nums text-sm text-tc-purple">{fmtARS(item.netPrice)}</span>
-                    </div>
-
-                    <div className="hidden md:block px-4 py-3 text-right">
-                      <span className="text-xs text-tc-text-secondary">{item.vatRate}%</span>
-                    </div>
-
-                    <div className="hidden md:block px-4 py-3 text-right">
-                      {item.trackStock ? (
-                        <span className={['tabular-nums text-sm', item.isLowStock ? 'font-semibold text-amber-600' : 'text-tc-text-secondary'].join(' ')}>
-                          {item.stockQty}
-                          {item.isLowStock && <span className="ml-0.5 text-[10px]">▼</span>}
-                        </span>
-                      ) : (
-                        <span className="text-tc-text-muted">—</span>
-                      )}
-                    </div>
-
-                    <div className="flex h-full items-stretch justify-center border-l border-tc-border bg-tc-stub-bg">
-                      {item.trackStock && item.isActive && (
-                        <button
-                          onClick={() => setAdjusting(item)}
-                          className="min-h-[44px] px-3 text-[11px] font-bold tracking-wider uppercase text-amber-600 hover:text-amber-800 transition-colors"
-                        >
-                          Stock
-                        </button>
-                      )}
-                      <button
-                        onClick={() => setEditing(item)}
-                        className="min-h-[44px] px-3 text-[11px] font-bold tracking-wider uppercase text-tc-navy-text-dim hover:text-tc-purple transition-colors"
-                      >
-                        Editar
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+      <DataTable<CatalogItemListDto>
+        label="Catálogo"
+        columns={COLUMNS}
+        rows={data?.items ?? []}
+        getRowId={i => i.id}
+        rowClassName={i => (!i.isActive ? 'opacity-60' : undefined)}
+        actions={i => (
+          <>
+            {i.trackStock && i.isActive && (
+              <RowAction tone="warn" onClick={() => setAdjusting(i)}>Stock</RowAction>
             )}
-          </div>
+            <RowAction onClick={() => setEditing(i)}>Editar</RowAction>
+          </>
+        )}
+        renderCard={i => (
+          <>
+            <p className="truncate text-sm font-medium text-tc-text">{i.name}</p>
+            {!i.isActive && <span className="text-[10px] font-bold tracking-wider text-tc-text-muted uppercase">Inactivo</span>}
+            <p className="mt-0.5 text-xs text-tc-text-secondary">
+              {KIND_LABELS[i.kind]} · <span className="tabular-nums text-tc-purple">{fmtARS(i.netPrice)}</span>
+              {i.trackStock && (
+                <span className={i.isLowStock ? 'font-semibold text-amber-600' : ''}>
+                  {' '}· Stock {i.stockQty}{i.isLowStock ? ' ▼' : ''}
+                </span>
+              )}
+            </p>
+          </>
+        )}
+        loading={isLoading}
+        error={!!error}
+        onRetry={() => refetch()}
+        emptyMessage={`No hay ítems${search ? ' para esa búsqueda' : ''}.`}
+      />
 
-          {data.total > data.pageSize && (
-            <div className="flex items-center justify-between text-sm text-tc-text-secondary">
-              <span className="tabular-nums">{data.total} ítems</span>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setPage(p => p - 1)}
-                  disabled={page === 1}
-                  className="border border-tc-border px-3 py-1 text-xs hover:bg-tc-surface disabled:opacity-40 transition-colors"
-                >
-                  Anterior
-                </button>
-                <span className="px-2 text-xs tabular-nums">Pág. {page}</span>
-                <button
-                  onClick={() => setPage(p => p + 1)}
-                  disabled={page * data.pageSize >= data.total}
-                  className="border border-tc-border px-3 py-1 text-xs hover:bg-tc-surface disabled:opacity-40 transition-colors"
-                >
-                  Siguiente
-                </button>
-              </div>
-            </div>
-          )}
-        </>
-      )}
+      {data && <Pagination page={page} pageSize={data.pageSize} total={data.total} noun="ítems" onPage={setPage} />}
 
-      {creating && (
-        <CatalogFormModal onSuccess={handleSuccess} onClose={() => setCreating(false)} />
-      )}
+      {creating && <CatalogFormModal onSuccess={handleSuccess} onClose={() => setCreating(false)} />}
       {editing && editItem && (
         <CatalogFormModal item={editItem} onSuccess={handleSuccess} onClose={() => setEditing(null)} />
       )}

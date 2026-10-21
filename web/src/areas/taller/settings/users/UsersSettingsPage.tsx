@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { usersApi, type MemberDto, type UpdateMembershipRequest, type TenantRole, type MembershipStatus } from '../../../../lib/api/users'
 import { Button } from '../../../../components/ui/Button'
 import { StatusBadge } from '../../../../components/ui/StatusBadge'
+import { DataTable, RowAction, type DataTableColumn } from '../../../../components/ui/DataTable'
 import { ApiError } from '../../../../lib/api/client'
 import { InviteMemberModal } from './InviteMemberModal'
 import { EditMemberModal } from './EditMemberModal'
@@ -18,6 +19,21 @@ const STATUS_LABEL: Record<MembershipStatus, string> = {
   active: 'Activo',
   inactive: 'Inactivo',
 }
+
+const COLUMNS: DataTableColumn<MemberDto>[] = [
+  { key: 'name', header: 'Nombre', sortable: true, sortValue: m => m.displayName, cell: m => <span className="font-medium text-tc-text">{m.displayName}</span> },
+  { key: 'email', header: 'Email', sortable: true, sortValue: m => m.email, cell: m => <span className="text-xs text-tc-text-secondary">{m.email}</span> },
+  { key: 'role', header: 'Rol', widthClass: 'w-44', sortable: true, sortValue: m => ROLE_LABEL[m.role], cell: m => <span className="text-xs font-medium text-tc-text-secondary">{ROLE_LABEL[m.role]}</span> },
+  {
+    key: 'status',
+    header: 'Estado',
+    align: 'center',
+    widthClass: 'w-40',
+    sortable: true,
+    sortValue: m => m.status,
+    cell: m => <StatusBadge status={m.status} label={STATUS_LABEL[m.status]} />,
+  },
+]
 
 export function UsersSettingsPage() {
   const queryClient = useQueryClient()
@@ -60,41 +76,24 @@ export function UsersSettingsPage() {
         <Button size="sm" onClick={() => setInviting(true)}>Invitar usuario</Button>
       </div>
 
-      <div className="border border-tc-border bg-white overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-tc-stub-bg border-b border-tc-border">
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nombre</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden sm:table-cell">Email</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Rol</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
-              <th className="px-4 py-2" />
-            </tr>
-          </thead>
-          <tbody>
-            {members.map((m) => (
-              <tr key={m.membershipId} className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-                <td className="px-4 py-2.5 font-medium text-tc-text">{m.displayName}</td>
-                <td className="px-4 py-2.5 text-tc-text-secondary text-xs hidden sm:table-cell">{m.email}</td>
-                <td className="px-4 py-2.5 text-tc-text-secondary text-xs font-medium">{ROLE_LABEL[m.role]}</td>
-                <td className="px-4 py-2.5">
-                  <StatusBadge status={m.status} label={STATUS_LABEL[m.status]} />
-                </td>
-                <td className="px-4 py-2.5 text-right">
-                  {m.userId !== me?.user.id && (
-                    <button
-                      onClick={() => setEditing(m)}
-                      className="text-xs text-tc-purple hover:opacity-70"
-                    >
-                      Editar
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable<MemberDto>
+        label="Usuarios del taller"
+        columns={COLUMNS}
+        rows={members}
+        getRowId={m => m.membershipId}
+        actions={m => (m.userId !== me?.user.id ? <RowAction tone="purple" onClick={() => setEditing(m)}>Editar</RowAction> : null)}
+        renderCard={m => (
+          <>
+            <p className="truncate text-sm font-medium text-tc-text">{m.displayName}</p>
+            <p className="truncate text-xs text-tc-text-secondary">{m.email}</p>
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <StatusBadge status={m.status} label={STATUS_LABEL[m.status]} />
+              <span className="text-xs font-medium text-tc-text-secondary">{ROLE_LABEL[m.role]}</span>
+            </div>
+          </>
+        )}
+        emptyMessage="No hay usuarios."
+      />
 
       {editing && (
         <EditMemberModal

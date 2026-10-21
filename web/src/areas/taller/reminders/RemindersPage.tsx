@@ -2,8 +2,61 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { remindersApi, getReminderKindLabel, type ReminderListDto } from '../../../lib/api/reminders'
 import { Button } from '../../../components/ui/Button'
+import { DataTable, RowAction, sortableWhen, type DataTableColumn } from '../../../components/ui/DataTable'
+import { Pagination } from '../../../components/ui/Pagination'
 import { ReminderFormModal } from './ReminderFormModal'
 import { notify } from '../../../components/ui/dialogs'
+
+const dueSoon = (r: ReminderListDto) =>
+  r.dueDate ? new Date(r.dueDate) <= new Date(Date.now() + 7 * 86400000) : false
+
+const dash = <span className="text-tc-text-muted">—</span>
+
+const COLUMNS: DataTableColumn<ReminderListDto>[] = [
+  {
+    key: 'plate',
+    header: 'Vehículo',
+    widthClass: 'w-32',
+    sortable: true,
+    sortValue: r => r.vehiclePlate,
+    cell: r => <span className="font-mono tracking-widest text-tc-text">{r.vehiclePlate}</span>,
+  },
+  { key: 'kind', header: 'Tipo', widthClass: 'w-40', cell: r => <span className="text-xs text-tc-text-secondary">{getReminderKindLabel(r.kind)}</span> },
+  {
+    key: 'title',
+    header: 'Título',
+    cell: r => (
+      <>
+        {dueSoon(r) && (
+          <span className="mr-1.5 inline-block rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-amber-700">
+            Próximo
+          </span>
+        )}
+        <span className="text-tc-text">{r.title}</span>
+      </>
+    ),
+  },
+  {
+    key: 'due',
+    header: 'Fecha límite',
+    widthClass: 'w-36',
+    sortable: true,
+    sortValue: r => r.dueDate ?? '9999',
+    cell: r => <span className="tabular-nums text-tc-text-secondary">{r.dueDate ? new Date(r.dueDate).toLocaleDateString('es-AR') : dash}</span>,
+  },
+  {
+    key: 'km',
+    header: 'Km límite',
+    widthClass: 'w-32',
+    cell: r => <span className="tabular-nums text-tc-text-secondary">{r.dueKm != null ? `${r.dueKm.toLocaleString('es-AR')} km` : dash}</span>,
+  },
+  {
+    key: 'notified',
+    header: 'Último aviso',
+    widthClass: 'w-36',
+    cell: r => <span className="tabular-nums text-tc-text-secondary">{r.lastNotifiedAt ? new Date(r.lastNotifiedAt).toLocaleDateString('es-AR') : dash}</span>,
+  },
+]
 
 export function RemindersPage() {
   const qc = useQueryClient()
@@ -35,7 +88,6 @@ export function RemindersPage() {
     onError: (e: Error) => setError(e.message),
   })
 
-  const totalPages = data ? Math.ceil(data.total / data.pageSize) : 1
 
   return (
     <div className="space-y-4">
@@ -63,65 +115,38 @@ export function RemindersPage() {
         </div>
       )}
 
-      <div className="border border-tc-border bg-white overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead>
-            <tr className="bg-tc-stub-bg border-b border-tc-border">
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Vehículo</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden sm:table-cell">Tipo</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Título</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden sm:table-cell">Fecha límite</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden md:table-cell">Km límite</th>
-              <th className="px-4 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted hidden md:table-cell">Último aviso</th>
-              <th className="px-4 py-2" />
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading && (
-              <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-sm text-tc-text-muted">Cargando…</td>
-              </tr>
-            )}
-            {data?.items.map((r) => (
-              <ReminderRow
-                key={r.id}
-                reminder={r}
-                onEdit={() => { setEditId(r.id); setShowModal(true) }}
-                onDelete={() => deleteMut.mutate(r.id)}
-              />
-            ))}
-            {data?.items.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-sm text-tc-text-muted">
-                  No hay recordatorios.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <DataTable<ReminderListDto>
+        label="Recordatorios"
+        columns={sortableWhen(COLUMNS, (data?.total ?? 0) <= (data?.pageSize ?? 25))}
+        rows={data?.items ?? []}
+        getRowId={r => r.id}
+        actions={r => (
+          <>
+            <RowAction tone="purple" onClick={() => { setEditId(r.id); setShowModal(true) }}>Editar</RowAction>
+            <RowAction tone="danger" onClick={() => deleteMut.mutate(r.id)}>Eliminar</RowAction>
+          </>
+        )}
+        renderCard={r => (
+          <>
+            <div className="flex flex-wrap items-center gap-x-2">
+              <span className="font-mono text-sm tracking-widest text-tc-text">{r.vehiclePlate}</span>
+              {dueSoon(r) && (
+                <span className="rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-amber-700">Próximo</span>
+              )}
+            </div>
+            <p className="text-sm text-tc-text">{r.title}</p>
+            <p className="text-xs text-tc-text-secondary">
+              {getReminderKindLabel(r.kind)}
+              {r.dueDate && ` · vence ${new Date(r.dueDate).toLocaleDateString('es-AR')}`}
+              {r.dueKm != null && ` · ${r.dueKm.toLocaleString('es-AR')} km`}
+            </p>
+          </>
+        )}
+        loading={isLoading}
+        emptyMessage="No hay recordatorios."
+      />
 
-      {data && data.total > data.pageSize && (
-        <div className="flex items-center gap-1 text-sm">
-          <button
-            className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
-            disabled={page === 1}
-            onClick={() => setPage((p) => p - 1)}
-          >
-            ← Anterior
-          </button>
-          <span className="border border-tc-border bg-tc-stub-bg px-3 py-1 text-xs tabular-nums">
-            {page} / {totalPages}
-          </span>
-          <button
-            className="border border-tc-border bg-white px-3 py-1 text-xs disabled:opacity-40 hover:bg-tc-surface"
-            disabled={page >= totalPages}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            Siguiente →
-          </button>
-        </div>
-      )}
+      {data && <Pagination page={page} pageSize={data.pageSize} total={data.total} noun="recordatorios" onPage={setPage} />}
 
       {showModal && (
         <ReminderFormModal
@@ -131,55 +156,5 @@ export function RemindersPage() {
         />
       )}
     </div>
-  )
-}
-
-function ReminderRow({
-  reminder,
-  onEdit,
-  onDelete,
-}: {
-  reminder: ReminderListDto
-  onEdit: () => void
-  onDelete: () => void
-}) {
-  const isDueSoon = reminder.dueDate
-    ? new Date(reminder.dueDate) <= new Date(Date.now() + 7 * 86400000)
-    : false
-
-  return (
-    <tr className="border-b border-tc-border last:border-0 hover:bg-tc-surface">
-      <td className="px-4 py-2.5 font-mono tracking-widest text-sm text-tc-text">{reminder.vehiclePlate}</td>
-      <td className="px-4 py-2.5 text-tc-text-secondary text-xs hidden sm:table-cell">{getReminderKindLabel(reminder.kind)}</td>
-      <td className="px-4 py-2.5">
-        {isDueSoon && (
-          <span className="mr-1.5 inline-block border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-amber-700">
-            Próximo
-          </span>
-        )}
-        <span className="text-sm text-tc-text">{reminder.title}</span>
-      </td>
-      <td className="px-4 py-2.5 text-sm text-tc-text-secondary tabular-nums hidden sm:table-cell">
-        {reminder.dueDate
-          ? new Date(reminder.dueDate).toLocaleDateString('es-AR')
-          : <span className="text-tc-text-muted">—</span>}
-      </td>
-      <td className="px-4 py-2.5 text-sm text-tc-text-secondary tabular-nums hidden md:table-cell">
-        {reminder.dueKm != null
-          ? `${reminder.dueKm.toLocaleString('es-AR')} km`
-          : <span className="text-tc-text-muted">—</span>}
-      </td>
-      <td className="px-4 py-2.5 text-sm text-tc-text-secondary tabular-nums hidden md:table-cell">
-        {reminder.lastNotifiedAt
-          ? new Date(reminder.lastNotifiedAt).toLocaleDateString('es-AR')
-          : <span className="text-tc-text-muted">—</span>}
-      </td>
-      <td className="px-4 py-2.5 text-right">
-        <div className="flex items-center justify-end gap-3 text-xs">
-          <button className="text-tc-purple hover:opacity-70" onClick={onEdit}>Editar</button>
-          <button className="text-tc-stamp-red hover:opacity-70" onClick={onDelete}>Eliminar</button>
-        </div>
-      </td>
-    </tr>
   )
 }
