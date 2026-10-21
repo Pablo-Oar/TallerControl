@@ -75,6 +75,7 @@ public sealed class UpdateWorkOrderHandler
         foreach (var item in existingItems)
         {
             var (catalogItemId, kind, qty) = order.RemoveItem(item.Id);
+            _woRepo.DeleteItem(item);
 
             if (catalogItemId.HasValue && kind == WorkOrderItemKind.Product)
             {
@@ -125,6 +126,11 @@ public sealed class UpdateWorkOrderHandler
                 stockMovements.Add((movement, catalogItem));
             }
         }
+
+        // El total nunca puede quedar por debajo de lo ya cobrado: dejaría un saldo negativo.
+        if (order.Total < order.PaidAmount)
+            throw new BusinessRuleException(
+                "El total de la orden no puede quedar por debajo de lo ya cobrado. Anulá el cobro o dejá un total mayor.");
 
         foreach (var (movement, _) in stockMovements)
             await _catalogRepo.AddMovementAsync(movement, ct);

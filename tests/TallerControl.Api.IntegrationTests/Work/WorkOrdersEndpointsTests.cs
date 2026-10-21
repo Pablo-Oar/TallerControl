@@ -332,6 +332,56 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
 
     // ── T-WO-05: GET /work-orders/{id} respeta visibilidad del mecánico ────────
 
+    [Fact(DisplayName = "T-WO-16: Editar una orden no puede dejar el total por debajo de lo ya cobrado → 422")]
+    public async Task Editar_orden_no_deja_total_menor_a_lo_cobrado()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+
+        object[] items = { new { kind = "service", description = "Trabajo grande", quantity = 1m, unitNetPrice = 10_000m, vatRate = 21m } };
+        var order = await CreateOrderAsync(client, items: items);
+        var id = order.GetProperty("id").GetGuid();
+
+        // Cobra 5.000 de los 12.100.
+        var payCsrf = await FetchCsrfAsync(client);
+        var pay = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/work-orders/{id}/payments")
+        {
+            Content = JsonContent.Create(new { method = "cash", amount = 5_000m }),
+        };
+        pay.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, payCsrf);
+        (await client.SendAsync(pay)).EnsureSuccessStatusCode();
+
+        var current = await client.GetFromJsonAsync<JsonElement>($"/api/v1/work-orders/{id}");
+        var version = current.GetProperty("version").GetUInt32();
+
+        async Task<HttpStatusCode> PutAsync(decimal price, uint v)
+        {
+            var csrf = await FetchCsrfAsync(client);
+            var req = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/work-orders/{id}")
+            {
+                Content = JsonContent.Create(new
+                {
+                    odometerKm = 100,
+                    fuelLevel = (int?)null,
+                    reportedIssue = (string?)null,
+                    internalNotes = (string?)null,
+                    priority = "normal",
+                    assignedMechanicId = (Guid?)null,
+                    items = new object[] { new { kind = "service", description = "Trabajo chico", quantity = 1m, unitNetPrice = price, vatRate = 21m } },
+                }),
+            };
+            req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+            req.Headers.TryAddWithoutValidation("If-Match", $"\"{v}\"");
+            return (await client.SendAsync(req)).StatusCode;
+        }
+
+        // 1.000 + IVA = 1.210 < 5.000 cobrados.
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, await PutAsync(1_000m, version));
+        // 8.000 + IVA = 9.680 ≥ 5.000: se puede.
+        var fresh = (await client.GetFromJsonAsync<JsonElement>($"/api/v1/work-orders/{id}")).GetProperty("version").GetUInt32();
+        Assert.Equal(HttpStatusCode.OK, await PutAsync(8_000m, fresh));
+    }
+
     [Fact(DisplayName = "T-WO-05: Mecánico NO puede ver una orden asignada a otro rol → 404")]
     public async Task Mecanico_no_puede_ver_orden_asignada_a_otro()
     {

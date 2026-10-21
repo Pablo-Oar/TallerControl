@@ -21,6 +21,13 @@ public sealed class UpdateQuoteHandler
         if (quote.Version != xmin)
             throw new ConcurrencyException();
 
+        // Los renglones de un presupuesto que ya tuvo respuestas del cliente están referenciados por ellas.
+        if (quote.Responses.Count > 0 && quote.Items.Count > 0)
+            throw new ConflictException(
+                "Este presupuesto ya tuvo respuestas del cliente: no se pueden reemplazar sus renglones. Cancelalo y creá uno nuevo.");
+
+        var replaced = quote.Items.ToList();
+
         var items = request.Items
             .Select((r, idx) => new QuoteItem(
                 quote.TenantId, id,
@@ -47,6 +54,9 @@ public sealed class UpdateQuoteHandler
         {
             throw new BusinessRuleException(ex.Message);
         }
+
+        foreach (var item in replaced)
+            _repo.DeleteItem(item);
 
         await _repo.SaveChangesAsync(ct);
 
