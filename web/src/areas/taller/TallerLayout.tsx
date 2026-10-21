@@ -182,7 +182,7 @@ export function TallerLayout({ children }: { children: ReactNode }) {
             sidebarOpen ? 'translate-x-0' : '-translate-x-full',
           ].join(' ')}
         >
-          <nav className="flex flex-col gap-6 py-5 px-2">
+          <nav className="flex flex-col gap-6 py-5 px-2" onClick={() => setSidebarOpen(false)}>
             {NAV_GROUPS.map(group => {
               if (!groupVisible(group)) return null
 
