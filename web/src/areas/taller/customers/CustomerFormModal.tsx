@@ -7,6 +7,7 @@ import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { EditDialog } from '../../../components/ui/EditDialog'
 import { ApiError } from '../../../lib/api/client'
+import { useCan } from '../../../lib/auth/permissions'
 
 const VAT_OPTIONS: { value: VatCondition; label: string }[] = [
   { value: 'consumidor_final', label: 'Consumidor Final' },
@@ -60,6 +61,7 @@ interface Props {
 }
 
 export function CustomerFormModal({ customer, onSuccess, onClose, onDelete }: Props) {
+  const can = useCan()
   const [serverError, setServerError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [deleteReason, setDeleteReason] = useState('')
@@ -106,7 +108,7 @@ export function CustomerFormModal({ customer, onSuccess, onClose, onDelete }: Pr
       error={serverError}
       requireChanges={isEdit}
       footerStart={
-        isEdit && onDelete && !deleting ? (
+        isEdit && onDelete && !deleting && can('customers.delete') ? (
           <Button type="button" variant="danger" size="sm" onClick={() => setDeleting(true)}>
             Eliminar
           </Button>

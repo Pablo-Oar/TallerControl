@@ -20,6 +20,7 @@ import { DataTable, RowAction, RowActionLink, type DataTableColumn } from '../..
 import { Pagination } from '../../../components/ui/Pagination'
 import { QrScannerModal } from './QrScannerModal'
 import { inputCls } from '../../../lib/styles'
+import { useCan } from '../../../lib/auth/permissions'
 
 const STATUS_LABELS: Record<QrCardStatus, string> = {
   free: 'Libre',
@@ -66,6 +67,7 @@ const COLUMNS: DataTableColumn<QrCardListDto>[] = [
 
 export function QrCardsPage() {
   const qc = useQueryClient()
+  const can = useCan()
   const [statusFilter, setStatusFilter] = useState<QrCardStatus | ''>('')
   const [q, setQ] = useState('')
   const [page, setPage] = useState(1)
@@ -194,7 +196,7 @@ export function QrCardsPage() {
                 <RowAction onClick={() => unassignMut.mutate(c.id)}>Desasignar</RowAction>
               </>
             )}
-            {c.status !== 'revoked' && (
+            {c.status !== 'revoked' && can('qr.revoke') && (
               <RowAction tone="danger" onClick={() => setRevokeCardId(c.id)}>Revocar</RowAction>
             )}
           </>

@@ -130,6 +130,8 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
             placeholder="ABC123"
             inputClassName="font-mono tracking-widest uppercase"
             error={errors.plate?.message}
+            disabled={isEdit}
+            hint={isEdit ? 'No se puede cambiar. Si te equivocaste, eliminá el vehículo y creá otro.' : undefined}
             {...register('plate')}
             onChange={e => setValue('plate', e.target.value.toUpperCase().replace(/[\s-]/g, ''))}
           />
@@ -137,6 +139,7 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
           <CustomerPicker
             value={watch('customerId') ?? ''}
             requiredMark
+            disabled={isEdit}
             error={errors.customerId?.message}
             onChange={id => setValue('customerId', id, { shouldValidate: !!id, shouldDirty: true })}
           />

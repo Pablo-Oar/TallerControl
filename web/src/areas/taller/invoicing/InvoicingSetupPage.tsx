@@ -15,6 +15,7 @@ import { InvoicingTabs } from './InvoicingTabs'
 import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
+import { useCan } from '../../../lib/auth/permissions'
 
 
 export function InvoicingSetupPage() {
@@ -61,6 +62,7 @@ function CertificatesSection({
   loading: boolean
   onUpdated: () => void
 }) {
+  const canConfigure = useCan()('invoicing.write')
   const [showForm, setShowForm] = useState(false)
   const [cuit, setCuit] = useState('')
   const [name, setName] = useState('')
@@ -144,7 +146,7 @@ function CertificatesSection({
       <div className="border border-tc-border bg-white overflow-hidden">
         <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2 flex items-center justify-between">
           <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Certificados ARCA</span>
-          {certs.length < 3 && (
+          {certs.length < 3 && canConfigure && (
             <Button size="sm" onClick={() => setShowForm(true)}>
               Nuevo certificado
             </Button>
@@ -185,7 +187,7 @@ function CertificatesSection({
                         {cert.status === 'active' ? 'Activo' : cert.status === 'pending' ? 'Pendiente' : 'Inactivo'}
                       </span>
                     </div>
-                    {cert.status === 'pending' && (
+                    {cert.status === 'pending' && canConfigure && (
                       <Button size="sm" variant="secondary" onClick={() => setUploadId(cert.id)}>
                         Subir cert.
                       </Button>
@@ -354,6 +356,7 @@ function PointsOfSaleSection({
   loading: boolean
   onUpdated: () => void
 }) {
+  const canConfigure = useCan()('invoicing.write')
   const [showForm, setShowForm] = useState(false)
   const [certId, setCertId] = useState('')
   const [number, setNumber] = useState('')
@@ -383,9 +386,11 @@ function PointsOfSaleSection({
     <div className="border border-tc-border bg-white overflow-hidden">
       <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2 flex items-center justify-between">
         <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Puntos de Venta</span>
-        <Button size="sm" onClick={() => setShowForm(true)}>
-          Nuevo punto de venta
-        </Button>
+        {canConfigure && (
+          <Button size="sm" onClick={() => setShowForm(true)}>
+            Nuevo punto de venta
+          </Button>
+        )}
       </div>
 
       <div className="p-4">
