@@ -8,7 +8,8 @@ public sealed record CustomerListDto(
     string Name,
     string? Phone,
     string? DocNumber,
-    decimal Balance);
+    decimal Balance,
+    bool IsDeleted = false);
 
 /// <summary>Respuesta de <c>GET /api/v1/customers/{id}</c> (doc 05 §2.3, T-CUS-05).</summary>
 public sealed record CustomerDto(

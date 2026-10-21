@@ -19,9 +19,12 @@ internal sealed class EfCustomerRepository : ICustomerRepository
         _tenantContext = tenantContext;
     }
 
-    public async Task<Page<CustomerListDto>> SearchAsync(string? q, int page, int pageSize, SortSpec sort, CancellationToken ct)
+    public async Task<Page<CustomerListDto>> SearchAsync(string? q, int page, int pageSize, SortSpec sort, bool includeDeleted, CancellationToken ct)
     {
-        var query = _db.Set<Customer>().AsNoTracking();
+        // Con includeDeleted se salta el filtro global (que también oculta los borrados) y se reaplica el de taller a mano.
+        var query = includeDeleted
+            ? _db.Set<Customer>().AsNoTracking().IgnoreQueryFilters().Where(c => c.TenantId == _tenantContext.TenantId)
+            : _db.Set<Customer>().AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(q))
         {
@@ -59,7 +62,8 @@ internal sealed class EfCustomerRepository : ICustomerRepository
                 // la misma que usan el dashboard y los reportes).
                 _db.Set<WorkOrder>()
                     .Where(w => w.CustomerId == c.Id && w.Status != WorkOrderStatus.Cancelled)
-                    .Sum(w => w.Total - w.PaidAmount)))
+                    .Sum(w => w.Total - w.PaidAmount),
+                c.DeletedAt != null))
             .ToListAsync(ct);
 
         return new Page<CustomerListDto>(items, page, pageSize, total);

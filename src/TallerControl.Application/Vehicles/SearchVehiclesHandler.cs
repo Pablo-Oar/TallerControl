@@ -9,10 +9,10 @@ public sealed class SearchVehiclesHandler
 
     public SearchVehiclesHandler(IVehicleRepository repo) => _repo = repo;
 
-    public Task<Page<VehicleListDto>> HandleAsync(string? q, int page, int pageSize, SortSpec sort, CancellationToken ct)
+    public Task<Page<VehicleListDto>> HandleAsync(string? q, int page, int pageSize, SortSpec sort, bool includeDeleted, CancellationToken ct)
     {
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 1, 100);
-        return _repo.SearchAsync(q, page, pageSize, sort, ct);
+        return _repo.SearchAsync(q, page, pageSize, sort, includeDeleted, ct);
     }
 }

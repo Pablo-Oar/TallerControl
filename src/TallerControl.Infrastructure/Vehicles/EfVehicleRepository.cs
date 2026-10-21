@@ -12,17 +12,28 @@ namespace TallerControl.Infrastructure.Vehicles;
 internal sealed class EfVehicleRepository : IVehicleRepository
 {
     private readonly AppDbContext _db;
+    private readonly ITenantContext _tenantContext;
 
-    public EfVehicleRepository(AppDbContext db) => _db = db;
-
-    public async Task<Page<VehicleListDto>> SearchAsync(string? q, int page, int pageSize, SortSpec sort, CancellationToken ct)
+    public EfVehicleRepository(AppDbContext db, ITenantContext tenantContext)
     {
-        var query = _db.Set<Vehicle>()
-            .AsNoTracking()
-            .Join(_db.Set<Customer>().AsNoTracking(),
-                v => v.CustomerId,
-                c => c.Id,
-                (v, c) => new { Vehicle = v, CustomerName = c.Name });
+        _db = db;
+        _tenantContext = tenantContext;
+    }
+
+    public async Task<Page<VehicleListDto>> SearchAsync(string? q, int page, int pageSize, SortSpec sort, bool includeDeleted, CancellationToken ct)
+    {
+        // Con includeDeleted se salta el filtro global (que también oculta los borrados) y se reaplica el de taller a mano.
+        var vehicles = includeDeleted
+            ? _db.Set<Vehicle>().AsNoTracking().IgnoreQueryFilters().Where(v => v.TenantId == _tenantContext.TenantId)
+            : _db.Set<Vehicle>().AsNoTracking();
+        var customers = includeDeleted
+            ? _db.Set<Customer>().AsNoTracking().IgnoreQueryFilters().Where(c => c.TenantId == _tenantContext.TenantId)
+            : _db.Set<Customer>().AsNoTracking();
+
+        var query = vehicles.Join(customers,
+            v => v.CustomerId,
+            c => c.Id,
+            (v, c) => new { Vehicle = v, CustomerName = c.Name });
 
         if (!string.IsNullOrWhiteSpace(q))
         {
@@ -58,7 +69,8 @@ internal sealed class EfVehicleRepository : IVehicleRepository
                 x.Vehicle.Brand,
                 x.Vehicle.Model,
                 x.Vehicle.Year,
-                x.CustomerName))
+                x.CustomerName,
+                x.Vehicle.DeletedAt != null))
             .ToListAsync(ct);
 
         return new Page<VehicleListDto>(items, page, pageSize, total);

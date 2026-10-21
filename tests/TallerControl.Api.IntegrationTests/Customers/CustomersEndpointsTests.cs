@@ -364,4 +364,24 @@ public sealed class CustomersEndpointsTests : IAsyncLifetime
         var balance = await client.GetAsync("/api/v1/customers?sort=balance&dir=desc");
         Assert.Equal(HttpStatusCode.OK, balance.StatusCode);
     }
+
+    [Fact(DisplayName = "T-CUS-10: includeDeleted lista también los clientes borrados, marcados isDeleted")]
+    public async Task Listado_con_includeDeleted_incluye_borrados()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CustomersVehiclesWebApplicationFactory.OwnerEmail,
+            CustomersVehiclesWebApplicationFactory.OwnerPassword);
+
+        var name = $"Borrado {Guid.NewGuid():N}";
+        var created = await (await PostCustomerAsync(client, name)).Content.ReadFromJsonAsync<JsonElement>();
+        var id = created.GetProperty("id").GetGuid();
+        Assert.Equal(HttpStatusCode.NoContent, (await DeleteCustomerAsync(client, id, "Prueba includeDeleted")).StatusCode);
+
+        var plain = await client.GetFromJsonAsync<JsonElement>($"/api/v1/customers?q={name}");
+        Assert.Empty(plain.GetProperty("items").EnumerateArray());
+
+        var all = await client.GetFromJsonAsync<JsonElement>($"/api/v1/customers?q={name}&includeDeleted=true");
+        var item = Assert.Single(all.GetProperty("items").EnumerateArray());
+        Assert.True(item.GetProperty("isDeleted").GetBoolean());
+    }
 }

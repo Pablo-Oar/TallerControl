@@ -7,7 +7,8 @@ public sealed record VehicleListDto(
     string? Brand,
     string? Model,
     int? Year,
-    string CustomerName);
+    string CustomerName,
+    bool IsDeleted = false);
 
 /// <summary>Respuesta de <c>GET /api/v1/vehicles/{id}</c> (doc 05 §2.3, T-VEH-05).</summary>
 public sealed record VehicleDto(
