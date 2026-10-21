@@ -256,6 +256,37 @@ public sealed class PaymentsEndpointsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.NotFound, (await anonymous.GetAsync($"/api/public/v1/payments/{firstToken}")).StatusCode);
     }
 
+    // ── F-04: el reporte de ingresos agrupa por día en la zona horaria del taller ──
+
+    [Fact(DisplayName = "T-REP-04: Ingresos cuenta un cobro de las 23:30 (hora local) en ese día y no en el siguiente")]
+    public async Task Reporte_de_ingresos_agrupa_por_dia_local()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, PaymentsWebApplicationFactory.OwnerEmail, PaymentsWebApplicationFactory.Password);
+
+        // 2026-10-20 02:30 UTC = 2026-10-19 23:30 en Buenos Aires (UTC-3).
+        var csrf = await FetchCsrfAsync(client);
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/work-orders/{_factory.WorkOrderId}/payments")
+        {
+            Content = JsonContent.Create(new { method = "cash", amount = 77.77m, paidAt = "2026-10-20T02:30:00Z" }),
+        };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        Assert.Equal(HttpStatusCode.OK, (await client.SendAsync(req)).StatusCode);
+
+        async Task<decimal> DayAmountAsync(string day)
+        {
+            var report = await client.GetFromJsonAsync<JsonElement>($"/api/v1/reports/revenue?from={day}&to={day}");
+            return report.GetProperty("rows").EnumerateArray().Sum(r => r.GetProperty("amount").GetDecimal());
+        }
+
+        Assert.Equal(77.77m, await DayAmountAsync("2026-10-19"));
+        Assert.Equal(0m, await DayAmountAsync("2026-10-20"));
+
+        var full = await client.GetFromJsonAsync<JsonElement>("/api/v1/reports/revenue?from=2026-10-19&to=2026-10-19");
+        Assert.Contains(full.GetProperty("breakdown").EnumerateArray(),
+            b => b.GetProperty("source").GetString() == "cash" && b.GetProperty("amount").GetDecimal() == 77.77m);
+    }
+
     // ── T-PAY-06: anular pago ya anulado ─────────────────────────────────────
 
     [Fact(DisplayName = "T-PAY-06: anular un pago ya anulado devuelve 409")]

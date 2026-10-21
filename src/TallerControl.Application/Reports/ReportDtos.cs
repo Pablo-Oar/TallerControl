@@ -1,7 +1,16 @@
 namespace TallerControl.Application.Reports;
 
+/// <summary>Un día del reporte: cobros de órdenes y ventas de mostrador, en la fecha local del taller.</summary>
 public sealed record RevenueReportRow(DateOnly Date, decimal Amount, int PaymentCount);
-public sealed record RevenueReportDto(IReadOnlyList<RevenueReportRow> Rows, decimal Total, int Count);
+
+/// <summary>Cuánto entró por cada origen: método de pago de las órdenes (<c>cash</c>, <c>transfer</c>…) o <c>counter_sale</c>.</summary>
+public sealed record RevenueBreakdownRow(string Source, decimal Amount, int Count);
+
+public sealed record RevenueReportDto(
+    IReadOnlyList<RevenueReportRow> Rows,
+    decimal Total,
+    int Count,
+    IReadOnlyList<RevenueBreakdownRow>? Breakdown = null);
 
 public sealed record ReceivablesReportRow(
     string WorkOrderId, int WorkOrderNumber, string CustomerName,

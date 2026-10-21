@@ -31,6 +31,14 @@ function downloadExcel(url: string, filename: string) {
   a.click()
 }
 
+const REVENUE_SOURCE_LABEL: Record<string, string> = {
+  cash: 'Efectivo',
+  transfer: 'Transferencia',
+  debit: 'Débito',
+  credit: 'Crédito',
+  counter_sale: 'Ventas de mostrador',
+}
+
 const PURCHASE_STATUS_LABEL: Record<string, string> = {
   draft: 'Borrador',
   confirmed: 'Confirmada',
@@ -98,9 +106,18 @@ export function ReportsPage() {
           exportUrl={reportsApi.exportUrl('revenue', from, to)}
           exportName={`ingresos_${from}_${to}.xlsx`}
           summary={revenueQuery.data
-            ? `Total: ${fmtARS(revenueQuery.data.total)} (${revenueQuery.data.count} cobros)`
+            ? `Total: ${fmtARS(revenueQuery.data.total)} (${revenueQuery.data.count} cobros y ventas)`
             : undefined}
         >
+          {revenueQuery.data && (revenueQuery.data.breakdown?.length ?? 0) > 0 && (
+            <ul className="mb-3 flex flex-wrap gap-2">
+              {revenueQuery.data.breakdown!.map(b => (
+                <li key={b.source} className="rounded-full border border-tc-border bg-tc-surface px-3 py-1 text-xs text-tc-text-secondary">
+                  {REVENUE_SOURCE_LABEL[b.source] ?? b.source}: <b className="tabular-nums text-tc-text">{fmtARS(b.amount)}</b>
+                </li>
+              ))}
+            </ul>
+          )}
           {revenueQuery.data && (
             <DataTable
               label="Ingresos por día"

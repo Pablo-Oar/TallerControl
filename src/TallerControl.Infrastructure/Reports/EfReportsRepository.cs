@@ -1,10 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using TallerControl.Application.Common;
 using TallerControl.Application.Reports;
 using TallerControl.Domain.Catalog;
+using TallerControl.Domain.CounterSales;
 using TallerControl.Domain.Customers;
 using TallerControl.Domain.Payments;
 using TallerControl.Domain.Purchases;
 using TallerControl.Domain.Suppliers;
+using TallerControl.Domain.Tenancy;
 using TallerControl.Domain.Vehicles;
 using TallerControl.Domain.Work;
 using TallerControl.Infrastructure.Persistence;
@@ -14,34 +17,86 @@ namespace TallerControl.Infrastructure.Reports;
 internal sealed class EfReportsRepository : IReportsRepository
 {
     private readonly AppDbContext _db;
+    private readonly ITenantContext _tenantContext;
 
-    public EfReportsRepository(AppDbContext db)
+    public EfReportsRepository(AppDbContext db, ITenantContext tenantContext)
     {
         _db = db;
+        _tenantContext = tenantContext;
+    }
+
+    private async Task<TimeZoneInfo> GetTenantZoneAsync(CancellationToken ct)
+    {
+        var tenantId = _tenantContext.TenantId;
+        var name = await _db.Set<Tenant>()
+            .AsNoTracking()
+            .Where(t => t.Id == tenantId)
+            .Select(t => t.TimeZone)
+            .FirstOrDefaultAsync(ct);
+        try
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(name ?? Tenant.DefaultTimeZone);
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return TimeZoneInfo.Utc;
+        }
+    }
+
+    /// <summary>Rango [desde, hasta+1 día) en UTC para días calendario de la zona horaria del taller.</summary>
+    private static (DateTimeOffset FromUtc, DateTimeOffset ToUtcExclusive) LocalRangeToUtc(DateOnly from, DateOnly to, TimeZoneInfo zone)
+    {
+        DateTimeOffset StartOf(DateOnly d) =>
+            new(TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(d.ToDateTime(TimeOnly.MinValue), DateTimeKind.Unspecified), zone), TimeSpan.Zero);
+        return (StartOf(from), StartOf(to.AddDays(1)));
     }
 
     public async Task<RevenueReportDto> GetRevenueAsync(DateOnly from, DateOnly to, CancellationToken ct)
     {
-        var fromUtc = new DateTimeOffset(from.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-        var toUtc = new DateTimeOffset(to.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        // Los días se arman en la zona horaria del taller: un cobro a las 23:30 (hora local) cuenta ese día,
+        // no el siguiente en UTC.
+        var zone = await GetTenantZoneAsync(ct);
+        var (fromUtc, toUtc) = LocalRangeToUtc(from, to, zone);
 
-        // DateOnly.FromDateTime no es traducible por Npgsql; se agrupa en memoria.
         var payments = await _db.Set<Payment>()
             .AsNoTracking()
-            .Where(p => p.Status == PaymentStatus.Valid
-                     && p.PaidAt >= fromUtc
-                     && p.PaidAt <= toUtc)
-            .Select(p => new { p.PaidAt, p.Amount })
+            .Where(p => p.Status == PaymentStatus.Valid && p.PaidAt >= fromUtc && p.PaidAt < toUtc)
+            .Select(p => new { p.PaidAt, p.Amount, p.Method })
             .ToListAsync(ct);
 
-        var rows = payments
-            .GroupBy(p => DateOnly.FromDateTime(p.PaidAt.UtcDateTime))
-            .Select(g => new RevenueReportRow(g.Key, g.Sum(p => p.Amount), g.Count()))
+        // Las ventas de mostrador confirmadas también son ingresos del taller.
+        var sales = await _db.Set<CounterSale>()
+            .AsNoTracking()
+            .Where(s => s.Status == CounterSaleStatus.Confirmed && s.Date >= fromUtc && s.Date < toUtc)
+            .Select(s => new { s.Date, s.Total })
+            .ToListAsync(ct);
+
+        DateOnly LocalDay(DateTimeOffset at) => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(at, zone).DateTime);
+
+        var entries = payments.Select(p => (Day: LocalDay(p.PaidAt), p.Amount))
+            .Concat(sales.Select(s => (Day: LocalDay(s.Date), Amount: s.Total)))
+            .ToList();
+
+        var rows = entries
+            .GroupBy(e => e.Day)
+            .Select(g => new RevenueReportRow(g.Key, g.Sum(e => e.Amount), g.Count()))
             .OrderBy(r => r.Date)
             .ToList();
 
-        return new RevenueReportDto(rows, rows.Sum(r => r.Amount), rows.Sum(r => r.PaymentCount));
+        var breakdown = payments
+            .GroupBy(p => ToSnake(p.Method.ToString()))
+            .Select(g => new RevenueBreakdownRow(g.Key, g.Sum(p => p.Amount), g.Count()))
+            .Concat(sales.Count > 0
+                ? [new RevenueBreakdownRow("counter_sale", sales.Sum(s => s.Total), sales.Count)]
+                : [])
+            .OrderByDescending(b => b.Amount)
+            .ToList();
+
+        return new RevenueReportDto(rows, rows.Sum(r => r.Amount), rows.Sum(r => r.PaymentCount), breakdown);
     }
+
+    private static string ToSnake(string value) =>
+        string.Concat(value.Select((c, i) => i > 0 && char.IsUpper(c) ? "_" + char.ToLowerInvariant(c) : char.ToLowerInvariant(c).ToString()));
 
     public async Task<ReceivablesReportDto> GetReceivablesAsync(CancellationToken ct)
     {
@@ -116,20 +171,21 @@ internal sealed class EfReportsRepository : IReportsRepository
 
     public async Task<PurchasesReportDto> GetPurchasesAsync(DateOnly from, DateOnly to, CancellationToken ct)
     {
+        // La fecha de factura es un día calendario guardado a medianoche UTC (no depende de la zona horaria).
         var fromUtc = new DateTimeOffset(from.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-        var toUtc = new DateTimeOffset(to.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        var toUtc = new DateTimeOffset(to.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
 
-        // DateOnly.FromDateTime no es traducible por Npgsql; se convierte en memoria.
+        // Solo compras confirmadas: los borradores todavía no son una compra (no movieron stock ni caja).
         var raw = await _db.Set<Purchase>()
             .AsNoTracking()
-            .Where(p => p.CreatedAt >= fromUtc && p.CreatedAt <= toUtc
-                     && p.Status != PurchaseStatus.Cancelled)
+            .Where(p => p.InvoiceDate >= fromUtc && p.InvoiceDate < toUtc
+                     && p.Status == PurchaseStatus.Confirmed)
             .Select(p => new
             {
                 Id = p.Id.ToString(),
                 Number = p.DocumentNumber,
                 p.SupplierId,
-                p.CreatedAt,
+                CreatedAt = p.InvoiceDate,
                 p.Total,
                 Status = p.Status.ToString(),
             })
