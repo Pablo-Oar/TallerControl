@@ -23,8 +23,9 @@ internal static class VehiclesEndpoints
     {
         app.MapGet("/api/v1/vehicles",
                 (SearchVehiclesHandler handler, CancellationToken ct,
-                 string? q = null, int page = 1, int pageSize = 25, string? sort = null, string? dir = null) =>
-                    handler.HandleAsync(q, page, pageSize, SortSpec.Parse(sort, dir), ct))
+                 string? q = null, int page = 1, int pageSize = 25, string? sort = null, string? dir = null,
+                 bool includeDeleted = false) =>
+                    handler.HandleAsync(q, page, pageSize, SortSpec.Parse(sort, dir), includeDeleted, ct))
             .RequirePermission(Permission.VehiclesRead);
 
         app.MapPost("/api/v1/vehicles",

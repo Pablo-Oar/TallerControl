@@ -5,7 +5,7 @@ namespace TallerControl.Application.Customers;
 
 public interface ICustomerRepository
 {
-    Task<Page<CustomerListDto>> SearchAsync(string? q, int page, int pageSize, SortSpec sort, CancellationToken ct);
+    Task<Page<CustomerListDto>> SearchAsync(string? q, int page, int pageSize, SortSpec sort, bool includeDeleted, CancellationToken ct);
 
     Task<CustomerDto?> GetFullAsync(Guid id, CancellationToken ct);
 
