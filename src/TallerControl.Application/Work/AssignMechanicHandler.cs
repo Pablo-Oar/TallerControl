@@ -14,9 +14,12 @@ public sealed class AssignMechanicHandler
     private readonly IWorkOrderRepository _repo;
     private readonly IMembershipRepository _memberships;
     private readonly IActorContext _actorContext;
+    private readonly IOutbox _outbox;
 
-    public AssignMechanicHandler(IWorkOrderRepository repo, IMembershipRepository memberships, IActorContext actorContext)
+    public AssignMechanicHandler(
+        IWorkOrderRepository repo, IMembershipRepository memberships, IActorContext actorContext, IOutbox outbox)
     {
+        _outbox = outbox;
         _repo = repo;
         _memberships = memberships;
         _actorContext = actorContext;
@@ -53,6 +56,17 @@ public sealed class AssignMechanicHandler
         catch (InvalidOperationException ex)
         {
             throw new BusinessRuleException(ex.Message);
+        }
+
+        // Si otro lo asigna (dueño o administrativo), el mecánico recibe un aviso en el celular.
+        if (!isMechanic && mechanicId != actorId)
+        {
+            _outbox.Enqueue("push.work_order_assigned", new
+            {
+                membershipId = mechanicId,
+                orderNumber = order.Number,
+                workOrderId = id,
+            });
         }
 
         await _repo.SaveChangesAsync(ct);

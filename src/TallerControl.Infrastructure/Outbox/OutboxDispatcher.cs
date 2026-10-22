@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TallerControl.Application.Common;
+using TallerControl.Application.Push;
 using TallerControl.Domain.Notifications;
 using TallerControl.Domain.Outbox;
 using TallerControl.Domain.Qr;
@@ -73,6 +74,13 @@ internal sealed class OutboxDispatcher : BackgroundService
         {
             try
             {
+                if (message.Type.StartsWith("push.", StringComparison.Ordinal))
+                {
+                    await DispatchPushAsync(message, db, scope.ServiceProvider.GetRequiredService<IPushSender>(), ct);
+                    message.MarkProcessed(clock.GetUtcNow());
+                    continue;
+                }
+
                 var frontendBase = scope.ServiceProvider.GetRequiredService<IConfiguration>()["App:FrontendBaseUrl"]
                     ?? "http://localhost:5173";
                 foreach (var email in await BuildEmailMessagesAsync(message, db, frontendBase, clock.GetUtcNow(), ct))
@@ -93,6 +101,34 @@ internal sealed class OutboxDispatcher : BackgroundService
 
         await db.SaveChangesAsync(ct);
     }
+
+    /// <summary>Avisos push. Sin push configurado no hace nada; un tipo desconocido falla, igual que con los emails.</summary>
+    private static async Task DispatchPushAsync(OutboxMessage message, AppDbContext db, IPushSender push, CancellationToken ct)
+    {
+        switch (message.Type)
+        {
+            case "push.work_order_assigned":
+                var payload = JsonSerializer.Deserialize<WorkOrderAssignedPayload>(message.PayloadJson);
+                if (payload is null || push.PublicKey is null) return;
+
+                var userId = await db.Set<Membership>()
+                    .IgnoreQueryFilters()
+                    .Where(m => m.Id == payload.MembershipId)
+                    .Select(m => (Guid?)m.UserId)
+                    .FirstOrDefaultAsync(ct);
+                if (userId is null) return;
+
+                await push.SendToUserAsync(
+                    userId.Value,
+                    new PushMessage("Nueva orden asignada", $"Te asignaron la orden N° {payload.OrderNumber}.", $"/m/work-orders/{payload.WorkOrderId}"),
+                    ct);
+                return;
+            default:
+                throw new NotSupportedException($"No hay procesador para el tipo de mensaje '{message.Type}'.");
+        }
+    }
+
+    private sealed record WorkOrderAssignedPayload(Guid MembershipId, int OrderNumber, Guid WorkOrderId);
 
     /// <summary>
     /// Arma los emails de un mensaje (puede ser ninguno, uno o varios). Un tipo desconocido <b>falla</b> en vez de

@@ -282,6 +282,8 @@ public static class DependencyInjection
 
         // ── E13: Push subscriptions (PWA) ─────────────────────────────────────
         services.AddScoped<IPushSubscriptionRepository, EfPushSubscriptionRepository>();
+        services.Configure<PushOptions>(configuration.GetSection(PushOptions.SectionName));
+        services.AddHttpClient<IPushSender, WebPushSender>();
         services.AddScoped<SavePushSubscriptionHandler>();
         services.AddScoped<DeletePushSubscriptionHandler>();
 
