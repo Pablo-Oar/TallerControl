@@ -7,7 +7,8 @@ interface AuthContextValue {
   user: MeResponse | null
   isLoading: boolean
   logout: () => Promise<void>
-  invalidate: () => void
+  /** Pasar el usuario recién obtenido (`me`) evita que el guard vea al usuario anterior mientras se refresca. */
+  invalidate: (me?: MeResponse) => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -36,8 +37,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * obtenido antes de autenticarse deja de valer. Se descarta para pedir uno nuevo en la primera mutación;
    * sin esto la primera acción tras iniciar sesión (sin recargar) fallaba con "cabecera antiforgery inválida".
    */
-  function invalidate() {
+  function invalidate(me?: MeResponse) {
     clearCsrfToken()
+    // Sin esto, entre el login y el refresco de `['me']` el panel seguía con el usuario anterior en memoria
+    // (p. ej. un mecánico) y el guard mandaba al dueño a /m.
+    if (me) queryClient.setQueryData(['me'], me)
     queryClient.invalidateQueries({ queryKey: ['me'] })
   }
 
