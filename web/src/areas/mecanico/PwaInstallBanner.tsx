@@ -31,6 +31,9 @@ async function syncPushSubscription(): Promise<boolean> {
   const key = await api.get<{ publicKey: string }>('/api/v1/push/public-key').catch(() => null)
   if (!key) return false
 
+  // El service worker únicamente se registra en producción: sin registrarlo acá, `ready` no resuelve nunca en un
+  // navegador que no lo tenía (p. ej. Samsung Internet) y la suscripción queda colgada.
+  await navigator.serviceWorker.register('/sw.js').catch(() => null)
   const reg = await navigator.serviceWorker.ready
   const serverKey = urlBase64ToBytes(key.publicKey)
   const subscribe = () => reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: serverKey })

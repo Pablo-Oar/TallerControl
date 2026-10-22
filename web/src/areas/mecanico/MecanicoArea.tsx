@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Route, Routes, useNavigate } from 'react-router'
 import { PlateSearchBar } from '../../components/PlateSearchBar'
 import { PwaInstallBanner } from './PwaInstallBanner'
+import { PushTestButton } from './PushTestButton'
 import { Button } from '../../components/ui/Button'
 import { useAuth } from '../../lib/auth/AuthContext'
 
@@ -44,6 +45,7 @@ export function Component() {
           <Button variant="secondary" size="sm" onClick={handleLogout}>
             Cerrar sesión
           </Button>
+          <PushTestButton />
         </div>
       </main>
     </div>

@@ -723,6 +723,23 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.NotNull(message.ProcessedAt);
     }
 
+    [Fact(DisplayName = "T-PUSH-06: El aviso de prueba informa que el servidor no tiene push configurado")]
+    public async Task Aviso_de_prueba_sin_claves_lo_informa()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
+
+        var csrf = await FetchCsrfAsync(client);
+        var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/push/test") { Content = JsonContent.Create(new { }) };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        var resp = await client.SendAsync(req);
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var body = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.False(body.GetProperty("configured").GetBoolean());
+        Assert.Equal(0, body.GetProperty("delivered").GetInt32());
+    }
+
     [Fact(DisplayName = "T-WO-12: El dueño asigna un mecánico activo del taller; un id ajeno o de otro rol → 422")]
     public async Task Owner_asigna_mecanico_y_valida_el_destinatario()
     {

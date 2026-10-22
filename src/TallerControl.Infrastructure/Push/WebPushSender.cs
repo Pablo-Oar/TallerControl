@@ -61,6 +61,7 @@ internal sealed class WebPushSender : IPushSender
         var body = JsonSerializer.SerializeToUtf8Bytes(new { title = message.Title, body = message.Body, url = message.Url });
         var delivered = 0;
         var failures = new List<string>();
+        var statuses = new List<int>();
 
         foreach (var sub in subscriptions)
         {
@@ -79,6 +80,7 @@ internal sealed class WebPushSender : IPushSender
                     sub.Endpoint, _options.Subject, _options.PublicKey!, _options.PrivateKey!, _clock.GetUtcNow()));
 
                 using var response = await _http.SendAsync(request, ct);
+                statuses.Add((int)response.StatusCode);
                 if (response.IsSuccessStatusCode)
                 {
                     delivered++;
@@ -104,7 +106,7 @@ internal sealed class WebPushSender : IPushSender
             }
         }
 
-        return new PushResult(subscriptions.Count, delivered, failures);
+        return new PushResult(subscriptions.Count, delivered, failures, statuses);
     }
 
     private sealed record SubscriptionRow(string Endpoint, string P256dh, string Auth);
