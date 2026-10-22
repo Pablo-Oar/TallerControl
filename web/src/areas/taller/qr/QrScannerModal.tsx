@@ -48,7 +48,7 @@ export function QrScannerModal({ onClose }: Props) {
           type="text"
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="Ej. ABC12345"
+          placeholder="Ej. K3M9T2XQ7R"
           inputClassName="font-mono uppercase tracking-widest"
           className="flex-1"
           data-autofocus

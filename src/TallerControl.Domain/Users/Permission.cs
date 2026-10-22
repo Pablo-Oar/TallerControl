@@ -65,6 +65,9 @@ public static class Permission
 
     public const string RemindersManage = "reminders.manage";
 
+    /// <summary>La campanita de avisos del panel (Dueño y Administrativo).</summary>
+    public const string NotificationsRead = "notifications.read";
+
     public const string AppointmentsRead = "appointments.read";
     public const string AppointmentsWrite = "appointments.write";
     public const string AppointmentsCancel = "appointments.cancel";
@@ -87,7 +90,7 @@ public static class Permission
         CounterSalesRead, CounterSalesWrite,
         AuditRead,
         InvoicingRead, InvoicingWrite, InvoicingEmit,
-        RemindersManage,
+        RemindersManage, NotificationsRead,
         AppointmentsRead, AppointmentsWrite, AppointmentsCancel,
     };
 
@@ -107,7 +110,7 @@ public static class Permission
         PurchasesRead, PurchasesWrite,
         CounterSalesRead, CounterSalesWrite,
         InvoicingRead, InvoicingEmit,
-        RemindersManage,
+        RemindersManage, NotificationsRead,
         AppointmentsRead, AppointmentsWrite, AppointmentsCancel,
     };
 

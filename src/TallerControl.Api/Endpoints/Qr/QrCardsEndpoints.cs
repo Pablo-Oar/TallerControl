@@ -16,6 +16,7 @@ namespace TallerControl.Api.Endpoints.Qr;
 /// PATCH /api/v1/qr/cards/{id}/lost                     → qr.manage  (O, A)
 /// POST /api/v1/qr/cards/{id}/revoke                    → qr.revoke  (O)
 /// GET  /api/v1/qr/cards/{id}/print                     → qr.manage  (O, A)
+/// GET  /api/v1/qr/cards/print-sheet                    → qr.manage  (O, A) [hoja A4 con las tarjetas libres]
 /// GET  /api/v1/qr/cards/{id}/events                    → qr.manage  (O, A)
 /// GET  /api/v1/qr/cards/scan/{code}                    → qr.manage  (O, A) [búsqueda rápida por código]
 /// </summary>
@@ -73,6 +74,14 @@ internal static class QrCardsEndpoints
                     RevokeAsync(id, request, handler, ct))
             .RequirePermission(Permission.QrRevoke)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
+
+        app.MapGet("/api/v1/qr/cards/print-sheet",
+                async (int? take, Application.Qr.IQrPdfGenerator generator, CancellationToken ct) =>
+                {
+                    var bytes = await generator.GenerateFreeSheetAsync(Math.Clamp(take ?? 24, 1, 48), ct);
+                    return Results.File(bytes, "application/pdf", "tarjetas-qr-libres.pdf");
+                })
+            .RequirePermission(Permission.QrManage);
 
         app.MapGet("/api/v1/qr/cards/{id:guid}/print",
                 (Guid id, string format = "card", GetQrCardPrintHandler handler = default!, CancellationToken ct = default) =>
