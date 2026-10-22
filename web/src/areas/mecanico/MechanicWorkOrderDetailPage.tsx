@@ -165,7 +165,12 @@ export function MechanicWorkOrderDetailPage() {
           <p className="font-mono font-bold tracking-widest text-tc-text">{order.vehiclePlate}</p>
           {vehicleLabel && <p className="text-sm text-tc-text-secondary">{vehicleLabel}</p>}
           <p className="text-sm text-tc-text-secondary">
-            Odómetro: <strong className="tabular-nums">{order.odometerKm.toLocaleString('es-AR')} km</strong>
+            Odómetro:{' '}
+            {order.odometerKm > 0 ? (
+              <strong className="tabular-nums">{order.odometerKm.toLocaleString('es-AR')} km</strong>
+            ) : (
+              <span className="text-tc-text-muted">sin registrar</span>
+            )}
           </p>
           {order.fuelLevel != null && (
             <p className="text-sm text-tc-text-secondary">

@@ -86,7 +86,8 @@ export function MechanicWorkOrdersPage() {
       </div>
 
       {isLoading && (
-        <div className="space-y-2">
+        <div className="space-y-2" role="status" aria-live="polite">
+          <p className="text-xs font-bold tracking-wider uppercase text-tc-text-muted">Cargando trabajos…</p>
           {[...Array(4)].map((_, i) => (
             <div key={i} className="h-20 animate-pulse border border-tc-border bg-tc-surface" />
           ))}
