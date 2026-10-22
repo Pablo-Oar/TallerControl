@@ -22,6 +22,34 @@ function bytesToUrlBase64(buffer: ArrayBuffer | null) {
   return btoa(String.fromCharCode(...new Uint8Array(buffer))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
+/**
+ * Deja una suscripción push vigente y registrada en el servidor. Sirve para activar los avisos y para repararlos si
+ * el permiso ya estaba dado pero la suscripción no existe, es de otra clave o el servidor la descartó.
+ * Devuelve false si el servidor no tiene push configurado.
+ */
+async function syncPushSubscription(): Promise<boolean> {
+  const key = await api.get<{ publicKey: string }>('/api/v1/push/public-key').catch(() => null)
+  if (!key) return false
+
+  const reg = await navigator.serviceWorker.ready
+  const serverKey = urlBase64ToBytes(key.publicKey)
+  const subscribe = () => reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: serverKey })
+
+  // Una suscripción hecha con otra clave VAPID (o sin clave) no sirve: se reemplaza.
+  const sub = await subscribe().catch(async () => {
+    await (await reg.pushManager.getSubscription())?.unsubscribe()
+    return subscribe().catch(() => null)
+  })
+  if (!sub) return true
+
+  await api.post('/api/v1/push-subscriptions', {
+    endpoint: sub.endpoint,
+    p256Dh: bytesToUrlBase64(sub.getKey('p256dh')),
+    auth: bytesToUrlBase64(sub.getKey('auth')),
+  }, true).catch(() => null)
+  return true
+}
+
 function dismissedRecently() {
   try {
     const at = Number(localStorage.getItem(DISMISS_KEY) ?? 0)
@@ -48,6 +76,10 @@ export function PwaInstallBanner() {
     if ('Notification' in window) {
       setShowPush(Notification.permission !== 'granted')
       setPushGranted(Notification.permission === 'granted')
+      // Con el permiso ya dado se renueva la suscripción en silencio: no depende de ningún botón.
+      if (Notification.permission === 'granted' && 'serviceWorker' in navigator) {
+        void syncPushSubscription().catch(() => null)
+      }
     }
 
     return () => window.removeEventListener('beforeinstallprompt', handler)
@@ -65,25 +97,10 @@ export function PwaInstallBanner() {
     const permission = await Notification.requestPermission()
     if (permission !== 'granted') return
 
-    // La clave pública VAPID la entrega el servidor; sin ella el push no está configurado.
-    const key = await api.get<{ publicKey: string }>('/api/v1/push/public-key').catch(() => null)
-    if (!key) {
+    // Sin claves VAPID en el servidor el push no está configurado.
+    if (!(await syncPushSubscription())) {
       setShowPush(false)
       return
-    }
-
-    const reg = await navigator.serviceWorker.ready
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToBytes(key.publicKey),
-    }).catch(() => null)
-
-    if (sub) {
-      await api.post('/api/v1/push-subscriptions', {
-        endpoint: sub.endpoint,
-        p256Dh: bytesToUrlBase64(sub.getKey('p256dh')),
-        auth: bytesToUrlBase64(sub.getKey('auth')),
-      }, true).catch(() => null)
     }
 
     setPushGranted(true)
