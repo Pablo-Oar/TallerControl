@@ -319,6 +319,8 @@ public static class DependencyInjection
         services.AddScoped<ManageAvailabilityHandler>();
 
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
+        services.AddScoped<TallerControl.Application.Notifications.INotificationRepository, Notifications.EfNotificationRepository>();
+        services.AddScoped<TallerControl.Application.Notifications.NotificationsHandler>();
         services.AddHostedService<OutboxDispatcher>();
         services.AddHostedService<Maintenance.MaintenanceWorker>();
 

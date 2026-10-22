@@ -19,6 +19,13 @@ public interface IReminderRepository
         DateTimeOffset notifiedBefore,
         CancellationToken ct);
 
+    /// <summary>Lo mismo que <see cref="FindDueAsync"/> pero de todos los talleres (tarea periódica, sin sesión).</summary>
+    Task<IReadOnlyList<DueReminderData>> FindDueAllTenantsAsync(
+        DateTimeOffset cutoffDate,
+        int kmLookahead,
+        DateTimeOffset notifiedBefore,
+        CancellationToken ct);
+
     Task<bool> VehicleExistsAsync(Guid vehicleId, CancellationToken ct);
 
     Task AddAsync(Reminder reminder, CancellationToken ct);

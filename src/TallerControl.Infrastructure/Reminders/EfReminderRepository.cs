@@ -75,24 +75,40 @@ internal sealed class EfReminderRepository : IReminderRepository
     public Task<bool> VehicleExistsAsync(Guid vehicleId, CancellationToken ct) =>
         _db.Set<Vehicle>().AnyAsync(v => v.Id == vehicleId, ct);
 
-    public async Task<IReadOnlyList<DueReminderData>> FindDueAsync(
+    public Task<IReadOnlyList<DueReminderData>> FindDueAsync(
+        DateTimeOffset cutoffDate, int kmLookahead, DateTimeOffset notifiedBefore, CancellationToken ct) =>
+        QueryDueAsync(allTenants: false, cutoffDate, kmLookahead, notifiedBefore, ct);
+
+    public Task<IReadOnlyList<DueReminderData>> FindDueAllTenantsAsync(
+        DateTimeOffset cutoffDate, int kmLookahead, DateTimeOffset notifiedBefore, CancellationToken ct) =>
+        QueryDueAsync(allTenants: true, cutoffDate, kmLookahead, notifiedBefore, ct);
+
+    private async Task<IReadOnlyList<DueReminderData>> QueryDueAsync(
+        bool allTenants,
         DateTimeOffset cutoffDate,
         int kmLookahead,
         DateTimeOffset notifiedBefore,
         CancellationToken ct)
     {
+        // La tarea periódica no tiene sesión: se saltan los filtros de taller (cada recordatorio ya trae el suyo).
+        var reminders = allTenants ? _db.Set<Reminder>().IgnoreQueryFilters() : _db.Set<Reminder>();
+        var vehicles = allTenants ? _db.Set<Vehicle>().IgnoreQueryFilters() : _db.Set<Vehicle>();
+        var customers = allTenants ? _db.Set<Customer>().IgnoreQueryFilters() : _db.Set<Customer>();
+
+        // Sin AsNoTracking: basta uno en la consulta para que el recordatorio deje de rastrearse y MarkNotified no se guarde.
         var results = await (
-            from r in _db.Set<Reminder>()
-            join v in _db.Set<Vehicle>().AsNoTracking() on r.VehicleId equals v.Id
-            join c in _db.Set<Customer>().AsNoTracking() on v.CustomerId equals c.Id
+            from r in reminders
+            join v in vehicles on r.VehicleId equals v.Id
+            join c in customers on v.CustomerId equals c.Id
             where (r.DueDate.HasValue && r.DueDate <= cutoffDate) ||
                   (r.DueKm.HasValue && v.OdometerKm >= r.DueKm.Value - kmLookahead)
             where r.LastNotifiedAt == null || r.LastNotifiedAt < notifiedBefore
-            select new { Reminder = r, v.Plate, c.Name }
+            where v.DeletedAt == null && c.DeletedAt == null
+            select new { Reminder = r, v.Plate, c.Name, c.Email, c.DoNotContact }
         ).ToListAsync(ct);
 
         return results
-            .Select(x => new DueReminderData(x.Reminder, x.Plate, x.Name))
+            .Select(x => new DueReminderData(x.Reminder, x.Plate, x.Name, x.Email, x.DoNotContact))
             .ToList();
     }
 

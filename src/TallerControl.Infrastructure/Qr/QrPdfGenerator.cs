@@ -4,6 +4,7 @@ using QRCoder;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using TallerControl.Application.Common;
 using TallerControl.Application.Qr;
 using TallerControl.Domain.Qr;
 using TallerControl.Domain.Tenancy;
@@ -94,6 +95,55 @@ internal sealed class QrPdfGenerator : IQrPdfGenerator
                     col.Item().PaddingTop(2)
                         .Text("Generado con TallerControl — www.tallercontrol.com.ar")
                         .FontSize(5).FontColor(Colors.Grey.Medium).AlignCenter();
+                });
+            });
+        }).GeneratePdf();
+    }
+
+    public async Task<byte[]> GenerateFreeSheetAsync(int maxCards, CancellationToken ct)
+    {
+        // Las tarjetas libres del taller de la sesión (filtro global de taller activo).
+        var codes = await _db.Set<QrCard>()
+            .AsNoTracking()
+            .Where(c => c.Status == QrCardStatus.Free)
+            .OrderBy(c => c.CreatedAt)
+            .Take(maxCards)
+            .Select(c => c.Code)
+            .ToListAsync(ct);
+
+        if (codes.Count == 0)
+            throw new BusinessRuleException("No hay tarjetas libres para imprimir.");
+
+        var baseUrl = _options.BaseUrl.TrimEnd('/');
+        var images = codes.Select(code => (Code: code, Png: GenerateQrPng($"{baseUrl}/q/{code}"))).ToList();
+
+        QuestPDF.Settings.License = LicenseType.Community;
+
+        return Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(10, Unit.Millimetre);
+                page.DefaultTextStyle(t => t.FontSize(8));
+                page.Header().Text("Tarjetas QR libres: recortá y asignalas a cada llavero")
+                    .FontSize(9).FontColor(Colors.Grey.Darken1);
+
+                page.Content().PaddingTop(4, Unit.Millimetre).Table(table =>
+                {
+                    table.ColumnsDefinition(c =>
+                    {
+                        for (var i = 0; i < 4; i++) c.RelativeColumn();
+                    });
+
+                    foreach (var (code, png) in images)
+                    {
+                        table.Cell().Border(0.5f).BorderColor(Colors.Grey.Lighten1).Padding(4).Column(col =>
+                        {
+                            col.Item().AlignCenter().Width(30, Unit.Millimetre).Image(png);
+                            col.Item().PaddingTop(1).AlignCenter().Text(code).FontFamily("Consolas").Bold().FontSize(8);
+                        });
+                    }
                 });
             });
         }).GeneratePdf();

@@ -2,7 +2,9 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using TallerControl.Api.Identity;
+using TallerControl.Api.IntegrationTests.Auth;
 using TallerControl.Api.IntegrationTests.Persistence;
 
 namespace TallerControl.Api.IntegrationTests.Qr;
@@ -726,6 +728,80 @@ public sealed class QrCardsEndpointsTests : IAsyncLifetime
         };
         var resp = await publicClient.SendAsync(req);
         Assert.Equal(HttpStatusCode.Accepted, resp.StatusCode);
+    }
+
+    [Fact(DisplayName = "T-QR-32: El aviso de llaves encontradas llega por email al Dueño y queda en el panel")]
+    public async Task Aviso_de_llaves_se_envia_por_email_y_queda_en_el_panel()
+    {
+        using var ownerClient = CreateClient();
+        await LoginAsync(ownerClient, QrWebApplicationFactory.OwnerEmail, QrWebApplicationFactory.Password);
+        var code = await CreateAssignedCardAsync(ownerClient);
+
+        using var publicClient = CreateClient();
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/public/v1/qr/{code}/found-keys")
+        {
+            Content = JsonContent.Create(new { reporterName = "Marta", reporterPhone = "+54911555000" }),
+        };
+        Assert.Equal(HttpStatusCode.Accepted, (await publicClient.SendAsync(req)).StatusCode);
+
+        // El procesador del outbox corre cada 5 s; se invoca una vez para no esperar.
+        var dispatcher = _factory.Services.GetServices<Microsoft.Extensions.Hosting.IHostedService>()
+            .OfType<TallerControl.Infrastructure.Outbox.OutboxDispatcher>().Single();
+        await dispatcher.ProcessBatchAsync(CancellationToken.None);
+
+        var sender = _factory.Services.GetServices<TallerControl.Application.Common.IEmailSender>().OfType<FakeEmailSender>().Single();
+        var mail = Assert.Single(sender.Sent,
+            m => m.To == QrWebApplicationFactory.OwnerEmail && m.Subject.StartsWith("Encontraron las llaves") && m.HtmlBody.Contains("Marta"));
+        Assert.Contains("+54911555000", mail.HtmlBody);
+    }
+
+    [Fact(DisplayName = "T-QR-33: GET /qr/cards/print-sheet devuelve un PDF con las tarjetas libres")]
+    public async Task Hoja_de_tarjetas_libres_devuelve_pdf()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, QrWebApplicationFactory.OwnerEmail, QrWebApplicationFactory.Password);
+        await GenerateBatchAsync(client, quantity: 4);
+
+        var resp = await client.GetAsync("/api/v1/qr/cards/print-sheet?take=4");
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        Assert.Equal("application/pdf", resp.Content.Headers.ContentType?.MediaType);
+        var bytes = await resp.Content.ReadAsByteArrayAsync();
+        Assert.StartsWith("%PDF", System.Text.Encoding.ASCII.GetString(bytes, 0, 4));
+    }
+
+    [Fact(DisplayName = "T-NOT-01: El aviso de llaves aparece en la campanita del Dueño y se puede marcar como leído")]
+    public async Task Aviso_de_llaves_aparece_en_la_campanita()
+    {
+        using var ownerClient = CreateClient();
+        await LoginAsync(ownerClient, QrWebApplicationFactory.OwnerEmail, QrWebApplicationFactory.Password);
+        var code = await CreateAssignedCardAsync(ownerClient);
+
+        using var publicClient = CreateClient();
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/public/v1/qr/{code}/found-keys")
+        {
+            Content = JsonContent.Create(new { reporterName = "Lucía", reporterPhone = (string?)null }),
+        };
+        await publicClient.SendAsync(req);
+        var dispatcher = _factory.Services.GetServices<Microsoft.Extensions.Hosting.IHostedService>()
+            .OfType<TallerControl.Infrastructure.Outbox.OutboxDispatcher>().Single();
+        await dispatcher.ProcessBatchAsync(CancellationToken.None);
+
+        var list = await ownerClient.GetFromJsonAsync<JsonElement>("/api/v1/notifications");
+        Assert.True(list.GetProperty("unread").GetInt32() >= 1);
+        var first = list.GetProperty("items").EnumerateArray().First(n => n.GetProperty("type").GetString() == "qr.found_keys");
+        Assert.False(first.GetProperty("isRead").GetBoolean());
+        var id = first.GetProperty("id").GetGuid();
+
+        var csrf = await FetchCsrfAsync(ownerClient);
+        var read = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/notifications/{id}/read");
+        read.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        Assert.Equal(HttpStatusCode.NoContent, (await ownerClient.SendAsync(read)).StatusCode);
+
+        var after = await ownerClient.GetFromJsonAsync<JsonElement>("/api/v1/notifications");
+        Assert.True(after.GetProperty("items").EnumerateArray()
+            .First(n => n.GetProperty("id").GetGuid() == id).GetProperty("isRead").GetBoolean());
+        Assert.Equal(list.GetProperty("unread").GetInt32() - 1, after.GetProperty("unread").GetInt32());
     }
 
     [Fact(DisplayName = "T-QR-27: POST /qr/{code}/found-keys con código inexistente devuelve 202 (respuesta uniforme)")]

@@ -19,6 +19,7 @@ import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { DataTable, RowAction, RowActionLink, type DataTableColumn } from '../../../components/ui/DataTable'
 import { Pagination } from '../../../components/ui/Pagination'
 import { QrScannerModal } from './QrScannerModal'
+import { QrActivityModal } from './QrActivityModal'
 import { inputCls } from '../../../lib/styles'
 import { useCan } from '../../../lib/auth/permissions'
 
@@ -74,6 +75,7 @@ export function QrCardsPage() {
   const [showBatchModal, setShowBatchModal] = useState(false)
   const [showAssignByCodeModal, setShowAssignByCodeModal] = useState(false)
   const [showScannerModal, setShowScannerModal] = useState(false)
+  const [activityCard, setActivityCard] = useState<{ id: string; code: string } | null>(null)
   const [revokeCardId, setRevokeCardId] = useState<string | null>(null)
   const [revokeReason, setRevokeReason] = useState('')
   const [batchQty, setBatchQty] = useState(10)
@@ -145,6 +147,14 @@ export function QrCardsPage() {
           <Button variant="secondary" size="sm" onClick={() => setShowAssignByCodeModal(true)}>
             Asignar por código
           </Button>
+          <a
+            href="/api/v1/qr/cards/print-sheet"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex min-h-[32px] items-center border border-tc-border bg-white px-3 text-xs font-bold tracking-wider uppercase text-tc-text-secondary transition-colors hover:bg-tc-surface"
+          >
+            Imprimir libres
+          </a>
           <Button size="sm" onClick={() => setShowBatchModal(true)}>Generar lote</Button>
         </div>
       </div>
@@ -196,6 +206,7 @@ export function QrCardsPage() {
                 <RowAction onClick={() => unassignMut.mutate(c.id)}>Desasignar</RowAction>
               </>
             )}
+            <RowAction onClick={() => setActivityCard({ id: c.id, code: c.code })}>Actividad</RowAction>
             {c.status !== 'revoked' && can('qr.revoke') && (
               <RowAction tone="danger" onClick={() => setRevokeCardId(c.id)}>Revocar</RowAction>
             )}
@@ -246,7 +257,7 @@ export function QrCardsPage() {
             <FormField
               label="Código de la tarjeta"
               inputClassName="font-mono tracking-widest uppercase"
-              placeholder="Ej. ABC12345"
+              placeholder="Ej. K3M9T2XQ7R"
               value={assignCode}
               onChange={(e) => setAssignCode(e.target.value.toUpperCase())}
             />
@@ -300,6 +311,10 @@ export function QrCardsPage() {
             </div>
           </div>
         </Modal>
+      )}
+
+      {activityCard && (
+        <QrActivityModal cardId={activityCard.id} code={activityCard.code} onClose={() => setActivityCard(null)} />
       )}
     </div>
   )

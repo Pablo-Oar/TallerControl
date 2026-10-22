@@ -197,6 +197,7 @@ public sealed class PermissionMatrixTests : IAsyncLifetime
                 e.RoutePattern.Contains("/invoicing/certificates/", StringComparison.Ordinal) ||
                 e.RoutePattern.Contains("/invoicing/points-of-sale/", StringComparison.Ordinal) ||
                 e.RoutePattern.Contains("/reminders/", StringComparison.Ordinal) ||
+                e.RoutePattern.Contains("/notifications/", StringComparison.Ordinal) ||
                 e.RoutePattern.Contains("/appointments/", StringComparison.Ordinal) ||
                 e.RoutePattern.Contains("/availability/rules/", StringComparison.Ordinal) ||
                 e.RoutePattern.Contains("/availability/exceptions/", StringComparison.Ordinal)))
@@ -323,6 +324,11 @@ public sealed class PermissionMatrixTests : IAsyncLifetime
         if (pattern.Contains("/reminders/", StringComparison.Ordinal))
         {
             return RouteParam.Replace(pattern, _factory.ForeignReminderId.ToString());
+        }
+
+        if (pattern.Contains("/notifications/", StringComparison.Ordinal))
+        {
+            return RouteParam.Replace(pattern, _factory.ForeignNotificationId.ToString());
         }
 
         if (pattern.Contains("/appointments/", StringComparison.Ordinal) ||

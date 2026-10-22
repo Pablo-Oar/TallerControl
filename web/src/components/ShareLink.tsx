@@ -3,7 +3,7 @@ import { Button } from './ui/Button'
 import { FormField } from './ui/FormField'
 
 /** Enlace para compartir con el cliente: campo de solo lectura, copiar y WhatsApp. */
-export function ShareLink({ url, whatsappText }: { url: string; whatsappText: string }) {
+export function ShareLink({ url, whatsappText, label = 'Enlace' }: { url: string; whatsappText: string; label?: string }) {
   const [copied, setCopied] = useState(false)
 
   async function copy() {
@@ -18,7 +18,7 @@ export function ShareLink({ url, whatsappText }: { url: string; whatsappText: st
 
   return (
     <div className="flex flex-wrap items-end gap-2">
-      <FormField label="Enlace" size="sm" readOnly value={url} className="min-w-0 flex-1" />
+      <FormField label={label} size="sm" readOnly value={url} className="min-w-0 flex-1" />
       <Button variant="secondary" size="sm" onClick={copy}>{copied ? 'Copiado' : 'Copiar'}</Button>
       <a
         href={`https://wa.me/?text=${encodeURIComponent(`${whatsappText} ${url}`)}`}

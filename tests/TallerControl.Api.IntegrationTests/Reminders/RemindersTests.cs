@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using TallerControl.Api.Identity;
 using TallerControl.Api.IntegrationTests.Persistence;
 
@@ -182,5 +183,22 @@ public sealed class RemindersTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, evalResp.StatusCode);
         var result = await evalResp.Content.ReadFromJsonAsync<JsonElement>();
         Assert.True(result.GetProperty("notificationsCreated").GetInt32() >= 1);
+    }
+
+    [Fact(DisplayName = "T-REM-03: La tarea periódica avisa los recordatorios vencidos sin que nadie toque «Evaluar»")]
+    public async Task Tarea_periodica_evalua_los_recordatorios_de_todos_los_talleres()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, RemindersWebApplicationFactory.OwnerEmail, RemindersWebApplicationFactory.OwnerPassword);
+        var (id, _) = await CreateReminderAsync(client, _factory.VehicleId,
+            title: "Vence solo",
+            dueDate: DateTimeOffset.UtcNow.AddDays(-2).ToString("O"));
+
+        var worker = _factory.Services.GetServices<Microsoft.Extensions.Hosting.IHostedService>()
+            .OfType<TallerControl.Infrastructure.Maintenance.MaintenanceWorker>().Single();
+        await worker.RunOnceAsync(CancellationToken.None);
+
+        var reminder = await client.GetFromJsonAsync<JsonElement>($"/api/v1/reminders/{id}");
+        Assert.NotEqual(JsonValueKind.Null, reminder.GetProperty("lastNotifiedAt").ValueKind);
     }
 }

@@ -1,10 +1,16 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TallerControl.Application.Common;
+using TallerControl.Domain.Notifications;
 using TallerControl.Domain.Outbox;
+using TallerControl.Domain.Qr;
+using TallerControl.Domain.Tenancy;
+using TallerControl.Domain.Users;
+using TallerControl.Domain.Vehicles;
 using TallerControl.Infrastructure.Persistence;
 
 namespace TallerControl.Infrastructure.Outbox;
@@ -44,7 +50,7 @@ internal sealed class OutboxDispatcher : BackgroundService
         }
     }
 
-    private async Task ProcessBatchAsync(CancellationToken ct)
+    internal async Task ProcessBatchAsync(CancellationToken ct)
     {
         await using var scope = _scopeFactory.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -67,8 +73,9 @@ internal sealed class OutboxDispatcher : BackgroundService
         {
             try
             {
-                var email = BuildEmailMessage(message);
-                if (email is not null)
+                var frontendBase = scope.ServiceProvider.GetRequiredService<IConfiguration>()["App:FrontendBaseUrl"]
+                    ?? "http://localhost:5173";
+                foreach (var email in await BuildEmailMessagesAsync(message, db, frontendBase, clock.GetUtcNow(), ct))
                 {
                     await sender.SendAsync(email, ct);
                 }
@@ -87,15 +94,110 @@ internal sealed class OutboxDispatcher : BackgroundService
         await db.SaveChangesAsync(ct);
     }
 
-    private static EmailMessage? BuildEmailMessage(OutboxMessage message)
+    /// <summary>
+    /// Arma los emails de un mensaje (puede ser ninguno, uno o varios). Un tipo desconocido <b>falla</b> en vez de
+    /// marcarse como procesado: así un aviso sin procesador no se pierde en silencio.
+    /// </summary>
+    private static async Task<IReadOnlyList<EmailMessage>> BuildEmailMessagesAsync(
+        OutboxMessage message, AppDbContext db, string frontendBase, DateTimeOffset now, CancellationToken ct)
     {
-        return message.Type switch
+        switch (message.Type)
         {
-            "email.invitation" => BuildInvitationEmail(message.PayloadJson),
-            "email.password_reset" => BuildPasswordResetEmail(message.PayloadJson),
-            "email.email_verification" => BuildEmailVerificationEmail(message.PayloadJson),
-            _ => null,
-        };
+            case "email.invitation":
+                return Single(BuildInvitationEmail(message.PayloadJson));
+            case "email.password_reset":
+                return Single(BuildPasswordResetEmail(message.PayloadJson));
+            case "email.email_verification":
+                return Single(BuildEmailVerificationEmail(message.PayloadJson));
+            case "QrOtpEmail":
+                return Single(BuildQrOtpEmail(message.PayloadJson));
+            case "qr.found_keys_alert":
+                return await BuildFoundKeysAlertAsync(message.PayloadJson, db, frontendBase, now, ct);
+            case "reminder.due":
+                return Single(BuildReminderEmail(message.PayloadJson));
+            default:
+                throw new NotSupportedException($"No hay procesador para el tipo de mensaje '{message.Type}'.");
+        }
+
+        static IReadOnlyList<EmailMessage> Single(EmailMessage? email) => email is null ? [] : [email];
+    }
+
+    private static EmailMessage? BuildQrOtpEmail(string json)
+    {
+        var payload = JsonSerializer.Deserialize<QrOtpPayload>(json);
+        if (payload is null || string.IsNullOrWhiteSpace(payload.To)) return null;
+
+        return new EmailMessage(
+            To: payload.To,
+            Subject: "Tu código de verificación — TallerControl",
+            HtmlBody: $"""
+                <p>Tu código para ver el historial de tu vehículo es:</p>
+                <p style="font-size:28px;font-weight:bold;letter-spacing:6px">{payload.Otp}</p>
+                <p>Vence el {payload.ExpiresAt:f}. Si no lo pediste vos, ignorá este email: sin el código nadie puede ver tus datos.</p>
+                """);
+    }
+
+    private static EmailMessage? BuildReminderEmail(string json)
+    {
+        var payload = JsonSerializer.Deserialize<ReminderPayload>(json);
+        // «No contactar» y sin email: el aviso queda solo en el panel del taller.
+        if (payload is null || payload.DoNotContact || string.IsNullOrWhiteSpace(payload.CustomerEmail)) return null;
+
+        var when = payload.DueDate.HasValue
+            ? $"el {payload.DueDate.Value:dd/MM/yyyy}"
+            : payload.DueKm.HasValue ? $"a los {payload.DueKm.Value:N0} km" : "pronto";
+
+        return new EmailMessage(
+            To: payload.CustomerEmail,
+            Subject: $"Recordatorio para tu vehículo {payload.VehiclePlate}",
+            HtmlBody: $"""
+                <p>Hola {payload.CustomerName},</p>
+                <p>Te recordamos que <b>{payload.Title}</b> de tu vehículo <b>{payload.VehiclePlate}</b> vence {when}.</p>
+                <p>Comunicate con el taller para coordinar un turno.</p>
+                """);
+    }
+
+    private static async Task<IReadOnlyList<EmailMessage>> BuildFoundKeysAlertAsync(
+        string json, AppDbContext db, string frontendBase, DateTimeOffset now, CancellationToken ct)
+    {
+        var payload = JsonSerializer.Deserialize<FoundKeysPayload>(json);
+        if (payload is null) return [];
+
+        var card = await db.Set<QrCard>().IgnoreQueryFilters().AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == payload.QrCardId && c.TenantId == payload.TenantId, ct);
+        var vehicle = card?.VehicleId is { } vehicleId
+            ? await db.Set<Vehicle>().IgnoreQueryFilters().AsNoTracking().FirstOrDefaultAsync(v => v.Id == vehicleId, ct)
+            : null;
+        var plate = vehicle?.Plate ?? "un vehículo";
+
+        // El aviso también queda en el panel (campana), para quien no mire el correo.
+        db.Set<Notification>().Add(new Notification(
+            payload.TenantId, "qr.found_keys", $"Encontraron las llaves de {plate}", now, membershipId: null, link: "/app/qr"));
+
+        var tenantName = await db.Set<Tenant>().AsNoTracking()
+            .Where(t => t.Id == payload.TenantId).Select(t => t.Name).FirstOrDefaultAsync(ct) ?? "tu taller";
+
+        var recipients = await (
+            from m in db.Set<Membership>().IgnoreQueryFilters().AsNoTracking()
+            join u in db.Set<User>().AsNoTracking() on m.UserId equals u.Id
+            where m.TenantId == payload.TenantId
+                  && m.Status == MembershipStatus.Active
+                  && (m.Role == TenantRole.Owner || m.Role == TenantRole.AdminStaff)
+            select u.Email).Distinct().ToListAsync(ct);
+
+        var reporter = string.IsNullOrWhiteSpace(payload.ReporterName) ? "Una persona" : payload.ReporterName;
+        var contact = string.IsNullOrWhiteSpace(payload.ReporterPhone)
+            ? "No dejó un teléfono."
+            : $"Teléfono de contacto: <b>{payload.ReporterPhone}</b>.";
+
+        return recipients.Select(to => new EmailMessage(
+            To: to,
+            Subject: $"Encontraron las llaves de {plate} — {tenantName}",
+            HtmlBody: $"""
+                <p>{reporter} avisó que <b>encontró las llaves del vehículo {plate}</b> (tarjeta {payload.Code}).</p>
+                <p>{contact}</p>
+                <p><a href="{frontendBase}/app/qr">Abrir las tarjetas QR</a></p>
+                """)).ToList();
     }
 
     private static EmailMessage? BuildInvitationEmail(string json)
@@ -175,4 +277,24 @@ internal sealed class OutboxDispatcher : BackgroundService
         string Token,
         DateTimeOffset ExpiresAt,
         string FrontendBaseUrl);
+
+    private sealed record QrOtpPayload(string To, string Otp, DateTimeOffset ExpiresAt);
+
+    private sealed record FoundKeysPayload(
+        Guid TenantId,
+        Guid QrCardId,
+        string Code,
+        string? ReporterName,
+        string? ReporterPhone,
+        DateTimeOffset ReportedAt);
+
+    private sealed record ReminderPayload(
+        Guid TenantId,
+        string VehiclePlate,
+        string CustomerName,
+        string? CustomerEmail,
+        bool DoNotContact,
+        string Title,
+        DateTimeOffset? DueDate,
+        int? DueKm);
 }

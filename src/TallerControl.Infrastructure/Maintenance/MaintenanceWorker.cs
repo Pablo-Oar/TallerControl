@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TallerControl.Application.Common;
+using TallerControl.Application.Reminders;
 using TallerControl.Domain.Quotes;
 using TallerControl.Infrastructure.Persistence;
 
@@ -46,6 +47,7 @@ internal sealed class MaintenanceWorker : BackgroundService
     internal async Task RunOnceAsync(CancellationToken ct)
     {
         await RunTaskAsync("vencimiento de presupuestos", ExpireQuotesAsync, ct);
+        await RunTaskAsync("recordatorios de service", EvaluateRemindersAsync, ct);
     }
 
     private async Task RunTaskAsync(string name, Func<IServiceProvider, CancellationToken, Task> task, CancellationToken ct)
@@ -59,6 +61,14 @@ internal sealed class MaintenanceWorker : BackgroundService
         {
             _logger.LogError(ex, "Falló la tarea periódica: {Task}", name);
         }
+    }
+
+    private async Task EvaluateRemindersAsync(IServiceProvider services, CancellationToken ct)
+    {
+        var handler = services.GetRequiredService<EvaluateDueRemindersHandler>();
+        var result = await handler.EvaluateAllTenantsAsync(ct);
+        if (result.NotificationsCreated > 0)
+            _logger.LogInformation("{Count} recordatorios avisados", result.NotificationsCreated);
     }
 
     private async Task ExpireQuotesAsync(IServiceProvider services, CancellationToken ct)
