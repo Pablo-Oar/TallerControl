@@ -88,11 +88,11 @@ internal sealed class EfReminderRepository : IReminderRepository
             where (r.DueDate.HasValue && r.DueDate <= cutoffDate) ||
                   (r.DueKm.HasValue && v.OdometerKm >= r.DueKm.Value - kmLookahead)
             where r.LastNotifiedAt == null || r.LastNotifiedAt < notifiedBefore
-            select new { Reminder = r, v.Plate, c.Name }
+            select new { Reminder = r, v.Plate, c.Name, c.Email, c.DoNotContact }
         ).ToListAsync(ct);
 
         return results
-            .Select(x => new DueReminderData(x.Reminder, x.Plate, x.Name))
+            .Select(x => new DueReminderData(x.Reminder, x.Plate, x.Name, x.Email, x.DoNotContact))
             .ToList();
     }
 

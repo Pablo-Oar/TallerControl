@@ -1,8 +1,10 @@
 using System.Net;
+using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using TallerControl.Api.Identity;
+using TallerControl.Api.IntegrationTests.Auth;
 using TallerControl.Api.IntegrationTests.Persistence;
 
 namespace TallerControl.Api.IntegrationTests.Qr;
@@ -726,6 +728,31 @@ public sealed class QrCardsEndpointsTests : IAsyncLifetime
         };
         var resp = await publicClient.SendAsync(req);
         Assert.Equal(HttpStatusCode.Accepted, resp.StatusCode);
+    }
+
+    [Fact(DisplayName = "T-QR-32: El aviso de llaves encontradas llega por email al Dueño y queda en el panel")]
+    public async Task Aviso_de_llaves_se_envia_por_email_y_queda_en_el_panel()
+    {
+        using var ownerClient = CreateClient();
+        await LoginAsync(ownerClient, QrWebApplicationFactory.OwnerEmail, QrWebApplicationFactory.Password);
+        var code = await CreateAssignedCardAsync(ownerClient);
+
+        using var publicClient = CreateClient();
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/public/v1/qr/{code}/found-keys")
+        {
+            Content = JsonContent.Create(new { reporterName = "Marta", reporterPhone = "+54911555000" }),
+        };
+        Assert.Equal(HttpStatusCode.Accepted, (await publicClient.SendAsync(req)).StatusCode);
+
+        // El procesador del outbox corre cada 5 s; se invoca una vez para no esperar.
+        var dispatcher = _factory.Services.GetServices<Microsoft.Extensions.Hosting.IHostedService>()
+            .OfType<TallerControl.Infrastructure.Outbox.OutboxDispatcher>().Single();
+        await dispatcher.ProcessBatchAsync(CancellationToken.None);
+
+        var sender = _factory.Services.GetServices<TallerControl.Application.Common.IEmailSender>().OfType<FakeEmailSender>().Single();
+        var mail = Assert.Single(sender.Sent,
+            m => m.To == QrWebApplicationFactory.OwnerEmail && m.Subject.StartsWith("Encontraron las llaves") && m.HtmlBody.Contains("Marta"));
+        Assert.Contains("+54911555000", mail.HtmlBody);
     }
 
     [Fact(DisplayName = "T-QR-27: POST /qr/{code}/found-keys con código inexistente devuelve 202 (respuesta uniforme)")]

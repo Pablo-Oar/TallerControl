@@ -42,4 +42,6 @@ public sealed record EvaluateRemindersResult(int NotificationsCreated);
 public sealed record DueReminderData(
     Domain.Reminders.Reminder Entity,
     string VehiclePlate,
-    string CustomerName);
+    string CustomerName,
+    string? CustomerEmail = null,
+    bool CustomerDoNotContact = false);

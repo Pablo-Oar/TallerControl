@@ -47,6 +47,8 @@ public sealed class EvaluateDueRemindersHandler(
                 tenantId = item.Entity.TenantId,
                 vehiclePlate = item.VehiclePlate,
                 customerName = item.CustomerName,
+                customerEmail = item.CustomerEmail,
+                doNotContact = item.CustomerDoNotContact,
                 title = item.Entity.Title,
                 dueDate = item.Entity.DueDate,
                 dueKm = item.Entity.DueKm,
