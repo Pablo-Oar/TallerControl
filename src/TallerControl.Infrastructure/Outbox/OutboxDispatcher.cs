@@ -118,10 +118,14 @@ internal sealed class OutboxDispatcher : BackgroundService
                     .FirstOrDefaultAsync(ct);
                 if (userId is null) return;
 
-                await push.SendToUserAsync(
+                var result = await push.SendToUserAsync(
                     userId.Value,
                     new PushMessage("Nueva orden asignada", $"Te asignaron la orden N° {payload.OrderNumber}.", $"/m/work-orders/{payload.WorkOrderId}"),
                     ct);
+
+                // Con dispositivos suscriptos y ninguna entrega, el mensaje falla: queda el motivo en last_error y se reintenta.
+                if (result.Subscriptions > 0 && result.Delivered == 0)
+                    throw new InvalidOperationException("Push no entregado: " + string.Join(" | ", result.Failures));
                 return;
             default:
                 throw new NotSupportedException($"No hay procesador para el tipo de mensaje '{message.Type}'.");

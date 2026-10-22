@@ -47,9 +47,9 @@ internal sealed class WebPushSender : IPushSender
             ? null
             : _options.PublicKey;
 
-    public async Task<int> SendToUserAsync(Guid userId, PushMessage message, CancellationToken ct)
+    public async Task<PushResult> SendToUserAsync(Guid userId, PushMessage message, CancellationToken ct)
     {
-        if (PublicKey is null) return 0;
+        if (PublicKey is null) return new PushResult(0, 0, []);
 
         var subscriptions = await _db.Database
             .SqlQuery<SubscriptionRow>($"""
@@ -60,6 +60,7 @@ internal sealed class WebPushSender : IPushSender
 
         var body = JsonSerializer.SerializeToUtf8Bytes(new { title = message.Title, body = message.Body, url = message.Url });
         var delivered = 0;
+        var failures = new List<string>();
 
         foreach (var sub in subscriptions)
         {
@@ -90,16 +91,20 @@ internal sealed class WebPushSender : IPushSender
                 }
                 else
                 {
-                    _logger.LogWarning("El servicio push respondió {Status} para una suscripción", (int)response.StatusCode);
+                    var detail = (await response.Content.ReadAsStringAsync(ct)).Trim();
+                    var reason = $"{(int)response.StatusCode} {sub.Endpoint.Split('/')[2]}: {(detail.Length > 200 ? detail[..200] : detail)}";
+                    failures.Add(reason);
+                    _logger.LogWarning("El servicio push rechazó el aviso: {Reason}", reason);
                 }
             }
             catch (Exception ex) when (ex is HttpRequestException or FormatException or ArgumentException or TaskCanceledException)
             {
+                failures.Add($"{ex.GetType().Name}: {ex.Message}");
                 _logger.LogWarning(ex, "No se pudo enviar el aviso push a una suscripción");
             }
         }
 
-        return delivered;
+        return new PushResult(subscriptions.Count, delivered, failures);
     }
 
     private sealed record SubscriptionRow(string Endpoint, string P256dh, string Auth);
