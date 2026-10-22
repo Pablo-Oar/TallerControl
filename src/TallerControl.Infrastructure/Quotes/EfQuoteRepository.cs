@@ -183,6 +183,8 @@ internal sealed class EfQuoteRepository : IQuoteRepository
     public async Task AddAsync(Quote quote, CancellationToken ct) =>
         await _db.Set<Quote>().AddAsync(quote, ct);
 
+    public void DeleteItem(QuoteItem item) => _db.Set<QuoteItem>().Remove(item);
+
     public Task SaveChangesAsync(CancellationToken ct) => _db.SaveChangesAsync(ct);
 
     public async Task<IQuoteTransaction> BeginTransactionAsync(CancellationToken ct)

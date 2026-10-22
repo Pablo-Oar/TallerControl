@@ -3,7 +3,7 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
-import { workOrdersApi, type WorkOrderPriority } from '../../../lib/api/workOrders'
+import { workOrdersApi, type WorkOrderDto, type WorkOrderPriority } from '../../../lib/api/workOrders'
 import { customersApi } from '../../../lib/api/customers'
 import type { CatalogItemListDto } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
@@ -29,6 +29,7 @@ const schema = z.object({
   odometerKm: z.number().int().min(0),
   fuelLevel: z.number().int().min(0).max(100).nullable(),
   reportedIssue: z.string().trim().max(1000).nullable(),
+  internalNotes: z.string().trim().max(2000).nullable(),
   priority: z.enum(['low', 'normal', 'high']),
   items: z.array(itemSchema),
 })
@@ -36,24 +37,50 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 interface Props {
+  /** Si viene, el formulario edita esa orden (cliente y vehículo no se cambian). */
+  order?: WorkOrderDto
   onSuccess: () => void
   onClose: () => void
 }
 
-export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
+function toFormData(order: WorkOrderDto): FormData {
+  return {
+    customerId: order.customerId,
+    vehicleId: order.vehicleId,
+    odometerKm: order.odometerKm,
+    fuelLevel: order.fuelLevel,
+    reportedIssue: order.reportedIssue,
+    internalNotes: order.internalNotes,
+    priority: order.priority,
+    items: order.items.map(i => ({
+      kind: i.kind,
+      description: i.description,
+      catalogItemId: i.catalogItemId,
+      quantity: i.quantity,
+      unitNetPrice: i.unitNetPrice,
+      vatRate: i.vatRate,
+    })),
+  }
+}
+
+export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
+  const isEdit = !!order
   const [serverError, setServerError] = useState<string | null>(null)
 
   const { register, handleSubmit, watch, control, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      customerId: '',
-      vehicleId: '',
-      odometerKm: 0,
-      fuelLevel: null,
-      reportedIssue: null,
-      priority: 'normal',
-      items: [],
-    },
+    defaultValues: order
+      ? toFormData(order)
+      : {
+          customerId: '',
+          vehicleId: '',
+          odometerKm: 0,
+          fuelLevel: null,
+          reportedIssue: null,
+          internalNotes: null,
+          priority: 'normal',
+          items: [],
+        },
   })
 
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
@@ -63,7 +90,7 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
   const { data: customerDetail } = useQuery({
     queryKey: ['customer', selectedCustomerId],
     queryFn: () => customersApi.get(selectedCustomerId),
-    enabled: !!selectedCustomerId,
+    enabled: !!selectedCustomerId && !isEdit,
   })
 
   function handleCatalogItemSelect(index: number, item: CatalogItemListDto | null) {
@@ -92,6 +119,30 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
   async function onSubmit(data: FormData) {
     setServerError(null)
     try {
+      if (order) {
+        await workOrdersApi.update(
+          order.id,
+          {
+            odometerKm: data.odometerKm,
+            fuelLevel: data.fuelLevel,
+            reportedIssue: data.reportedIssue,
+            internalNotes: data.internalNotes,
+            priority: data.priority as WorkOrderPriority,
+            assignedMechanicId: order.assignedMechanicId,
+            items: data.items.map(item => ({
+              kind: item.kind,
+              description: item.description,
+              catalogItemId: item.catalogItemId,
+              quantity: item.quantity,
+              unitNetPrice: item.unitNetPrice,
+              vatRate: item.vatRate,
+            })),
+          },
+          order.version,
+        )
+        onSuccess()
+        return
+      }
       await workOrdersApi.create({
         customerId: data.customerId,
         vehicleId: data.vehicleId,
@@ -117,10 +168,18 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
   const vehicles = customerDetail?.vehicles ?? []
 
   return (
-    <Modal title="Nueva orden de trabajo" onClose={onClose} className="max-w-2xl">
+    <Modal title={order ? `Editar orden #${order.number}` : 'Nueva orden de trabajo'} onClose={onClose} className="max-w-2xl">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
+          {order && (
+            <div className="border border-tc-border bg-tc-surface px-3 py-2 text-sm text-tc-text-secondary">
+              <b className="text-tc-text">{order.customerName}</b> · <span className="font-mono tracking-widest">{order.vehiclePlate}</span>
+              <span className="block text-xs text-tc-text-muted">El cliente y el vehículo no se pueden cambiar. Si te equivocaste, cancelá la orden y creá otra.</span>
+            </div>
+          )}
+
           {/* Cliente */}
+          {!order && (
           <CustomerPicker
             value={selectedCustomerId}
             requiredMark
@@ -130,9 +189,10 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
               setValue('vehicleId', '')
             }}
           />
+          )}
 
           {/* Vehículo */}
-          {selectedCustomerId && (
+          {selectedCustomerId && !order && (
             <div>
               {vehicles.length === 0 ? (
                 <>
@@ -193,6 +253,16 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
           {/* Problema reportado */}
           <FormTextarea label="Problema reportado" rows={2} placeholder="Descripción del problema…" {...register('reportedIssue')} />
 
+          {isEdit && (
+            <FormTextarea
+              label="Notas internas"
+              rows={2}
+              placeholder="Solo las ve el taller…"
+              hint="No salen en el PDF ni en el enlace del cliente."
+              {...register('internalNotes')}
+            />
+          )}
+
           {/* Renglones */}
           <div>
             <div className="mb-2 flex items-center justify-between">
@@ -206,7 +276,12 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
               </button>
             </div>
             {fields.length === 0 && (
-              <p className="text-xs text-tc-text-muted">Sin renglones. La orden se crea sin ítems.</p>
+              <p className="text-xs text-tc-text-muted">{isEdit ? 'Sin renglones.' : 'Sin renglones. La orden se crea sin ítems.'}</p>
+            )}
+            {isEdit && (
+              <p className="mb-2 text-xs text-tc-text-muted">
+                Al guardar, los productos con control de stock se ajustan solos: se repone lo que quitás y se descuenta lo que agregás.
+              </p>
             )}
             <div className="space-y-3">
               {fields.map((field, index) => (
@@ -228,7 +303,7 @@ export function WorkOrderFormModal({ onSuccess, onClose }: Props) {
 
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="secondary" size="sm" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" size="sm" loading={isSubmitting}>Crear orden</Button>
+            <Button type="submit" size="sm" loading={isSubmitting}>{isEdit ? 'Guardar cambios' : 'Crear orden'}</Button>
           </div>
         </form>
     </Modal>

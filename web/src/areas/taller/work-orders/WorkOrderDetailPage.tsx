@@ -17,6 +17,8 @@ import {
   STATUS_LABELS as PAYMENT_STATUS_LABELS,
 } from '../../../lib/api/payments'
 import { Button } from '../../../components/ui/Button'
+import { WorkOrderFormModal } from './WorkOrderFormModal'
+import { quotesApi } from '../../../lib/api/quotes'
 import { WorkOrderPhotos } from '../../../components/WorkOrderPhotos'
 import { FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { ApiError } from '../../../lib/api/client'
@@ -37,7 +39,18 @@ const fmtARS = (n: number) =>
 export function WorkOrderDetailPage() {
   const { id } = useParams<{ id: string }>()
   const can = useCan()
+  const [editing, setEditing] = useState(false)
+  const [orderLink, setOrderLink] = useState<string | null>(null)
   const [receipt, setReceipt] = useState<{ number: number; url: string } | null>(null)
+
+  async function shareOrderLink() {
+    try {
+      const result = await quotesApi.getPublicLink(id!)
+      setOrderLink(`${window.location.origin}/o/${result.tokenBase64Url}`)
+    } catch (err) {
+      notify(err instanceof ApiError ? err.detail : 'No se pudo generar el enlace de la orden')
+    }
+  }
 
   async function shareReceipt(paymentId: string, number: number) {
     try {
@@ -168,6 +181,20 @@ export function WorkOrderDetailPage() {
           <Link to="/app/work-orders">
             <Button variant="secondary" size="sm">← Volver</Button>
           </Link>
+          <a
+            href={`/api/v1/work-orders/${order.id}/pdf`}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-tc-text-secondary transition-colors hover:bg-tc-surface"
+          >
+            PDF
+          </a>
+          {canAct && (
+            <Button variant="secondary" size="sm" onClick={shareOrderLink}>Enlace para el cliente</Button>
+          )}
+          {canAct && can('workorders.write') && (
+            <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>Editar</Button>
+          )}
           {canAct && (
             <Button size="sm" onClick={() => { setInitialStatus(undefined); setChangingStatus(true) }}>Cambiar estado</Button>
           )}
@@ -444,6 +471,34 @@ export function WorkOrderDetailPage() {
           onSuccess={handlePaymentSuccess}
           onClose={() => setCreatingPayment(false)}
         />
+      )}
+
+      {editing && (
+        <WorkOrderFormModal
+          order={order}
+          onSuccess={() => {
+            setEditing(false)
+            queryClient.invalidateQueries({ queryKey: ['work-order', id] })
+            queryClient.invalidateQueries({ queryKey: ['work-orders'] })
+            queryClient.invalidateQueries({ queryKey: ['catalog'] })
+            void refetchPayments()
+          }}
+          onClose={() => setEditing(false)}
+        />
+      )}
+
+      {orderLink && (
+        <Modal title="Enlace para el cliente" onClose={() => setOrderLink(null)} className="max-w-md">
+          <div className="space-y-4">
+            <p className="text-sm text-tc-text-secondary">
+              Con este enlace el cliente sigue el estado de su orden (sin precios). Dura 180 días y reemplaza al enlace anterior.
+            </p>
+            <ShareLink url={orderLink} whatsappText={`Estado de tu orden #${order.number}:`} />
+            <div className="flex justify-end">
+              <Button size="sm" onClick={() => setOrderLink(null)}>Cerrar</Button>
+            </div>
+          </div>
+        </Modal>
       )}
 
       {receipt && (

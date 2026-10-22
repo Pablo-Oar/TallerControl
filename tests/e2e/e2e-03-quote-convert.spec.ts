@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
-import { createCustomer, createVehicle, dialog, loginAsOwner, openWorkOrder, uid, uniquePlate } from './helpers'
+import { createCustomer, createVehicle, dialog, loginAsOwner, uid, uniquePlate } from './helpers'
 
 /**
  * E2E-03: Presupuesto → enlace público → aprobación parcial → OT (doc 08 §3, REQ-09..11).
@@ -91,8 +91,9 @@ test.describe('E2E-03: Presupuesto → aprobación → OT', () => {
     await page.reload()
     await expect(page.getByText(/parcial/i).first()).toBeVisible()
     await page.getByRole('button', { name: /convertir a ot/i }).click()
-    await page.waitForURL(/\/app\/work-orders/)
-    await openWorkOrder(page, plate)
+    // Datos de ingreso: el kilometraje viene precargado con el del vehículo.
+    await page.getByRole('dialog').getByRole('button', { name: /^crear orden$/i }).click()
+    await page.waitForURL(/\/app\/work-orders\/[0-9a-f-]{36}/)
     await expect(page.getByText('Cambio de aceite')).toBeVisible()
     await expect(page.getByText('Filtro de aire')).toHaveCount(0)
   })

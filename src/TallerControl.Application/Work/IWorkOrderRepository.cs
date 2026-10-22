@@ -23,6 +23,12 @@ public interface IWorkOrderRepository
 
     Task<WorkOrderDto?> GetFullAsync(Guid id, bool includePrices, CancellationToken ct);
 
+    /// <summary>
+    /// Elimina un renglón que se quitó de una orden editable (el renglón se reemplaza al editar; el historial queda en
+    /// los movimientos de stock y en la auditoría). Sin esto EF rechaza el guardado por la relación obligatoria.
+    /// </summary>
+    void DeleteItem(Domain.Work.WorkOrderItem item);
+
     Task<WorkOrder?> FindByIdAsync(Guid id, CancellationToken ct);
 
     /// <summary>

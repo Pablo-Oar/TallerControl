@@ -260,6 +260,8 @@ internal sealed class EfWorkOrderRepository : IWorkOrderRepository
     public async Task AddAsync(WorkOrder order, CancellationToken ct) =>
         await _db.Set<WorkOrder>().AddAsync(order, ct);
 
+    public void DeleteItem(WorkOrderItem item) => _db.Set<WorkOrderItem>().Remove(item);
+
     public Task SaveChangesAsync(CancellationToken ct) => _db.SaveChangesAsync(ct);
 
     public async Task<IWorkOrderTransaction> BeginTransactionAsync(CancellationToken ct)

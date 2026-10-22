@@ -392,6 +392,43 @@ public sealed class QuotesEndpointsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
     }
 
+    [Fact(DisplayName = "T-QUO-13: Editar un borrador con renglones puede reemplazarlos por otros")]
+    public async Task Editar_borrador_reemplaza_renglones()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, QuotesWebApplicationFactory.OwnerEmail, QuotesWebApplicationFactory.Password);
+
+        object[] Items(params decimal[] prices) => prices
+            .Select(p => (object)new { kind = "service", description = $"Servicio {p}", quantity = 1m, unitNetPrice = p, vatRate = 21m })
+            .ToArray();
+        var quote = await CreateQuoteAsync(client, Items(100m, 200m));
+        var id = quote.GetProperty("id").GetGuid();
+        var version = quote.GetProperty("version").GetUInt32();
+
+        var csrf = await FetchCsrfAsync(client);
+        var req = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/quotes/{id}")
+        {
+            Content = JsonContent.Create(new
+            {
+                customerId = _factory.CustomerId,
+                vehicleId = _factory.VehicleId,
+                validUntil = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)).ToString("yyyy-MM-dd"),
+                globalDiscountPct = 0m,
+                customerNotes = (string?)null,
+                internalNotes = (string?)null,
+                items = Items(300m),
+            }),
+        };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        req.Headers.TryAddWithoutValidation("If-Match", $"\"{version}\"");
+
+        var resp = await client.SendAsync(req);
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var items = (await resp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("items");
+        Assert.Equal(1, items.GetArrayLength());
+    }
+
     // ── T-QUO-11: GET /quotes/{id}/responses ─────────────────────────────────
 
     [Fact(DisplayName = "T-QUO-11: GET /quotes/{id}/responses devuelve lista vacía para un presupuesto nuevo")]

@@ -30,6 +30,9 @@ public interface IQuoteRepository
 
     Task AddAsync(Quote quote, CancellationToken ct);
 
+    /// <summary>Elimina un renglón que se reemplazó al editar un borrador (sin esto EF rechaza el guardado).</summary>
+    void DeleteItem(Domain.Quotes.QuoteItem item);
+
     Task SaveChangesAsync(CancellationToken ct);
 
     Task<IQuoteTransaction> BeginTransactionAsync(CancellationToken ct);

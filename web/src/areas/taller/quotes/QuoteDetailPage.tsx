@@ -12,6 +12,7 @@ import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { Timeline } from '../../../components/ui/Timeline'
 import { ApiError } from '../../../lib/api/client'
 import { QuoteFormModal } from './QuoteFormModal'
+import { ConvertQuoteModal } from './ConvertQuoteModal'
 import { formatDateOnly } from '../../../lib/dates'
 
 const fmtARS = (n: number) =>
@@ -86,12 +87,14 @@ export function QuoteDetailPage() {
     onError: (err) => setError(err instanceof ApiError ? err.detail : 'Error al eliminar.'),
   })
 
+  const [converting, setConverting] = useState(false)
   const convertMutation = useMutation({
     mutationFn: (body: ConvertQuoteRequest) => quotesApi.convert(id!, body),
-    onSuccess: () => {
+    onSuccess: order => {
       qc.invalidateQueries({ queryKey: ['quote', id] })
       qc.invalidateQueries({ queryKey: ['quotes'] })
-      navigate('/app/work-orders')
+      const orderId = (order as { id?: string } | undefined)?.id
+      navigate(orderId ? `/app/work-orders/${orderId}` : '/app/work-orders')
     },
     onError: (err) => setError(err instanceof ApiError ? err.detail : 'Error al convertir.'),
   })
@@ -288,7 +291,7 @@ export function QuoteDetailPage() {
           </Button>
         )}
         {canConvert && (
-          <Button size="sm" onClick={() => convertMutation.mutate({ odometerKm: 0 })} loading={convertMutation.isPending}>
+          <Button size="sm" onClick={() => { setError(null); setConverting(true) }}>
             Convertir a OT
           </Button>
         )}
@@ -404,6 +407,17 @@ export function QuoteDetailPage() {
 
       {editing && quote && (
         <QuoteFormModal quote={quote} onSuccess={handleEditSuccess} onClose={() => setEditing(false)} />
+      )}
+
+      {converting && quote && (
+        <ConvertQuoteModal
+          vehicleId={quote.vehicleId}
+          vehiclePlate={quote.vehiclePlate}
+          busy={convertMutation.isPending}
+          error={error}
+          onConfirm={body => convertMutation.mutate(body)}
+          onClose={() => setConverting(false)}
+        />
       )}
     </div>
   )
