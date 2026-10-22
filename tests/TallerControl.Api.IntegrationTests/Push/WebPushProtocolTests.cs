@@ -48,6 +48,32 @@ public sealed class WebPushProtocolTests
         Assert.Equal(4096, (body[16] << 24) | (body[17] << 16) | (body[18] << 8) | body[19]);
     }
 
+    [Fact(DisplayName = "T-PUSH-05: El cifrado coincide byte a byte con el ejemplo del RFC 8291 (sección 5 y apéndice A)")]
+    public void Coincide_con_el_vector_del_rfc_8291()
+    {
+        var asPrivate = WebPushProtocol.FromBase64Url("yfWPiYE-n46HLnH0KqZOF1fJJU3MYrct3AELtAQ-oRw");
+        var asPublic = WebPushProtocol.FromBase64Url("BP4z9KsN6nGRTbVYI_c7VJSPQTBtkgcy27mlmlMoZIIgDll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A8");
+        var uaPublic = WebPushProtocol.FromBase64Url("BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4");
+        var auth = WebPushProtocol.FromBase64Url("BTBZMqHH6r4Tts7J_aSIgg");
+        var salt = WebPushProtocol.FromBase64Url("DGv6ra1nlYgDCS1FRnbzlw");
+
+        using var sender = ECDiffieHellman.Create(new ECParameters
+        {
+            Curve = ECCurve.NamedCurves.nistP256,
+            D = asPrivate,
+            Q = new ECPoint { X = asPublic[1..33], Y = asPublic[33..65] },
+        });
+
+        var body = WebPushProtocol.Encrypt(
+            Encoding.UTF8.GetBytes("When I grow up, I want to be a watermelon"), uaPublic, auth, sender, salt);
+
+        const string expected =
+            "DGv6ra1nlYgDCS1FRnbzlwAAEABBBP4z9KsN6nGRTbVYI_c7VJSPQTBtkgcy27ml" +
+            "mlMoZIIgDll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A_yl95bQpu6cVPT" +
+            "pK4Mqgkf1CXztLVBSt2Ks3oZwbuwXPXLWyouBWLVWGNWQexSgSxsj_Qulcy4a-fN";
+        Assert.Equal(expected, WebPushProtocol.Base64Url(body));
+    }
+
     [Fact(DisplayName = "T-PUSH-02: La firma VAPID es un JWT ES256 que se verifica con la clave pública")]
     public void La_firma_vapid_se_verifica()
     {
