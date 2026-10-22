@@ -13,6 +13,8 @@ import { FormTextarea } from '../../components/ui/FormField'
 import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
 import { WorkOrderPhotos } from '../../components/WorkOrderPhotos'
+import { Timeline } from '../../components/ui/Timeline'
+import { vehiclesApi } from '../../lib/api/vehicles'
 import { ApiError } from '../../lib/api/client'
 
 const MECHANIC_TRANSITIONS: Partial<Record<WorkOrderStatus, WorkOrderStatus[]>> = {
@@ -50,6 +52,19 @@ export function MechanicWorkOrderDetailPage() {
     queryFn: () => workOrdersApi.get(id!),
     enabled: !!id,
   })
+
+  // Historial de la orden y servicios anteriores del vehículo (sin importes: el mecánico no ve precios).
+  const { data: history } = useQuery({
+    queryKey: ['work-order-history', id],
+    queryFn: () => workOrdersApi.getHistory(id!),
+    enabled: !!id,
+  })
+  const { data: vehicleHistory } = useQuery({
+    queryKey: ['vehicle-history', order?.vehicleId],
+    queryFn: () => vehiclesApi.history(order!.vehicleId, 1, 10),
+    enabled: !!order?.vehicleId,
+  })
+  const previousOrders = (vehicleHistory?.items ?? []).filter(e => e.type === 'work_order' && e.id !== id)
 
   const [assigning, setAssigning] = useState(false)
   const [assignError, setAssignError] = useState<string | null>(null)
@@ -218,6 +233,45 @@ export function MechanicWorkOrderDetailPage() {
           </div>
         )}
       </Section>
+
+      {history && history.length > 0 && (
+        <Section title="Historial de la orden">
+          <Timeline
+            label="Historial de la orden"
+            showTime
+            items={history.map(change => ({
+              id: change.id,
+              date: change.changedAt,
+              kind: 'status' as const,
+              title: (
+                <>
+                  {change.fromStatus && <>{STATUS_LABELS[change.fromStatus as WorkOrderStatus]} → </>}
+                  {STATUS_LABELS[change.toStatus as WorkOrderStatus]}
+                </>
+              ),
+              detail: change.note,
+              author: change.changedByName,
+            }))}
+          />
+        </Section>
+      )}
+
+      {previousOrders.length > 0 && (
+        <Section title="Servicios anteriores de este vehículo">
+          <Timeline
+            label="Servicios anteriores"
+            showTime={false}
+            items={previousOrders.map(e => ({
+              id: e.id,
+              date: e.date,
+              kind: 'order' as const,
+              title: `Orden ${e.number}`,
+              detail: e.odometerKm != null ? `${e.odometerKm.toLocaleString('es-AR')} km` : null,
+              badge: <StatusBadge status={e.status} label={STATUS_LABELS[e.status as WorkOrderStatus] ?? e.status} />,
+            }))}
+          />
+        </Section>
+      )}
 
       {transitions.length > 0 && (
         <Section title="Cambiar estado">

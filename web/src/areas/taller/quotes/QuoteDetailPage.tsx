@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   quotesApi,
   type ConvertQuoteRequest,
+  type QuoteResponseDto,
   QUOTE_STATUS_LABELS,
 } from '../../../lib/api/quotes'
 import { Button } from '../../../components/ui/Button'
@@ -14,6 +15,8 @@ import { ApiError } from '../../../lib/api/client'
 import { QuoteFormModal } from './QuoteFormModal'
 import { ConvertQuoteModal } from './ConvertQuoteModal'
 import { formatDateOnly } from '../../../lib/dates'
+import { useCan } from '../../../lib/auth/permissions'
+import { confirmDialog } from '../../../components/ui/dialogs'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -144,7 +147,7 @@ export function QuoteDetailPage() {
 
   const canEdit = quote.status === 'draft'
   const canSend = quote.status === 'draft' && quote.items.length > 0
-  const canReopen = ['sent', 'rejected'].includes(quote.status)
+  const canReopen = ['sent', 'rejected', 'expired'].includes(quote.status)
   const canConvert = ['approved', 'partially_approved'].includes(quote.status)
   const canCancel = !['converted', 'cancelled'].includes(quote.status)
   const canDelete = quote.status === 'draft'
@@ -287,7 +290,7 @@ export function QuoteDetailPage() {
         )}
         {canReopen && (
           <Button variant="secondary" size="sm" onClick={() => reopenMutation.mutate()} loading={reopenMutation.isPending}>
-            Reabrir
+            {quote.status === 'expired' ? 'Renovar' : 'Reabrir'}
           </Button>
         )}
         {canConvert && (
@@ -317,7 +320,14 @@ export function QuoteDetailPage() {
           <Button variant="ghost" size="sm" onClick={() => setConfirmCancel(true)}>Cancelar</Button>
         )}
         {canDelete && (
-          <Button variant="danger" size="sm" onClick={() => deleteMutation.mutate()} loading={deleteMutation.isPending}>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={async () => {
+              if (await confirmDialog('¿Eliminar este borrador? No se puede deshacer.', { danger: true })) deleteMutation.mutate()
+            }}
+            loading={deleteMutation.isPending}
+          >
             Eliminar
           </Button>
         )}
@@ -405,6 +415,10 @@ export function QuoteDetailPage() {
         </div>
       )}
 
+      {responses && responses.some(r => r.signatureUrl || r.hasSignerDocument) && (
+        <ResponseEvidence quoteId={quote.id} responses={responses} />
+      )}
+
       {editing && quote && (
         <QuoteFormModal quote={quote} onSuccess={handleEditSuccess} onClose={() => setEditing(false)} />
       )}
@@ -439,6 +453,56 @@ function TotalRow({ label, children, bold }: { label: string; children: React.Re
     <div className={`flex items-baseline justify-end gap-8 ${bold ? 'font-bold text-base' : 'text-tc-text-secondary'}`}>
       <span className={bold ? 'text-tc-text' : 'text-tc-text-secondary'}>{label}</span>
       <span className="tabular-nums">{children}</span>
+    </div>
+  )
+}
+
+/** Firma y documento que dejó el cliente al responder. El documento se guarda cifrado: solo se muestra si el Dueño lo pide. */
+function ResponseEvidence({ quoteId, responses }: { quoteId: string; responses: QuoteResponseDto[] }) {
+  const canSeeDocument = useCan()('audit.read')
+  const [documents, setDocuments] = useState<Record<string, string>>({})
+  const [failed, setFailed] = useState<string | null>(null)
+
+  async function reveal(responseId: string) {
+    setFailed(null)
+    try {
+      const result = await quotesApi.getSignerDocument(quoteId, responseId)
+      setDocuments(prev => ({ ...prev, [responseId]: result.docNumber }))
+    } catch {
+      setFailed(responseId)
+    }
+  }
+
+  return (
+    <div className="border border-tc-border bg-white overflow-hidden">
+      <div className="border-b border-tc-border bg-tc-stub-bg px-4 py-2">
+        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Firma y documento del cliente</span>
+      </div>
+      <ul className="divide-y divide-tc-border">
+        {responses.filter(r => r.signatureUrl || r.hasSignerDocument).map(r => (
+          <li key={r.id} className="flex flex-wrap items-center gap-4 px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-tc-text">{r.signerName}</p>
+              <p className="text-xs text-tc-text-muted">{new Date(r.createdAt).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}</p>
+            </div>
+            {r.signatureUrl && (
+              <img src={r.signatureUrl} alt={`Firma de ${r.signerName}`} className="h-16 max-w-[220px] rounded border border-tc-border bg-white object-contain p-1" />
+            )}
+            {r.hasSignerDocument && (
+              <div className="text-sm">
+                {documents[r.id] ? (
+                  <span>Documento: <b className="font-mono tabular-nums">{documents[r.id]}</b></span>
+                ) : canSeeDocument ? (
+                  <Button size="sm" variant="secondary" onClick={() => reveal(r.id)}>Ver documento</Button>
+                ) : (
+                  <span className="text-tc-text-muted">Documento registrado (lo ve el Dueño)</span>
+                )}
+                {failed === r.id && <span className="ml-2 text-xs text-tc-stamp-red">No se pudo leer el documento.</span>}
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

@@ -70,9 +70,10 @@ public sealed class QuoteResponse : Entity, ITenantOwned
     public void Supersede() => IsCurrent = false;
 
     /// <summary>Adjunta la firma digital y el DNI cifrado al registro (RF-R4, F-16).</summary>
-    public void AttachSignature(string fileKey, byte[]? docNumberEnc)
+    /// <remarks>La firma y el documento son independientes: el cliente puede dejar solo uno.</remarks>
+    public void AttachSignature(string? fileKey, byte[]? docNumberEnc)
     {
-        SignatureFileKey = fileKey ?? throw new ArgumentNullException(nameof(fileKey));
+        SignatureFileKey = fileKey;
         SignerDocNumberEnc = docNumberEnc;
     }
 }

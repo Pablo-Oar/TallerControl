@@ -28,6 +28,9 @@ public interface IQuoteRepository
 
     Task<IReadOnlyList<QuoteResponseDto>> GetResponsesAsync(Guid quoteId, CancellationToken ct);
 
+    /// <summary>El documento cifrado que declaró el cliente al firmar, o null si no hay.</summary>
+    Task<byte[]?> GetSignerDocumentCipherAsync(Guid quoteId, Guid responseId, CancellationToken ct);
+
     Task AddAsync(Quote quote, CancellationToken ct);
 
     /// <summary>Elimina un renglón que se reemplazó al editar un borrador (sin esto EF rechaza el guardado).</summary>

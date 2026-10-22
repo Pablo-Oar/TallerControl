@@ -11,11 +11,20 @@ public sealed class GetWorkOrderHistoryHandler
 
     public GetWorkOrderHistoryHandler(IWorkOrderRepository repo) => _repo = repo;
 
-    public async Task<IReadOnlyList<StatusChangeDto>> HandleAsync(Guid id, CancellationToken ct)
+    public async Task<IReadOnlyList<StatusChangeDto>> HandleAsync(
+        Guid id, bool isMechanic, Guid? mechanicMembershipId, CancellationToken ct)
     {
-        // Verificar que la OT exista (→ 404 si no).
-        _ = await _repo.FindByIdAsync(id, ct)
-            ?? throw new NotFoundException("La orden no existe.");
+        // Verificar que la OT exista (→ 404 si no). El mecánico solo ve el historial de sus órdenes o las sin asignar (REQ-14).
+        if (isMechanic && mechanicMembershipId.HasValue)
+        {
+            _ = await _repo.FindVisibleToMechanicAsync(id, mechanicMembershipId.Value, ct)
+                ?? throw new NotFoundException("La orden no existe.");
+        }
+        else
+        {
+            _ = await _repo.FindByIdAsync(id, ct)
+                ?? throw new NotFoundException("La orden no existe.");
+        }
 
         return await _repo.GetHistoryAsync(id, ct);
     }

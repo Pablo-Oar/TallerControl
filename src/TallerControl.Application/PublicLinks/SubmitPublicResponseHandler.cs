@@ -51,6 +51,10 @@ public sealed class SubmitPublicResponseHandler
         if (quote.Status is not (QuoteStatus.Sent or QuoteStatus.Approved or QuoteStatus.PartiallyApproved))
             throw new BusinessRuleException("El presupuesto ya no acepta respuestas.");
 
+        // Una vigencia vencida ya no se puede aprobar aunque el estado todavía no se haya actualizado.
+        if (quote.Status == QuoteStatus.Sent && quote.ValidUntil < ArgentinaTime.Today(now))
+            throw new BusinessRuleException("Este presupuesto venció. Pedile al taller que te envíe uno nuevo.");
+
         // Verificar el hash del contenido (T-PUB-06): evita que el cliente apruebe una versión diferente.
         var quoteDto = await _quoteRepo.GetFullPublicAsync(quote.Id, ct)
             ?? throw new NotFoundException();
@@ -134,17 +138,17 @@ public sealed class SubmitPublicResponseHandler
             responseItems);
 
         // Adjuntar firma y cifrar DNI si se enviaron (RF-R4, F-16).
-        if (!string.IsNullOrWhiteSpace(request.SignatureFileKey))
-        {
-            if (!SignaturePolicy.IsValidFileKey(request.SignatureFileKey))
-                throw new BusinessRuleException("La clave de firma no es válida.");
+        var signatureKey = string.IsNullOrWhiteSpace(request.SignatureFileKey) ? null : request.SignatureFileKey;
+        if (signatureKey is not null && !SignaturePolicy.IsValidFileKey(signatureKey))
+            throw new BusinessRuleException("La clave de firma no es válida.");
 
-            byte[]? docNumberEnc = null;
-            if (!string.IsNullOrWhiteSpace(request.SignerDocNumber))
-                docNumberEnc = _signatureEncryptor.Encrypt(request.SignerDocNumber.Trim());
+        // El documento se guarda cifrado aunque el cliente no haya firmado.
+        byte[]? docNumberEnc = string.IsNullOrWhiteSpace(request.SignerDocNumber)
+            ? null
+            : _signatureEncryptor.Encrypt(request.SignerDocNumber.Trim());
 
-            response.AttachSignature(request.SignatureFileKey, docNumberEnc);
-        }
+        if (signatureKey is not null || docNumberEnc is not null)
+            response.AttachSignature(signatureKey, docNumberEnc);
 
         quote.RecordResponse(response);
 
