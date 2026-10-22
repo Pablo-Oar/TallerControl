@@ -17,16 +17,27 @@ public sealed class EvaluateDueRemindersHandler(
     private const int DaysAhead = 7;
     private const int CooldownDays = 7;
 
+    /// <summary>Evalúa los recordatorios del taller de la sesión (botón «Evaluar vencidos»).</summary>
     public async Task<EvaluateRemindersResult> HandleAsync(CancellationToken ct)
     {
         _ = tenant.TenantId ?? throw new InvalidOperationException("No hay taller en la sesión.");
 
         var now = clock.GetUtcNow();
-        var cutoffDate = now.AddDays(DaysAhead);
-        var notifiedBefore = now.AddDays(-CooldownDays);
+        var due = await repo.FindDueAsync(now.AddDays(DaysAhead), KmLookahead, now.AddDays(-CooldownDays), ct);
+        return await NotifyAsync(due, now, ct);
+    }
 
-        var due = await repo.FindDueAsync(cutoffDate, KmLookahead, notifiedBefore, ct);
+    /// <summary>Evalúa los de todos los talleres: la tarea periódica, sin sesión.</summary>
+    public async Task<EvaluateRemindersResult> EvaluateAllTenantsAsync(CancellationToken ct)
+    {
+        var now = clock.GetUtcNow();
+        var due = await repo.FindDueAllTenantsAsync(now.AddDays(DaysAhead), KmLookahead, now.AddDays(-CooldownDays), ct);
+        return await NotifyAsync(due, now, ct);
+    }
 
+    private async Task<EvaluateRemindersResult> NotifyAsync(
+        IReadOnlyList<DueReminderData> due, DateTimeOffset now, CancellationToken ct)
+    {
         foreach (var item in due)
         {
             var label = item.Entity.DueDate.HasValue

@@ -5,7 +5,7 @@ import { Button } from '../../../components/ui/Button'
 import { DataTable, RowAction, sortableWhen, type DataTableColumn } from '../../../components/ui/DataTable'
 import { Pagination } from '../../../components/ui/Pagination'
 import { ReminderFormModal } from './ReminderFormModal'
-import { notify } from '../../../components/ui/dialogs'
+import { confirmDialog, notify } from '../../../components/ui/dialogs'
 
 const dueSoon = (r: ReminderListDto) =>
   r.dueDate ? new Date(r.dueDate) <= new Date(Date.now() + 7 * 86400000) : false
@@ -123,7 +123,7 @@ export function RemindersPage() {
         actions={r => (
           <>
             <RowAction tone="purple" onClick={() => { setEditId(r.id); setShowModal(true) }}>Editar</RowAction>
-            <RowAction tone="danger" onClick={() => deleteMut.mutate(r.id)}>Eliminar</RowAction>
+            <RowAction tone="danger" onClick={async () => { if (await confirmDialog('¿Eliminar este recordatorio?', { danger: true })) deleteMut.mutate(r.id) }}>Eliminar</RowAction>
           </>
         )}
         renderCard={r => (
