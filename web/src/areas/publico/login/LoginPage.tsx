@@ -32,7 +32,7 @@ export function LoginPage() {
     try {
       await authApi.login({ email: data.email, password: data.password, rememberMe: data.rememberMe })
       const me = await authApi.me()
-      invalidate()
+      invalidate(me)
       navigate(me.home, { replace: true })
     } catch (err) {
       if (err instanceof ApiError) {
