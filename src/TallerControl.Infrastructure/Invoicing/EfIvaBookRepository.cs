@@ -93,19 +93,42 @@ internal sealed class EfIvaBookRepository : IIvaBookRepository
         var workOrderCustomers = await _db.Set<WorkOrder>()
             .Where(w => workOrderIds.Contains(w.Id))
             .Join(_db.Set<Customer>().IgnoreQueryFilters(), w => w.CustomerId, c => c.Id,
-                (w, c) => new { w.Id, c.Name, c.DocNumber })
-            .ToDictionaryAsync(x => x.Id, x => (x.Name, x.DocNumber), ct);
+                (w, c) => new { w.Id, c.Name, c.DocNumber, c.DocType })
+            .ToDictionaryAsync(x => x.Id, x => (x.Name, x.DocNumber, x.DocType), ct);
 
         var counterSaleCustomers = await _db.Set<CounterSale>()
             .Where(s => counterSaleIds.Contains(s.Id) && s.CustomerId != null)
             .Join(_db.Set<Customer>().IgnoreQueryFilters(), s => s.CustomerId, c => c.Id,
-                (s, c) => new { s.Id, c.Name, c.DocNumber })
-            .ToDictionaryAsync(x => x.Id, x => (x.Name, x.DocNumber), ct);
+                (s, c) => new { s.Id, c.Name, c.DocNumber, c.DocType })
+            .ToDictionaryAsync(x => x.Id, x => (x.Name, x.DocNumber, x.DocType), ct);
+
+        // Alícuotas de cada comprobante, agrupando los renglones del documento de origen.
+        var workOrderRates = (await _db.Set<WorkOrderItem>()
+                .Where(i => workOrderIds.Contains(i.WorkOrderId))
+                .Select(i => new { i.WorkOrderId, i.VatRate, i.LineNet, i.LineVat })
+                .ToListAsync(ct))
+            .GroupBy(i => i.WorkOrderId)
+            .ToDictionary(g => g.Key, g => g
+                .GroupBy(i => i.VatRate)
+                .Select(x => new IvaRateLineDto(x.Key, x.Sum(i => i.LineNet), x.Sum(i => i.LineVat)))
+                .ToList());
+
+        var counterSaleRates = (await _db.Set<CounterSaleItem>()
+                .Where(i => counterSaleIds.Contains(i.CounterSaleId))
+                .Select(i => new { i.CounterSaleId, i.VatRate, i.NetAmount, i.VatAmount })
+                .ToListAsync(ct))
+            .GroupBy(i => i.CounterSaleId)
+            .ToDictionary(g => g.Key, g => g
+                .GroupBy(i => i.VatRate)
+                .Select(x => new IvaRateLineDto(x.Key, x.Sum(i => i.NetAmount), x.Sum(i => i.VatAmount)))
+                .ToList());
 
         return rows.Select(r =>
         {
             var customers = r.SourceType == InvoiceSourceType.WorkOrder ? workOrderCustomers : counterSaleCustomers;
             customers.TryGetValue(r.SourceId, out var customer);
+            var rates = r.SourceType == InvoiceSourceType.WorkOrder ? workOrderRates : counterSaleRates;
+            rates.TryGetValue(r.SourceId, out var rateLines);
             // Las notas de crédito restan en el libro (sus importes se informan en negativo).
             var sign = r.IsCredit ? -1m : 1m;
             return new IvaBookEntryDto(
@@ -118,7 +141,11 @@ internal sealed class EfIvaBookRepository : IIvaBookRepository
                 r.TotalAmount * sign,
                 r.IsCredit ? "Nota de crédito" : null,
                 r.InvoiceType.ToString(),
-                r.Cae);
+                r.Cae,
+                r.IsCredit,
+                customer.DocType?.ToString(),
+                0m,
+                Reconcile(rateLines, r.NetAmount, r.VatAmount));
         }).ToList();
     }
 
@@ -140,11 +167,29 @@ internal sealed class EfIvaBookRepository : IIvaBookRepository
                     p.SubtotalNet,
                     p.VatAmount,
                     p.Total,
+                    p.Perceptions,
+                    p.Id,
                     SupplierCuit = s.Cuit,
-                    SupplierName = s.Name
+                    SupplierName = s.Name,
+                    SupplierVat = s.VatCondition
                 })
             .OrderBy(r => r.InvoiceDate)
             .ToListAsync(ct);
+
+        var purchaseIds = rows.Select(r => r.Id).ToList();
+        var purchaseRates = (await _db.Set<PurchaseItem>()
+                .Where(i => purchaseIds.Contains(i.PurchaseId))
+                .Select(i => new { i.PurchaseId, i.Quantity, i.UnitCost, i.VatRate })
+                .ToListAsync(ct))
+            .GroupBy(i => i.PurchaseId)
+            .ToDictionary(g => g.Key, g => g
+                .GroupBy(i => i.VatRate)
+                .Select(x =>
+                {
+                    var net = x.Sum(i => Math.Round(i.Quantity * i.UnitCost, 2, MidpointRounding.AwayFromZero));
+                    return new IvaRateLineDto(x.Key, net, Math.Round(net * x.Key / 100m, 2, MidpointRounding.AwayFromZero));
+                })
+                .ToList());
 
         return rows.Select(r => new IvaBookEntryDto(
             r.InvoiceDate,
@@ -156,13 +201,33 @@ internal sealed class EfIvaBookRepository : IIvaBookRepository
             r.SubtotalNet,
             r.VatAmount,
             r.Total,
-            r.PointOfSale is null || r.InvoiceNumber is null ? "Excluido CITI" : null)
+            r.PointOfSale is null || r.InvoiceNumber is null ? "Excluido CITI" : null,
+            // El proveedor responsable inscripto factura A; el resto, C (la compra no guarda la letra).
+            InvoiceType: r.SupplierVat == VatCondition.ResponsableInscripto ? "A" : "C",
+            Perceptions: r.Perceptions,
+            RateLines: Reconcile(purchaseRates.GetValueOrDefault(r.Id), r.SubtotalNet, r.VatAmount))
         ).ToList();
     }
 
     /// <summary>
-    /// Genera el ZIP CITI con los 4 archivos de texto de formato fijo.
-    /// Formato simplificado para MVP: solo ventas (REGINFO_CV_VENTAS_CBTE) y compras (REGINFO_CV_COMPRAS_CBTE).
+    /// Ajusta las alícuotas agrupadas para que sumen exactamente el neto y el IVA del comprobante
+    /// (la diferencia, por redondeo o descuentos, va a la alícuota más grande).
+    /// </summary>
+    private static IReadOnlyList<IvaRateLineDto>? Reconcile(List<IvaRateLineDto>? lines, decimal net, decimal vat)
+    {
+        if (lines is not { Count: > 0 }) return null;
+
+        var adjusted = lines.OrderBy(l => l.VatRate).ToList();
+        var big = adjusted.IndexOf(adjusted.OrderByDescending(l => l.Net).First());
+        var netDiff = net - adjusted.Sum(l => l.Net);
+        var vatDiff = vat - adjusted.Sum(l => l.Vat);
+        adjusted[big] = adjusted[big] with { Net = adjusted[big].Net + netDiff, Vat = adjusted[big].Vat + vatDiff };
+        return adjusted;
+    }
+
+    /// <summary>
+    /// Genera el ZIP CITI con los registros de Compras y Ventas en el diseño oficial de ancho fijo (D-32):
+    /// cabecera y alícuotas de ventas, cabecera y alícuotas de compras.
     /// </summary>
     private static byte[] BuildCitiZip(
         int year, int month,
@@ -178,8 +243,10 @@ internal sealed class EfIvaBookRepository : IIvaBookRepository
         using var ms = new MemoryStream();
         using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
         {
-            AddCitiEntry(zip, "REGINFO_CV_VENTAS_CBTE.txt", includedSales, isSales: true);
-            AddCitiEntry(zip, "REGINFO_CV_COMPRAS_CBTE.txt", includedPurchases, isSales: false);
+            AddLines(zip, "REGINFO_CV_VENTAS_CBTE.txt", includedSales.Select(CitiOfficialFormat.SalesHeader));
+            AddLines(zip, "REGINFO_CV_VENTAS_ALICUOTAS.txt", includedSales.SelectMany(CitiOfficialFormat.SalesRates));
+            AddLines(zip, "REGINFO_CV_COMPRAS_CBTE.txt", includedPurchases.Select(CitiOfficialFormat.PurchasesHeader));
+            AddLines(zip, "REGINFO_CV_COMPRAS_ALICUOTAS.txt", includedPurchases.SelectMany(CitiOfficialFormat.PurchasesRates));
             AddReadme(zip, year, month, excluded);
         }
         return ms.ToArray();
@@ -191,9 +258,15 @@ internal sealed class EfIvaBookRepository : IIvaBookRepository
         using var writer = new StreamWriter(entry.Open(), Encoding.UTF8);
         writer.WriteLine($"TallerControl - exportación CITI {year:D4}-{month:D2}");
         writer.WriteLine();
-        writer.WriteLine("ATENCIÓN: estos archivos usan un formato simplificado propio (fecha|numero|cuit|neto|iva|total).");
-        writer.WriteLine("NO son los registros oficiales de ARCA. Consultá con tu contador antes de presentarlos.");
-        writer.WriteLine("Los importes están en centavos, con 15 dígitos y en valor absoluto.");
+        writer.WriteLine("Registros de Compras y Ventas (RG 3685) en el diseño de ancho fijo de ARCA:");
+        writer.WriteLine("  REGINFO_CV_VENTAS_CBTE.txt        (266 caracteres por línea)");
+        writer.WriteLine("  REGINFO_CV_VENTAS_ALICUOTAS.txt   (62)");
+        writer.WriteLine("  REGINFO_CV_COMPRAS_CBTE.txt       (325)");
+        writer.WriteLine("  REGINFO_CV_COMPRAS_ALICUOTAS.txt  (84)");
+        writer.WriteLine();
+        writer.WriteLine("Antes de presentar, importá los archivos en el aplicativo / validador de ARCA y revisalos con tu contador.");
+        writer.WriteLine("Las facturas emitidas en homologación (de prueba) no se incluyen.");
+        writer.WriteLine("La letra de las facturas de compra se deduce de la condición frente al IVA del proveedor (responsable inscripto = A, resto = C).");
         if (excludedPurchases.Count == 0) return;
         writer.WriteLine();
         writer.WriteLine("Compras que NO se incluyeron por falta de punto de venta o número de factura:");
@@ -201,26 +274,11 @@ internal sealed class EfIvaBookRepository : IIvaBookRepository
             writer.WriteLine($"- {e.Date:yyyy-MM-dd} {e.CounterpartyName} total {e.TotalAmount:0.00}");
     }
 
-    private static void AddCitiEntry(ZipArchive zip, string entryName, List<IvaBookEntryDto> entries, bool isSales)
+    private static void AddLines(ZipArchive zip, string entryName, IEnumerable<string> lines)
     {
         var entry = zip.CreateEntry(entryName, CompressionLevel.Optimal);
-        using var writer = new StreamWriter(entry.Open(), Encoding.ASCII);
-
-        foreach (var e in entries)
-        {
-            // Formato CITI simplificado: fecha|numero|cuit_contraparte|neto|iva|total
-            var date = e.Date.ToString("yyyyMMdd");
-            var number = (e.InvoiceNumber ?? "0000-00000000").PadLeft(13);
-            var cuit = (e.CounterpartyCuit ?? "00000000000").Replace("-", "").PadLeft(11);
-            var net = FormatAmount(e.NetAmount);
-            var vat = FormatAmount(e.VatAmount);
-            var total = FormatAmount(e.TotalAmount);
-
-            writer.WriteLine($"{date}|{number}|{cuit}|{net}|{vat}|{total}");
-        }
+        using var writer = new StreamWriter(entry.Open(), Encoding.ASCII) { NewLine = "\r\n" };
+        foreach (var line in lines)
+            writer.WriteLine(line);
     }
-
-    // El formato simplificado no admite signo: los importes se informan en valor absoluto.
-    private static string FormatAmount(decimal amount) =>
-        ((long)(Math.Abs(amount) * 100)).ToString().PadLeft(15, '0');
 }

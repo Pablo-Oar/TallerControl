@@ -397,7 +397,7 @@ public sealed class InvoicingEndpointsTests : IAsyncLifetime
         Assert.Empty(none.GetProperty("items").EnumerateArray());
     }
 
-    [Fact(DisplayName = "T-INV-10: El zip CITI incluye un LEEME que avisa que el formato no es el oficial")]
+    [Fact(DisplayName = "T-INV-10: El zip CITI trae los cuatro registros oficiales y un LEEME")]
     public async Task Citi_zip_incluye_leeme_con_aviso()
     {
         using var client = CreateClient();
@@ -411,8 +411,13 @@ public sealed class InvoicingEndpointsTests : IAsyncLifetime
         var readme = zip.GetEntry("LEEME.txt");
         Assert.NotNull(readme);
         using var reader = new StreamReader(readme!.Open());
-        Assert.Contains("NO son los registros oficiales", await reader.ReadToEndAsync());
-        Assert.NotNull(zip.GetEntry("REGINFO_CV_VENTAS_CBTE.txt"));
+        Assert.Contains("RG 3685", await reader.ReadToEndAsync());
+        foreach (var name in new[]
+                 {
+                     "REGINFO_CV_VENTAS_CBTE.txt", "REGINFO_CV_VENTAS_ALICUOTAS.txt",
+                     "REGINFO_CV_COMPRAS_CBTE.txt", "REGINFO_CV_COMPRAS_ALICUOTAS.txt",
+                 })
+            Assert.NotNull(zip.GetEntry(name));
     }
 
     // ── T-INV-08: Contador solo puede leer, no emitir ────────────────────────

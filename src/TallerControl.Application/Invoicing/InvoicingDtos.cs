@@ -115,4 +115,12 @@ public sealed record IvaBookEntryDto(
     decimal TotalAmount,
     string? Observations,
     string? InvoiceType = null,
-    string? Cae = null);
+    string? Cae = null,
+    // Datos para los registros oficiales del CITI (no viajan al navegador).
+    [property: System.Text.Json.Serialization.JsonIgnore] bool IsCredit = false,
+    [property: System.Text.Json.Serialization.JsonIgnore] string? CounterpartyDocType = null,
+    [property: System.Text.Json.Serialization.JsonIgnore] decimal Perceptions = 0,
+    [property: System.Text.Json.Serialization.JsonIgnore] IReadOnlyList<IvaRateLineDto>? RateLines = null);
+
+/// <summary>Neto e IVA de un comprobante para una misma alícuota (<c>VatRate</c> en porcentaje).</summary>
+public sealed record IvaRateLineDto(decimal VatRate, decimal Net, decimal Vat);
