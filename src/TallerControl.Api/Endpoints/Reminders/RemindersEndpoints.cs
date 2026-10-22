@@ -11,6 +11,7 @@ namespace TallerControl.Api.Endpoints.Reminders;
 /// GET    /api/v1/reminders/{id}        → reminders.manage (O, A)
 /// PUT    /api/v1/reminders/{id}        → reminders.manage (O, A)
 /// DELETE /api/v1/reminders/{id}        → reminders.manage (O, A)
+/// POST   /api/v1/reminders/{id}/complete|reopen → reminders.manage (O, A)
 /// POST   /api/v1/reminders/evaluate    → reminders.manage (O, A)
 /// </summary>
 internal static class RemindersEndpoints
@@ -19,8 +20,8 @@ internal static class RemindersEndpoints
     {
         app.MapGet("/api/v1/reminders",
                 (SearchRemindersHandler handler, CancellationToken ct,
-                 Guid? vehicleId = null, int page = 1, int pageSize = 25) =>
-                    handler.HandleAsync(vehicleId, page, pageSize, ct))
+                 Guid? vehicleId = null, string? status = null, int page = 1, int pageSize = 25) =>
+                    handler.HandleAsync(vehicleId, status, page, pageSize, ct))
             .RequirePermission(Permission.RemindersManage);
 
         app.MapPost("/api/v1/reminders",
@@ -44,6 +45,24 @@ internal static class RemindersEndpoints
         app.MapDelete("/api/v1/reminders/{id:guid}",
                 (Guid id, DeleteReminderHandler handler, CancellationToken ct) =>
                     DeleteAsync(id, handler, ct))
+            .RequirePermission(Permission.RemindersManage)
+            .AddEndpointFilter<AntiforgeryEndpointFilter>();
+
+        app.MapPost("/api/v1/reminders/{id:guid}/complete",
+                async (Guid id, CompleteReminderHandler handler, CancellationToken ct) =>
+                {
+                    await handler.CompleteAsync(id, ct);
+                    return Results.NoContent();
+                })
+            .RequirePermission(Permission.RemindersManage)
+            .AddEndpointFilter<AntiforgeryEndpointFilter>();
+
+        app.MapPost("/api/v1/reminders/{id:guid}/reopen",
+                async (Guid id, CompleteReminderHandler handler, CancellationToken ct) =>
+                {
+                    await handler.ReopenAsync(id, ct);
+                    return Results.NoContent();
+                })
             .RequirePermission(Permission.RemindersManage)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 

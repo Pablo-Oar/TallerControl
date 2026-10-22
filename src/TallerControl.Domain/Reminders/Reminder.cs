@@ -52,6 +52,11 @@ public sealed class Reminder : Entity, ITenantOwned, IVersioned, IAuditable, ISo
     public DateTimeOffset? DueDate { get; private set; }
     public int? DueKm { get; private set; }
     public DateTimeOffset? LastNotifiedAt { get; private set; }
+
+    /// <summary>Cuándo se dio por cumplido (service hecho, trámite resuelto). Un cumplido no vuelve a avisar.</summary>
+    public DateTimeOffset? CompletedAt { get; private set; }
+
+    public bool IsCompleted => CompletedAt.HasValue;
     public uint Version { get; private set; }
 
     // IAuditable
@@ -86,6 +91,15 @@ public sealed class Reminder : Entity, ITenantOwned, IVersioned, IAuditable, ISo
     }
 
     public void MarkNotified(DateTimeOffset at) => LastNotifiedAt = at;
+
+    public void Complete(DateTimeOffset at) => CompletedAt ??= at;
+
+    /// <summary>Vuelve a pendiente; se reinicia el aviso para que pueda volver a notificar.</summary>
+    public void Reopen()
+    {
+        CompletedAt = null;
+        LastNotifiedAt = null;
+    }
 
     public void Delete(string reason, Guid? deletedBy, DateTimeOffset deletedAt)
     {

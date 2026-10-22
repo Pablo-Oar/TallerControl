@@ -6,7 +6,8 @@ namespace TallerControl.Application.Reminders;
 
 public interface IReminderRepository
 {
-    Task<Page<ReminderListDto>> SearchAsync(Guid? vehicleId, int page, int pageSize, CancellationToken ct);
+    /// <param name="status">pending (por defecto), completed o all.</param>
+    Task<Page<ReminderListDto>> SearchAsync(Guid? vehicleId, string status, int page, int pageSize, CancellationToken ct);
 
     Task<ReminderDto?> GetFullAsync(Guid id, CancellationToken ct);
 

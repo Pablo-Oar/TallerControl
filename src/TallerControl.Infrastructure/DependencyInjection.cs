@@ -304,6 +304,7 @@ public static class DependencyInjection
         services.AddScoped<SearchRemindersHandler>();
         services.AddScoped<UpdateReminderHandler>();
         services.AddScoped<DeleteReminderHandler>();
+        services.AddScoped<CompleteReminderHandler>();
         services.AddScoped<EvaluateDueRemindersHandler>();
 
         // ── E14: Agenda y turnos ──────────────────────────────────────────────

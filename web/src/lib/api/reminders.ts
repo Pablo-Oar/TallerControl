@@ -22,6 +22,7 @@ export interface ReminderListDto {
   dueDate: string | null
   dueKm: number | null
   lastNotifiedAt: string | null
+  completedAt: string | null
 }
 
 export interface ReminderDto extends ReminderListDto {
@@ -38,6 +39,8 @@ export interface UpsertReminderRequest {
   notes?: string | null
 }
 
+export type ReminderStatusFilter = 'pending' | 'completed'
+
 export interface RemindersPage {
   items: ReminderListDto[]
   page: number
@@ -46,8 +49,9 @@ export interface RemindersPage {
 }
 
 export const remindersApi = {
-  search: (params: { vehicleId?: string; page?: number; pageSize?: number }) => {
+  search: (params: { vehicleId?: string; status?: ReminderStatusFilter; page?: number; pageSize?: number }) => {
     const q = new URLSearchParams()
+    if (params.status) q.set('status', params.status)
     if (params.vehicleId) q.set('vehicleId', params.vehicleId)
     if (params.page) q.set('page', String(params.page))
     if (params.pageSize) q.set('pageSize', String(params.pageSize))
@@ -63,6 +67,10 @@ export const remindersApi = {
     api.put<ReminderDto>(`/api/v1/reminders/${id}`, request, String(version)),
 
   delete: (id: string) => api.delete<void>(`/api/v1/reminders/${id}`, undefined, true),
+
+  complete: (id: string) => api.post<void>(`/api/v1/reminders/${id}/complete`, undefined, true),
+
+  reopen: (id: string) => api.post<void>(`/api/v1/reminders/${id}/reopen`, undefined, true),
 
   evaluate: () => api.post<{ notificationsCreated: number }>('/api/v1/reminders/evaluate', {}, true),
 }
