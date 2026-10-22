@@ -18,6 +18,7 @@ namespace TallerControl.Api.Endpoints.Quotes;
 /// POST   /api/v1/quotes/{id}/cancel              → quotes.write
 /// DELETE /api/v1/quotes/{id}                     → quotes.write
 /// GET    /api/v1/quotes/{id}/responses           → quotes.read
+/// GET    /api/v1/quotes/{id}/responses/{responseId}/signer-document → audit.read (O)
 /// GET    /api/v1/quotes/{id}/pdf                 → quotes.read
 /// </summary>
 internal static class QuotesEndpoints
@@ -97,6 +98,15 @@ internal static class QuotesEndpoints
                 (Guid id, GetQuoteResponsesHandler handler, CancellationToken ct) =>
                     ResponsesAsync(id, handler, ct))
             .RequirePermission(Permission.QuotesRead);
+
+        app.MapGet("/api/v1/quotes/{id:guid}/responses/{responseId:guid}/signer-document",
+                async (Guid id, Guid responseId, GetSignerDocumentHandler handler, ILogger<GetSignerDocumentHandler> logger, CancellationToken ct) =>
+                {
+                    var dto = await handler.HandleAsync(id, responseId, ct);
+                    logger.LogInformation("Se consultó el documento del firmante de la respuesta {ResponseId} del presupuesto {QuoteId}", responseId, id);
+                    return Results.Ok(dto);
+                })
+            .RequirePermission(Permission.AuditRead);
 
         app.MapGet("/api/v1/quotes/{id:guid}/pdf",
                 (Guid id, GetQuotePdfHandler handler, CancellationToken ct) =>

@@ -19,7 +19,7 @@ namespace TallerControl.Api.Endpoints.Work;
 /// GET    /api/v1/work-orders/mechanics                 → workorders.write    (O, A) mecánicos asignables
 /// POST   /api/v1/work-orders/{id}/assign               → workorders.write / workorders.assign_self
 /// PATCH  /api/v1/work-orders/{id}/mechanic-notes       → workorders.status   (M)
-/// GET    /api/v1/work-orders/{id}/history              → workorders.read     (O, A)
+/// GET    /api/v1/work-orders/{id}/history              → workorders.read     (O, A, M: solo sus órdenes)
 /// GET    /api/v1/work-orders/{id}/pdf                  → workorders.read     (O, A)
 /// GET    /api/v1/work-orders/{id}/public-link          → workorders.read     (O, A)
 /// * El mecánico solo ve las suyas o sin asignar; la lógica está en el handler.
@@ -90,8 +90,11 @@ internal static class WorkOrdersEndpoints
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
         app.MapGet("/api/v1/work-orders/{id:guid}/history",
-                (Guid id, GetWorkOrderHistoryHandler handler, CancellationToken ct) =>
-                    handler.HandleAsync(id, ct))
+                async (Guid id, GetWorkOrderHistoryHandler handler, IAuthRepository auth, HttpContext ctx, CancellationToken ct) =>
+                {
+                    var (isMechanic, membershipId, _) = await ResolveSessionAsync(auth, ctx, ct);
+                    return Results.Ok(await handler.HandleAsync(id, isMechanic, membershipId, ct));
+                })
             .RequirePermission(Permission.WorkOrdersRead);
 
         app.MapGet("/api/v1/work-orders/{id:guid}/pdf",

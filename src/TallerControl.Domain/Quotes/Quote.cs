@@ -145,14 +145,15 @@ public sealed class Quote : Entity, ITenantOwned, IVersioned, IAudited, IAuditab
     }
 
     /// <summary>
-    /// Vuelve a Draft desde Sent o Rejected (invalida las respuestas vigentes).
+    /// Vuelve a Draft desde Sent, Rejected o Expired (invalida las respuestas vigentes). Un vencido se renueva así:
+    /// vuelve a borrador y se edita la fecha «Válido hasta» antes de reenviarlo.
     /// Retorna la lista de respuestas que se marcaron como no vigentes.
     /// </summary>
     public IReadOnlyList<QuoteResponse> Reopen(string? reason)
     {
-        if (Status is not (QuoteStatus.Sent or QuoteStatus.Rejected))
+        if (Status is not (QuoteStatus.Sent or QuoteStatus.Rejected or QuoteStatus.Expired))
             throw new InvalidOperationException(
-                $"Solo se puede reabrir un presupuesto enviado o rechazado (estado actual: {Status}).");
+                $"Solo se puede reabrir un presupuesto enviado, rechazado o vencido (estado actual: {Status}).");
 
         Status = QuoteStatus.Draft;
         SentAt = null;

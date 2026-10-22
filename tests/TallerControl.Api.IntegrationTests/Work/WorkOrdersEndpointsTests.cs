@@ -382,6 +382,26 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, await PutAsync(8_000m, fresh));
     }
 
+    [Fact(DisplayName = "T-WO-17: El mecánico ve el historial de sus órdenes y de las libres, pero no el de las ajenas (404)")]
+    public async Task Historial_respeta_la_visibilidad_del_mecanico()
+    {
+        using var ownerClient = CreateClient();
+        using var mechanicClient = CreateClient();
+        await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        await LoginAsync(mechanicClient, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
+
+        var mine = await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.MechanicMembershipId);
+        var free = await CreateOrderAsync(ownerClient);
+        var other = await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.AdminMembershipId);
+
+        async Task<HttpStatusCode> HistoryAsync(JsonElement order) =>
+            (await mechanicClient.GetAsync($"/api/v1/work-orders/{order.GetProperty("id").GetGuid()}/history")).StatusCode;
+
+        Assert.Equal(HttpStatusCode.OK, await HistoryAsync(mine));
+        Assert.Equal(HttpStatusCode.OK, await HistoryAsync(free));
+        Assert.Equal(HttpStatusCode.NotFound, await HistoryAsync(other));
+    }
+
     [Fact(DisplayName = "T-WO-05: Mecánico NO puede ver una orden asignada a otro rol → 404")]
     public async Task Mecanico_no_puede_ver_orden_asignada_a_otro()
     {

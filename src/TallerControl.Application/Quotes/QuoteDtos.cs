@@ -68,7 +68,14 @@ public sealed record QuoteResponseDto(
     string? Comment,
     bool IsCurrent,
     DateTimeOffset CreatedAt,
-    IReadOnlyList<QuoteResponseItemDto> Items);
+    IReadOnlyList<QuoteResponseItemDto> Items,
+    /// <summary>Clave interna de la firma en el almacenamiento: nunca viaja al cliente web.</summary>
+    [property: System.Text.Json.Serialization.JsonIgnore] string? SignatureKey = null,
+    bool HasSignerDocument = false,
+    /// <summary>URL prefirmada (10 min) de la imagen de la firma, si el cliente firmó.</summary>
+    string? SignatureUrl = null);
+
+public sealed record SignerDocumentDto(string DocNumber);
 
 /// <summary>Decisión por renglón en una respuesta.</summary>
 public sealed record QuoteResponseItemDto(Guid QuoteItemId, bool Approved);

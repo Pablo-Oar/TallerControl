@@ -106,6 +106,10 @@ export interface QuoteResponseDto {
   isCurrent: boolean
   createdAt: string
   items: QuoteResponseItemDto[]
+  /** El cliente declaró un documento al responder (se guarda cifrado; lo revela el Dueño). */
+  hasSignerDocument?: boolean
+  /** URL de la imagen de la firma, de corta vida. */
+  signatureUrl?: string | null
 }
 
 export interface QuoteItemRequest {
@@ -260,6 +264,9 @@ export const quotesApi = {
 
   delete: (id: string, reason?: string | null) =>
     api.delete(`/api/v1/quotes/${id}`, { reason: reason ?? null }, true),
+
+  getSignerDocument: (quoteId: string, responseId: string) =>
+    api.get<{ docNumber: string }>(`/api/v1/quotes/${quoteId}/responses/${responseId}/signer-document`),
 
   getResponses: (id: string) =>
     api.get<QuoteResponseDto[]>(`/api/v1/quotes/${id}/responses`),

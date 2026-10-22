@@ -176,6 +176,7 @@ public static class DependencyInjection
         services.AddScoped<CancelQuoteHandler>();
         services.AddScoped<DeleteQuoteHandler>();
         services.AddScoped<GetQuoteResponsesHandler>();
+        services.AddScoped<GetSignerDocumentHandler>();
         services.AddScoped<GetQuotePdfHandler>();
 
         services.AddScoped<IDashboardRepository, EfDashboardRepository>();
@@ -319,6 +320,7 @@ public static class DependencyInjection
 
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddHostedService<OutboxDispatcher>();
+        services.AddHostedService<Maintenance.MaintenanceWorker>();
 
         services.AddHealthChecks()
             .AddCheck<DatabaseHealthCheck>("database", tags: [ReadyTag]);

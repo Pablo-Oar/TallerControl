@@ -3,7 +3,7 @@ using TallerControl.Application.Common;
 namespace TallerControl.Application.Quotes;
 
 /// <summary>
-/// Caso de uso: reabrir un presupuesto enviado o rechazado (Sent/Rejected → Draft, doc 05 §2.6, T-QUO-06).
+/// Caso de uso: reabrir un presupuesto enviado, rechazado o vencido (Sent/Rejected/Expired → Draft, doc 05 §2.6, T-QUO-06).
 /// Invalida las respuestas vigentes.
 /// </summary>
 public sealed class ReopenQuoteHandler

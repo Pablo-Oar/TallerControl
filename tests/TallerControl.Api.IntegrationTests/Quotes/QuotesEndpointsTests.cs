@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using TallerControl.Api.Identity;
 using TallerControl.Api.IntegrationTests.Persistence;
 
@@ -427,6 +428,40 @@ public sealed class QuotesEndpointsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
         var items = (await resp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("items");
         Assert.Equal(1, items.GetArrayLength());
+    }
+
+    [Fact(DisplayName = "T-QUO-14: La tarea periódica marca Vencido un presupuesto enviado cuya vigencia pasó")]
+    public async Task Tarea_periodica_vence_presupuestos_enviados()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, QuotesWebApplicationFactory.OwnerEmail, QuotesWebApplicationFactory.Password);
+
+        var items = new object[]
+        {
+            new { kind = "service", description = "Vence", quantity = 1m, unitNetPrice = 500m, vatRate = 21m, requiredForApproval = true },
+        };
+        var id = (await CreateQuoteAsync(client, items)).GetProperty("id").GetGuid();
+        var csrf = await FetchCsrfAsync(client);
+        var send = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/quotes/{id}/send");
+        send.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        (await client.SendAsync(send)).EnsureSuccessStatusCode();
+
+        // Se simula el paso del tiempo: la vigencia quedó en el pasado.
+        await using (var conn = new Npgsql.NpgsqlConnection(_factory.ConnectionString))
+        {
+            await conn.OpenAsync();
+            await using var cmd = new Npgsql.NpgsqlCommand("UPDATE quotes SET valid_until = current_date - 3 WHERE id = @id", conn);
+            cmd.Parameters.AddWithValue("id", id);
+            Assert.Equal(1, await cmd.ExecuteNonQueryAsync());
+        }
+
+        var worker = _factory.Services.GetServices<Microsoft.Extensions.Hosting.IHostedService>()
+            .OfType<TallerControl.Infrastructure.Maintenance.MaintenanceWorker>()
+            .Single();
+        await worker.RunOnceAsync(CancellationToken.None);
+
+        var quote = await client.GetFromJsonAsync<JsonElement>($"/api/v1/quotes/{id}");
+        Assert.Equal("expired", quote.GetProperty("status").GetString());
     }
 
     // ── T-QUO-11: GET /quotes/{id}/responses ─────────────────────────────────

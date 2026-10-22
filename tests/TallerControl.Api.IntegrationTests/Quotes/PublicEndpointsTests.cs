@@ -226,7 +226,7 @@ public sealed class PublicEndpointsTests : IAsyncLifetime
     }
 
     private static async Task<HttpResponseMessage> RespondAsync(
-        HttpClient anon, string token, JsonElement publicQuote, Func<JsonElement, bool> approve)
+        HttpClient anon, string token, JsonElement publicQuote, Func<JsonElement, bool> approve, string? signerDocNumber = null)
     {
         var items = publicQuote.GetProperty("items").EnumerateArray()
             .Select(i => new { quoteItemId = i.GetProperty("id").GetGuid(), approved = approve(i) })
@@ -238,6 +238,7 @@ public sealed class PublicEndpointsTests : IAsyncLifetime
             {
                 decision = "approved",
                 signerName = "Cliente Prueba",
+                signerDocNumber,
                 contentHash = publicQuote.GetProperty("contentHash").GetString(),
                 items,
             }),
@@ -268,6 +269,33 @@ public sealed class PublicEndpointsTests : IAsyncLifetime
         Assert.Equal("partially_approved", dto.GetProperty("status").GetString());
         Assert.Equal(1210m, dto.GetProperty("approvedTotal").GetDecimal()); // 1.000 + IVA 21 %
         Assert.Equal(1815m, dto.GetProperty("total").GetDecimal());         // 1.500 + IVA 21 %
+    }
+
+    [Fact(DisplayName = "T-PUB-08: el documento del firmante se guarda cifrado y solo lo revela el Dueño")]
+    public async Task Documento_del_firmante_solo_lo_ve_el_duenio()
+    {
+        using var owner = CreateClient();
+        using var admin = CreateClient();
+        await LoginAsync(owner, QuotesWebApplicationFactory.OwnerEmail, QuotesWebApplicationFactory.Password);
+        await LoginAsync(admin, QuotesWebApplicationFactory.AdminEmail, QuotesWebApplicationFactory.Password);
+        var (quoteId, token) = await SendWithLinkAsync(owner);
+
+        using var anon = CreateClient();
+        var publicQuote = await (await anon.GetAsync($"/api/public/v1/quotes/{token}")).Content.ReadFromJsonAsync<JsonElement>();
+        var resp = await RespondAsync(anon, token, publicQuote, _ => true, signerDocNumber: "30123456");
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+
+        var responses = await owner.GetFromJsonAsync<JsonElement>($"/api/v1/quotes/{quoteId}/responses");
+        var response = responses.EnumerateArray().First();
+        Assert.True(response.GetProperty("hasSignerDocument").GetBoolean());
+        Assert.False(response.TryGetProperty("signatureKey", out _), "La clave interna de la firma no debe viajar.");
+        var responseId = response.GetProperty("id").GetGuid();
+
+        var reveal = await owner.GetFromJsonAsync<JsonElement>($"/api/v1/quotes/{quoteId}/responses/{responseId}/signer-document");
+        Assert.Equal("30123456", reveal.GetProperty("docNumber").GetString());
+
+        var forbidden = await admin.GetAsync($"/api/v1/quotes/{quoteId}/responses/{responseId}/signer-document");
+        Assert.Equal(HttpStatusCode.Forbidden, forbidden.StatusCode);
     }
 
     [Fact(DisplayName = "T-PUB-03: quitar un renglón obligatorio de la aprobación devuelve 422")]

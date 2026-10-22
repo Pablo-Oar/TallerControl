@@ -176,9 +176,18 @@ internal sealed class EfQuoteRepository : IQuoteRepository
 
         return responses.Select(r => new QuoteResponseDto(
             r.Id, r.Decision, r.SignerName, r.ApprovedTotal, r.Comment, r.IsCurrent, r.CreatedAt,
-            r.Items.Select(ri => new QuoteResponseItemDto(ri.QuoteItemId, ri.Approved)).ToList()))
+            r.Items.Select(ri => new QuoteResponseItemDto(ri.QuoteItemId, ri.Approved)).ToList(),
+            r.SignatureFileKey,
+            r.SignerDocNumberEnc is { Length: > 0 }))
             .ToList();
     }
+
+    public Task<byte[]?> GetSignerDocumentCipherAsync(Guid quoteId, Guid responseId, CancellationToken ct) =>
+        _db.Set<QuoteResponse>()
+            .AsNoTracking()
+            .Where(r => r.QuoteId == quoteId && r.Id == responseId)
+            .Select(r => r.SignerDocNumberEnc)
+            .FirstOrDefaultAsync(ct);
 
     public async Task AddAsync(Quote quote, CancellationToken ct) =>
         await _db.Set<Quote>().AddAsync(quote, ct);
