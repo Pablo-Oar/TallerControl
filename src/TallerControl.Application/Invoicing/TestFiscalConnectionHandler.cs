@@ -43,7 +43,7 @@ public sealed class TestFiscalConnectionHandler
         try
         {
             var privateKeyDer = _encryptor.DecryptPrivateKey(cert.PrivateKeyEncrypted);
-            var credentials = new ArcaCertificateCredentials(privateKeyDer, cert.CertificatePem!, cert.Cuit);
+            var credentials = new ArcaCertificateCredentials(privateKeyDer, cert.CertificatePem!, cert.Cuit, cert.IsHomologation);
             var ticket = await _arcaClient.GetTicketAsync(credentials, ct);
 
             // Tipo de comprobante 11 (Factura C) como prueba genérica

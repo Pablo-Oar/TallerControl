@@ -45,7 +45,7 @@ public sealed class CreateFiscalCertificateHandler
         var encryptedKey = _encryptor.GenerateAndEncryptPrivateKey();
         var csrPem = _encryptor.GenerateCsr(encryptedKey, request.Cuit);
 
-        var cert = new FiscalCertificate(tenantId, request.Cuit, request.Name, request.IsPrimary, encryptedKey, csrPem);
+        var cert = new FiscalCertificate(tenantId, request.Cuit, request.Name, request.IsPrimary, encryptedKey, csrPem, request.Environment);
         await _repo.AddCertificateAsync(cert, ct);
         await _repo.SaveChangesAsync(ct);
 
@@ -53,5 +53,5 @@ public sealed class CreateFiscalCertificateHandler
     }
 
     internal static FiscalCertificateDto MapToDto(FiscalCertificate c) =>
-        new(c.Id, c.Cuit, c.Name, c.IsPrimary, c.Status, c.CsrPem, c.ExpiresAt, c.IsActive, c.Version, c.CreatedAt);
+        new(c.Id, c.Cuit, c.Name, c.IsPrimary, c.Status, c.Environment, c.CsrPem, c.ExpiresAt, c.IsActive, c.Version, c.CreatedAt);
 }

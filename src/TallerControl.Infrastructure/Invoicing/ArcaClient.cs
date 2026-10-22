@@ -31,7 +31,7 @@ internal sealed class ArcaClient : IArcaClient
 
     public async Task<ArcaTicket> GetTicketAsync(ArcaCertificateCredentials credentials, CancellationToken ct)
     {
-        var cacheKey = $"arca_ticket_{credentials.Cuit}_{_options.WsId}";
+        var cacheKey = $"arca_ticket_{credentials.Cuit}_{_options.WsId}_{(credentials.Homologation ? "homo" : "prod")}";
 
         if (_cache.TryGetValue(cacheKey, out ArcaTicket? cached) && cached != null)
             return cached;
@@ -43,9 +43,9 @@ internal sealed class ArcaClient : IArcaClient
         var cmsSigned = Convert.ToBase64String(signedCms);
 
         var soapBody = BuildWsaaSoapRequest(cmsSigned);
-        var response = await PostSoapAsync(_options.WsaaUrl, soapBody, "loginCms", ct);
+        var response = await PostSoapAsync(credentials.Homologation ? _options.HomologationWsaaUrl : _options.WsaaUrl, soapBody, "loginCms", ct);
 
-        var ticket = ParseWsaaResponse(response, credentials.Cuit);
+        var ticket = ParseWsaaResponse(response, credentials.Cuit) with { Homologation = credentials.Homologation };
 
         var expiry = ticket.ExpirationTime - DateTimeOffset.UtcNow - TimeSpan.FromMinutes(5);
         var cacheDuration = expiry < TimeSpan.Zero
@@ -66,7 +66,7 @@ internal sealed class ArcaClient : IArcaClient
         var nextNumber = lastNumber + 1;
 
         var soapBody = BuildFecaeSolicitar(ticket, request, nextNumber);
-        var rawResponse = await PostSoapAsync(_options.WsfevUrl, soapBody, "FECAESolicitar", ct);
+        var rawResponse = await PostSoapAsync(WsfevUrl(ticket), soapBody, "FECAESolicitar", ct);
 
         return ParseFecaeResponse(rawResponse, nextNumber);
     }
@@ -74,12 +74,14 @@ internal sealed class ArcaClient : IArcaClient
     public async Task<int> GetLastAuthorizedNumberAsync(ArcaTicket ticket, int pointOfSaleNumber, int invoiceTypeCode, CancellationToken ct)
     {
         var soapBody = BuildFECompUltimoAutorizado(ticket, pointOfSaleNumber, invoiceTypeCode);
-        var rawResponse = await PostSoapAsync(_options.WsfevUrl, soapBody, "FECompUltimoAutorizado", ct);
+        var rawResponse = await PostSoapAsync(WsfevUrl(ticket), soapBody, "FECompUltimoAutorizado", ct);
 
         var doc = XDocument.Parse(rawResponse);
         var cbteNro = doc.Descendants("CbteNro").FirstOrDefault()?.Value;
         return int.TryParse(cbteNro, out var n) ? n : 0;
     }
+
+    private string WsfevUrl(ArcaTicket ticket) => ticket.Homologation ? _options.HomologationWsfevUrl : _options.WsfevUrl;
 
     // ── WSAA ──────────────────────────────────────────────────────────────────
 

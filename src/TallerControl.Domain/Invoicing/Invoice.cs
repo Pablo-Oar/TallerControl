@@ -27,7 +27,8 @@ public sealed class Invoice : Entity, ITenantOwned, IVersioned, IAuditable
         decimal totalAmount,
         DateTimeOffset issuedAt,
         bool isCredit = false,
-        Guid? originalInvoiceId = null)
+        Guid? originalInvoiceId = null,
+        bool isHomologation = false)
     {
         if (isCredit && originalInvoiceId == null)
             throw new ArgumentException("Una nota de crédito debe referenciar al comprobante original.", nameof(originalInvoiceId));
@@ -44,6 +45,7 @@ public sealed class Invoice : Entity, ITenantOwned, IVersioned, IAuditable
         IsCredit = isCredit;
         OriginalInvoiceId = originalInvoiceId;
         Status = InvoiceStatus.Pending;
+        IsHomologation = isHomologation;
     }
 
     public Guid TenantId { get; private set; }
@@ -59,6 +61,9 @@ public sealed class Invoice : Entity, ITenantOwned, IVersioned, IAuditable
     public string? Cae { get; private set; }
     public DateTimeOffset? CaeExpiresAt { get; private set; }
     public InvoiceStatus Status { get; private set; }
+
+    /// <summary>Emitido contra homologación: es de prueba, sin validez fiscal, y no entra al Libro IVA ni al CITI.</summary>
+    public bool IsHomologation { get; private set; }
 
     /// <summary>True para notas de crédito.</summary>
     public bool IsCredit { get; private set; }

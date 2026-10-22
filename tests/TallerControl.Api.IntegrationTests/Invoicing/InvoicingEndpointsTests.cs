@@ -103,6 +103,21 @@ public sealed class InvoicingEndpointsTests : IAsyncLifetime
             "privateKey no debe estar en la respuesta JSON.");
     }
 
+    [Fact(DisplayName = "T-CERT-05: El certificado nace en producción salvo que se pida homologación (D-33)")]
+    public async Task Certificado_indica_el_ambiente_de_arca()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, InvoicingWebApplicationFactory.OwnerEmail, InvoicingWebApplicationFactory.Password);
+
+        var porDefecto = await PostWithCsrfAsync(client, "/api/v1/invoicing/certificates",
+            new { cuit = "20111111112", name = "Producción", isPrimary = false });
+        Assert.Equal("production", porDefecto.GetProperty("environment").GetString());
+
+        var prueba = await PostWithCsrfAsync(client, "/api/v1/invoicing/certificates",
+            new { cuit = "20222222223", name = "Pruebas", isPrimary = false, environment = "homologation" });
+        Assert.Equal("homologation", prueba.GetProperty("environment").GetString());
+    }
+
     // ── T-CERT-02: POST .../upload activa el certificado ─────────────────────
 
     [Fact(DisplayName = "T-CERT-02: Cargar certificado PEM lo activa")]

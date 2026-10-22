@@ -832,6 +832,11 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(13)")
                         .HasColumnName("cuit");
 
+                    b.Property<string>("Environment")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("environment");
+
                     b.Property<DateTimeOffset?>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expires_at");
@@ -887,6 +892,8 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
 
                     b.ToTable("fiscal_certificates", null, t =>
                         {
+                            t.HasCheckConstraint("ck_fiscal_certificates_environment", "\"environment\" IN ('homologation', 'production')");
+
                             t.HasCheckConstraint("ck_fiscal_certificates_status", "\"status\" IN ('active', 'expired', 'pending', 'revoked')");
                         });
                 });
@@ -994,6 +1001,10 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsCredit")
                         .HasColumnType("boolean")
                         .HasColumnName("is_credit");
+
+                    b.Property<bool>("IsHomologation")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_homologation");
 
                     b.Property<DateTimeOffset>("IssuedAt")
                         .HasColumnType("timestamp with time zone")

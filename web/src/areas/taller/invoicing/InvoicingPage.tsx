@@ -43,7 +43,12 @@ const COLUMNS: DataTableColumn<InvoiceListDto>[] = [
     widthClass: 'w-40',
     sortable: true,
     sortValue: i => i.status,
-    cell: i => <StatusBadge status={i.status} label={STATUS_LABELS[i.status]} />,
+    cell: i => (
+      <>
+        <StatusBadge status={i.status} label={STATUS_LABELS[i.status]} />
+        {{i.isHomologation && <span className="ml-2 border border-amber-300 px-1 text-[10px] font-bold tracking-wider uppercase text-amber-700" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}}
+      </>
+    ),
   },
   {
     key: 'total',
@@ -124,6 +129,7 @@ export function InvoicingPage() {
                 <p className="text-sm text-tc-text-secondary">
                   Fcta. {i.invoiceType.toUpperCase()} · {SOURCE_LABELS[i.sourceType]}
                   {i.isCredit && <span className="ml-2 text-[10px] font-bold text-amber-700">NC</span>}
+                  {{i.isHomologation && <span className="ml-2 border border-amber-300 px-1 text-[10px] font-bold tracking-wider uppercase text-amber-700" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}}
                 </p>
                 <p className="text-xs tabular-nums text-tc-text-muted">{new Date(i.issuedAt).toLocaleDateString('es-AR')}</p>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">

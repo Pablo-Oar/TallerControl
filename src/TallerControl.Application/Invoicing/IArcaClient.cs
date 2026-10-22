@@ -23,10 +23,10 @@ public interface IArcaClient
 }
 
 /// <summary>Credenciales para WSAA: clave privada descifrada + certificado PEM.</summary>
-public sealed record ArcaCertificateCredentials(byte[] PrivateKeyDer, string CertificatePem, string Cuit);
+public sealed record ArcaCertificateCredentials(byte[] PrivateKeyDer, string CertificatePem, string Cuit, bool Homologation = false);
 
 /// <summary>Ticket de acceso devuelto por WSAA (TA). Tiene ~12h de vigencia. Incluye el CUIT del emisor.</summary>
-public sealed record ArcaTicket(string Token, string Sign, string Cuit, DateTimeOffset GenerationTime, DateTimeOffset ExpirationTime);
+public sealed record ArcaTicket(string Token, string Sign, string Cuit, DateTimeOffset GenerationTime, DateTimeOffset ExpirationTime, bool Homologation = false);
 
 /// <summary>Datos del comprobante a emitir vía FECAESolicitar.</summary>
 public sealed record ArcaInvoiceRequest(

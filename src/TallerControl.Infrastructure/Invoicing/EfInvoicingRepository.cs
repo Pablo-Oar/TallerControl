@@ -150,7 +150,8 @@ internal sealed class EfInvoicingRepository : IInvoicingRepository
                 i.TotalAmount,
                 i.IssuedAt,
                 i.SourceType,
-                i.SourceId))
+                i.SourceId,
+                i.IsHomologation))
             .ToListAsync(ct);
 
         return new Page<InvoiceListDto>(items, total, page, pageSize);
@@ -182,7 +183,8 @@ internal sealed class EfInvoicingRepository : IInvoicingRepository
             i.TotalAmount,
             i.IssuedAt,
             i.RejectionReason,
-            i.CreatedAt);
+            i.CreatedAt,
+            i.IsHomologation);
     }
 
     public async Task AddInvoiceAsync(Invoice invoice, CancellationToken ct) =>

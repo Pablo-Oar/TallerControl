@@ -10,13 +10,18 @@ public sealed record FiscalCertificateDto(
     string Name,
     bool IsPrimary,
     FiscalCertificateStatus Status,
+    FiscalEnvironment Environment,
     string CsrPem,
     DateTimeOffset? ExpiresAt,
     bool IsActive,
     uint Version,
     DateTimeOffset CreatedAt);
 
-public sealed record CreateFiscalCertificateRequest(string Cuit, string Name, bool IsPrimary);
+public sealed record CreateFiscalCertificateRequest(
+    string Cuit,
+    string Name,
+    bool IsPrimary,
+    FiscalEnvironment Environment = FiscalEnvironment.Production);
 
 /// <summary>El vencimiento se lee del propio certificado; <c>ExpiresAt</c> solo se usa si no se puede leer.</summary>
 public sealed record UploadFiscalCertificateRequest(string CertificatePem, DateTimeOffset? ExpiresAt = null);
@@ -61,7 +66,8 @@ public sealed record InvoiceDto(
     decimal TotalAmount,
     DateTimeOffset IssuedAt,
     string? RejectionReason,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    bool IsHomologation);
 
 public sealed record InvoiceListDto(
     Guid Id,
@@ -72,7 +78,8 @@ public sealed record InvoiceListDto(
     decimal TotalAmount,
     DateTimeOffset IssuedAt,
     InvoiceSourceType SourceType,
-    Guid SourceId);
+    Guid SourceId,
+    bool IsHomologation);
 
 public sealed record EmitInvoiceRequest(Guid FiscalPointOfSaleId, int Concept = 2); // 2=Servicios
 

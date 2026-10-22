@@ -65,7 +65,7 @@ internal sealed class EfIvaBookRepository : IIvaBookRepository
         DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
     {
         var rows = await _db.Set<Invoice>()
-            .Where(i => i.Status == InvoiceStatus.Authorized && i.IssuedAt >= from && i.IssuedAt < to)
+            .Where(i => i.Status == InvoiceStatus.Authorized && !i.IsHomologation && i.IssuedAt >= from && i.IssuedAt < to)
             .Join(_db.Set<FiscalPointOfSale>(),
                 i => i.FiscalPointOfSaleId,
                 p => p.Id,

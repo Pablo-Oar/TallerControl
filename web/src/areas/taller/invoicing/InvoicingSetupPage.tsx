@@ -8,6 +8,7 @@ import {
   testConnection,
   createPointOfSale,
   type FiscalCertificateDto,
+  type FiscalEnvironment,
   type FiscalPointOfSaleDto,
 } from '../../../lib/api/invoicing'
 import { Button } from '../../../components/ui/Button'
@@ -67,6 +68,7 @@ function CertificatesSection({
   const [cuit, setCuit] = useState('')
   const [name, setName] = useState('')
   const [isPrimary, setIsPrimary] = useState(false)
+  const [environment, setEnvironment] = useState<FiscalEnvironment>('production')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [csrResult, setCsrResult] = useState<string | null>(null)
@@ -87,13 +89,14 @@ function CertificatesSection({
     setError(null)
     setCsrResult(null)
     try {
-      const result = await createCertificate({ cuit, name, isPrimary })
+      const result = await createCertificate({ cuit, name, isPrimary, environment })
       setCsrResult(result.csrPem)
       onUpdated()
       setShowForm(false)
       setCuit('')
       setName('')
       setIsPrimary(false)
+      setEnvironment('production')
     } catch (err) {
       setError(err instanceof ApiError ? err.detail : 'Error al crear certificado')
     } finally {
@@ -167,6 +170,11 @@ function CertificatesSection({
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-sm text-tc-text">{cert.name}</span>
                       <span className="font-mono text-xs text-tc-text-secondary">{cert.cuit}</span>
+                      {cert.environment === 'homologation' && (
+                        <span className="border border-amber-300 px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-amber-700">
+                          Homologación (pruebas)
+                        </span>
+                      )}
                       {cert.isPrimary && (
                         <span className="border border-blue-300 px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-blue-700">
                           Principal
@@ -285,6 +293,27 @@ function CertificatesSection({
               onChange={e => setName(e.target.value)}
               required
             />
+            <fieldset className="space-y-1">
+              <legend className="text-sm font-medium text-tc-text">Ambiente de ARCA</legend>
+              {([
+                ['production', 'Producción', 'Facturas reales, con validez fiscal.'],
+                ['homologation', 'Homologación (pruebas)', 'Para ensayar sin consecuencias fiscales. Las facturas salen marcadas «Prueba» y no entran al Libro IVA ni al CITI.'],
+              ] as const).map(([value, label, hint]) => (
+                <label key={value} className="flex items-start gap-2 text-sm text-tc-text-secondary">
+                  <input
+                    type="radio"
+                    name="arca-environment"
+                    checked={environment === value}
+                    onChange={() => setEnvironment(value)}
+                    className="mt-1 accent-tc-purple"
+                  />
+                  <span>
+                    <span className="font-medium text-tc-text">{label}</span>
+                    <span className="block text-xs text-tc-text-muted">{hint}</span>
+                  </span>
+                </label>
+              ))}
+            </fieldset>
             <label className="flex items-center gap-2 text-sm text-tc-text-secondary">
               <input
                 type="checkbox"
