@@ -10,6 +10,18 @@ interface BeforeInstallPromptEvent extends Event {
 const DISMISS_KEY = 'tc-pwa-banner-dismissed'
 const DISMISS_DAYS = 7
 
+/** base64url → bytes, el formato que pide `applicationServerKey`. */
+function urlBase64ToBytes(value: string) {
+  const base64 = (value + '='.repeat((4 - (value.length % 4)) % 4)).replace(/-/g, '+').replace(/_/g, '/')
+  return Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+}
+
+/** bytes → base64url sin relleno, como lo espera el servidor. */
+function bytesToUrlBase64(buffer: ArrayBuffer | null) {
+  if (!buffer) return ''
+  return btoa(String.fromCharCode(...new Uint8Array(buffer))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
 function dismissedRecently() {
   try {
     const at = Number(localStorage.getItem(DISMISS_KEY) ?? 0)
@@ -53,18 +65,24 @@ export function PwaInstallBanner() {
     const permission = await Notification.requestPermission()
     if (permission !== 'granted') return
 
+    // La clave pública VAPID la entrega el servidor; sin ella el push no está configurado.
+    const key = await api.get<{ publicKey: string }>('/api/v1/push/public-key').catch(() => null)
+    if (!key) {
+      setShowPush(false)
+      return
+    }
+
     const reg = await navigator.serviceWorker.ready
     const sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: undefined, // VAPID key se configura en producción
+      applicationServerKey: urlBase64ToBytes(key.publicKey),
     }).catch(() => null)
 
     if (sub) {
-      const json = sub.toJSON()
       await api.post('/api/v1/push-subscriptions', {
-        endpoint: json.endpoint,
-        p256Dh: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('p256dh') ?? new ArrayBuffer(0)))),
-        auth: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('auth') ?? new ArrayBuffer(0)))),
+        endpoint: sub.endpoint,
+        p256Dh: bytesToUrlBase64(sub.getKey('p256dh')),
+        auth: bytesToUrlBase64(sub.getKey('auth')),
       }, true).catch(() => null)
     }
 

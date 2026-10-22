@@ -27,7 +27,8 @@ public sealed class FiscalCertificate : Entity, ITenantOwned, IVersioned, IAudit
         string name,
         bool isPrimary,
         byte[] privateKeyEncrypted,
-        string csrPem)
+        string csrPem,
+        FiscalEnvironment environment = FiscalEnvironment.Production)
     {
         TenantId = tenantId;
         Cuit = NormalizeCuit(cuit);
@@ -36,12 +37,18 @@ public sealed class FiscalCertificate : Entity, ITenantOwned, IVersioned, IAudit
         PrivateKeyEncrypted = privateKeyEncrypted;
         CsrPem = csrPem.Trim();
         Status = FiscalCertificateStatus.Pending;
+        Environment = environment;
     }
 
     public Guid TenantId { get; private set; }
     public string Cuit { get; private set; } = string.Empty;
     public string Name { get; private set; } = string.Empty;
     public bool IsPrimary { get; private set; }
+
+    /// <summary>Homologación (pruebas) o producción. No cambia: el certificado sirve para un solo ambiente.</summary>
+    public FiscalEnvironment Environment { get; private set; }
+
+    public bool IsHomologation => Environment == FiscalEnvironment.Homologation;
 
     /// <summary>Clave privada RSA cifrada. Solo lectura interna; nunca serializar.</summary>
     public byte[] PrivateKeyEncrypted { get; private set; } = [];

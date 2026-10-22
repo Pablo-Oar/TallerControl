@@ -87,6 +87,12 @@ $env:Storage__SecretKey = $cfg['STORAGE_SECRET_KEY']
 $env:Storage__Bucket = if ($cfg['STORAGE_BUCKET']) { $cfg['STORAGE_BUCKET'] } else { 'tallercontrol-dev' }
 # Opcional: para probar fotos desde un celular por el túnel (ver docs/deploy-produccion.md / vite.config.ts), STORAGE_PUBLIC_URL=https://tallercontrol.com.ar en .env
 if ($cfg['STORAGE_PUBLIC_URL']) { $env:Storage__PublicUrl = $cfg['STORAGE_PUBLIC_URL'] }
+# Avisos push al celular del mecánico (N-04). Generar con .\scripts\generate-vapid-keys.ps1 -WriteEnv
+if ($cfg['PUSH_PUBLIC_KEY'] -and $cfg['PUSH_PRIVATE_KEY']) {
+    $env:Push__PublicKey = $cfg['PUSH_PUBLIC_KEY']
+    $env:Push__PrivateKey = $cfg['PUSH_PRIVATE_KEY']
+    if ($cfg['PUSH_SUBJECT']) { $env:Push__Subject = $cfg['PUSH_SUBJECT'] }
+}
 
 if (-not (Test-Path web/node_modules)) { npm --prefix web ci }
 

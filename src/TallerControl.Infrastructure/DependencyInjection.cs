@@ -282,6 +282,8 @@ public static class DependencyInjection
 
         // ── E13: Push subscriptions (PWA) ─────────────────────────────────────
         services.AddScoped<IPushSubscriptionRepository, EfPushSubscriptionRepository>();
+        services.Configure<PushOptions>(configuration.GetSection(PushOptions.SectionName));
+        services.AddHttpClient<IPushSender, WebPushSender>();
         services.AddScoped<SavePushSubscriptionHandler>();
         services.AddScoped<DeletePushSubscriptionHandler>();
 
@@ -304,6 +306,7 @@ public static class DependencyInjection
         services.AddScoped<SearchRemindersHandler>();
         services.AddScoped<UpdateReminderHandler>();
         services.AddScoped<DeleteReminderHandler>();
+        services.AddScoped<CompleteReminderHandler>();
         services.AddScoped<EvaluateDueRemindersHandler>();
 
         // ── E14: Agenda y turnos ──────────────────────────────────────────────

@@ -11,7 +11,8 @@ public sealed record ReminderListDto(
     string Title,
     DateTimeOffset? DueDate,
     int? DueKm,
-    DateTimeOffset? LastNotifiedAt);
+    DateTimeOffset? LastNotifiedAt,
+    DateTimeOffset? CompletedAt);
 
 /// <summary>Detalle completo de un recordatorio.</summary>
 public sealed record ReminderDto(
@@ -24,7 +25,8 @@ public sealed record ReminderDto(
     DateTimeOffset? DueDate,
     int? DueKm,
     DateTimeOffset? LastNotifiedAt,
-    uint Version);
+    uint Version,
+    DateTimeOffset? CompletedAt);
 
 /// <summary>Cuerpo de POST y PUT /api/v1/reminders.</summary>
 public sealed record UpsertReminderRequest(

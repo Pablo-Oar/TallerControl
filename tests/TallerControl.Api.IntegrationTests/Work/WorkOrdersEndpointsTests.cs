@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using TallerControl.Api.Identity;
 using TallerControl.Api.IntegrationTests.Persistence;
 
@@ -693,6 +695,32 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         // Una vez asignada, otro intento del mecánico se rechaza (ya está asignada).
         var again = await AssignAsync(mechanicClient, id, new { });
         Assert.Equal(HttpStatusCode.UnprocessableEntity, again.StatusCode);
+    }
+
+    [Fact(DisplayName = "T-PUSH-04: Cuando el dueño asigna una orden queda un aviso push para el mecánico y el despachador lo procesa")]
+    public async Task Asignar_encola_un_aviso_push_para_el_mecanico()
+    {
+        using var ownerClient = CreateClient();
+        await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        var id = (await CreateOrderAsync(ownerClient)).GetProperty("id").GetGuid();
+
+        Assert.Equal(HttpStatusCode.NoContent,
+            (await AssignAsync(ownerClient, id, new { mechanicId = _factory.MechanicMembershipId })).StatusCode);
+
+        var dispatcher = _factory.Services.GetServices<Microsoft.Extensions.Hosting.IHostedService>()
+            .OfType<TallerControl.Infrastructure.Outbox.OutboxDispatcher>().Single();
+        await dispatcher.ProcessBatchAsync(CancellationToken.None);
+
+        await using var scope = _factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<TallerControl.Infrastructure.Persistence.AppDbContext>();
+        var message = (await db.Set<TallerControl.Domain.Outbox.OutboxMessage>()
+                .IgnoreQueryFilters()
+                .Where(m => m.Type == "push.work_order_assigned")
+                .ToListAsync())
+            .Single(m => m.PayloadJson.Contains(id.ToString()));
+
+        // Sin claves VAPID el aviso no se entrega, pero tampoco queda trabado ni falla.
+        Assert.NotNull(message.ProcessedAt);
     }
 
     [Fact(DisplayName = "T-WO-12: El dueño asigna un mecánico activo del taller; un id ajeno o de otro rol → 422")]

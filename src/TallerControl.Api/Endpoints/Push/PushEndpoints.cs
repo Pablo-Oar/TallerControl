@@ -5,6 +5,7 @@ namespace TallerControl.Api.Endpoints.Push;
 
 /// <summary>
 /// Suscripciones push para la PWA del mecánico (F-51).
+/// GET  /api/v1/push/public-key      → clave pública VAPID (404 si no hay push configurado)
 /// POST /api/v1/push-subscriptions   → registrar o actualizar suscripción
 /// DELETE /api/v1/push-subscriptions → eliminar suscripción
 /// Requiere sesión autenticada; el user_id sale del claim tc:uid.
@@ -13,6 +14,12 @@ internal static class PushEndpoints
 {
     public static IEndpointRouteBuilder MapPushEndpoints(this IEndpointRouteBuilder app)
     {
+        // Clave pública VAPID para que el navegador pueda suscribirse; 404 si el servidor no tiene push configurado.
+        app.MapGet("/api/v1/push/public-key",
+                (IPushSender sender) =>
+                    sender.PublicKey is { } key ? Results.Ok(new { publicKey = key }) : Results.NotFound())
+            .RequireAuthorization();
+
         app.MapPost("/api/v1/push-subscriptions",
                 (PushSubscriptionRequest request,
                  SavePushSubscriptionHandler handler,

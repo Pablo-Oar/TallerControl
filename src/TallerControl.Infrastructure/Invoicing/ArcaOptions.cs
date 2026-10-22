@@ -10,6 +10,12 @@ public sealed class ArcaOptions
     /// <summary>URL de WSFEv1. Homologación: https://wswhomo.afip.gov.ar/wsfev1/service.asmx</summary>
     public string WsfevUrl { get; set; } = "https://servicios1.afip.gov.ar/wsfev1/service.asmx";
 
+    /// <summary>WSAA de homologación (certificados de prueba).</summary>
+    public string HomologationWsaaUrl { get; set; } = "https://wsaahomo.afip.gov.ar/ws/services/LoginCms";
+
+    /// <summary>WSFEv1 de homologación.</summary>
+    public string HomologationWsfevUrl { get; set; } = "https://wswhomo.afip.gov.ar/wsfev1/service.asmx";
+
     /// <summary>Minutos de vigencia del ticket de autorización antes de renovar (WSAA da ~12 h).</summary>
     public int TicketCacheDurationMinutes { get; set; } = 600;
 

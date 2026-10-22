@@ -62,7 +62,7 @@ public sealed class EmitInvoiceHandler
 
         // Construir credenciales y obtener ticket WSAA
         var privateKeyDer = _encryptor.DecryptPrivateKey(cert.PrivateKeyEncrypted);
-        var credentials = new ArcaCertificateCredentials(privateKeyDer, cert.CertificatePem!, cert.Cuit);
+        var credentials = new ArcaCertificateCredentials(privateKeyDer, cert.CertificatePem!, cert.Cuit, cert.IsHomologation);
         var ticket = await _arcaClient.GetTicketAsync(credentials, ct);
 
         // Calcular CUIT del receptor: obligatorio solo para Factura A
@@ -95,7 +95,8 @@ public sealed class EmitInvoiceHandler
             netAmount: source.NetAmount,
             vatAmount: source.VatAmount,
             totalAmount: source.TotalAmount,
-            issuedAt: arcaRequest.IssuedAt);
+            issuedAt: arcaRequest.IssuedAt,
+            isHomologation: cert.IsHomologation);
 
         if (arcaResult.IsAuthorized)
             invoice.Authorize(arcaResult.Number, arcaResult.Cae!, arcaResult.CaeExpiresAt!.Value, arcaResult.RawResponse);

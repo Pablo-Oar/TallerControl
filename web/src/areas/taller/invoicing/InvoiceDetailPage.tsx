@@ -64,6 +64,7 @@ export function InvoiceDetailPage() {
           {invoice.isCredit ? 'Nota de crédito' : 'Factura'} {invoice.invoiceType.toUpperCase()}
         </h1>
         <StatusBadge status={invoice.status} label={INVOICE_STATUS_LABELS[invoice.status]} />
+        {invoice.isHomologation && <span className="ml-2 border border-amber-300 px-1 text-[10px] font-bold tracking-wider uppercase text-amber-700" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
       </div>
 
       {invoice.status === 'rejected' && (

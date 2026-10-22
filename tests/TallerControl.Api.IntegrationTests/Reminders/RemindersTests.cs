@@ -201,4 +201,38 @@ public sealed class RemindersTests : IAsyncLifetime
         var reminder = await client.GetFromJsonAsync<JsonElement>($"/api/v1/reminders/{id}");
         Assert.NotEqual(JsonValueKind.Null, reminder.GetProperty("lastNotifiedAt").ValueKind);
     }
+
+    [Fact(DisplayName = "T-REM-04: Un recordatorio cumplido deja de avisar y se lista aparte; reabrirlo lo devuelve a pendientes")]
+    public async Task Recordatorio_cumplido_no_avisa_y_se_puede_reabrir()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, RemindersWebApplicationFactory.OwnerEmail, RemindersWebApplicationFactory.OwnerPassword);
+        var (id, _) = await CreateReminderAsync(client, _factory.VehicleId,
+            title: "Cumplido solo",
+            dueDate: DateTimeOffset.UtcNow.AddDays(-3).ToString("O"));
+
+        var csrf = await FetchCsrfAsync(client);
+        var complete = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/reminders/{id}/complete");
+        complete.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        Assert.Equal(HttpStatusCode.NoContent, (await client.SendAsync(complete)).StatusCode);
+
+        var worker = _factory.Services.GetServices<Microsoft.Extensions.Hosting.IHostedService>()
+            .OfType<TallerControl.Infrastructure.Maintenance.MaintenanceWorker>().Single();
+        await worker.RunOnceAsync(CancellationToken.None);
+
+        var reminder = await client.GetFromJsonAsync<JsonElement>($"/api/v1/reminders/{id}");
+        Assert.Equal(JsonValueKind.Null, reminder.GetProperty("lastNotifiedAt").ValueKind);
+        Assert.NotEqual(JsonValueKind.Null, reminder.GetProperty("completedAt").ValueKind);
+
+        var pending = await client.GetFromJsonAsync<JsonElement>("/api/v1/reminders?pageSize=100");
+        Assert.DoesNotContain(pending.GetProperty("items").EnumerateArray(), x => x.GetProperty("id").GetString() == id);
+        var done = await client.GetFromJsonAsync<JsonElement>("/api/v1/reminders?status=completed&pageSize=100");
+        Assert.Contains(done.GetProperty("items").EnumerateArray(), x => x.GetProperty("id").GetString() == id);
+
+        var reopen = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/reminders/{id}/reopen");
+        reopen.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        Assert.Equal(HttpStatusCode.NoContent, (await client.SendAsync(reopen)).StatusCode);
+        var reopened = await client.GetFromJsonAsync<JsonElement>($"/api/v1/reminders/{id}");
+        Assert.Equal(JsonValueKind.Null, reopened.GetProperty("completedAt").ValueKind);
+    }
 }

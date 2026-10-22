@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { remindersApi, getReminderKindLabel, type ReminderListDto } from '../../../lib/api/reminders'
+import { remindersApi, getReminderKindLabel, type ReminderListDto, type ReminderStatusFilter } from '../../../lib/api/reminders'
 import { Button } from '../../../components/ui/Button'
 import { DataTable, RowAction, sortableWhen, type DataTableColumn } from '../../../components/ui/DataTable'
 import { Pagination } from '../../../components/ui/Pagination'
@@ -61,19 +61,27 @@ const COLUMNS: DataTableColumn<ReminderListDto>[] = [
 export function RemindersPage() {
   const qc = useQueryClient()
   const [page, setPage] = useState(1)
+  const [status, setStatus] = useState<ReminderStatusFilter>('pending')
   const [showModal, setShowModal] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['reminders', page],
-    queryFn: () => remindersApi.search({ page, pageSize: 25 }),
+    queryKey: ['reminders', status, page],
+    queryFn: () => remindersApi.search({ status, page, pageSize: 25 }),
   })
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['reminders'] })
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => remindersApi.delete(id),
+    onSuccess: invalidate,
+    onError: (e: Error) => setError(e.message),
+  })
+
+  const doneMut = useMutation({
+    mutationFn: ({ id, done }: { id: string; done: boolean }) =>
+      done ? remindersApi.complete(id) : remindersApi.reopen(id),
     onSuccess: invalidate,
     onError: (e: Error) => setError(e.message),
   })
@@ -115,6 +123,20 @@ export function RemindersPage() {
         </div>
       )}
 
+      <div className="flex gap-2" role="group" aria-label="Estado">
+        {([['pending', 'Pendientes'], ['completed', 'Cumplidos']] as const).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={status === value}
+            onClick={() => { setStatus(value); setPage(1) }}
+            className={`min-h-[36px] rounded-md border px-3 text-xs font-bold tracking-wider uppercase ${status === value ? 'border-tc-purple bg-tc-purple text-white' : 'border-tc-border text-tc-text-secondary hover:bg-tc-surface'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       <DataTable<ReminderListDto>
         label="Recordatorios"
         columns={sortableWhen(COLUMNS, (data?.total ?? 0) <= (data?.pageSize ?? 25))}
@@ -122,6 +144,9 @@ export function RemindersPage() {
         getRowId={r => r.id}
         actions={r => (
           <>
+            <RowAction tone="purple" onClick={() => doneMut.mutate({ id: r.id, done: !r.completedAt })}>
+              {r.completedAt ? 'Reabrir' : 'Marcar cumplido'}
+            </RowAction>
             <RowAction tone="purple" onClick={() => { setEditId(r.id); setShowModal(true) }}>Editar</RowAction>
             <RowAction tone="danger" onClick={async () => { if (await confirmDialog('¿Eliminar este recordatorio?', { danger: true })) deleteMut.mutate(r.id) }}>Eliminar</RowAction>
           </>
@@ -143,7 +168,7 @@ export function RemindersPage() {
           </>
         )}
         loading={isLoading}
-        emptyMessage="No hay recordatorios."
+        emptyMessage={status === 'pending' ? 'No hay recordatorios pendientes.' : 'Todavía no hay recordatorios cumplidos.'}
       />
 
       {data && <Pagination page={page} pageSize={data.pageSize} total={data.total} noun="recordatorios" onPage={setPage} />}

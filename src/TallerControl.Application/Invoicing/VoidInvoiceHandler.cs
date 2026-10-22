@@ -49,7 +49,7 @@ public sealed class VoidInvoiceHandler
         // Nota de crédito: mismo tipo pero código diferente (A=3, B=8, C=13)
         var creditTypeCode = MapToCreditNoteCode(original.InvoiceType);
         var privateKeyDer = _encryptor.DecryptPrivateKey(cert.PrivateKeyEncrypted);
-        var credentials = new ArcaCertificateCredentials(privateKeyDer, cert.CertificatePem!, cert.Cuit);
+        var credentials = new ArcaCertificateCredentials(privateKeyDer, cert.CertificatePem!, cert.Cuit, cert.IsHomologation);
         var ticket = await _arcaClient.GetTicketAsync(credentials, ct);
 
         var source = await _repo.GetSourceDataAsync(original.SourceType, original.SourceId, ct);
@@ -79,7 +79,8 @@ public sealed class VoidInvoiceHandler
             totalAmount: original.TotalAmount,
             issuedAt: arcaRequest.IssuedAt,
             isCredit: true,
-            originalInvoiceId: original.Id);
+            originalInvoiceId: original.Id,
+            isHomologation: cert.IsHomologation);
 
         if (arcaResult.IsAuthorized)
             creditNote.Authorize(arcaResult.Number, arcaResult.Cae!, arcaResult.CaeExpiresAt!.Value, arcaResult.RawResponse);

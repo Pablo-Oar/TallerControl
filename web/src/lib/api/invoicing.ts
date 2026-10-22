@@ -2,6 +2,7 @@ import { api } from './client'
 
 // ── Enums ────────────────────────────────────────────────────────────────────
 
+export type FiscalEnvironment = 'production' | 'homologation'
 export type FiscalCertificateStatus = 'pending' | 'active' | 'expired' | 'revoked'
 export type InvoiceType = 'a' | 'b' | 'c' | 'm'
 export type InvoiceStatus = 'pending' | 'authorized' | 'rejected'
@@ -15,6 +16,7 @@ export interface FiscalCertificateDto {
   name: string
   isPrimary: boolean
   status: FiscalCertificateStatus
+  environment: FiscalEnvironment
   csrPem: string
   expiresAt: string | null
   isActive: boolean
@@ -26,6 +28,7 @@ export interface CreateFiscalCertificateRequest {
   cuit: string
   name: string
   isPrimary: boolean
+  environment: FiscalEnvironment
 }
 
 export interface UploadFiscalCertificateRequest {
@@ -76,6 +79,8 @@ export interface InvoiceListDto {
   issuedAt: string
   sourceType: InvoiceSourceType
   sourceId: string
+  /** Emitida contra homologación: de prueba, sin validez fiscal. */
+  isHomologation: boolean
 }
 
 export interface InvoiceDto extends InvoiceListDto {

@@ -16,7 +16,7 @@ internal sealed class EfReminderRepository : IReminderRepository
     public EfReminderRepository(AppDbContext db) => _db = db;
 
     public async Task<Page<ReminderListDto>> SearchAsync(
-        Guid? vehicleId, int page, int pageSize, CancellationToken ct)
+        Guid? vehicleId, string status, int page, int pageSize, CancellationToken ct)
     {
         var query = _db.Set<Reminder>()
             .AsNoTracking()
@@ -27,6 +27,11 @@ internal sealed class EfReminderRepository : IReminderRepository
 
         if (vehicleId.HasValue)
             query = query.Where(x => x.Reminder.VehicleId == vehicleId.Value);
+
+        if (status == "pending")
+            query = query.Where(x => x.Reminder.CompletedAt == null);
+        else if (status == "completed")
+            query = query.Where(x => x.Reminder.CompletedAt != null);
 
         var total = await query.CountAsync(ct);
 
@@ -43,7 +48,8 @@ internal sealed class EfReminderRepository : IReminderRepository
                 x.Reminder.Title,
                 x.Reminder.DueDate,
                 x.Reminder.DueKm,
-                x.Reminder.LastNotifiedAt))
+                x.Reminder.LastNotifiedAt,
+                x.Reminder.CompletedAt))
             .ToListAsync(ct);
 
         return new Page<ReminderListDto>(items, page, pageSize, total);
@@ -66,7 +72,7 @@ internal sealed class EfReminderRepository : IReminderRepository
         return new ReminderDto(
             r.Id, r.VehicleId, result.Plate,
             r.Kind, r.Title, r.Notes,
-            r.DueDate, r.DueKm, r.LastNotifiedAt, r.Version);
+            r.DueDate, r.DueKm, r.LastNotifiedAt, r.Version, r.CompletedAt);
     }
 
     public Task<Reminder?> FindByIdAsync(Guid id, CancellationToken ct) =>
@@ -102,6 +108,7 @@ internal sealed class EfReminderRepository : IReminderRepository
             join c in customers on v.CustomerId equals c.Id
             where (r.DueDate.HasValue && r.DueDate <= cutoffDate) ||
                   (r.DueKm.HasValue && v.OdometerKm >= r.DueKm.Value - kmLookahead)
+            where r.CompletedAt == null
             where r.LastNotifiedAt == null || r.LastNotifiedAt < notifiedBefore
             where v.DeletedAt == null && c.DeletedAt == null
             select new { Reminder = r, v.Plate, c.Name, c.Email, c.DoNotContact }
