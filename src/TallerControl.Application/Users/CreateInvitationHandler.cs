@@ -44,23 +44,33 @@ public sealed class CreateInvitationHandler
             throw new BusinessRuleException("No se puede invitar con el rol Dueño.");
         }
 
-        // Verificar si ya hay una invitación pendiente sin aceptar.
-        var existing = await _invitations.FindPendingByEmailAsync(
-            request.Email.Trim().ToLowerInvariant(), ct);
+        FinePermissions.Validate(request.Role, request.Permissions);
 
-        if (existing is not null && !existing.IsAccepted)
+        var email = request.Email.Trim().ToLowerInvariant();
+        var now = _clock.GetUtcNow();
+
+        if (await _invitations.IsActiveMemberAsync(email, ct))
         {
-            throw new ConflictException(
-                "Ya existe una invitación pendiente para ese email en este taller.");
+            throw new ConflictException("Esa persona ya forma parte del taller.");
         }
 
-        var now = _clock.GetUtcNow();
+        // Una pendiente vigente se reenvía (no se duplica); una vencida se reemplaza por la nueva.
+        var existing = await _invitations.FindPendingByEmailAsync(email, ct);
+        if (existing is not null && !existing.IsExpired(now))
+        {
+            throw new ConflictException(
+                "Ya hay una invitación pendiente para ese email: reenviala desde la lista de invitaciones.");
+        }
+
+        existing?.Cancel(now);
+
         var (invitation, token) = Invitation.Create(
             tenantId,
             request.Email,
             request.Role,
             request.Permissions,
-            now);
+            now,
+            request.DisplayName);
 
         _invitations.Add(invitation);
 

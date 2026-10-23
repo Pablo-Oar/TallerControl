@@ -51,7 +51,7 @@ public sealed class AcceptInvitationHandler
 
         var now = _clock.GetUtcNow();
 
-        if (invitation is null || invitation.IsExpired(now) || invitation.IsAccepted)
+        if (invitation is null || invitation.IsExpired(now) || invitation.IsAccepted || invitation.CancelledAt is not null)
         {
             throw new BusinessRuleException("El enlace de invitación no es válido o ya expiró.");
         }
@@ -61,8 +61,8 @@ public sealed class AcceptInvitationHandler
         bool isNewUser = user is null;
         if (isNewUser)
         {
-            // El displayName vendrá del link; usamos placeholder hasta que el usuario lo edite.
-            user = new User(invitation.Email, invitation.Email.Split('@')[0]);
+            // El nombre con el que lo invitaron; sin él, la parte local del email hasta que lo edite en su perfil.
+            user = new User(invitation.Email, invitation.DisplayName ?? invitation.Email.Split('@')[0]);
         }
 
         user!.Activate(_hasher.Hash(request.Password));

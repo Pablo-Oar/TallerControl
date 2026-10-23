@@ -11,6 +11,9 @@ namespace TallerControl.Api.Endpoints.Users;
 /// <summary>
 /// Endpoints de invitaciones (doc 05 §2, REQ-02, T-USR-01..04).
 /// POST /api/v1/invitations              → Owner con users.manage
+/// GET  /api/v1/invitations              → users.manage (pendientes)
+/// POST /api/v1/invitations/{id}/resend  → users.manage (token y email nuevos)
+/// DELETE /api/v1/invitations/{id}       → users.manage (cancela)
 /// POST /api/public/v1/invitations/{token}/accept → Anónimo (superficie pública, doc 07 §2)
 /// </summary>
 internal static class InvitationEndpoints
@@ -25,6 +28,25 @@ internal static class InvitationEndpoints
                 CreateInvitationHandler handler,
                 CancellationToken ct) =>
                 CreateAsync(request, handler, frontendBaseUrl, ct))
+            .RequirePermission(Permission.UsersManage)
+            .AddEndpointFilter<AntiforgeryEndpointFilter>();
+
+        app.MapGet("/api/v1/invitations",
+                (ListInvitationsHandler handler, CancellationToken ct) => handler.HandleAsync(ct))
+            .RequirePermission(Permission.UsersManage);
+
+        app.MapPost("/api/v1/invitations/{id:guid}/resend",
+                async (Guid id, ResendInvitationHandler handler, CancellationToken ct) =>
+                    Results.Ok(await handler.HandleAsync(id, frontendBaseUrl, ct)))
+            .RequirePermission(Permission.UsersManage)
+            .AddEndpointFilter<AntiforgeryEndpointFilter>();
+
+        app.MapDelete("/api/v1/invitations/{id:guid}",
+                async (Guid id, CancelInvitationHandler handler, CancellationToken ct) =>
+                {
+                    await handler.HandleAsync(id, ct);
+                    return Results.NoContent();
+                })
             .RequirePermission(Permission.UsersManage)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 

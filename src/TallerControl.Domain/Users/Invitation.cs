@@ -18,8 +18,9 @@ public sealed class Invitation : Entity, ITenantOwned, IAudited
     }
 
     private Invitation(Guid tenantId, string email, TenantRole role,
-        IEnumerable<string>? permissions, byte[] tokenHash, DateTimeOffset expiresAt)
+        IEnumerable<string>? permissions, byte[] tokenHash, DateTimeOffset expiresAt, string? displayName)
     {
+        DisplayName = string.IsNullOrWhiteSpace(displayName) ? null : displayName.Trim();
         TenantId = tenantId;
         Email = User.ValidateEmail(email);
         Role = role;
@@ -47,13 +48,19 @@ public sealed class Invitation : Entity, ITenantOwned, IAudited
 
     public DateTimeOffset? AcceptedAt { get; private set; }
 
+    /// <summary>Nombre con el que se invitó: pasa a ser el de la cuenta al aceptar.</summary>
+    public string? DisplayName { get; private set; }
+
+    /// <summary>Cuando el dueño la canceló: el enlace deja de servir.</summary>
+    public DateTimeOffset? CancelledAt { get; private set; }
+
     /// <summary>
     /// Crea la invitación y devuelve el token en claro (para el email).
     /// El token no se almacena: solo su hash.
     /// </summary>
     public static (Invitation invitation, string token) Create(
         Guid tenantId, string email, TenantRole role,
-        IEnumerable<string>? permissions, DateTimeOffset now)
+        IEnumerable<string>? permissions, DateTimeOffset now, string? displayName = null)
     {
         var tokenBytes = RandomNumberGenerator.GetBytes(32);
         var token = Convert.ToBase64String(tokenBytes)
@@ -62,9 +69,34 @@ public sealed class Invitation : Entity, ITenantOwned, IAudited
             token.Replace('-', '+').Replace('_', '/') +
             new string('=', (4 - token.Length % 4) % 4)));
 
-        var invitation = new Invitation(tenantId, email, role, permissions, hash, now + Validity);
+        var invitation = new Invitation(tenantId, email, role, permissions, hash, now + Validity, displayName);
         return (invitation, token);
     }
+
+    /// <summary>Reenvío: emite un token nuevo (el enlace anterior deja de servir) y renueva el vencimiento.</summary>
+    public string Reissue(DateTimeOffset now)
+    {
+        if (IsAccepted)
+            throw new InvalidOperationException("La invitación ya fue aceptada.");
+
+        var tokenBytes = RandomNumberGenerator.GetBytes(32);
+        var token = Convert.ToBase64String(tokenBytes).Replace('+', '-').Replace('/', '_').TrimEnd('=');
+        TokenHash = SHA256.HashData(tokenBytes);
+        ExpiresAt = now + Validity;
+        CancelledAt = null;
+        return token;
+    }
+
+    public void Cancel(DateTimeOffset now)
+    {
+        if (IsAccepted)
+            throw new InvalidOperationException("La invitación ya fue aceptada: no se puede cancelar.");
+
+        CancelledAt ??= now;
+    }
+
+    /// <summary>Pendiente = ni aceptada ni cancelada (puede estar vencida: se reenvía).</summary>
+    public bool IsPending => !IsAccepted && CancelledAt is null;
 
     public static byte[] HashToken(string token) =>
         SHA256.HashData(Convert.FromBase64String(
@@ -80,6 +112,11 @@ public sealed class Invitation : Entity, ITenantOwned, IAudited
         if (IsAccepted)
         {
             throw new InvalidOperationException("La invitación ya fue aceptada.");
+        }
+
+        if (CancelledAt is not null)
+        {
+            throw new InvalidOperationException("La invitación fue cancelada.");
         }
 
         if (IsExpired(now))

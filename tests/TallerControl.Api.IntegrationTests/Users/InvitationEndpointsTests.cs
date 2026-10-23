@@ -264,4 +264,60 @@ public sealed class InvitationEndpointsTests : IAsyncLifetime
         var payload = JsonSerializer.Deserialize<JsonElement>(message.PayloadJson);
         return payload.GetProperty("Token").GetString();
     }
+
+    // ── U-01: lista, reenvío, cancelación, nombre invitado, contador ──────────
+
+    private async Task<HttpResponseMessage> SendAsync(HttpClient client, HttpMethod method, string url, object? body = null)
+    {
+        var csrf = await FetchAntiforgeryTokenAsync(client);
+        var req = new HttpRequestMessage(method, url);
+        if (body is not null) req.Content = JsonContent.Create(body);
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        return await client.SendAsync(req);
+    }
+
+    [Fact(DisplayName = "T-USR-08: Las invitaciones pendientes se listan, se reenvían (el enlace viejo deja de servir) y se cancelan")]
+    public async Task Listar_reenviar_y_cancelar_invitaciones()
+    {
+        using var client = CreateClient();
+        await LoginAsOwnerAsync(client);
+
+        var created = await (await SendAsync(client, HttpMethod.Post, "/api/v1/invitations",
+            new { email = "contador@taller.com", displayName = "Rosa Contadora", role = "accountant" })).Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("accountant", created.GetProperty("role").GetString());
+        var id = created.GetProperty("id").GetGuid();
+
+        var list = await client.GetFromJsonAsync<JsonElement>("/api/v1/invitations");
+        var pending = list.EnumerateArray().Single(x => x.GetProperty("id").GetGuid() == id);
+        Assert.Equal("Rosa Contadora", pending.GetProperty("displayName").GetString());
+        Assert.False(pending.GetProperty("isExpired").GetBoolean());
+
+        // Un pedido igual mientras está vigente se rechaza con un mensaje que manda a reenviar.
+        var dup = await SendAsync(client, HttpMethod.Post, "/api/v1/invitations",
+            new { email = "contador@taller.com", displayName = "Rosa", role = "accountant" });
+        Assert.Equal(HttpStatusCode.Conflict, dup.StatusCode);
+        Assert.Contains("reenviala", await dup.Content.ReadAsStringAsync());
+
+        Assert.Equal(HttpStatusCode.OK, (await SendAsync(client, HttpMethod.Post, $"/api/v1/invitations/{id}/resend")).StatusCode);
+
+        Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(client, HttpMethod.Delete, $"/api/v1/invitations/{id}")).StatusCode);
+        var after = await client.GetFromJsonAsync<JsonElement>("/api/v1/invitations");
+        Assert.DoesNotContain(after.EnumerateArray(), x => x.GetProperty("id").GetGuid() == id);
+
+        // Cancelada, se puede volver a invitar a esa persona.
+        Assert.Equal(HttpStatusCode.Created, (await SendAsync(client, HttpMethod.Post, "/api/v1/invitations",
+            new { email = "contador@taller.com", displayName = "Rosa", role = "accountant" })).StatusCode);
+    }
+
+    [Fact(DisplayName = "T-USR-09: Invitar al propio dueño (ya es miembro) devuelve 409 con un mensaje claro")]
+    public async Task Invitar_a_un_miembro_actual_devuelve_409()
+    {
+        using var client = CreateClient();
+        await LoginAsOwnerAsync(client);
+
+        var resp = await SendAsync(client, HttpMethod.Post, "/api/v1/invitations",
+            new { email = InvitationWebApplicationFactory.SeedEmail, displayName = "Yo", role = "mechanic" });
+        Assert.Equal(HttpStatusCode.Conflict, resp.StatusCode);
+        Assert.Contains("ya forma parte", await resp.Content.ReadAsStringAsync());
+    }
 }
