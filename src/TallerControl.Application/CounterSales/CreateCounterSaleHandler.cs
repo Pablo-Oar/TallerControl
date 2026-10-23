@@ -81,5 +81,6 @@ public sealed class CreateCounterSaleHandler
             s.Items.Select(i => new CounterSaleItemDto(
                 i.Id, i.CatalogItemId, i.Description, i.Quantity, i.UnitPrice,
                 i.VatRate, i.NetAmount, i.VatAmount, i.Total)).ToList(),
-            s.Version);
+            s.Version,
+            s.CancelReason);
 }

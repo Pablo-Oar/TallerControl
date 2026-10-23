@@ -38,6 +38,10 @@ public sealed class CounterSale : Entity, ITenantOwned, IVersioned, IAuditable, 
     public decimal VatAmount { get; private set; }
     public decimal Total { get; private set; }
     public CounterSaleStatus Status { get; private set; }
+
+    /// <summary>Motivo y momento de la devolución/anulación (una venta confirmada se devuelve con contraasientos).</summary>
+    public string? CancelReason { get; private set; }
+    public DateTimeOffset? CancelledAt { get; private set; }
     public Guid? AccountId { get; private set; }
     public uint Version { get; private set; }
 
@@ -75,14 +79,20 @@ public sealed class CounterSale : Entity, ITenantOwned, IVersioned, IAuditable, 
         Status = CounterSaleStatus.Confirmed;
     }
 
-    public void Cancel()
+    /// <summary>
+    /// Cancela un borrador o devuelve una venta confirmada (con motivo obligatorio): el handler repone el stock,
+    /// deja el contraasiento de caja y emite la nota de crédito si estaba facturada.
+    /// </summary>
+    public void Cancel(string? reason, DateTimeOffset at)
     {
         if (Status == CounterSaleStatus.Cancelled)
             throw new InvalidOperationException("La venta ya está cancelada.");
-        if (Status == CounterSaleStatus.Confirmed)
-            throw new InvalidOperationException("No se puede cancelar una venta ya confirmada. Use una nota de crédito.");
+        if (Status == CounterSaleStatus.Confirmed && string.IsNullOrWhiteSpace(reason))
+            throw new ArgumentException("El motivo de la devolución es obligatorio.", nameof(reason));
 
         Status = CounterSaleStatus.Cancelled;
+        CancelReason = reason?.Trim();
+        CancelledAt = at;
     }
 
     public void SoftDelete(string? reason, Guid? deletedBy, DateTimeOffset deletedAt)

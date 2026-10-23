@@ -40,6 +40,9 @@ public sealed class VoidInvoiceHandler
         if (original.IsCredit)
             throw new BusinessRuleException("No se puede anular una nota de crédito.");
 
+        if (await _repo.HasAuthorizedCreditNoteAsync(original.Id, ct))
+            throw new ConflictException("Esta factura ya tiene una nota de crédito.");
+
         var pos = await _repo.FindPointOfSaleByIdAsync(original.FiscalPointOfSaleId, ct)
             ?? throw new NotFoundException();
 

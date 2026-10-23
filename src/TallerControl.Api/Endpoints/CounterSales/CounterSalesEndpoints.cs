@@ -10,7 +10,7 @@ namespace TallerControl.Api.Endpoints.CounterSales;
 /// POST   /api/v1/counter-sales                          → counter_sales.write (O, A)
 /// GET    /api/v1/counter-sales/{id}                     → counter_sales.read  (O, A)
 /// POST   /api/v1/counter-sales/{id}/confirm             → counter_sales.write (O, A)
-/// POST   /api/v1/counter-sales/{id}/cancel              → counter_sales.write (O, A)
+/// POST   /api/v1/counter-sales/{id}/cancel              → counter_sales.write (O, A) [devolución: motivo obligatorio]
 /// DELETE /api/v1/counter-sales/{id}                     → counter_sales.write (O, A)
 /// </summary>
 internal static class CounterSalesEndpoints
@@ -41,8 +41,8 @@ internal static class CounterSalesEndpoints
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
         app.MapPost("/api/v1/counter-sales/{id:guid}/cancel",
-                (Guid id, CancelCounterSaleHandler handler, CancellationToken ct) =>
-                    CancelAsync(id, handler, ct))
+                (Guid id, CancelCounterSaleRequest? request, CancelCounterSaleHandler handler, CancellationToken ct) =>
+                    CancelAsync(id, request?.Reason, handler, ct))
             .RequirePermission(Permission.CounterSalesWrite)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
@@ -77,9 +77,9 @@ internal static class CounterSalesEndpoints
     }
 
     private static async Task<IResult> CancelAsync(
-        Guid id, CancelCounterSaleHandler handler, CancellationToken ct)
+        Guid id, string? reason, CancelCounterSaleHandler handler, CancellationToken ct)
     {
-        var dto = await handler.HandleAsync(id, ct);
+        var dto = await handler.HandleAsync(id, reason, ct);
         return Results.Ok(dto);
     }
 

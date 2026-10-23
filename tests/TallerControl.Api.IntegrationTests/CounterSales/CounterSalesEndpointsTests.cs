@@ -243,4 +243,53 @@ public sealed class CounterSalesEndpointsTests : IAsyncLifetime
         var resp = await PostCounterSaleAsync(client);
         Assert.Equal(HttpStatusCode.Forbidden, resp.StatusCode);
     }
+
+    // ── K-04: devolución de una venta confirmada ──────────────────────────────
+
+    [Fact(DisplayName = "T-CSAL-04: Devolver una venta confirmada pide motivo, repone el stock y saca el importe de la Caja")]
+    public async Task Devolucion_con_contraasientos()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CounterSalesWebApplicationFactory.OwnerEmail, CounterSalesWebApplicationFactory.OwnerPassword);
+
+        var csrf = await FetchCsrfAsync(client);
+        var accountReq = new HttpRequestMessage(HttpMethod.Post, "/api/v1/cash/accounts")
+        {
+            Content = JsonContent.Create(new { name = $"Caja mostrador {Guid.NewGuid():N}", kind = "cash" }),
+        };
+        accountReq.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        var accountId = (await (await client.SendAsync(accountReq)).Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+
+        var stockBefore = (await client.GetFromJsonAsync<JsonElement>($"/api/v1/catalog/{_factory.CatalogItemId}")).GetProperty("stockQty").GetDecimal();
+
+        var created = await (await PostCounterSaleAsync(client)).Content.ReadFromJsonAsync<JsonElement>();
+        var id = created.GetProperty("id").GetGuid();
+        var confirmReq = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/counter-sales/{id}/confirm")
+        {
+            Content = JsonContent.Create(new { accountId, version = created.GetProperty("version").GetUInt32() }),
+        };
+        confirmReq.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(client));
+        (await client.SendAsync(confirmReq)).EnsureSuccessStatusCode();
+
+        var cashAfterSale = (await client.GetFromJsonAsync<JsonElement>($"/api/v1/cash/accounts/{accountId}")).GetProperty("balance").GetDecimal();
+        Assert.True(cashAfterSale > 0);
+
+        // Sin motivo no se devuelve.
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await PostCancelCounterSaleAsync(client, id)).StatusCode);
+
+        var cancelReq = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/counter-sales/{id}/cancel")
+        {
+            Content = JsonContent.Create(new { reason = "El cliente se arrepintió" }),
+        };
+        cancelReq.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(client));
+        var resp = await client.SendAsync(cancelReq);
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var dto = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("cancelled", dto.GetProperty("status").GetString());
+        Assert.Equal("El cliente se arrepintió", dto.GetProperty("cancelReason").GetString());
+
+        var stockAfter = (await client.GetFromJsonAsync<JsonElement>($"/api/v1/catalog/{_factory.CatalogItemId}")).GetProperty("stockQty").GetDecimal();
+        Assert.Equal(stockBefore, stockAfter);
+        Assert.Equal(0m, (await client.GetFromJsonAsync<JsonElement>($"/api/v1/cash/accounts/{accountId}")).GetProperty("balance").GetDecimal());
+    }
 }

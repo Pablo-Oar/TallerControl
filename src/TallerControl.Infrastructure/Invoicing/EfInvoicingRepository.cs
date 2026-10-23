@@ -123,8 +123,14 @@ internal sealed class EfInvoicingRepository : IInvoicingRepository
         InvoiceSourceType sourceType, Guid sourceId, CancellationToken ct) =>
         _db.Set<Invoice>()
             .Where(i => i.SourceType == sourceType && i.SourceId == sourceId
-                        && i.Status == InvoiceStatus.Authorized && !i.IsCredit)
+                        && i.Status == InvoiceStatus.Authorized && !i.IsCredit
+                        && !_db.Set<Invoice>().Any(c => c.OriginalInvoiceId == i.Id && c.IsCredit
+                                                        && c.Status == InvoiceStatus.Authorized))
             .FirstOrDefaultAsync(ct);
+
+    public Task<bool> HasAuthorizedCreditNoteAsync(Guid originalInvoiceId, CancellationToken ct) =>
+        _db.Set<Invoice>().AnyAsync(c => c.OriginalInvoiceId == originalInvoiceId && c.IsCredit
+                                         && c.Status == InvoiceStatus.Authorized, ct);
 
     public async Task<Page<InvoiceListDto>> SearchInvoicesAsync(
         InvoiceStatus? status, InvoiceSourceType? sourceType, Guid? sourceId, int page, int pageSize, CancellationToken ct)

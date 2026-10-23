@@ -28,6 +28,7 @@ export interface CounterSaleDto {
   accountId: string | null
   items: CounterSaleItemDto[]
   version: number
+  cancelReason?: string | null
 }
 
 export interface CreateCounterSaleItemRequest {
@@ -59,8 +60,9 @@ export const counterSalesApi = {
     api.post<CounterSaleDto>('/api/v1/counter-sales', body, true),
   confirm: (id: string, body: ConfirmCounterSaleRequest) =>
     api.post<CounterSaleDto>(`/api/v1/counter-sales/${id}/confirm`, body, true),
-  cancel: (id: string) =>
-    api.post<CounterSaleDto>(`/api/v1/counter-sales/${id}/cancel`, undefined, true),
+  /** Un borrador se descarta; una confirmada es una devolución y exige motivo (repone stock, saca de la Caja y emite la nota de crédito si estaba facturada). */
+  cancel: (id: string, reason?: string | null) =>
+    api.post<CounterSaleDto>(`/api/v1/counter-sales/${id}/cancel`, { reason: reason ?? null }, true),
   delete: (id: string, reason: string) =>
     api.delete<void>(`/api/v1/counter-sales/${id}`, { reason }, true),
 }
