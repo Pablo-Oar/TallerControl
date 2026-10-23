@@ -10,7 +10,8 @@ namespace TallerControl.Api.Endpoints.Purchases;
 /// POST   /api/v1/purchases                              → purchases.write (O, A)
 /// GET    /api/v1/purchases/{id}                         → purchases.read  (O, A)
 /// POST   /api/v1/purchases/{id}/confirm                 → purchases.write (O, A)
-/// POST   /api/v1/purchases/{id}/cancel                  → purchases.write (O, A)
+/// PUT    /api/v1/purchases/{id}                         → purchases.write (O, A) [solo borrador]
+/// POST   /api/v1/purchases/{id}/cancel                  → purchases.write (O, A) [motivo si estaba confirmada]
 /// DELETE /api/v1/purchases/{id}                         → purchases.write (O, A)
 /// </summary>
 internal static class PurchasesEndpoints
@@ -34,6 +35,12 @@ internal static class PurchasesEndpoints
                     GetAsync(id, handler, ct))
             .RequirePermission(Permission.PurchasesRead);
 
+        app.MapPut("/api/v1/purchases/{id:guid}",
+                async (Guid id, UpdatePurchaseRequest request, UpdatePurchaseHandler handler, CancellationToken ct) =>
+                    Results.Ok(await handler.HandleAsync(id, request, ct)))
+            .RequirePermission(Permission.PurchasesWrite)
+            .AddEndpointFilter<AntiforgeryEndpointFilter>();
+
         app.MapPost("/api/v1/purchases/{id:guid}/confirm",
                 (Guid id, ConfirmPurchaseRequest request, ConfirmPurchaseHandler handler, CancellationToken ct) =>
                     ConfirmAsync(id, request, handler, ct))
@@ -41,8 +48,8 @@ internal static class PurchasesEndpoints
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
         app.MapPost("/api/v1/purchases/{id:guid}/cancel",
-                (Guid id, CancelPurchaseHandler handler, CancellationToken ct) =>
-                    CancelAsync(id, handler, ct))
+                (Guid id, CancelPurchaseRequest? request, CancelPurchaseHandler handler, CancellationToken ct) =>
+                    CancelAsync(id, request?.Reason, handler, ct))
             .RequirePermission(Permission.PurchasesWrite)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
@@ -77,9 +84,9 @@ internal static class PurchasesEndpoints
     }
 
     private static async Task<IResult> CancelAsync(
-        Guid id, CancelPurchaseHandler handler, CancellationToken ct)
+        Guid id, string? reason, CancelPurchaseHandler handler, CancellationToken ct)
     {
-        var dto = await handler.HandleAsync(id, ct);
+        var dto = await handler.HandleAsync(id, reason, ct);
         return Results.Ok(dto);
     }
 

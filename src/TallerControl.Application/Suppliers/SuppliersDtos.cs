@@ -11,8 +11,12 @@ public sealed record SupplierDto(
     string? Phone,
     string? Email,
     string? Notes,
-    uint Version
+    uint Version,
+    // Compras vigentes (borrador o confirmadas) del proveedor: el detalle lo informa para avisar antes de darlo de baja.
+    int PurchaseCount = 0
 );
+
+public sealed record DeleteSupplierRequest(string? Reason);
 
 public sealed record CreateSupplierRequest(
     string Name,

@@ -17,14 +17,14 @@ public sealed class DeleteSupplierHandler
         _clock = clock;
     }
 
-    public async Task HandleAsync(Guid id, CancellationToken ct)
+    public async Task HandleAsync(Guid id, string? reason, CancellationToken ct)
     {
         var tenantId = _tenant.TenantId
             ?? throw new InvalidOperationException("No hay taller en la sesión.");
         var supplier = await _repo.FindByIdAsync(tenantId, id, ct)
             ?? throw new NotFoundException("El proveedor no existe.");
 
-        supplier.SoftDelete(null, _actor.ActorId, _clock.GetUtcNow());
+        supplier.SoftDelete(reason, _actor.ActorId, _clock.GetUtcNow());
         await _repo.SaveChangesAsync(ct);
     }
 }

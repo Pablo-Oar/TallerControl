@@ -9,6 +9,7 @@ import { Pagination } from '../../../components/ui/Pagination'
 import { ApiError } from '../../../lib/api/client'
 import { PurchaseFormModal } from './PurchaseFormModal'
 import { confirmDialog, notify } from '../../../components/ui/dialogs'
+import { FormTextarea } from '../../../components/ui/FormField'
 import { ConfirmWithCashModal } from '../../../components/ConfirmWithCashModal'
 
 const STATUS_LABELS: Record<PurchaseStatus, string> = {
@@ -75,6 +76,10 @@ export function PurchasesPage() {
   const [selected, setSelected] = useState<PurchaseDto | null>(null)
   const [confirming, setConfirming] = useState<PurchaseDto | null>(null)
   const [creating, setCreating] = useState(false)
+  const [editing, setEditing] = useState<PurchaseDto | null>(null)
+  const [voiding, setVoiding] = useState<PurchaseDto | null>(null)
+  const [voidReason, setVoidReason] = useState('')
+  const [voidBusy, setVoidBusy] = useState(false)
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['purchases', search, page],
@@ -101,8 +106,25 @@ export function PurchasesPage() {
     setSelected(null)
   }
 
+  async function handleVoid() {
+    if (!voiding || !voidReason.trim()) return
+    setVoidBusy(true)
+    try {
+      await purchasesApi.cancel(voiding.id, voidReason.trim())
+      queryClient.invalidateQueries({ queryKey: ['purchases'] })
+      queryClient.invalidateQueries({ queryKey: ['cash-accounts'] })
+      queryClient.invalidateQueries({ queryKey: ['catalog'] })
+      setVoiding(null)
+      setSelected(null)
+    } catch (err) {
+      notify(err instanceof ApiError ? err.detail : 'No se pudo anular la compra')
+    } finally {
+      setVoidBusy(false)
+    }
+  }
+
   async function handleCancel(p: PurchaseDto) {
-    if (!(await confirmDialog('¿Cancelar la compra?', { danger: true }))) return
+    if (!(await confirmDialog('¿Descartar el borrador de la compra?', { danger: true }))) return
     try {
       await purchasesApi.cancel(p.id)
       queryClient.invalidateQueries({ queryKey: ['purchases'] })
@@ -176,6 +198,34 @@ export function PurchasesPage() {
         />
       )}
 
+      {editing && (
+        <PurchaseFormModal
+          purchase={editing}
+          onSuccess={dto => {
+            setEditing(null)
+            queryClient.invalidateQueries({ queryKey: ['purchases'] })
+            setSelected(dto)
+          }}
+          onClose={() => setEditing(null)}
+        />
+      )}
+
+      {voiding && (
+        <Modal title={`Anular la compra #${voiding.documentNumber}`} onClose={() => setVoiding(null)} className="max-w-sm">
+          <div className="space-y-4">
+            <p className="text-sm text-tc-text-secondary">
+              Se descuenta el stock que esta compra sumó y, si se pagó desde una cuenta de Caja, el importe vuelve a ingresar a esa cuenta.
+              La compra queda anulada y sale de los reportes y del CITI.
+            </p>
+            <FormTextarea label="Motivo" requiredMark rows={2} value={voidReason} onChange={e => setVoidReason(e.target.value)} />
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="secondary" size="sm" onClick={() => setVoiding(null)}>Volver</Button>
+              <Button variant="danger" size="sm" loading={voidBusy} disabled={!voidReason.trim()} onClick={handleVoid}>Anular compra</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
       {selected && detail && (
         <Modal title={`Compra #${detail.documentNumber}`} onClose={() => setSelected(null)} className="max-w-lg">
           <div className="space-y-4">
@@ -194,7 +244,13 @@ export function PurchasesPage() {
               </div>
             </div>
 
-            {detail.isExcludedFromCiti && (
+            {detail.status === 'cancelled' && (
+              <p className="border border-tc-border bg-tc-surface px-3 py-2 text-xs text-tc-text-secondary">
+                Compra anulada{detail.cancelReason ? `: ${detail.cancelReason}` : '.'}
+              </p>
+            )}
+
+            {detail.status !== 'cancelled' && detail.isExcludedFromCiti && (
               <p className="border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
                 ⚠ Sin datos fiscales completos — excluida del CITI
               </p>
@@ -227,10 +283,14 @@ export function PurchasesPage() {
             )}
 
             <div className="flex justify-end gap-2">
+              {detail.status === 'confirmed' && (
+                <Button size="sm" variant="danger" onClick={() => { setVoiding(detail); setVoidReason('') }}>Anular compra</Button>
+              )}
               {detail.status === 'draft' && (
                 <>
                   <Button size="sm" onClick={() => setConfirming(detail)}>Confirmar</Button>
-                  <Button size="sm" variant="secondary" onClick={() => handleCancel(detail)}>Cancelar</Button>
+                  <Button size="sm" variant="secondary" onClick={() => setEditing(detail)}>Editar</Button>
+                  <Button size="sm" variant="secondary" onClick={() => handleCancel(detail)}>Descartar</Button>
                   <Button size="sm" variant="danger" onClick={() => handleDelete(detail)}>Eliminar</Button>
                 </>
               )}

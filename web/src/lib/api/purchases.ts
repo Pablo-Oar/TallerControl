@@ -31,6 +31,7 @@ export interface PurchaseDto {
   accountId: string | null
   items: PurchaseItemDto[]
   version: number
+  cancelReason?: string | null
 }
 
 export interface CreatePurchaseItemRequest {
@@ -51,6 +52,10 @@ export interface CreatePurchaseRequest {
   items: CreatePurchaseItemRequest[]
 }
 
+export interface UpdatePurchaseRequest extends CreatePurchaseRequest {
+  version: number
+}
+
 export interface ConfirmPurchaseRequest {
   accountId?: string | null
   version: number
@@ -66,7 +71,11 @@ export const purchasesApi = {
   create: (body: CreatePurchaseRequest) => api.post<PurchaseDto>('/api/v1/purchases', body, true),
   confirm: (id: string, body: ConfirmPurchaseRequest) =>
     api.post<PurchaseDto>(`/api/v1/purchases/${id}/confirm`, body, true),
-  cancel: (id: string) => api.post<PurchaseDto>(`/api/v1/purchases/${id}/cancel`, undefined, true),
+  /** Solo un borrador: corrige la factura y los renglones. */
+  update: (id: string, body: UpdatePurchaseRequest) => api.put<PurchaseDto>(`/api/v1/purchases/${id}`, body, String(body.version)),
+  /** Un borrador se descarta; una confirmada exige motivo y deja contraasientos de stock y de caja. */
+  cancel: (id: string, reason?: string | null) =>
+    api.post<PurchaseDto>(`/api/v1/purchases/${id}/cancel`, { reason: reason ?? null }, true),
   delete: (id: string, reason: string) =>
     api.delete<void>(`/api/v1/purchases/${id}`, { reason }, true),
 }

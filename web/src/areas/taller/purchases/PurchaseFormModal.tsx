@@ -30,7 +30,6 @@ const schema = z.object({
   invoiceNumber: z.coerce.number().int().positive().optional().or(z.literal('')),
   perceptions: z.coerce.number().min(0).default(0),
   retentions: z.coerce.number().min(0).default(0),
-  isExcludedFromCiti: z.boolean().default(false),
   items: z.array(itemSchema).min(1, 'Agregá al menos un ítem'),
 })
 
@@ -38,33 +37,56 @@ type FormInput = z.input<typeof schema>
 type FormData = z.output<typeof schema>
 
 interface Props {
+  /** Con una compra en borrador, el formulario la edita. */
+  purchase?: PurchaseDto
   onSuccess: (dto: PurchaseDto) => void
   onClose: () => void
 }
 
-export function PurchaseFormModal({ onSuccess, onClose }: Props) {
+export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
   const [serverError, setServerError] = useState<string | null>(null)
+  const isEdit = !!purchase
 
   const { data: suppliersPage } = useQuery({
     queryKey: ['suppliers-picker'],
     queryFn: () => suppliersApi.search(null, 1, 100),
   })
 
-  const { register, handleSubmit, control, setValue, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
+  const { register, handleSubmit, control, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
-    defaultValues: {
+    defaultValues: purchase
+      ? {
+          supplierId: purchase.supplierId,
+          invoiceDate: purchase.invoiceDate.slice(0, 10),
+          pointOfSale: purchase.pointOfSale ?? '',
+          invoiceNumber: purchase.invoiceNumber ?? '',
+          perceptions: purchase.perceptions,
+          retentions: purchase.retentions,
+          items: purchase.items.map(i => ({
+            catalogItemId: i.catalogItemId ?? '',
+            description: i.description,
+            quantity: i.quantity,
+            unitCost: i.unitCost,
+            vatRate: i.vatRate,
+          })),
+        }
+      : {
       supplierId: '',
       invoiceDate: localDateISO(),
       pointOfSale: '',
       invoiceNumber: '',
       perceptions: 0,
       retentions: 0,
-      isExcludedFromCiti: false,
       items: [{ catalogItemId: '', description: '', quantity: 1, unitCost: 0, vatRate: 21 }],
     },
   })
 
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
+
+  // Sin punto de venta y número de factura la compra no se puede informar al CITI (se avisa, no se elige).
+  const pointOfSale = watch('pointOfSale')
+  const invoiceNumber = watch('invoiceNumber')
+  const missingFiscalData = [pointOfSale, invoiceNumber].some(v => v === '' || v === undefined || v === null)
 
   function handleCatalogSelect(index: number, item: CatalogItemListDto | null) {
     setValue(`items.${index}.catalogItemId`, item?.id ?? '')
@@ -78,7 +100,7 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
   async function onSubmit(data: FormData) {
     setServerError(null)
     try {
-      const result = await purchasesApi.create({
+      const body = {
         supplierId: data.supplierId,
         invoiceDate: dateOnlyToUtcIso(data.invoiceDate),
         pointOfSale: typeof data.pointOfSale === 'number' ? data.pointOfSale : undefined,
@@ -92,7 +114,10 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
           unitCost: i.unitCost,
           vatRate: i.vatRate,
         })),
-      })
+      }
+      const result = purchase
+        ? await purchasesApi.update(purchase.id, { ...body, version: purchase.version })
+        : await purchasesApi.create(body)
       onSuccess(result)
     } catch (e) {
       setServerError(e instanceof ApiError ? e.detail : 'Error inesperado')
@@ -100,7 +125,7 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
   }
 
   return (
-    <Modal title="Nueva compra" onClose={onClose} className="max-w-2xl">
+    <Modal title={isEdit ? `Editar compra #${purchase.documentNumber}` : 'Nueva compra'} onClose={onClose} className="max-w-2xl">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <FormSelect
@@ -108,6 +133,7 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
             label="Proveedor"
             requiredMark
             error={errors.supplierId?.message}
+            disabled={isEdit}
             {...register('supplierId')}
           >
             <option value="">Seleccioná un proveedor</option>
@@ -206,10 +232,11 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
           <FormField label="Retenciones" type="number" step="0.01" min="0" placeholder="0,00" inputClassName="tabular-nums" {...register('retentions')} />
         </div>
 
-        <label className="flex items-center gap-2 text-sm text-tc-text-secondary">
-          <input type="checkbox" {...register('isExcludedFromCiti')} className="h-4 w-4" />
-          Excluir del CITI (sin datos fiscales completos)
-        </label>
+        {missingFiscalData && (
+          <p className="border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            Sin punto de venta y número de factura la compra queda fuera del CITI. Podés completarlos ahora o más tarde, mientras sea un borrador.
+          </p>
+        )}
 
         {serverError && (
           <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
@@ -217,7 +244,7 @@ export function PurchaseFormModal({ onSuccess, onClose }: Props) {
 
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" size="sm" onClick={onClose}>Cancelar</Button>
-          <Button type="submit" size="sm" loading={isSubmitting}>Guardar como borrador</Button>
+          <Button type="submit" size="sm" loading={isSubmitting}>{isEdit ? 'Guardar cambios' : 'Guardar como borrador'}</Button>
         </div>
       </form>
     </Modal>
