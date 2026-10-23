@@ -35,6 +35,8 @@ public static class Permission
     public const string WorkOrdersAssignSelf = "workorders.assign_self";
 
     public const string AttachmentsWrite = "attachments.write";
+    /// <summary>Editar o quitar adjuntos ya subidos (el mecánico solo sube).</summary>
+    public const string AttachmentsManage = "attachments.manage";
 
     public const string PaymentsRead = "payments.read";
     public const string PaymentsWrite = "payments.write";
@@ -81,7 +83,7 @@ public static class Permission
         CatalogRead, CatalogWrite, StockAdjust, CostsView, PricesView,
         QuotesRead, QuotesWrite,
         WorkOrdersRead, WorkOrdersWrite, WorkOrdersStatus, WorkOrdersCancel, WorkOrdersDeliver, WorkOrdersAssignSelf,
-        AttachmentsWrite,
+        AttachmentsWrite, AttachmentsManage,
         PaymentsRead, PaymentsWrite, PaymentsVoid,
         QrManage, QrRevoke,
         CashRead, CashOpen, CashClose, CashAdjust,
@@ -102,7 +104,7 @@ public static class Permission
         CatalogRead, CatalogWrite, PricesView,
         QuotesRead, QuotesWrite,
         WorkOrdersRead, WorkOrdersWrite, WorkOrdersStatus, WorkOrdersCancel, WorkOrdersDeliver,
-        AttachmentsWrite,
+        AttachmentsWrite, AttachmentsManage,
         PaymentsRead, PaymentsWrite,
         QrManage,
         CashRead, CashOpen, CashClose, CashAdjust,

@@ -994,6 +994,24 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.Forbidden, (await mechanic.SendAsync(upload)).StatusCode);
     }
 
+    [Fact(DisplayName = "T-ATT-08: El mecánico no puede quitar ni editar adjuntos (→ 403)")]
+    public async Task Mecanico_no_puede_quitar_ni_editar_adjuntos()
+    {
+        using var mechanic = CreateClient();
+        await LoginAsync(mechanic, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
+
+        var del = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/attachments/{Guid.NewGuid()}");
+        del.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(mechanic));
+        Assert.Equal(HttpStatusCode.Forbidden, (await mechanic.SendAsync(del)).StatusCode);
+
+        var patch = new HttpRequestMessage(HttpMethod.Patch, $"/api/v1/attachments/{Guid.NewGuid()}")
+        {
+            Content = JsonContent.Create(new { isInternal = true }),
+        };
+        patch.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(mechanic));
+        Assert.Equal(HttpStatusCode.Forbidden, (await mechanic.SendAsync(patch)).StatusCode);
+    }
+
     [Fact(DisplayName = "T-WO-21: La búsqueda por patente se resuelve en el servidor (sin guiones ni espacios)")]
     public async Task Busqueda_por_patente_en_el_servidor()
     {
