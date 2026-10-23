@@ -17,6 +17,9 @@ internal sealed class CatalogItemConfiguration : IEntityTypeConfiguration<Catalo
         builder.HasOne<Tenant>().WithMany()
             .HasForeignKey(c => c.TenantId).OnDelete(DeleteBehavior.Restrict);
 
+        builder.Property(c => c.Description).HasMaxLength(CatalogItem.DescriptionMaxLength);
+        builder.Property(c => c.StockMax).HasColumnType("numeric(12,3)");
+
         builder.Property(c => c.Name).IsRequired().HasMaxLength(CatalogItem.NameMaxLength);
         builder.Property(c => c.Sku).HasMaxLength(CatalogItem.SkuMaxLength);
 

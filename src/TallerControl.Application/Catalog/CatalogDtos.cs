@@ -33,7 +33,9 @@ public sealed record CatalogItemDto(
     int? BufferMinutes,
     bool IsActive,
     bool IsLowStock,
-    uint Version);
+    uint Version,
+    string? Description = null,
+    decimal? StockMax = null);
 
 /// <summary>Ítem del libro de movimientos (doc 05 §2.5).</summary>
 public sealed record StockMovementDto(
@@ -56,7 +58,9 @@ public sealed record CreateCatalogItemRequest(
     bool TrackStock = false,
     decimal? StockMin = null,
     int? DurationMinutes = null,
-    int? BufferMinutes = null);
+    int? BufferMinutes = null,
+    string? Description = null,
+    decimal? StockMax = null);
 
 /// <summary>Cuerpo de <c>PUT /api/v1/catalog/{id}</c> (doc 05 §2.5). El stock <strong>no</strong> se toca acá.</summary>
 public sealed record UpdateCatalogItemRequest(
@@ -68,7 +72,12 @@ public sealed record UpdateCatalogItemRequest(
     decimal? StockMin = null,
     int? DurationMinutes = null,
     int? BufferMinutes = null,
-    bool IsActive = true);
+    bool IsActive = true,
+    string? Description = null,
+    decimal? StockMax = null,
+    // Solo productos: activa/desactiva el control de stock; al activarlo se puede cargar un stock inicial (genera un movimiento).
+    bool? TrackStock = null,
+    decimal? InitialStockQty = null);
 
 /// <summary>Cuerpo de <c>POST /api/v1/catalog/{id}/stock-adjustments</c> (doc 05 §2.5, T-STK-01).</summary>
 public sealed record ManualStockAdjustmentRequest(
