@@ -21,9 +21,18 @@ internal sealed class EfInvitationRepository : IInvitationRepository
 
     public Task<Invitation?> FindPendingByEmailAsync(string email, CancellationToken ct) =>
         _db.Set<Invitation>()
-            .Where(i => i.Email == email && i.AcceptedAt == null)
+            .Where(i => i.Email == email && i.AcceptedAt == null && i.CancelledAt == null)
             .OrderByDescending(i => i.ExpiresAt)
             .FirstOrDefaultAsync(ct);
+
+    public async Task<IReadOnlyList<Invitation>> ListPendingAsync(CancellationToken ct) =>
+        await _db.Set<Invitation>().AsNoTracking()
+            .Where(i => i.AcceptedAt == null && i.CancelledAt == null)
+            .OrderByDescending(i => i.ExpiresAt)
+            .ToListAsync(ct);
+
+    public Task<Invitation?> FindByIdAsync(Guid id, CancellationToken ct) =>
+        _db.Set<Invitation>().FirstOrDefaultAsync(i => i.Id == id, ct);
 
     public async Task<bool> IsActiveMemberAsync(string email, CancellationToken ct) =>
         await _db.Set<Membership>()

@@ -32,5 +32,6 @@ internal sealed class InvitationConfiguration : IEntityTypeConfiguration<Invitat
         builder.HasIndex(i => i.TokenHash).IsUnique();
 
         builder.Property(i => i.ExpiresAt).IsRequired();
+        builder.Property(i => i.DisplayName).HasMaxLength(200);
     }
 }

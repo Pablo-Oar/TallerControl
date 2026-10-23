@@ -34,6 +34,9 @@ public sealed class UpdateMembershipHandler
             throw new ConcurrencyException();
         }
 
+        // Los permisos extra se validan contra el rol que va a quedar.
+        FinePermissions.Validate(request.Role ?? membership.Role, request.Permissions);
+
         bool rotateStamp = false;
 
         if (request.Role.HasValue && request.Role.Value != membership.Role)

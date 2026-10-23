@@ -15,6 +15,11 @@ public interface IInvitationRepository
     /// </summary>
     Task<Invitation?> FindPendingByEmailAsync(string email, CancellationToken ct);
 
+    /// <summary>Pendientes del taller (ni aceptadas ni canceladas), las más nuevas primero.</summary>
+    Task<IReadOnlyList<Invitation>> ListPendingAsync(CancellationToken ct);
+
+    Task<Invitation?> FindByIdAsync(Guid id, CancellationToken ct);
+
     /// <summary>Verifica si el email ya es miembro activo del taller (del contexto).</summary>
     Task<bool> IsActiveMemberAsync(string email, CancellationToken ct);
 

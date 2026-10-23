@@ -95,6 +95,7 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
 
     /// <summary>Aviso del Taller A para probar T-ISO-ALL en rutas /notifications/{id}.</summary>
     public Guid ForeignNotificationId { get; private set; }
+    public Guid ForeignInvitationId { get; private set; }
 
     /// <summary>Turno del Taller A para probar T-ISO-ALL en rutas /appointments/{id}.</summary>
     public Guid ForeignAppointmentId { get; private set; }
@@ -429,6 +430,19 @@ internal sealed class PermissionMatrixWebApplicationFactory : WebApplicationFact
         }
 
         ForeignNotificationId = notificationA.Id;
+
+        // Siembra una invitación pendiente del Taller A para T-ISO-ALL en rutas /invitations/{id}.
+        var (invitationA, _) = TallerControl.Domain.Users.Invitation.Create(
+            tenantA.Id, "foreign-invite@perm-taller-a.com", TallerControl.Domain.Users.TenantRole.Mechanic,
+            null, DateTimeOffset.UtcNow, "Invitada A");
+        await using (var db = new AppDbContext(
+            BuildOptions(ownerConnectionString), new TestTenantContext(tenantA.Id), new TestActorContext(), TimeProvider.System))
+        {
+            db.Add(invitationA);
+            await db.SaveChangesAsync();
+        }
+
+        ForeignInvitationId = invitationA.Id;
 
         // Siembra un turno del Taller A para T-ISO-ALL en rutas /appointments/{id}.
         var fakeTokenHash = new byte[32];

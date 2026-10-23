@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { usersApi, type MemberDto, type UpdateMembershipRequest, type TenantRole, type MembershipStatus } from '../../../../lib/api/users'
+import { usersApi, invitationsApi, ROLE_LABELS, type MemberDto, type PendingInvitationDto, type UpdateMembershipRequest, type MembershipStatus } from '../../../../lib/api/users'
 import { Button } from '../../../../components/ui/Button'
 import { StatusBadge } from '../../../../components/ui/StatusBadge'
 import { DataTable, RowAction, type DataTableColumn } from '../../../../components/ui/DataTable'
@@ -8,16 +8,13 @@ import { ApiError } from '../../../../lib/api/client'
 import { InviteMemberModal } from './InviteMemberModal'
 import { EditMemberModal } from './EditMemberModal'
 import { useAuth } from '../../../../lib/auth/AuthContext'
+import { confirmDialog, notify } from '../../../../components/ui/dialogs'
 
-const ROLE_LABEL: Record<TenantRole, string> = {
-  owner: 'Dueño',
-  admin_staff: 'Administrativo',
-  mechanic: 'Mecánico',
-}
+const ROLE_LABEL = ROLE_LABELS
 
 const STATUS_LABEL: Record<MembershipStatus, string> = {
   active: 'Activo',
-  inactive: 'Inactivo',
+  disabled: 'Desactivado',
 }
 
 const COLUMNS: DataTableColumn<MemberDto>[] = [
@@ -45,6 +42,31 @@ export function UsersSettingsPage() {
     queryKey: ['members'],
     queryFn: () => usersApi.listMembers(),
   })
+
+  const { data: invitations = [] } = useQuery({
+    queryKey: ['invitations'],
+    queryFn: () => invitationsApi.list(),
+  })
+
+  async function resend(inv: PendingInvitationDto) {
+    try {
+      await invitationsApi.resend(inv.id)
+      queryClient.invalidateQueries({ queryKey: ['invitations'] })
+      notify(`Le reenviamos la invitación a ${inv.email}.`, 'info')
+    } catch (e) {
+      notify(e instanceof ApiError ? e.detail : 'No se pudo reenviar la invitación')
+    }
+  }
+
+  async function cancelInvitation(inv: PendingInvitationDto) {
+    if (!(await confirmDialog(`¿Cancelar la invitación a ${inv.email}? El enlace que recibió deja de funcionar.`, { danger: true }))) return
+    try {
+      await invitationsApi.cancel(inv.id)
+      queryClient.invalidateQueries({ queryKey: ['invitations'] })
+    } catch (e) {
+      notify(e instanceof ApiError ? e.detail : 'No se pudo cancelar la invitación')
+    }
+  }
 
   const updateMutation = useMutation({
     mutationFn: ({ id, body, version }: { id: string; body: UpdateMembershipRequest; version: number }) =>
@@ -95,6 +117,32 @@ export function UsersSettingsPage() {
         emptyMessage="No hay usuarios."
       />
 
+      {invitations.length > 0 && (
+        <section aria-label="Invitaciones pendientes" className="overflow-hidden border border-tc-border bg-white">
+          <h2 className="border-b border-tc-border bg-tc-stub-bg px-4 py-2 text-[10px] font-bold tracking-[0.14em] text-tc-text-muted uppercase">
+            Invitaciones pendientes
+          </h2>
+          <ul className="divide-y divide-tc-border">
+            {invitations.map(inv => (
+              <li key={inv.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-sm">
+                <span className="min-w-0">
+                  <span className="block truncate font-medium text-tc-text">{inv.displayName ?? inv.email}</span>
+                  {inv.displayName && <span className="block truncate text-xs text-tc-text-secondary">{inv.email}</span>}
+                </span>
+                <span className="text-xs text-tc-text-secondary">{ROLE_LABEL[inv.role]}</span>
+                <span className={`text-xs font-bold tracking-wider uppercase ${inv.isExpired ? 'text-tc-stamp-red' : 'text-tc-text-muted'}`}>
+                  {inv.isExpired ? 'Vencida' : `Vence ${new Date(inv.expiresAt).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}`}
+                </span>
+                <span className="ml-auto flex gap-3">
+                  <button type="button" onClick={() => resend(inv)} className="text-xs font-bold tracking-wider text-tc-purple uppercase hover:opacity-70">Reenviar</button>
+                  <button type="button" onClick={() => cancelInvitation(inv)} className="text-xs font-bold tracking-wider text-tc-stamp-red uppercase hover:opacity-70">Cancelar</button>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {editing && (
         <EditMemberModal
           member={editing}
@@ -107,7 +155,7 @@ export function UsersSettingsPage() {
 
       {inviting && (
         <InviteMemberModal
-          onSuccess={() => { setInviting(false); queryClient.invalidateQueries({ queryKey: ['members'] }) }}
+          onSuccess={() => { setInviting(false); queryClient.invalidateQueries({ queryKey: ['members'] }); queryClient.invalidateQueries({ queryKey: ['invitations'] }) }}
           onClose={() => setInviting(false)}
         />
       )}

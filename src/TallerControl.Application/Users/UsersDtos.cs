@@ -16,6 +16,15 @@ public sealed record InvitationDto(
     TenantRole Role,
     DateTimeOffset ExpiresAt);
 
+/// <summary>Ítem de <c>GET /api/v1/invitations</c>: invitaciones pendientes (incluye las vencidas, que se reenvían).</summary>
+public sealed record PendingInvitationDto(
+    Guid Id,
+    string Email,
+    string? DisplayName,
+    TenantRole Role,
+    DateTimeOffset ExpiresAt,
+    bool IsExpired);
+
 /// <summary>Cuerpo de <c>POST /api/public/v1/invitations/{token}/accept</c> (doc 05 §2).</summary>
 public sealed record AcceptInvitationRequest(string Password);
 
