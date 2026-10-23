@@ -5,7 +5,8 @@ namespace TallerControl.Application.Catalog;
 
 public interface ICatalogRepository
 {
-    Task<Page<CatalogItemListDto>> SearchAsync(string? q, CatalogItemKind? kind, bool? activeOnly, int page, int pageSize, SortSpec sort, CancellationToken ct);
+    /// <param name="deleted">true = solo los dados de baja («Ver eliminados»); por defecto solo los vigentes.</param>
+    Task<Page<CatalogItemListDto>> SearchAsync(string? q, CatalogItemKind? kind, bool? activeOnly, bool? deleted, int page, int pageSize, SortSpec sort, CancellationToken ct);
 
     Task<CatalogItemDto?> GetFullAsync(Guid id, CancellationToken ct);
 

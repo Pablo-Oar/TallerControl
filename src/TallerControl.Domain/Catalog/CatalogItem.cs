@@ -10,6 +10,7 @@ public sealed class CatalogItem : Entity, ITenantOwned, IVersioned, IAudited, IA
 {
     public const int NameMaxLength = 200;
     public const int SkuMaxLength = 50;
+    public const int DescriptionMaxLength = 1000;
 
     private CatalogItem()
     {
@@ -26,7 +27,9 @@ public sealed class CatalogItem : Entity, ITenantOwned, IVersioned, IAudited, IA
         bool trackStock,
         decimal? stockMin,
         int? durationMinutes,
-        int? bufferMinutes)
+        int? bufferMinutes,
+        string? description = null,
+        decimal? stockMax = null)
     {
         TenantId = tenantId;
         Kind = kind;
@@ -40,6 +43,8 @@ public sealed class CatalogItem : Entity, ITenantOwned, IVersioned, IAudited, IA
         StockMin = stockMin;
         DurationMinutes = durationMinutes;
         BufferMinutes = bufferMinutes;
+        Description = NormalizeDescription(description);
+        StockMax = ValidateStockMax(stockMax, stockMin);
         IsActive = true;
     }
 
@@ -53,6 +58,8 @@ public sealed class CatalogItem : Entity, ITenantOwned, IVersioned, IAudited, IA
     public bool TrackStock { get; private set; }
     public decimal StockQty { get; private set; }
     public decimal? StockMin { get; private set; }
+    public decimal? StockMax { get; private set; }
+    public string? Description { get; private set; }
     public int? DurationMinutes { get; private set; }
     public int? BufferMinutes { get; private set; }
     public bool IsActive { get; private set; }
@@ -84,7 +91,9 @@ public sealed class CatalogItem : Entity, ITenantOwned, IVersioned, IAudited, IA
         decimal? stockMin,
         int? durationMinutes,
         int? bufferMinutes,
-        bool isActive)
+        bool isActive,
+        string? description = null,
+        decimal? stockMax = null)
     {
         Name = ValidateName(name);
         Sku = NormalizeSku(sku);
@@ -95,6 +104,26 @@ public sealed class CatalogItem : Entity, ITenantOwned, IVersioned, IAudited, IA
         DurationMinutes = durationMinutes;
         BufferMinutes = bufferMinutes;
         IsActive = isActive;
+        Description = NormalizeDescription(description);
+        StockMax = ValidateStockMax(stockMax, stockMin);
+    }
+
+    /// <summary>
+    /// Activa o desactiva el control de stock de un producto. Desactivarlo con existencias las perdería de vista:
+    /// primero hay que dejar el stock en cero.
+    /// </summary>
+    public void SetTrackStock(bool trackStock)
+    {
+        if (trackStock == TrackStock) return;
+
+        if (trackStock && Kind != CatalogItemKind.Product)
+            throw new ArgumentException("Solo los productos pueden tener seguimiento de stock.", nameof(trackStock));
+
+        if (!trackStock && StockQty != 0)
+            throw new InvalidOperationException(
+                "No se puede dejar de controlar el stock con existencias: ajustalo a cero antes.");
+
+        TrackStock = trackStock;
     }
 
     /// <summary>
@@ -140,6 +169,25 @@ public sealed class CatalogItem : Entity, ITenantOwned, IVersioned, IAudited, IA
         if (trimmed.Length is < 1 or > NameMaxLength)
             throw new ArgumentException($"El nombre debe tener entre 1 y {NameMaxLength} caracteres.", nameof(name));
         return trimmed;
+    }
+
+    private static string? NormalizeDescription(string? description)
+    {
+        var trimmed = description?.Trim();
+        if (string.IsNullOrEmpty(trimmed)) return null;
+        if (trimmed.Length > DescriptionMaxLength)
+            throw new ArgumentException($"La descripción admite hasta {DescriptionMaxLength} caracteres.", nameof(description));
+        return trimmed;
+    }
+
+    private static decimal? ValidateStockMax(decimal? stockMax, decimal? stockMin)
+    {
+        if (stockMax is null) return null;
+        if (stockMax < 0)
+            throw new ArgumentOutOfRangeException(nameof(stockMax), "El stock máximo no puede ser negativo.");
+        if (stockMin is not null && stockMax < stockMin)
+            throw new ArgumentException("El stock máximo no puede ser menor que el mínimo.", nameof(stockMax));
+        return stockMax;
     }
 
     private static string? NormalizeSku(string? sku) =>

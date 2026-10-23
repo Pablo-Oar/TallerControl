@@ -11,10 +11,10 @@ public sealed class SearchCatalogHandler
     public SearchCatalogHandler(ICatalogRepository repo) => _repo = repo;
 
     public Task<Page<CatalogItemListDto>> HandleAsync(
-        string? q, CatalogItemKind? kind, bool? activeOnly, int page, int pageSize, SortSpec sort, CancellationToken ct)
+        string? q, CatalogItemKind? kind, bool? activeOnly, bool? deleted, int page, int pageSize, SortSpec sort, CancellationToken ct)
     {
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 1, 100);
-        return _repo.SearchAsync(q, kind, activeOnly, page, pageSize, sort, ct);
+        return _repo.SearchAsync(q, kind, activeOnly, deleted, page, pageSize, sort, ct);
     }
 }

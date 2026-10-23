@@ -8,16 +8,19 @@ import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
+import { useCan } from '../../../lib/auth/permissions'
 
 
 const schema = z.object({
   kind: z.enum(['service', 'product']),
   sku: z.string().trim().max(50).optional(),
   name: z.string().trim().min(1, 'Requerido').max(200),
-  description: z.string().trim().max(500).optional(),
+  description: z.string().trim().max(1000).optional(),
   netPrice: z.number().min(0, 'El precio no puede ser negativo'),
   vatRate: z.number().min(0).max(100),
+  cost: z.string().optional(),
   trackStock: z.boolean(),
+  initialStockQty: z.string().optional(),
   minStockQty: z.string().optional(),
   maxStockQty: z.string().optional(),
   durationMinutes: z.string().optional(),
@@ -45,9 +48,10 @@ function toFormData(dto: CatalogItemDto): FormData {
     description: dto.description ?? '',
     netPrice: dto.netPrice,
     vatRate: dto.vatRate,
+    cost: dto.cost != null ? String(dto.cost) : '',
     trackStock: dto.trackStock,
-    minStockQty: (dto.stockMin ?? dto.minStockQty) != null ? String(dto.stockMin ?? dto.minStockQty) : '',
-    maxStockQty: dto.maxStockQty != null ? String(dto.maxStockQty) : '',
+    minStockQty: dto.stockMin != null ? String(dto.stockMin) : '',
+    maxStockQty: dto.stockMax != null ? String(dto.stockMax) : '',
     durationMinutes: dto.durationMinutes != null ? String(dto.durationMinutes) : '',
     bufferMinutes: dto.bufferMinutes != null ? String(dto.bufferMinutes) : '',
     isActive: dto.isActive,
@@ -63,6 +67,7 @@ interface Props {
 export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
   const [serverError, setServerError] = useState<string | null>(null)
   const isEdit = !!item
+  const canCost = useCan()('costs.view')
 
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: makeResolver(item),
@@ -84,14 +89,15 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
         const result = await catalogApi.update(item.id, {
           name: data.name,
           sku: item.sku,
-          cost: item.cost ?? null,
+          cost: canCost ? numOrNull(data.cost) : item.cost ?? null,
           description: data.description || null,
           netPrice: data.netPrice,
           vatRate: data.vatRate,
-          trackStock: data.trackStock,
-          minStockQty: numOrNull(data.minStockQty),
-          maxStockQty: numOrNull(data.maxStockQty),
+          // Solo se manda si cambió: activar el control de stock puede traer existencias de partida.
+          trackStock: item.kind === 'product' && data.trackStock !== item.trackStock ? data.trackStock : undefined,
+          initialStockQty: !item.trackStock && data.trackStock ? numOrNull(data.initialStockQty) : null,
           stockMin: numOrNull(data.minStockQty),
+          stockMax: numOrNull(data.maxStockQty),
           durationMinutes: item.kind === 'service' ? numOrNull(data.durationMinutes) : null,
           bufferMinutes: item.kind === 'service' ? numOrNull(data.bufferMinutes) : null,
           isActive: data.isActive,
@@ -105,13 +111,12 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
           description: data.description || null,
           netPrice: data.netPrice,
           vatRate: data.vatRate,
+          cost: canCost ? numOrNull(data.cost) : null,
           trackStock: data.trackStock,
-          minStockQty: numOrNull(data.minStockQty),
-          maxStockQty: numOrNull(data.maxStockQty),
           stockMin: numOrNull(data.minStockQty),
+          stockMax: numOrNull(data.maxStockQty),
           durationMinutes: data.kind === 'service' ? numOrNull(data.durationMinutes) : null,
           bufferMinutes: data.kind === 'service' ? numOrNull(data.bufferMinutes) : null,
-          isActive: data.isActive,
         })
         onSuccess(result)
       }
@@ -193,11 +198,36 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
           </div>
         )}
 
-        {(kind === 'product' || isEdit) && (
+        {canCost && (
+          <FormField
+            label="Costo (sin IVA)"
+            type="number"
+            min={0}
+            step="0.01"
+            placeholder="—"
+            hint="Lo que te cuesta a vos. Solo lo ven quienes tienen permiso de costos."
+            inputClassName="tabular-nums"
+            {...register('cost')}
+          />
+        )}
+
+        {(kind === 'product' || (isEdit && item.kind === 'product')) && (
           <label className="flex items-center gap-2 text-sm text-tc-text-secondary">
             <input type="checkbox" {...register('trackStock')} className="h-4 w-4" />
             Controlar stock
           </label>
+        )}
+
+        {trackStock && !(isEdit && item.trackStock) && (
+          <FormField
+            label="Stock inicial"
+            type="number"
+            step="1"
+            placeholder="0"
+            hint="Las existencias de partida: quedan registradas como un movimiento."
+            inputClassName="tabular-nums"
+            {...register('initialStockQty')}
+          />
         )}
 
         {trackStock && (

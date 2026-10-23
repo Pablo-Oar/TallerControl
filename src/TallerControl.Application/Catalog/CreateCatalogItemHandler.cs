@@ -15,7 +15,8 @@ public sealed class CreateCatalogItemHandler
         _tenantContext = tenantContext;
     }
 
-    public async Task<CatalogItemDto> HandleAsync(CreateCatalogItemRequest request, CancellationToken ct)
+    /// <param name="canEditCost">Sin permiso de costos, el costo del pedido se ignora.</param>
+    public async Task<CatalogItemDto> HandleAsync(CreateCatalogItemRequest request, bool canEditCost, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId
             ?? throw new InvalidOperationException("No hay taller en la sesión.");
@@ -32,11 +33,13 @@ public sealed class CreateCatalogItemHandler
                 request.Sku,
                 request.NetPrice,
                 request.VatRate,
-                request.Cost,
+                canEditCost ? request.Cost : null,
                 request.TrackStock,
                 request.StockMin,
                 request.DurationMinutes,
-                request.BufferMinutes);
+                request.BufferMinutes,
+                request.Description,
+                request.StockMax);
         }
         catch (ArgumentException ex)
         {

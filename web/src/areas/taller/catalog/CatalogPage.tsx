@@ -7,6 +7,11 @@ import { Pagination } from '../../../components/ui/Pagination'
 import { useCan } from '../../../lib/auth/permissions'
 import { CatalogFormModal } from './CatalogFormModal'
 import { StockAdjustmentModal } from './StockAdjustmentModal'
+import { StockMovementsModal } from './StockMovementsModal'
+import { Modal } from '../../../components/ui/Modal'
+import { FormTextarea } from '../../../components/ui/FormField'
+import { notify } from '../../../components/ui/dialogs'
+import { ApiError } from '../../../lib/api/client'
 
 const KIND_LABELS: Record<CatalogItemKind, string> = {
   service: 'Servicio',
@@ -64,16 +69,21 @@ export function CatalogPage() {
   const [search, setSearch] = useState('')
   const [kindFilter, setKindFilter] = useState<CatalogItemKind | ''>('')
   const [activeOnly, setActiveOnly] = useState<boolean>(true)
+  const [showDeleted, setShowDeleted] = useState(false)
   const [page, setPage] = useState(1)
   const [sort, setSort] = useState<SortState | null>(null)
 
   const [creating, setCreating] = useState(false)
   const [editing, setEditing] = useState<CatalogItemListDto | null>(null)
   const [adjusting, setAdjusting] = useState<CatalogItemListDto | null>(null)
+  const [viewingMovements, setViewingMovements] = useState<CatalogItemListDto | null>(null)
+  const [deleting, setDeleting] = useState<CatalogItemListDto | null>(null)
+  const [deleteReason, setDeleteReason] = useState('')
+  const [busy, setBusy] = useState(false)
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['catalog', search, kindFilter, activeOnly, page, sort],
-    queryFn: () => catalogApi.search(search || null, kindFilter || null, activeOnly ? true : null, page, 25, sort),
+    queryKey: ['catalog', search, kindFilter, activeOnly, showDeleted, page, sort],
+    queryFn: () => catalogApi.search(search || null, kindFilter || null, !showDeleted && activeOnly ? true : null, page, 25, sort, showDeleted),
   })
 
   const { data: editItem } = useQuery({
@@ -93,6 +103,30 @@ export function CatalogPage() {
     setEditing(null)
     queryClient.invalidateQueries({ queryKey: ['catalog'] })
     queryClient.setQueryData(['catalog', dto.id], dto)
+  }
+
+  async function confirmDelete() {
+    if (!deleting || !deleteReason.trim()) return
+    setBusy(true)
+    try {
+      await catalogApi.delete(deleting.id, deleteReason.trim())
+      setDeleting(null)
+      setDeleteReason('')
+      queryClient.invalidateQueries({ queryKey: ['catalog'] })
+    } catch (e) {
+      notify(e instanceof ApiError ? e.detail : 'No se pudo eliminar el ítem')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function restore(item: CatalogItemListDto) {
+    try {
+      await catalogApi.restore(item.id)
+      queryClient.invalidateQueries({ queryKey: ['catalog'] })
+    } catch (e) {
+      notify(e instanceof ApiError ? e.detail : 'No se pudo restaurar el ítem')
+    }
   }
 
   function handleAdjustSuccess() {
@@ -124,15 +158,28 @@ export function CatalogPage() {
           <option value="service">Servicios</option>
           <option value="product">Productos</option>
         </select>
-        <label className="flex items-center gap-1.5 text-sm text-tc-text-secondary">
-          <input
-            type="checkbox"
-            checked={activeOnly}
-            onChange={e => { setActiveOnly(e.target.checked); setPage(1) }}
-            className="h-4 w-4"
-          />
-          Solo activos
-        </label>
+        {!showDeleted && (
+          <label className="flex items-center gap-1.5 text-sm text-tc-text-secondary">
+            <input
+              type="checkbox"
+              checked={activeOnly}
+              onChange={e => { setActiveOnly(e.target.checked); setPage(1) }}
+              className="h-4 w-4"
+            />
+            Solo activos
+          </label>
+        )}
+        {can('catalog.write') && (
+          <label className="flex items-center gap-1.5 text-sm text-tc-text-secondary">
+            <input
+              type="checkbox"
+              checked={showDeleted}
+              onChange={e => { setShowDeleted(e.target.checked); setPage(1) }}
+              className="h-4 w-4"
+            />
+            Ver eliminados
+          </label>
+        )}
         <Button type="submit" variant="secondary" size="sm">Buscar</Button>
       </form>
 
@@ -144,14 +191,22 @@ export function CatalogPage() {
         rows={data?.items ?? []}
         getRowId={i => i.id}
         rowClassName={i => (!i.isActive ? 'opacity-60' : undefined)}
-        actions={i => (
-          <>
-            {i.trackStock && i.isActive && can('stock.adjust') && (
-              <RowAction tone="warn" onClick={() => setAdjusting(i)}>Stock</RowAction>
-            )}
-            <RowAction onClick={() => setEditing(i)}>Editar</RowAction>
-          </>
-        )}
+        actions={i =>
+          showDeleted ? (
+            can('catalog.write') && <RowAction onClick={() => restore(i)}>Restaurar</RowAction>
+          ) : (
+            <>
+              {i.trackStock && <RowAction onClick={() => setViewingMovements(i)}>Movimientos</RowAction>}
+              {i.trackStock && i.isActive && can('stock.adjust') && (
+                <RowAction tone="warn" onClick={() => setAdjusting(i)}>Stock</RowAction>
+              )}
+              <RowAction onClick={() => setEditing(i)}>Editar</RowAction>
+              {can('catalog.write') && (
+                <RowAction tone="danger" onClick={() => { setDeleting(i); setDeleteReason('') }}>Eliminar</RowAction>
+              )}
+            </>
+          )
+        }
         renderCard={i => (
           <>
             <p className="truncate text-sm font-medium text-tc-text">{i.name}</p>
@@ -169,7 +224,7 @@ export function CatalogPage() {
         loading={isLoading}
         error={!!error}
         onRetry={() => refetch()}
-        emptyMessage={`No hay ítems${search ? ' para esa búsqueda' : ''}.`}
+        emptyMessage={showDeleted ? 'No hay ítems eliminados.' : `No hay ítems${search ? ' para esa búsqueda' : ''}.`}
       />
 
       {data && <Pagination page={page} pageSize={data.pageSize} total={data.total} noun="ítems" onPage={setPage} />}
@@ -180,6 +235,31 @@ export function CatalogPage() {
       )}
       {adjusting && (
         <StockAdjustmentModal item={adjusting} onSuccess={handleAdjustSuccess} onClose={() => setAdjusting(null)} />
+      )}
+      {viewingMovements && <StockMovementsModal item={viewingMovements} onClose={() => setViewingMovements(null)} />}
+
+      {deleting && (
+        <Modal title="Eliminar ítem" onClose={() => setDeleting(null)} className="max-w-sm">
+          <div className="space-y-4">
+            <p className="text-sm text-tc-text-secondary">
+              «{deleting.name}» deja de aparecer en el catálogo y en los selectores. Las órdenes y presupuestos que ya lo usan
+              no cambian, y lo podés restaurar desde «Ver eliminados».
+            </p>
+            <FormTextarea
+              label="Motivo"
+              requiredMark
+              rows={2}
+              value={deleteReason}
+              onChange={e => setDeleteReason(e.target.value)}
+            />
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="secondary" size="sm" onClick={() => setDeleting(null)}>Volver</Button>
+              <Button variant="danger" size="sm" loading={busy} disabled={!deleteReason.trim()} onClick={confirmDelete}>
+                Eliminar
+              </Button>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   )
