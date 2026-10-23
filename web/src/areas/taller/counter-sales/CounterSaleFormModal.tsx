@@ -133,7 +133,7 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
               <div className="grid grid-cols-3 gap-2">
                 <FormField label="Cantidad" size="sm" type="number" step="0.001" inputClassName="tabular-nums" {...register(`items.${idx}.quantity`)} />
                 <FormField label="Precio unitario neto" size="sm" type="number" step="0.01" inputClassName="tabular-nums" {...register(`items.${idx}.unitPrice`)} />
-                <FormField label="IVA %" size="sm" type="number" step="1" inputClassName="tabular-nums" {...register(`items.${idx}.vatRate`)} />
+                <FormField label="IVA %" size="sm" type="number" step="any" inputClassName="tabular-nums" {...register(`items.${idx}.vatRate`)} />
               </div>
             </div>
           ))}

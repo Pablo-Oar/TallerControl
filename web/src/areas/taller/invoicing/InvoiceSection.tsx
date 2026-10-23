@@ -55,7 +55,9 @@ export function InvoiceSection({ sourceType, sourceId, eligible, ineligibleReaso
   if (!canRead) return null
 
   const items = invoices?.items ?? []
-  const hasAuthorized = items.some(i => i.status === 'authorized')
+  // Una factura anulada con nota de crédito deja el documento libre: se puede volver a facturar.
+  const authorized = items.filter(i => i.status === 'authorized')
+  const hasAuthorized = authorized.filter(i => !i.isCredit).length > authorized.filter(i => i.isCredit).length
   const hasCert = (certs ?? []).some(c => c.isActive)
   const activePoints = (points ?? []).filter(p => p.isActive)
 

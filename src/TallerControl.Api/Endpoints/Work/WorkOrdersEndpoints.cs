@@ -181,7 +181,7 @@ internal static class WorkOrdersEndpoints
         var canDeliver = membership?.Membership.EffectivePermissions().Contains(Permission.WorkOrdersDeliver) ?? false;
         var canCancel = membership?.Membership.EffectivePermissions().Contains(Permission.WorkOrdersCancel) ?? false;
 
-        var dto = await handler.HandleAsync(id, request, isMechanic, canDeliver, canCancel, ct);
+        var dto = await handler.HandleAsync(id, request, isMechanic, canDeliver, canCancel, ct, membership?.Membership.Id);
         return Results.Ok(dto);
     }
 

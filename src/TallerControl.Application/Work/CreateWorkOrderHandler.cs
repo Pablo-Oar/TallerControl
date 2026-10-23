@@ -1,6 +1,7 @@
 using TallerControl.Application.Catalog;
 using TallerControl.Application.Common;
 using TallerControl.Application.Tenancy;
+using TallerControl.Application.Users;
 using TallerControl.Application.Vehicles;
 using TallerControl.Domain.Catalog;
 using TallerControl.Domain.Tenancy;
@@ -22,6 +23,8 @@ public sealed class CreateWorkOrderHandler
     private readonly IActorContext _actorContext;
     private readonly IDocumentNumberGenerator _numbers;
     private readonly TimeProvider _clock;
+    private readonly IOutbox _outbox;
+    private readonly IMembershipRepository _memberships;
 
     public CreateWorkOrderHandler(
         IWorkOrderRepository woRepo,
@@ -31,7 +34,9 @@ public sealed class CreateWorkOrderHandler
         IBranchContext branchContext,
         IActorContext actorContext,
         IDocumentNumberGenerator numbers,
-        TimeProvider clock)
+        TimeProvider clock,
+        IOutbox outbox,
+        IMembershipRepository memberships)
     {
         _woRepo = woRepo;
         _catalogRepo = catalogRepo;
@@ -41,12 +46,16 @@ public sealed class CreateWorkOrderHandler
         _actorContext = actorContext;
         _numbers = numbers;
         _clock = clock;
+        _outbox = outbox;
+        _memberships = memberships;
     }
 
     public async Task<WorkOrderDto> HandleAsync(CreateWorkOrderRequest request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId
             ?? throw new InvalidOperationException("No hay taller en la sesión.");
+
+        await MechanicAssignment.EnsureAssignableAsync(_memberships, request.AssignedMechanicId, ct);
 
         // Validar que el vehículo exista y pertenezca al cliente del mismo taller.
         var vehicle = await _vehicleRepo.FindByIdAsync(request.VehicleId, ct)
@@ -135,6 +144,17 @@ public sealed class CreateWorkOrderHandler
         await _woRepo.AddAsync(order, ct);
         foreach (var (movement, _) in stockMovements)
             await _catalogRepo.AddMovementAsync(movement, ct);
+
+        // Si la orden nace con mecánico asignado, él también recibe el aviso en el celular.
+        if (request.AssignedMechanicId is { } assignedMechanic)
+        {
+            _outbox.Enqueue("push.work_order_assigned", new
+            {
+                membershipId = assignedMechanic,
+                orderNumber = order.Number,
+                workOrderId = order.Id,
+            });
+        }
 
         await _woRepo.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);

@@ -157,7 +157,7 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
             requiredMark
             type="number"
             min={0}
-            step="1"
+            step="0.01"
             placeholder="0.00"
             inputClassName="tabular-nums"
             error={errors.netPrice?.message}
@@ -168,7 +168,7 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
             type="number"
             min={0}
             max={100}
-            step="1"
+            step="any"
             placeholder="21"
             inputClassName="tabular-nums"
             {...register('vatRate', { valueAsNumber: true })}
@@ -225,7 +225,7 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
           <FormField
             label="Stock inicial"
             type="number"
-            step="1"
+            step="0.001"
             placeholder="0"
             hint="Las existencias de partida: quedan registradas como un movimiento."
             inputClassName="tabular-nums"
@@ -235,8 +235,8 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
 
         {trackStock && (
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="Stock mínimo" type="number" min={0} step="1" placeholder="—" inputClassName="tabular-nums" {...register('minStockQty')} />
-            <FormField label="Stock máximo" type="number" min={0} step="1" placeholder="—" inputClassName="tabular-nums" {...register('maxStockQty')} />
+            <FormField label="Stock mínimo" type="number" min={0} step="0.001" placeholder="—" inputClassName="tabular-nums" {...register('minStockQty')} />
+            <FormField label="Stock máximo" type="number" min={0} step="0.001" placeholder="—" inputClassName="tabular-nums" {...register('maxStockQty')} />
           </div>
         )}
 

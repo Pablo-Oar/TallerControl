@@ -28,7 +28,7 @@ public sealed class Customer : Entity, ITenantOwned, IVersioned, IAudited, IAudi
     {
         TenantId = tenantId;
         Name = ValidateName(name);
-        Email = email?.Trim().ToLowerInvariant();
+        Email = Common.EmailFormat.NormalizeOptional(email);
         Phone = PhoneNormalizer.Normalize(phone);
         DocType = docType;
         DocNumber = NormalizeDocNumber(docNumber);
@@ -76,7 +76,7 @@ public sealed class Customer : Entity, ITenantOwned, IVersioned, IAudited, IAudi
         string? notes)
     {
         Name = ValidateName(name);
-        Email = email?.Trim().ToLowerInvariant();
+        Email = Common.EmailFormat.NormalizeOptional(email);
         Phone = PhoneNormalizer.Normalize(phone);
         DocType = docType;
         DocNumber = NormalizeDocNumber(docNumber);

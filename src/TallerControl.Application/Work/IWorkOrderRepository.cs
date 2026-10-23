@@ -22,7 +22,9 @@ public interface IWorkOrderRepository
         CancellationToken ct,
         Guid? customerId = null);
 
-    Task<WorkOrderDto?> GetFullAsync(Guid id, bool includePrices, CancellationToken ct);
+    /// <param name="includePrices">Sin permiso de precios, ni los importes de los renglones viajan.</param>
+    /// <param name="includeInternalNotes">Las notas internas son del taller: el mecánico no las recibe.</param>
+    Task<WorkOrderDto?> GetFullAsync(Guid id, bool includePrices, CancellationToken ct, bool includeInternalNotes = true);
 
     /// <summary>
     /// Elimina un renglón que se quitó de una orden editable (el renglón se reemplaza al editar; el historial queda en

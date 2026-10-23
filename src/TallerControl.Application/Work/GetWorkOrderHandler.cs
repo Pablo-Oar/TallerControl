@@ -22,7 +22,7 @@ public sealed class GetWorkOrderHandler
             var wo = await _repo.FindVisibleToMechanicAsync(id, mechanicMembershipId.Value, ct)
                 ?? throw new NotFoundException();
 
-            return await _repo.GetFullAsync(id, includePrices, ct) ?? throw new NotFoundException();
+            return await _repo.GetFullAsync(id, includePrices, ct, includeInternalNotes: false) ?? throw new NotFoundException();
         }
 
         return await _repo.GetFullAsync(id, includePrices, ct) ?? throw new NotFoundException();

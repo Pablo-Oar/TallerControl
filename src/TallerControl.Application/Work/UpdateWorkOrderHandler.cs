@@ -1,5 +1,6 @@
 using TallerControl.Application.Catalog;
 using TallerControl.Application.Common;
+using TallerControl.Application.Users;
 using TallerControl.Application.Vehicles;
 using TallerControl.Domain.Catalog;
 using TallerControl.Domain.Work;
@@ -18,19 +19,22 @@ public sealed class UpdateWorkOrderHandler
     private readonly IVehicleRepository _vehicleRepo;
     private readonly IActorContext _actorContext;
     private readonly TimeProvider _clock;
+    private readonly IMembershipRepository _memberships;
 
     public UpdateWorkOrderHandler(
         IWorkOrderRepository woRepo,
         ICatalogRepository catalogRepo,
         IVehicleRepository vehicleRepo,
         IActorContext actorContext,
-        TimeProvider clock)
+        TimeProvider clock,
+        IMembershipRepository memberships)
     {
         _woRepo = woRepo;
         _catalogRepo = catalogRepo;
         _vehicleRepo = vehicleRepo;
         _actorContext = actorContext;
         _clock = clock;
+        _memberships = memberships;
     }
 
     public async Task<WorkOrderDto> HandleAsync(Guid id, UpdateWorkOrderRequest request, uint version, CancellationToken ct)
@@ -43,6 +47,8 @@ public sealed class UpdateWorkOrderHandler
 
         var now = _clock.GetUtcNow();
         var actorId = _actorContext.ActorId;
+
+        await MechanicAssignment.EnsureAssignableAsync(_memberships, request.AssignedMechanicId, ct);
 
         try
         {

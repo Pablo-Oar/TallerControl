@@ -1,7 +1,9 @@
 using TallerControl.Api.Identity;
+using TallerControl.Application.Auth;
 using TallerControl.Application.Work;
 using TallerControl.Domain.Users;
 using TallerControl.Domain.Work;
+using TallerControl.Infrastructure.Identity;
 
 namespace TallerControl.Api.Endpoints.Work;
 
@@ -19,8 +21,8 @@ internal static class AttachmentsEndpoints
     {
         app.MapPost("/api/v1/attachments/upload-url",
                 (RequestAttachmentUploadUrlRequest request,
-                 RequestAttachmentUploadUrlHandler handler, CancellationToken ct) =>
-                    UploadUrlAsync(request, handler, ct))
+                 RequestAttachmentUploadUrlHandler handler, IAuthRepository auth, HttpContext ctx, CancellationToken ct) =>
+                    UploadUrlAsync(request, handler, auth, ctx, ct))
             .RequirePermission(Permission.AttachmentsWrite)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
@@ -53,9 +55,19 @@ internal static class AttachmentsEndpoints
     private static async Task<IResult> UploadUrlAsync(
         RequestAttachmentUploadUrlRequest request,
         RequestAttachmentUploadUrlHandler handler,
+        IAuthRepository auth,
+        HttpContext ctx,
         CancellationToken ct)
     {
-        var dto = await handler.HandleAsync(request.OwnerType, request.OwnerId, request, ct);
+        Guid? mechanicMembershipId = null;
+        if (Guid.TryParse(ctx.User.FindFirst(SessionClaims.UserId)?.Value, out var userId))
+        {
+            var membership = await auth.FindActiveMembershipAsync(userId, ct);
+            if (membership?.Membership.Role == TenantRole.Mechanic)
+                mechanicMembershipId = membership.Membership.Id;
+        }
+
+        var dto = await handler.HandleAsync(request.OwnerType, request.OwnerId, request, ct, mechanicMembershipId);
         return Results.Ok(dto);
     }
 

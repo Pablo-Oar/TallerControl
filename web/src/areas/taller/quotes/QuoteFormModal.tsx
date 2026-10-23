@@ -157,7 +157,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
           <FormField
             label="Descuento global (%)"
             type="number"
-            step="1"
+            step="any"
             min="0"
             max="100"
             inputClassName="tabular-nums"
@@ -240,7 +240,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                       label="Cantidad"
                       size="sm"
                       type="number"
-                      step="1"
+                      step="0.001"
                       min="0"
                       inputClassName="tabular-nums"
                       {...register(`items.${index}.quantity`, { valueAsNumber: true })}
@@ -249,7 +249,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                       label="Precio neto"
                       size="sm"
                       type="number"
-                      step="1"
+                      step="0.01"
                       min="0"
                       inputClassName="tabular-nums"
                       {...register(`items.${index}.unitNetPrice`, { valueAsNumber: true })}
@@ -258,7 +258,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                       label="IVA %"
                       size="sm"
                       type="number"
-                      step="1"
+                      step="any"
                       min="0"
                       max="100"
                       inputClassName="tabular-nums"
