@@ -6,6 +6,7 @@ import { PwaInstallBanner } from './PwaInstallBanner'
 import { PushTestButton } from './PushTestButton'
 import { Button } from '../../components/ui/Button'
 import { useAuth } from '../../lib/auth/AuthContext'
+import { RequireAuth } from '../../lib/auth/RequireAuth'
 
 const MechanicWorkOrdersPage = lazy(() => import('./MechanicWorkOrdersPage').then(m => ({ default: m.MechanicWorkOrdersPage })))
 const MechanicWorkOrderDetailPage = lazy(() => import('./MechanicWorkOrderDetailPage').then(m => ({ default: m.MechanicWorkOrderDetailPage })))
@@ -22,7 +23,9 @@ export function Component() {
       navigate('/login')
     }
   }
+  // Sin sesión (o vencida) el portal no se muestra: va al login, como el panel del taller.
   return (
+    <RequireAuth>
     <div className="min-h-screen bg-tc-surface text-tc-text">
       <header className="bg-tc-navy px-4 h-[52px] flex items-center justify-between border-b border-tc-navy-mid">
         <span className="select-none text-sm font-bold tracking-widest text-white uppercase">
@@ -44,12 +47,13 @@ export function Component() {
           </Routes>
         </Suspense>
         <div className="mt-8 border-t border-tc-border pt-4">
-          <Button variant="secondary" size="sm" onClick={handleLogout}>
+          <Button variant="secondary" className="min-h-[44px]" onClick={handleLogout}>
             Cerrar sesión
           </Button>
           <PushTestButton />
         </div>
       </main>
     </div>
+    </RequireAuth>
   )
 }

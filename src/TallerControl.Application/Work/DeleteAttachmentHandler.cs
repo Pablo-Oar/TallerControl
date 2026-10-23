@@ -1,4 +1,5 @@
 using TallerControl.Application.Common;
+using TallerControl.Domain.Work;
 
 namespace TallerControl.Application.Work;
 
@@ -9,18 +10,30 @@ namespace TallerControl.Application.Work;
 public sealed class DeleteAttachmentHandler
 {
     private readonly IAttachmentRepository _repo;
+    private readonly IWorkOrderRepository _woRepo;
     private readonly TimeProvider _clock;
 
-    public DeleteAttachmentHandler(IAttachmentRepository repo, TimeProvider clock)
+    public DeleteAttachmentHandler(IAttachmentRepository repo, IWorkOrderRepository woRepo, TimeProvider clock)
     {
         _repo = repo;
+        _woRepo = woRepo;
         _clock = clock;
     }
 
-    public async Task HandleAsync(Guid id, CancellationToken ct)
+    /// <param name="mechanicMembershipId">Si es un mecánico: solo puede quitar fotos de las órdenes que tiene asignadas.</param>
+    public async Task HandleAsync(Guid id, CancellationToken ct, Guid? mechanicMembershipId = null)
     {
         var attachment = await _repo.FindByIdAsync(id, ct)
             ?? throw new NotFoundException("El adjunto no existe.");
+
+        if (mechanicMembershipId is { } mechanicId)
+        {
+            var order = attachment.OwnerType == AttachmentOwnerType.WorkOrder
+                ? await _woRepo.FindByIdAsync(attachment.OwnerId, ct)
+                : null;
+            if (order is null || order.AssignedMechanicId != mechanicId)
+                throw new UnauthorizedAccessException("El mecánico solo puede quitar fotos de sus propias órdenes.");
+        }
 
         if (attachment.IsDeleted)
             return;

@@ -35,7 +35,7 @@ export function PlateSearchBar({ onNavigate, target = '/app/vehicles' }: PlateSe
       />
       <button
         type="submit"
-        className="min-h-[36px] border border-white/40 bg-white/10 px-3 py-1 text-sm font-bold text-white hover:bg-white/20 hover:border-white/70 transition-colors disabled:opacity-50"
+        className="min-h-[44px] min-w-[44px] border border-white/40 bg-white/10 px-3 py-1 text-sm font-bold text-white hover:bg-white/20 hover:border-white/70 transition-colors disabled:opacity-50"
         disabled={!value.trim()}
       >
         Ir

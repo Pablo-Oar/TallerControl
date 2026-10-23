@@ -24,7 +24,7 @@ public sealed class UpdateMechanicNotesHandler
 
         // Solo el mecánico asignado puede actualizar sus notas (T-WO-13, REQ-14).
         if (order.AssignedMechanicId != mechanicMembershipId)
-            throw new BusinessRuleException("Solo el mecánico asignado puede actualizar las notas del trabajo.");
+            throw new UnauthorizedAccessException("Solo el mecánico asignado puede actualizar las notas del trabajo.");
 
         try
         {

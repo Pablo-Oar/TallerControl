@@ -15,8 +15,8 @@ import { Modal } from '../../components/ui/Modal'
 import { WorkOrderPhotos } from '../../components/WorkOrderPhotos'
 import { Timeline } from '../../components/ui/Timeline'
 import { vehiclesApi } from '../../lib/api/vehicles'
-import { ApiError } from '../../lib/api/client'
 import { useAuth } from '../../lib/auth/AuthContext'
+import { actionErrorMessage } from '../../lib/api/errors'
 
 const MECHANIC_TRANSITIONS: Partial<Record<WorkOrderStatus, WorkOrderStatus[]>> = {
   pending: ['in_progress'],
@@ -79,9 +79,10 @@ export function MechanicWorkOrderDetailPage() {
     try {
       await workOrdersApi.assign(id)
       queryClient.invalidateQueries({ queryKey: ['work-order', id] })
+      queryClient.invalidateQueries({ queryKey: ['work-order-history', id] })
       queryClient.invalidateQueries({ queryKey: ['mechanic-work-orders'] })
     } catch (err) {
-      setAssignError(err instanceof ApiError ? err.detail : 'No se pudo asignar la orden.')
+      setAssignError(actionErrorMessage(err, 'No se pudo asignar la orden.'))
     } finally {
       setAssigning(false)
     }
@@ -94,11 +95,12 @@ export function MechanicWorkOrderDetailPage() {
     try {
       await workOrdersApi.changeStatus(id, { toStatus: changingStatus, note: note || null })
       queryClient.invalidateQueries({ queryKey: ['work-order', id] })
+      queryClient.invalidateQueries({ queryKey: ['work-order-history', id] })
       queryClient.invalidateQueries({ queryKey: ['mechanic-work-orders'] })
       setChangingStatus(null)
       setNote('')
     } catch (e) {
-      setStatusError(e instanceof ApiError ? e.detail : 'Error inesperado')
+      setStatusError(actionErrorMessage(e, 'No se pudo cambiar el estado.'))
     } finally {
       setSavingStatus(false)
     }
@@ -113,7 +115,7 @@ export function MechanicWorkOrderDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['work-order', id] })
       setEditingNotes(false)
     } catch (e) {
-      setNotesError(e instanceof ApiError ? e.detail : 'Error inesperado')
+      setNotesError(actionErrorMessage(e, 'No se pudo guardar la nota.'))
     } finally {
       setSavingNotes(false)
     }
@@ -213,7 +215,7 @@ export function MechanicWorkOrderDetailPage() {
       )}
 
       <Section title="Fotos">
-        <WorkOrderPhotos workOrderId={order.id} readOnly={isOthers} />
+        <WorkOrderPhotos workOrderId={order.id} readOnly={isOthers} canDelete={order.assignedMechanicId != null && !isOthers} />
       </Section>
 
       <Section title={isOthers ? 'Notas del mecánico' : 'Mis notas'}>

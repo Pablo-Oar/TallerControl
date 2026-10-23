@@ -65,7 +65,7 @@ export function MechanicWorkOrdersPage() {
       <div className="flex flex-wrap gap-2">
         <button
           onClick={() => { setStatusFilter(''); setPage(1) }}
-          className={`whitespace-nowrap border px-3 py-1 text-xs font-bold tracking-wider uppercase transition-colors ${
+          className={`min-h-[40px] whitespace-nowrap border px-3 py-1 text-xs font-bold tracking-wider uppercase transition-colors ${
             statusFilter === ''
               ? 'border-tc-navy bg-tc-navy text-white'
               : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'
@@ -77,7 +77,7 @@ export function MechanicWorkOrdersPage() {
           <button
             key={s}
             onClick={() => { setStatusFilter(s); setPage(1) }}
-            className={`whitespace-nowrap border px-3 py-1 text-xs font-bold tracking-wider uppercase transition-colors ${
+            className={`min-h-[40px] whitespace-nowrap border px-3 py-1 text-xs font-bold tracking-wider uppercase transition-colors ${
               statusFilter === s
                 ? 'border-tc-navy bg-tc-navy text-white'
                 : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'
@@ -144,9 +144,9 @@ export function MechanicWorkOrdersPage() {
                 {order.assignedMechanicName == null ? (
                   <p className="mt-1 text-[10px] font-bold tracking-wider uppercase text-amber-600">Sin asignar</p>
                 ) : order.assignedMechanicId === user?.membershipId ? (
-                  <p className="mt-1 text-[10px] font-bold tracking-wider uppercase text-tc-purple">Tuya</p>
+                  <p className="mt-1 text-xs font-bold text-tc-purple">{order.assignedMechanicName}</p>
                 ) : (
-                  <p className="mt-1 text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">De {order.assignedMechanicName} · solo lectura</p>
+                  <p className="mt-1 text-xs font-medium text-tc-text-muted">{order.assignedMechanicName} · solo lectura</p>
                 )}
               </div>
             </Link>
@@ -159,7 +159,7 @@ export function MechanicWorkOrdersPage() {
           <button
             onClick={() => setPage(p => p - 1)}
             disabled={page === 1}
-            className="border border-tc-border bg-white px-3 py-1.5 text-xs disabled:opacity-40 hover:bg-tc-surface"
+            className="min-h-[44px] border border-tc-border bg-white px-3 py-1.5 text-xs disabled:opacity-40 hover:bg-tc-surface"
           >
             ← Anterior
           </button>
@@ -169,7 +169,7 @@ export function MechanicWorkOrdersPage() {
           <button
             onClick={() => setPage(p => p + 1)}
             disabled={page * data.pageSize >= data.total}
-            className="border border-tc-border bg-white px-3 py-1.5 text-xs disabled:opacity-40 hover:bg-tc-surface"
+            className="min-h-[44px] border border-tc-border bg-white px-3 py-1.5 text-xs disabled:opacity-40 hover:bg-tc-surface"
           >
             Siguiente →
           </button>

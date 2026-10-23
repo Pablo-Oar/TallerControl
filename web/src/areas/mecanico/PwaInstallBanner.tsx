@@ -128,12 +128,12 @@ export function PwaInstallBanner() {
         {showPush && !pushGranted && <p>Activá los avisos de nuevas órdenes asignadas.</p>}
         <div className="flex flex-wrap gap-2">
           {installPrompt && (
-            <Button size="sm" onClick={handleInstall}>
+            <Button size="sm" className="min-h-[44px]" onClick={handleInstall}>
               Instalar
             </Button>
           )}
           {showPush && !pushGranted && (
-            <Button size="sm" variant="secondary" onClick={handleEnablePush}>
+            <Button size="sm" variant="secondary" className="min-h-[44px]" onClick={handleEnablePush}>
               Activar avisos
             </Button>
           )}
