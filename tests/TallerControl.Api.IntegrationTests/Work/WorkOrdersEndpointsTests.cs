@@ -719,12 +719,16 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
                 .ToListAsync())
             .Single(m => m.PayloadJson.Contains(id.ToString()));
 
-        // Sin claves VAPID el aviso no se entrega, pero tampoco queda trabado ni falla.
         Assert.NotNull(message.ProcessedAt);
+
+        // El aviso se le mandó al usuario del mecánico asignado (antes se descartaba sin error por leer mal el mensaje).
+        var sent = Assert.Single(_factory.Push.Sent, s => s.Message.Url!.Contains(id.ToString()));
+        Assert.Equal(_factory.MechanicUserId, sent.UserId);
+        Assert.Contains("orden", sent.Message.Body);
     }
 
-    [Fact(DisplayName = "T-PUSH-06: El aviso de prueba informa que el servidor no tiene push configurado")]
-    public async Task Aviso_de_prueba_sin_claves_lo_informa()
+    [Fact(DisplayName = "T-PUSH-06: El aviso de prueba se manda a los dispositivos de quien lo pide y devuelve la respuesta")]
+    public async Task Aviso_de_prueba_va_al_usuario_que_lo_pide()
     {
         using var client = CreateClient();
         await LoginAsync(client, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
@@ -736,8 +740,9 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
 
         Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
         var body = await resp.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.False(body.GetProperty("configured").GetBoolean());
-        Assert.Equal(0, body.GetProperty("delivered").GetInt32());
+        Assert.True(body.GetProperty("configured").GetBoolean());
+        Assert.Equal(1, body.GetProperty("delivered").GetInt32());
+        Assert.Contains(_factory.Push.Sent, x => x.UserId == _factory.MechanicUserId && x.Message.Title == "Aviso de prueba");
     }
 
     [Fact(DisplayName = "T-WO-12: El dueño asigna un mecánico activo del taller; un id ajeno o de otro rol → 422")]
