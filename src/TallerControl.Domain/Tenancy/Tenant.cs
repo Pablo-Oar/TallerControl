@@ -16,7 +16,7 @@ public sealed class Tenant : Entity, IVersioned, IAudited
     {
         Name = ValidateName(name);
         LegalName = legalName;
-        TaxId = taxId;
+        TaxId = NormalizeTaxId(taxId);
         Status = TenantStatus.Active;
         TimeZone = DefaultTimeZone;
         CreatedAt = createdAt;
@@ -65,6 +65,14 @@ public sealed class Tenant : Entity, IVersioned, IAudited
         Address = address;
         Phone = phone;
         TimeZone = ValidateTimeZone(timeZone);
+    }
+
+    private static string? NormalizeTaxId(string? taxId)
+    {
+        if (string.IsNullOrWhiteSpace(taxId)) return null;
+        if (!Common.Cuit.IsValid(taxId))
+            throw new ArgumentException("El CUIT no es válido: revisá los 11 dígitos y el último (dígito verificador).", nameof(taxId));
+        return Common.Cuit.Format(taxId);
     }
 
     private static string ValidateTimeZone(string timeZone)

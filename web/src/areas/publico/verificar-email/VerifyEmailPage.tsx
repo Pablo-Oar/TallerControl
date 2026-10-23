@@ -4,6 +4,7 @@ import { registrationApi } from '../../../lib/api/registration'
 import { ApiError } from '../../../lib/api/client'
 import { Button } from '../../../components/ui/Button'
 import { AuthCard } from '../../../components/ui/AuthCard'
+import { ResendVerification } from '../../../components/ui/ResendVerification'
 
 type Status = 'loading' | 'success' | 'error'
 
@@ -74,6 +75,7 @@ export function VerifyEmailPage() {
       }
     >
       <p className="text-center text-sm text-tc-text-secondary">{message}</p>
+      <ResendVerification />
     </AuthCard>
   )
 }

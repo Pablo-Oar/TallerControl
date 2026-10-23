@@ -53,6 +53,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Configuración',
     items: [
+      { to: '/app/settings/profile', label: 'Mi perfil' },
       { to: '/app/settings/general', label: 'General', perms: ['settings.manage'] },
       { to: '/app/settings/users', label: 'Usuarios', perms: ['users.manage'] },
     ],

@@ -65,6 +65,9 @@ public sealed class User : Entity, IVersioned, IAudited
 
     public void MarkEmailVerified() => IsEmailVerified = true;
 
+    /// <summary>Cambia el nombre con el que se muestra al usuario (su perfil).</summary>
+    public void Rename(string displayName) => DisplayName = ValidateDisplayName(displayName);
+
     public void Activate(string passwordHash)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(passwordHash);

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useDefaultVat } from '../../../lib/auth/defaults'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -64,6 +65,7 @@ function toFormData(order: WorkOrderDto): FormData {
 }
 
 export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
+  const defaultVat = useDefaultVat()
   const isEdit = !!order
   const [serverError, setServerError] = useState<string | null>(null)
 
@@ -112,7 +114,7 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
       catalogItemId: null,
       quantity: 1,
       unitNetPrice: 0,
-      vatRate: 21,
+      vatRate: defaultVat,
     })
   }
 

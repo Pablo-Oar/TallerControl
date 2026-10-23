@@ -44,7 +44,12 @@ internal sealed class EfAuthRepository : IAuthRepository
             return null;
         }
 
-        return new MembershipWithTenant(membership, tenant);
+        var defaultVat = await _db.Set<TenantSettings>().IgnoreQueryFilters().AsNoTracking()
+            .Where(s => s.TenantId == tenant.Id)
+            .Select(s => (decimal?)s.DefaultVat)
+            .FirstOrDefaultAsync(ct);
+
+        return new MembershipWithTenant(membership, tenant, defaultVat ?? TenantSettings.DefaultVatRate);
     }
 
     public Task SaveChangesAsync(CancellationToken ct) => _db.SaveChangesAsync(ct);

@@ -20,5 +20,12 @@ public interface IRegistrationRepository
 
     Task<Domain.Users.User?> FindUserByIdAsync(Guid userId, CancellationToken ct);
 
+    Task<Domain.Users.User?> FindUserByEmailAsync(string email, CancellationToken ct);
+
+    /// <summary>Vencimiento del último enlace emitido (emisión = vencimiento − vigencia) de verificación del usuario (para no reenviar en ráfaga).</summary>
+    Task<DateTimeOffset?> LastVerificationTokenAtAsync(Guid userId, CancellationToken ct);
+
+    void AddVerificationToken(EmailVerificationToken token);
+
     Task SaveChangesAsync(CancellationToken ct);
 }
