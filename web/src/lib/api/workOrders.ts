@@ -170,8 +170,11 @@ export const workOrdersApi = {
     assignment?: 'mine' | 'unassigned' | null,
     /** Orden en el servidor (`number|status|total|balance|createdat`). */
     sort?: { key: string; dir: 'asc' | 'desc' } | null,
+    /** Ficha del cliente: solo las órdenes de ese cliente. */
+    customerId?: string | null,
   ) => {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
+    if (customerId) params.set('customerId', customerId)
     if (assignment) params.set('assignment', assignment)
     if (sort) {
       params.set('sort', sort.key)

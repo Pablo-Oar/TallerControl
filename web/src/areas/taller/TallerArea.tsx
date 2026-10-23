@@ -6,6 +6,7 @@ import { useAuth } from '../../lib/auth/AuthContext'
 import { hasPermissions } from '../../lib/auth/permissions'
 
 const DashboardPage = lazy(() => import('./DashboardPage').then(m => ({ default: m.DashboardPage })))
+const CustomerDetailPage = lazy(() => import('./customers/CustomerDetailPage').then(m => ({ default: m.CustomerDetailPage })))
 const CustomersPage = lazy(() => import('./customers/CustomersPage').then(m => ({ default: m.CustomersPage })))
 const VehicleDetailPage = lazy(() => import('./vehicles/VehicleDetailPage').then(m => ({ default: m.VehicleDetailPage })))
 const VehiclesPage = lazy(() => import('./vehicles/VehiclesPage').then(m => ({ default: m.VehiclesPage })))
@@ -58,6 +59,7 @@ export function Component() {
           <Routes>
             <Route index element={<AppHome />} />
             <Route path="customers" element={<CustomersPage />} />
+            <Route path="customers/:id" element={<CustomerDetailPage />} />
             <Route path="vehicles" element={<VehiclesPage />} />
             <Route path="vehicles/:id" element={<VehicleDetailPage />} />
             <Route path="catalog" element={<CatalogPage />} />
