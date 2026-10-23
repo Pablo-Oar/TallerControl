@@ -357,6 +357,11 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("deleted_by");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("description");
+
                     b.Property<int?>("DurationMinutes")
                         .HasColumnType("integer")
                         .HasColumnName("duration_minutes");
@@ -387,6 +392,11 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("sku");
+
+                    b.Property<decimal?>("StockMax")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(12,3)")
+                        .HasColumnName("stock_max");
 
                     b.Property<decimal?>("StockMin")
                         .HasPrecision(14, 2)

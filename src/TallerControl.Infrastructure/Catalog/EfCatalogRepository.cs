@@ -19,9 +19,13 @@ internal sealed class EfCatalogRepository : ICatalogRepository
     }
 
     public async Task<Page<CatalogItemListDto>> SearchAsync(
-        string? q, CatalogItemKind? kind, bool? activeOnly, int page, int pageSize, SortSpec sort, CancellationToken ct)
+        string? q, CatalogItemKind? kind, bool? activeOnly, bool? deleted, int page, int pageSize, SortSpec sort, CancellationToken ct)
     {
-        var query = _db.Set<CatalogItem>().AsNoTracking();
+        // «Ver eliminados»: solo los dados de baja del taller de la sesión (el filtro global los oculta).
+        var query = deleted == true
+            ? _db.Set<CatalogItem>().IgnoreQueryFilters().AsNoTracking()
+                .Where(c => c.TenantId == _tenantContext.TenantId && c.DeletedAt != null)
+            : _db.Set<CatalogItem>().AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(q))
         {
@@ -96,7 +100,9 @@ internal sealed class EfCatalogRepository : ICatalogRepository
             item.BufferMinutes,
             item.IsActive,
             item.IsLowStock,
-            item.Version);
+            item.Version,
+            item.Description,
+            item.StockMax);
     }
 
     public Task<CatalogItem?> FindActiveByIdAsync(Guid id, CancellationToken ct) =>

@@ -429,4 +429,119 @@ public sealed class CatalogEndpointsTests : IAsyncLifetime
         var resp = await client.GetAsync("/api/v1/catalog?sort=1;drop table catalog_items&dir=desc");
         Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
     }
+
+    // ── K-01: descripción, stock máximo, costo con permiso, eliminados, control de stock ───
+
+    private static async Task<JsonElement> CreateJsonAsync(HttpClient client, object body)
+    {
+        var csrf = await FetchCsrfAsync(client);
+        var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/catalog") { Content = JsonContent.Create(body) };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        var resp = await client.SendAsync(req);
+        Assert.Equal(HttpStatusCode.Created, resp.StatusCode);
+        return await resp.Content.ReadFromJsonAsync<JsonElement>();
+    }
+
+    [Fact(DisplayName = "T-CAT-08: Descripción, stock máximo y costo se guardan; el mecánico no ve el costo")]
+    public async Task Descripcion_stock_maximo_y_costo_se_guardan()
+    {
+        using var owner = CreateClient();
+        using var mechanic = CreateClient();
+        await LoginAsync(owner, CatalogWebApplicationFactory.OwnerEmail, CatalogWebApplicationFactory.OwnerPassword);
+        await LoginAsync(mechanic, CatalogWebApplicationFactory.MechanicEmail, CatalogWebApplicationFactory.MechanicPassword);
+
+        var name = $"Amortiguador {Guid.NewGuid():N}";
+        var created = await CreateJsonAsync(owner, new
+        {
+            kind = "Product",
+            name,
+            netPrice = 500m,
+            vatRate = 21,
+            cost = 320m,
+            trackStock = true,
+            stockMin = 2m,
+            stockMax = 10m,
+            description = "Delantero, par. Garantía 6 meses.",
+        });
+        Assert.Equal("Delantero, par. Garantía 6 meses.", created.GetProperty("description").GetString());
+        Assert.Equal(10m, created.GetProperty("stockMax").GetDecimal());
+        Assert.Equal(320m, created.GetProperty("cost").GetDecimal());
+
+        // El stock máximo no puede ser menor que el mínimo.
+        var csrf = await FetchCsrfAsync(owner);
+        var bad = new HttpRequestMessage(HttpMethod.Post, "/api/v1/catalog")
+        {
+            Content = JsonContent.Create(new { kind = "Product", name = name + "x", netPrice = 1m, vatRate = 21, trackStock = true, stockMin = 5m, stockMax = 3m }),
+        };
+        bad.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await owner.SendAsync(bad)).StatusCode);
+
+        // El mecánico lee el ítem pero sin costo (ni en el detalle ni en el listado).
+        var id = created.GetProperty("id").GetGuid();
+        var asMechanic = await mechanic.GetFromJsonAsync<JsonElement>($"/api/v1/catalog/{id}");
+        Assert.Equal(JsonValueKind.Null, asMechanic.GetProperty("cost").ValueKind);
+        var list = await mechanic.GetFromJsonAsync<JsonElement>($"/api/v1/catalog?q={Uri.EscapeDataString(name)}");
+        Assert.All(list.GetProperty("items").EnumerateArray(), x => Assert.Equal(JsonValueKind.Null, x.GetProperty("cost").ValueKind));
+    }
+
+    [Fact(DisplayName = "T-CAT-09: «Ver eliminados» lista solo los dados de baja, y se restauran")]
+    public async Task Ver_eliminados_y_restaurar()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CatalogWebApplicationFactory.OwnerEmail, CatalogWebApplicationFactory.OwnerPassword);
+
+        var name = $"Descartable {Guid.NewGuid():N}";
+        var id = (await CreateJsonAsync(client, new { kind = "Service", name, netPrice = 10m, vatRate = 21 })).GetProperty("id").GetGuid();
+        Assert.Equal(HttpStatusCode.NoContent, (await DeleteCatalogItemAsync(client, id)).StatusCode);
+
+        var vigentes = await client.GetFromJsonAsync<JsonElement>($"/api/v1/catalog?q={Uri.EscapeDataString(name)}");
+        Assert.Empty(vigentes.GetProperty("items").EnumerateArray());
+
+        var eliminados = await client.GetFromJsonAsync<JsonElement>($"/api/v1/catalog?deleted=true&q={Uri.EscapeDataString(name)}");
+        Assert.Single(eliminados.GetProperty("items").EnumerateArray());
+
+        Assert.Equal(HttpStatusCode.OK, (await RestoreCatalogItemAsync(client, id)).StatusCode);
+        var otraVez = await client.GetFromJsonAsync<JsonElement>($"/api/v1/catalog?q={Uri.EscapeDataString(name)}");
+        Assert.Single(otraVez.GetProperty("items").EnumerateArray());
+    }
+
+    [Fact(DisplayName = "T-CAT-10: Activar el control de stock con cantidad inicial deja un movimiento; desactivarlo con existencias se rechaza")]
+    public async Task Activar_control_de_stock_con_cantidad_inicial()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CatalogWebApplicationFactory.OwnerEmail, CatalogWebApplicationFactory.OwnerPassword);
+
+        var created = await CreateJsonAsync(client, new { kind = "Product", name = $"Bujía {Guid.NewGuid():N}", netPrice = 50m, vatRate = 21, trackStock = false });
+        var id = created.GetProperty("id").GetGuid();
+
+        var on = await PutCatalogItemAsync(client, id, created.GetProperty("version").GetUInt32(), new
+        {
+            name = created.GetProperty("name").GetString(),
+            netPrice = 50m,
+            vatRate = 21,
+            isActive = true,
+            trackStock = true,
+            initialStockQty = 12m,
+        });
+        Assert.Equal(HttpStatusCode.OK, on.StatusCode);
+        var tracked = await on.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(tracked.GetProperty("trackStock").GetBoolean());
+        Assert.Equal(12m, tracked.GetProperty("stockQty").GetDecimal());
+
+        var movements = await client.GetFromJsonAsync<JsonElement>($"/api/v1/catalog/{id}/stock-movements");
+        var first = Assert.Single(movements.EnumerateArray());
+        Assert.Equal(12m, first.GetProperty("quantity").GetDecimal());
+        Assert.Contains("Stock inicial", first.GetProperty("note").GetString());
+
+        // Con existencias no se puede dejar de controlar el stock.
+        var off = await PutCatalogItemAsync(client, id, tracked.GetProperty("version").GetUInt32(), new
+        {
+            name = tracked.GetProperty("name").GetString(),
+            netPrice = 50m,
+            vatRate = 21,
+            isActive = true,
+            trackStock = false,
+        });
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, off.StatusCode);
+    }
 }
