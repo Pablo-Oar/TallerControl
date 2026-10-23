@@ -22,6 +22,10 @@ namespace TallerControl.Infrastructure.Outbox;
 /// </summary>
 internal sealed class OutboxDispatcher : BackgroundService
 {
+    // Los mensajes se guardan con nombres en camelCase y los registros del despachador van en PascalCase:
+    // sin ignorar mayúsculas los campos quedaban vacíos y el aviso se descartaba sin error.
+    private static readonly JsonSerializerOptions PayloadOptions = new(JsonSerializerDefaults.Web);
+
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(5);
     private const int MaxAttempts = 5;
 
@@ -108,7 +112,7 @@ internal sealed class OutboxDispatcher : BackgroundService
         switch (message.Type)
         {
             case "push.work_order_assigned":
-                var payload = JsonSerializer.Deserialize<WorkOrderAssignedPayload>(message.PayloadJson);
+                var payload = JsonSerializer.Deserialize<WorkOrderAssignedPayload>(message.PayloadJson, PayloadOptions);
                 if (payload is null || push.PublicKey is null) return;
 
                 var userId = await db.Set<Membership>()
@@ -164,7 +168,7 @@ internal sealed class OutboxDispatcher : BackgroundService
 
     private static EmailMessage? BuildQrOtpEmail(string json)
     {
-        var payload = JsonSerializer.Deserialize<QrOtpPayload>(json);
+        var payload = JsonSerializer.Deserialize<QrOtpPayload>(json, PayloadOptions);
         if (payload is null || string.IsNullOrWhiteSpace(payload.To)) return null;
 
         return new EmailMessage(
@@ -179,7 +183,7 @@ internal sealed class OutboxDispatcher : BackgroundService
 
     private static EmailMessage? BuildReminderEmail(string json)
     {
-        var payload = JsonSerializer.Deserialize<ReminderPayload>(json);
+        var payload = JsonSerializer.Deserialize<ReminderPayload>(json, PayloadOptions);
         // «No contactar» y sin email: el aviso queda solo en el panel del taller.
         if (payload is null || payload.DoNotContact || string.IsNullOrWhiteSpace(payload.CustomerEmail)) return null;
 
@@ -200,7 +204,7 @@ internal sealed class OutboxDispatcher : BackgroundService
     private static async Task<IReadOnlyList<EmailMessage>> BuildFoundKeysAlertAsync(
         string json, AppDbContext db, string frontendBase, DateTimeOffset now, CancellationToken ct)
     {
-        var payload = JsonSerializer.Deserialize<FoundKeysPayload>(json);
+        var payload = JsonSerializer.Deserialize<FoundKeysPayload>(json, PayloadOptions);
         if (payload is null) return [];
 
         var card = await db.Set<QrCard>().IgnoreQueryFilters().AsNoTracking()
@@ -242,7 +246,7 @@ internal sealed class OutboxDispatcher : BackgroundService
 
     private static EmailMessage? BuildInvitationEmail(string json)
     {
-        var payload = JsonSerializer.Deserialize<InvitationPayload>(json);
+        var payload = JsonSerializer.Deserialize<InvitationPayload>(json, PayloadOptions);
         if (payload is null)
         {
             return null;
@@ -262,7 +266,7 @@ internal sealed class OutboxDispatcher : BackgroundService
 
     private static EmailMessage? BuildPasswordResetEmail(string json)
     {
-        var payload = JsonSerializer.Deserialize<PasswordResetPayload>(json);
+        var payload = JsonSerializer.Deserialize<PasswordResetPayload>(json, PayloadOptions);
         if (payload is null)
         {
             return null;
@@ -281,7 +285,7 @@ internal sealed class OutboxDispatcher : BackgroundService
 
     private static EmailMessage? BuildEmailVerificationEmail(string json)
     {
-        var payload = JsonSerializer.Deserialize<EmailVerificationPayload>(json);
+        var payload = JsonSerializer.Deserialize<EmailVerificationPayload>(json, PayloadOptions);
         if (payload is null)
         {
             return null;

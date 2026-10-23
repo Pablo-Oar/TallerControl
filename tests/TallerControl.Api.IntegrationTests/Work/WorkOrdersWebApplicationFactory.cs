@@ -5,8 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TallerControl.Api.IntegrationTests.Auth;
 using TallerControl.Api.IntegrationTests.Persistence;
+using TallerControl.Api.IntegrationTests.Push;
 using TallerControl.Application.Auth;
 using TallerControl.Application.Common;
+using TallerControl.Application.Push;
 using TallerControl.Domain.Catalog;
 using TallerControl.Domain.Customers;
 using TallerControl.Domain.Tenancy;
@@ -34,6 +36,10 @@ internal sealed class WorkOrdersWebApplicationFactory : WebApplicationFactory<Pr
     public Guid VehicleId { get; private set; }
     public Guid CatalogItemId { get; private set; }
     public Guid MechanicMembershipId { get; private set; }
+    public Guid MechanicUserId { get; private set; }
+
+    /// <summary>Sustituye al envío push real: registra a quién se le avisó.</summary>
+    public RecordingPushSender Push { get; } = new();
     public Guid AdminMembershipId { get; private set; }
     public Guid OwnerMembershipId { get; private set; }
 
@@ -69,6 +75,8 @@ internal sealed class WorkOrdersWebApplicationFactory : WebApplicationFactory<Pr
         {
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(new FakeEmailSender());
+            services.RemoveAll<IPushSender>();
+            services.AddSingleton<IPushSender>(Push);
         });
     }
 
@@ -128,6 +136,7 @@ internal sealed class WorkOrdersWebApplicationFactory : WebApplicationFactory<Pr
         OwnerMembershipId = ownerMembership.Id;
         AdminMembershipId = adminMembership.Id;
         MechanicMembershipId = mechanicMembership.Id;
+        MechanicUserId = mechanic.Id;
 
         // ── Cliente y vehículo ────────────────────────────────────────────────
         var customer = new Customer(tenant.Id, "Cliente OT Test");
