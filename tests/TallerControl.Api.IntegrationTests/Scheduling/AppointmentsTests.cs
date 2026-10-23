@@ -351,4 +351,39 @@ public sealed class AppointmentsTests : IAsyncLifetime
         var nextDay = await client.GetFromJsonAsync<JsonElement>($"/api/v1/appointments?date={day.AddDays(1):yyyy-MM-dd}");
         Assert.DoesNotContain(nextDay.GetProperty("items").EnumerateArray(), x => x.GetProperty("id").GetString() == id);
     }
+
+    [Fact(DisplayName = "T-APT-09: Un horario y un día bloqueado se pueden quitar (el rol de la API tiene DELETE sobre la configuración de la agenda)")]
+    public async Task Se_pueden_quitar_horarios_y_excepciones()
+    {
+        using var owner = CreateClient();
+        await LoginAsync(owner, AppointmentsWebApplicationFactory.OwnerEmail);
+        var (_, day) = TomorrowAt(10);
+
+        var rule = await (await PostJsonAsync(owner, "/api/v1/availability/rules", new
+        {
+            mechanicMembershipId = _factory.MechanicMembershipId,
+            dayOfWeek = "monday",
+            startTime = "09:00:00",
+            endTime = "18:00:00",
+        })).Content.ReadFromJsonAsync<JsonElement>();
+        var exception = await (await PostJsonAsync(owner, "/api/v1/availability/exceptions", new
+        {
+            date = day.ToString("yyyy-MM-dd"),
+            isBlocked = true,
+        })).Content.ReadFromJsonAsync<JsonElement>();
+
+        foreach (var url in new[]
+                 {
+                     $"/api/v1/availability/rules/{rule.GetProperty("id").GetGuid()}",
+                     $"/api/v1/availability/exceptions/{exception.GetProperty("id").GetGuid()}",
+                 })
+        {
+            var csrf = await FetchCsrfAsync(owner);
+            var req = new HttpRequestMessage(HttpMethod.Delete, url);
+            req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+            Assert.Equal(HttpStatusCode.NoContent, (await owner.SendAsync(req)).StatusCode);
+        }
+
+        Assert.Empty((await owner.GetFromJsonAsync<JsonElement>("/api/v1/availability/rules")).EnumerateArray());
+    }
 }

@@ -22,3 +22,25 @@ export function formatDateOnly(value: string | null | undefined): string {
 export function dateOnlyToUtcIso(value: string): string {
   return new Date(`${value}T12:00:00Z`).toISOString()
 }
+
+/** Instante → valor de un `<input type="datetime-local">` en la hora LOCAL del dispositivo (no en UTC). */
+export function toDateTimeLocal(iso: string): string {
+  const d = new Date(iso)
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+/** Lunes de la semana de una fecha YYYY-MM-DD (semana de lunes a domingo). */
+export function mondayOf(dateISO: string): string {
+  const [y, m, d] = dateISO.split('-').map(Number)
+  const date = new Date(y, m - 1, d)
+  const back = (date.getDay() + 6) % 7
+  date.setDate(date.getDate() - back)
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
+/** Suma días a una fecha YYYY-MM-DD. */
+export function addDaysISO(dateISO: string, days: number): string {
+  const [y, m, d] = dateISO.split('-').map(Number)
+  const date = new Date(y, m - 1, d + days)
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
