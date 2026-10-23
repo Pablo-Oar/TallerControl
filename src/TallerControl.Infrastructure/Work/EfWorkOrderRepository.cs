@@ -35,7 +35,8 @@ internal sealed class EfWorkOrderRepository : IWorkOrderRepository
         int pageSize,
         bool includePrices,
         SortSpec sort,
-        CancellationToken ct)
+        CancellationToken ct,
+        Guid? customerId = null)
     {
         var query = _db.Set<WorkOrder>().AsNoTracking();
 
@@ -61,6 +62,9 @@ internal sealed class EfWorkOrderRepository : IWorkOrderRepository
 
         if (vehicleId.HasValue)
             query = query.Where(w => w.VehicleId == vehicleId.Value);
+
+        if (customerId.HasValue)
+            query = query.Where(w => w.CustomerId == customerId.Value);
 
         if (from.HasValue)
             query = query.Where(w => w.CreatedAt >= from.Value);

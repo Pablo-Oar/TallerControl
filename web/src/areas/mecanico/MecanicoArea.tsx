@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react'
+import { OfflineBanner } from '../../components/OfflineBanner'
 import { Route, Routes, useNavigate } from 'react-router'
 import { PlateSearchBar } from '../../components/PlateSearchBar'
 import { PwaInstallBanner } from './PwaInstallBanner'
@@ -29,6 +30,7 @@ export function Component() {
         </span>
         <PlateSearchBar onNavigate={navigate} target="/m" />
       </header>
+      <OfflineBanner />
       <PwaInstallBanner />
       <main className="mx-auto max-w-lg p-4">
         <Suspense fallback={

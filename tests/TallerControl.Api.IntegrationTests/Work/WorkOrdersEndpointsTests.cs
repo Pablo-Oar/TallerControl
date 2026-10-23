@@ -910,6 +910,22 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.True(ids.IndexOf(first) < ids.IndexOf(second));
     }
 
+    [Fact(DisplayName = "T-WO-18: GET /work-orders?customerId= devuelve solo las órdenes de ese cliente (ficha del cliente)")]
+    public async Task Listado_filtra_por_cliente()
+    {
+        using var ownerClient = CreateClient();
+        await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        var created = await CreateOrderAsync(ownerClient);
+        var customerId = created.GetProperty("customerId").GetGuid();
+
+        var mine = await ownerClient.GetFromJsonAsync<JsonElement>($"/api/v1/work-orders?customerId={customerId}&pageSize=100");
+        Assert.Contains(mine.GetProperty("items").EnumerateArray(), i => i.GetProperty("id").GetGuid() == created.GetProperty("id").GetGuid());
+        Assert.All(mine.GetProperty("items").EnumerateArray(), i => Assert.Equal(customerId, i.GetProperty("customerId").GetGuid()));
+
+        var other = await ownerClient.GetFromJsonAsync<JsonElement>($"/api/v1/work-orders?customerId={Guid.NewGuid()}");
+        Assert.Equal(0, other.GetProperty("total").GetInt32());
+    }
+
     [Fact(DisplayName = "T-WO-15b: una clave de orden desconocida no rompe el listado (cae al orden por defecto)")]
     public async Task Listado_ignora_claves_de_orden_desconocidas()
     {

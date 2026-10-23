@@ -107,6 +107,7 @@ export function CustomersPage() {
         onSortChange={s => { setSort(s); setPage(1) }}
         rows={data?.items ?? []}
         getRowId={c => c.id}
+        rowHref={c => (c.isDeleted ? null : `/app/customers/${c.id}`)}
         rowClassName={c => (c.isDeleted ? 'opacity-60' : undefined)}
         actions={c =>
           c.isDeleted ? (

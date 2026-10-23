@@ -32,6 +32,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       clearCsrfToken()
       queryClient.removeQueries({ queryKey: ['me'] })
+      // Lo guardado para verlo sin conexión es del usuario que se va.
+      navigator.serviceWorker?.controller?.postMessage('clear-data')
     }
   }
 
