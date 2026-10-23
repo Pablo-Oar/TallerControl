@@ -78,6 +78,13 @@ internal sealed class OutboxDispatcher : BackgroundService
         {
             try
             {
+                if (message.Type.StartsWith("notification.", StringComparison.Ordinal))
+                {
+                    DispatchPanelNotification(message, db, clock.GetUtcNow());
+                    message.MarkProcessed(clock.GetUtcNow());
+                    continue;
+                }
+
                 if (message.Type.StartsWith("push.", StringComparison.Ordinal))
                 {
                     await DispatchPushAsync(message, db, scope.ServiceProvider.GetRequiredService<IPushSender>(), ct);
@@ -132,10 +139,55 @@ internal sealed class OutboxDispatcher : BackgroundService
                 if (result.Subscriptions > 0 && result.Delivered == 0)
                     throw new InvalidOperationException("Push no entregado: " + string.Join(" | ", result.Failures));
                 return;
+            case "push.work_order_status":
+                var status = JsonSerializer.Deserialize<WorkOrderStatusPayload>(message.PayloadJson, PayloadOptions);
+                if (status is null || push.PublicKey is null) return;
+
+                var recipient = await db.Set<Membership>()
+                    .IgnoreQueryFilters()
+                    .Where(m => m.Id == status.MembershipId)
+                    .Select(m => (Guid?)m.UserId)
+                    .FirstOrDefaultAsync(ct);
+                if (recipient is null) return;
+
+                var statusResult = await push.SendToUserAsync(
+                    recipient.Value,
+                    new PushMessage(
+                        "Cambió el estado de una orden",
+                        $"La orden N° {status.OrderNumber} ahora está «{status.StatusLabel}».",
+                        $"/m/work-orders/{status.WorkOrderId}",
+                        $"work-order-{status.WorkOrderId}"),
+                    ct);
+                if (statusResult.Subscriptions > 0 && statusResult.Delivered == 0)
+                    throw new InvalidOperationException("Push no entregado: " + string.Join(" | ", statusResult.Failures));
+                return;
             default:
                 throw new NotSupportedException($"No hay procesador para el tipo de mensaje '{message.Type}'.");
         }
     }
+
+    /// <summary>Avisos de la campanita del panel generados por la cola (para todos los usuarios del taller).</summary>
+    private static void DispatchPanelNotification(OutboxMessage message, AppDbContext db, DateTimeOffset now)
+    {
+        switch (message.Type)
+        {
+            case "notification.work_order_status":
+                var payload = JsonSerializer.Deserialize<WorkOrderStatusPayload>(message.PayloadJson, PayloadOptions);
+                if (payload is null || message.TenantId is not { } tenantId) return;
+
+                db.Set<Notification>().Add(new Notification(
+                    tenantId,
+                    "work_order.status",
+                    $"Orden N° {payload.OrderNumber}: el mecánico la marcó «{payload.StatusLabel}»",
+                    now,
+                    link: $"/app/work-orders/{payload.WorkOrderId}"));
+                return;
+            default:
+                throw new NotSupportedException($"No hay procesador para el tipo de mensaje '{message.Type}'.");
+        }
+    }
+
+    private sealed record WorkOrderStatusPayload(Guid MembershipId, int OrderNumber, Guid WorkOrderId, string StatusLabel);
 
     private sealed record WorkOrderAssignedPayload(Guid MembershipId, int OrderNumber, Guid WorkOrderId);
 

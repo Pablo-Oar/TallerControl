@@ -765,6 +765,50 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.NoContent, (await client.SendAsync(delete)).StatusCode);
     }
 
+    private async Task DispatchOutboxAsync()
+    {
+        var dispatcher = _factory.Services.GetServices<Microsoft.Extensions.Hosting.IHostedService>()
+            .OfType<TallerControl.Infrastructure.Outbox.OutboxDispatcher>().Single();
+        await dispatcher.ProcessBatchAsync(CancellationToken.None);
+    }
+
+    [Fact(DisplayName = "T-PUSH-08: Si otra persona cambia el estado de una orden asignada, el mecánico recibe un aviso en el celular")]
+    public async Task Cambio_de_estado_avisa_al_mecanico_asignado()
+    {
+        using var ownerClient = CreateClient();
+        await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        var id = (await CreateOrderAsync(ownerClient)).GetProperty("id").GetGuid();
+        Assert.Equal(HttpStatusCode.NoContent,
+            (await AssignAsync(ownerClient, id, new { mechanicId = _factory.MechanicMembershipId })).StatusCode);
+
+        (await ChangeStatusAsync(ownerClient, id, "in_progress")).EnsureSuccessStatusCode();
+        await DispatchOutboxAsync();
+
+        var sent = Assert.Single(_factory.Push.Sent, x => x.Message.Title == "Cambió el estado de una orden" && x.Message.Url!.Contains(id.ToString()));
+        Assert.Equal(_factory.MechanicUserId, sent.UserId);
+        Assert.Contains("En proceso", sent.Message.Body);
+    }
+
+    [Fact(DisplayName = "T-NOT-02: Si el mecánico completa una orden, aparece un aviso en la campanita del panel y él no se avisa a sí mismo")]
+    public async Task Mecanico_completa_y_avisa_al_panel()
+    {
+        using var ownerClient = CreateClient();
+        using var mechanicClient = CreateClient();
+        await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        await LoginAsync(mechanicClient, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
+        var id = (await CreateOrderAsync(ownerClient)).GetProperty("id").GetGuid();
+
+        Assert.Equal(HttpStatusCode.NoContent, (await AssignAsync(mechanicClient, id, new { })).StatusCode);
+        (await ChangeStatusAsync(mechanicClient, id, "in_progress")).EnsureSuccessStatusCode();
+        (await ChangeStatusAsync(mechanicClient, id, "completed")).EnsureSuccessStatusCode();
+        await DispatchOutboxAsync();
+
+        var bell = await ownerClient.GetFromJsonAsync<JsonElement>("/api/v1/notifications");
+        Assert.Contains(bell.GetProperty("items").EnumerateArray(),
+            n => n.GetProperty("type").GetString() == "work_order.status" && n.GetProperty("link").GetString()!.Contains(id.ToString()));
+        Assert.DoesNotContain(_factory.Push.Sent, x => x.Message.Title == "Cambió el estado de una orden" && x.Message.Url!.Contains(id.ToString()));
+    }
+
     [Fact(DisplayName = "T-WO-12: El dueño asigna un mecánico activo del taller; un id ajeno o de otro rol → 422")]
     public async Task Owner_asigna_mecanico_y_valida_el_destinatario()
     {
