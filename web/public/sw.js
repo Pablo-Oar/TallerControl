@@ -1,7 +1,7 @@
 // Service worker de TallerControl — área del mecánico (PWA F-51).
 // Estrategia: network-first para navegaciones (HTML, así una versión nueva se ve sin recargar a mano),
 // cache-first para assets con hash y sin interceptar /api/*. Subir CACHE en cada release de UI.
-const CACHE = 'tc-sw-v4'
+const CACHE = 'tc-sw-v5'
 
 self.addEventListener('install', () => self.skipWaiting())
 
