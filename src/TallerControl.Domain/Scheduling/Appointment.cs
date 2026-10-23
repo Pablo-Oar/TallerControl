@@ -112,6 +112,15 @@ public sealed class Appointment : Entity, ITenantOwned, IVersioned, IAuditable
         Notes = notes?.Trim();
     }
 
+    /// <summary>Emite un enlace nuevo para el cliente: reemplaza (invalida) al anterior. Solo turnos abiertos.</summary>
+    public void ResetConfirmationToken(byte[] tokenHash)
+    {
+        if (Status is not (AppointmentStatus.Pending or AppointmentStatus.Confirmed))
+            throw new InvalidOperationException($"Un turno en estado {Status} no tiene enlace.");
+
+        ConfirmationTokenHash = tokenHash;
+    }
+
     /// <summary>Confirma el turno a través del link de cliente (T-APT-03).</summary>
     public void Confirm()
     {

@@ -11,8 +11,9 @@ public interface ISchedulingRepository
 {
     // ── Appointments ──────────────────────────────────────────────────────────
 
+    /// <summary>Los días son de la zona horaria del taller. <c>from</c>/<c>to</c> inclusivos.</summary>
     Task<Page<AppointmentListDto>> SearchAsync(
-        DateOnly? date, Guid? mechanicMembershipId, AppointmentStatus? status,
+        DateOnly? from, DateOnly? to, Guid? mechanicMembershipId, AppointmentStatus? status,
         int page, int pageSize, CancellationToken ct);
 
     Task<AppointmentDto?> GetFullAsync(Guid id, CancellationToken ct);
@@ -36,6 +37,9 @@ public interface ISchedulingRepository
 
     Task<IReadOnlyList<AvailabilityExceptionDto>> GetExceptionsAsync(DateOnly date, CancellationToken ct);
 
+    /// <summary>Excepciones entre dos fechas (ambas inclusivas), para la pantalla de feriados y vacaciones.</summary>
+    Task<IReadOnlyList<AvailabilityExceptionDto>> GetExceptionsRangeAsync(DateOnly from, DateOnly to, CancellationToken ct);
+
     Task<AvailabilityException?> FindExceptionByIdAsync(Guid id, CancellationToken ct);
 
     Task AddExceptionAsync(AvailabilityException exception, CancellationToken ct);
@@ -54,6 +58,33 @@ public interface ISchedulingRepository
     /// </summary>
     Task<Guid?> FindMechanicWithLeastWorkloadAsync(DateOnly date, CancellationToken ct);
 
+    /// <summary>
+    /// A-05: ¿puede el mecánico atender un turno que empieza en <paramref name="start"/> y dura <paramref name="minutes"/>?
+    /// Revisa su horario semanal (si lo tiene cargado), los bloqueos y los turnos que ya tiene. Null = libre.
+    /// </summary>
+    Task<SlotConflict?> CheckSlotAsync(
+        Guid mechanicId, DateTimeOffset start, int minutes, Guid? excludeAppointmentId, CancellationToken ct);
+
+    /// <summary>Próximo hueco libre desde <paramref name="from"/> (hasta 14 días); de un mecánico o de cualquiera.</summary>
+    Task<AvailabilitySlotDto?> FindNextFreeSlotAsync(
+        Guid? mechanicId, DateTimeOffset from, int minutes, CancellationToken ct);
+
+    /// <summary>
+    /// Elige para un turno sin mecánico al que tenga menos carga ese día y esté libre a esa hora.
+    /// Sin mecánicos con horario cargado ese día devuelve (null, null): el turno queda sin asignar.
+    /// Con mecánicos pero ninguno libre devuelve el conflicto.
+    /// </summary>
+    Task<(Guid? MechanicId, SlotConflict? Conflict)> PickMechanicAsync(
+        DateTimeOffset start, int minutes, CancellationToken ct);
+
+    /// <summary>Contacto del cliente para enviarle el enlace del turno.</summary>
+    Task<CustomerContact?> GetCustomerContactAsync(Guid customerId, CancellationToken ct);
+
+    Task<string> GetTenantTimeZoneIdAsync(CancellationToken ct);
+
+    /// <summary>Resumen público por hash del token (acceso anónimo, sin filtros de taller).</summary>
+    Task<PublicAppointmentDto?> GetPublicSummaryAsync(byte[] tokenHash, CancellationToken ct);
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     Task<bool> CustomerExistsAsync(Guid customerId, CancellationToken ct);
@@ -65,6 +96,11 @@ public interface ISchedulingRepository
 
     Task SaveChangesAsync(CancellationToken ct);
 }
+
+/// <summary>Motivo por el que un mecánico no puede tomar un turno en ese horario.</summary>
+public sealed record SlotConflict(string Message);
+
+public sealed record CustomerContact(string Name, string? Email, bool DoNotContact);
 
 /// <summary>Proyección mínima del catálogo necesaria al crear un turno.</summary>
 public sealed record CatalogItemInfo(string Name, int? DurationMinutes, int? BufferMinutes);

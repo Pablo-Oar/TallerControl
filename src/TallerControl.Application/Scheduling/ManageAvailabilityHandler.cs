@@ -74,6 +74,10 @@ public sealed class ManageAvailabilityHandler(ISchedulingRepository repo, ITenan
         await repo.SaveChangesAsync(ct);
     }
 
+    public Task<IReadOnlyList<AvailabilityExceptionDto>> GetExceptionsRangeAsync(
+        DateOnly from, DateOnly to, CancellationToken ct) =>
+        repo.GetExceptionsRangeAsync(from, to, ct);
+
     public async Task<IReadOnlyList<AvailabilityExceptionDto>> GetExceptionsAsync(
         DateOnly date, CancellationToken ct)
     {
