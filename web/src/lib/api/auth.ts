@@ -2,7 +2,7 @@ import { api } from './client'
 
 export interface MeResponse {
   user: { id: string; email: string; displayName: string }
-  tenant: { id: string; name: string; defaultVatRate: number }
+  tenant: { id: string; name: string; defaultVatRate: number; quoteValidityDays: number }
   role: 'owner' | 'admin_staff' | 'mechanic' | 'accountant'
   permissions: string[]
   timeZone: string

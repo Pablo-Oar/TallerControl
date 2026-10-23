@@ -83,10 +83,7 @@ internal sealed class WorkOrderPdfGenerator : IWorkOrderPdfGenerator
                 col.Item().Element(c => BuildNotesSection(c, "Notas del mecánico", order.MechanicNotes));
             }
 
-            if (!string.IsNullOrWhiteSpace(order.InternalNotes))
-            {
-                col.Item().Element(c => BuildNotesSection(c, "Notas internas", order.InternalNotes));
-            }
+            // Las notas internas son del taller: nunca van en el PDF que se le entrega al cliente.
         });
     }
 

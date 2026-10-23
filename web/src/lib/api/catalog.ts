@@ -60,6 +60,8 @@ export interface CreateCatalogItemRequest {
   stockMax?: number | null
   durationMinutes?: number | null
   bufferMinutes?: number | null
+  /** Solo productos con control de stock: existencias de partida (quedan como un movimiento). */
+  initialStockQty?: number | null
 }
 
 export interface UpdateCatalogItemRequest {

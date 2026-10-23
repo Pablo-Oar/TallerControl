@@ -271,6 +271,32 @@ public sealed class PublicEndpointsTests : IAsyncLifetime
         Assert.Equal(1815m, dto.GetProperty("total").GetDecimal());         // 1.500 + IVA 21 %
     }
 
+    [Fact(DisplayName = "T-QUO-15: Convertir en orden sube el kilometraje del vehículo si el de ingreso es mayor")]
+    public async Task Convertir_actualiza_el_kilometraje_del_vehiculo()
+    {
+        using var owner = CreateClient();
+        await LoginAsync(owner, QuotesWebApplicationFactory.OwnerEmail, QuotesWebApplicationFactory.Password);
+        var (quoteId, token) = await SendWithLinkAsync(owner);
+
+        using var anon = CreateClient();
+        var publicQuote = await (await anon.GetAsync($"/api/public/v1/quotes/{token}")).Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(HttpStatusCode.OK, (await RespondAsync(anon, token, publicQuote, _ => true)).StatusCode);
+
+        var before = (await (await owner.GetAsync($"/api/v1/vehicles/{_factory.VehicleId}")).Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("odometerKm").GetInt32();
+
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/quotes/{quoteId}/convert")
+        {
+            Content = JsonContent.Create(new { odometerKm = before + 5000, fuelLevel = (int?)null, reportedIssue = (string?)null }),
+        };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(owner));
+        Assert.True((await owner.SendAsync(req)).IsSuccessStatusCode);
+
+        var after = (await (await owner.GetAsync($"/api/v1/vehicles/{_factory.VehicleId}")).Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("odometerKm").GetInt32();
+        Assert.Equal(before + 5000, after);
+    }
+
     [Fact(DisplayName = "T-PUB-08: el documento del firmante se guarda cifrado y solo lo revela el Dueño")]
     public async Task Documento_del_firmante_solo_lo_ve_el_duenio()
     {
