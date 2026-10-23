@@ -19,6 +19,9 @@ public sealed class GetSupplierHandler
             ?? throw new InvalidOperationException("No hay taller en la sesión.");
         var supplier = await _repo.FindByIdAsync(tenantId, id, ct)
             ?? throw new NotFoundException("El proveedor no existe.");
-        return CreateSupplierHandler.MapToDto(supplier);
+        return CreateSupplierHandler.MapToDto(supplier) with
+        {
+            PurchaseCount = await _repo.CountOpenPurchasesAsync(tenantId, id, ct),
+        };
     }
 }

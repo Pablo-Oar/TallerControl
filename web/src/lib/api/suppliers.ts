@@ -1,7 +1,7 @@
 import { api } from './client'
 import type { Page } from './customers'
 
-export type VatCondition = 'responsable_inscripto' | 'monotributo' | 'exento' | 'consumidor_final' | 'no_categorizado'
+export type VatCondition = 'responsable_inscripto' | 'monotributo' | 'exento' | 'consumidor_final' | 'no_responsable'
 
 export interface SupplierDto {
   id: string
@@ -13,6 +13,8 @@ export interface SupplierDto {
   email: string | null
   notes: string | null
   version: number
+  /** Compras vigentes (borrador o confirmadas): el detalle lo informa para avisar antes de dar de baja. */
+  purchaseCount?: number
 }
 
 export interface CreateSupplierRequest {
@@ -36,9 +38,10 @@ export interface UpdateSupplierRequest {
 }
 
 export const suppliersApi = {
-  search: (q?: string | null, page = 1, pageSize = 25) => {
+  search: (q?: string | null, page = 1, pageSize = 25, deleted = false) => {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
     if (q) params.set('q', q)
+    if (deleted) params.set('deleted', 'true')
     return api.get<Page<SupplierDto>>(`/api/v1/suppliers?${params}`)
   },
   get: (id: string) => api.get<SupplierDto>(`/api/v1/suppliers/${id}`),

@@ -226,4 +226,48 @@ public sealed class SuppliersEndpointsTests : IAsyncLifetime
         Assert.Equal(id, restored.GetProperty("id").GetGuid());
         Assert.Equal("Restaurar T-SUP-03b", restored.GetProperty("name").GetString());
     }
+
+    // ── K-02: datos de contacto, ver dados de baja ────────────────────────────
+
+    [Fact(DisplayName = "T-SUP-04: Los datos de contacto se guardan y «dados de baja» lista solo las bajas, que se restauran")]
+    public async Task Contacto_bajas_y_restauracion()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, SuppliersWebApplicationFactory.OwnerEmail, SuppliersWebApplicationFactory.OwnerPassword);
+
+        var name = $"Repuestos del Sur {Guid.NewGuid():N}";
+        var csrf = await FetchCsrfAsync(client);
+        var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/suppliers")
+        {
+            Content = JsonContent.Create(new
+            {
+                name,
+                vatCondition = "responsable_inscripto",
+                address = "Av. Siempre Viva 742",
+                phone = "011 4444-5555",
+                email = "VENTAS@SUR.COM",
+                notes = "Entrega los martes",
+            }),
+        };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        var created = await (await client.SendAsync(req)).Content.ReadFromJsonAsync<JsonElement>();
+        var id = created.GetProperty("id").GetGuid();
+        Assert.Equal("Av. Siempre Viva 742", created.GetProperty("address").GetString());
+        Assert.Equal("ventas@sur.com", created.GetProperty("email").GetString());
+
+        // Sin compras: el detalle informa cero (el aviso de baja solo aparece con compras vigentes).
+        var detail = await client.GetFromJsonAsync<JsonElement>($"/api/v1/suppliers/{id}");
+        Assert.Equal(0, detail.GetProperty("purchaseCount").GetInt32());
+
+        Assert.Equal(HttpStatusCode.NoContent, (await DeleteSupplierAsync(client, id)).StatusCode);
+
+        var vigentes = await client.GetFromJsonAsync<JsonElement>($"/api/v1/suppliers?q={Uri.EscapeDataString(name)}");
+        Assert.Empty(vigentes.GetProperty("items").EnumerateArray());
+        var bajas = await client.GetFromJsonAsync<JsonElement>($"/api/v1/suppliers?deleted=true&q={Uri.EscapeDataString(name)}");
+        Assert.Single(bajas.GetProperty("items").EnumerateArray());
+
+        var restore = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/suppliers/{id}/restore");
+        restore.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(client));
+        Assert.Equal(HttpStatusCode.OK, (await client.SendAsync(restore)).StatusCode);
+    }
 }

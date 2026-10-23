@@ -102,10 +102,13 @@ public sealed class PurchasesEndpointsTests : IAsyncLifetime
     }
 
     private static async Task<HttpResponseMessage> PostCancelPurchaseAsync(
-        HttpClient client, Guid id)
+        HttpClient client, Guid id, string? reason = null)
     {
         var csrf = await FetchCsrfAsync(client);
-        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/purchases/{id}/cancel");
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/purchases/{id}/cancel")
+        {
+            Content = JsonContent.Create(new { reason }),
+        };
         req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
         return await client.SendAsync(req);
     }
@@ -308,5 +311,100 @@ public sealed class PurchasesEndpointsTests : IAsyncLifetime
 
         var deleteResp = await DeletePurchaseAsync(client, id);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, deleteResp.StatusCode);
+    }
+
+    // ── K-03: editar borrador, anular una confirmada con contraasientos ───────
+
+    private static async Task<HttpResponseMessage> PutPurchaseAsync(HttpClient client, Guid id, object body)
+    {
+        var csrf = await FetchCsrfAsync(client);
+        var req = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/purchases/{id}") { Content = JsonContent.Create(body) };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        return await client.SendAsync(req);
+    }
+
+    [Fact(DisplayName = "T-PUR-06: Un borrador se edita (factura y renglones); uno confirmado no")]
+    public async Task Editar_borrador_y_no_confirmada()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, PurchasesWebApplicationFactory.OwnerEmail, PurchasesWebApplicationFactory.OwnerPassword);
+
+        var created = await (await PostPurchaseAsync(client, pointOfSale: null, invoiceNumber: null)).Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(created.GetProperty("isExcludedFromCiti").GetBoolean());
+        var id = created.GetProperty("id").GetGuid();
+
+        object Body(uint version, decimal qty) => new
+        {
+            invoiceDate = DateTimeOffset.UtcNow,
+            pointOfSale = 7,
+            invoiceNumber = 4321,
+            perceptions = 0m,
+            retentions = 0m,
+            items = new[] { new { catalogItemId = _factory.CatalogItemId, description = "Repuesto corregido", quantity = qty, unitCost = 100m, vatRate = 21m } },
+            version,
+        };
+
+        var edited = await PutPurchaseAsync(client, id, Body(created.GetProperty("version").GetUInt32(), 5m));
+        Assert.Equal(HttpStatusCode.OK, edited.StatusCode);
+        var dto = await edited.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.False(dto.GetProperty("isExcludedFromCiti").GetBoolean());
+        Assert.Equal(500m, dto.GetProperty("subtotalNet").GetDecimal());
+        Assert.Equal("Repuesto corregido", Assert.Single(dto.GetProperty("items").EnumerateArray()).GetProperty("description").GetString());
+
+        // Una versión vieja se rechaza; una confirmada no se edita.
+        Assert.Equal(HttpStatusCode.PreconditionFailed, (await PutPurchaseAsync(client, id, Body(created.GetProperty("version").GetUInt32(), 1m))).StatusCode);
+        var version = dto.GetProperty("version").GetUInt32();
+        (await PostConfirmPurchaseAsync(client, id, version)).EnsureSuccessStatusCode();
+        var confirmed = await (await client.GetAsync($"/api/v1/purchases/{id}")).Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await PutPurchaseAsync(client, id, Body(confirmed.GetProperty("version").GetUInt32(), 1m))).StatusCode);
+    }
+
+    [Fact(DisplayName = "T-PUR-07: Anular una compra confirmada pide motivo y deja contraasientos de stock y de caja")]
+    public async Task Anular_compra_confirmada_con_contraasientos()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, PurchasesWebApplicationFactory.OwnerEmail, PurchasesWebApplicationFactory.OwnerPassword);
+
+        // Cuenta de caja para pagar la compra.
+        var csrf = await FetchCsrfAsync(client);
+        var accountReq = new HttpRequestMessage(HttpMethod.Post, "/api/v1/cash/accounts")
+        {
+            Content = JsonContent.Create(new { name = $"Caja compras {Guid.NewGuid():N}", kind = "cash" }),
+        };
+        accountReq.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        var account = await (await client.SendAsync(accountReq)).Content.ReadFromJsonAsync<JsonElement>();
+        var accountId = account.GetProperty("id").GetGuid();
+
+        var stockBefore = (await client.GetFromJsonAsync<JsonElement>($"/api/v1/catalog/{_factory.CatalogItemId}")).GetProperty("stockQty").GetDecimal();
+
+        var created = await (await PostPurchaseAsync(client)).Content.ReadFromJsonAsync<JsonElement>();
+        var id = created.GetProperty("id").GetGuid();
+        var confirmReq = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/purchases/{id}/confirm")
+        {
+            Content = JsonContent.Create(new { accountId, version = created.GetProperty("version").GetUInt32() }),
+        };
+        confirmReq.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(client));
+        (await client.SendAsync(confirmReq)).EnsureSuccessStatusCode();
+
+        // Sin motivo no se puede.
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await PostCancelPurchaseAsync(client, id)).StatusCode);
+
+        var cancelled = await PostCancelPurchaseAsync(client, id, "Se facturó mal");
+        Assert.Equal(HttpStatusCode.OK, cancelled.StatusCode);
+        var dto = await cancelled.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("cancelled", dto.GetProperty("status").GetString());
+        Assert.Equal("Se facturó mal", dto.GetProperty("cancelReason").GetString());
+
+        // Stock: vuelve al valor de antes.
+        var stockAfter = (await client.GetFromJsonAsync<JsonElement>($"/api/v1/catalog/{_factory.CatalogItemId}")).GetProperty("stockQty").GetDecimal();
+        Assert.Equal(stockBefore, stockAfter);
+
+        // Caja: salida del pago y entrada de la anulación; el saldo queda en cero.
+        var movements = await client.GetFromJsonAsync<JsonElement>($"/api/v1/cash/accounts/{accountId}/movements");
+        var list = (movements.ValueKind == JsonValueKind.Array ? movements : movements.GetProperty("items")).EnumerateArray().ToList();
+        Assert.Equal(2, list.Count);
+        Assert.Contains(list, m => m.GetProperty("direction").GetString() == "in" && m.GetProperty("referenceType").GetString() == "purchase_cancel");
+        var balance = (await client.GetFromJsonAsync<JsonElement>($"/api/v1/cash/accounts/{accountId}")).GetProperty("balance").GetDecimal();
+        Assert.Equal(0m, balance);
     }
 }

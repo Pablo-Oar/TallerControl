@@ -90,5 +90,6 @@ public sealed class CreatePurchaseHandler
             p.Perceptions, p.Retentions, p.Total, p.IsExcludedFromCiti, p.Status, p.AccountId,
             p.Items.Select(i => new PurchaseItemDto(i.Id, i.CatalogItemId, i.Description,
                 i.Quantity, i.UnitCost, i.VatRate, i.Total)).ToList(),
-            p.Version);
+            p.Version,
+            p.CancelReason);
 }

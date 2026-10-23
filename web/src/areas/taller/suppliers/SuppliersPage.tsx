@@ -2,19 +2,19 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { suppliersApi, type SupplierDto, type VatCondition } from '../../../lib/api/suppliers'
 import { Button } from '../../../components/ui/Button'
-import { FormField, FormSelect } from '../../../components/ui/FormField'
+import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { DataTable, RowAction, sortableWhen, type DataTableColumn } from '../../../components/ui/DataTable'
 import { Pagination } from '../../../components/ui/Pagination'
 import { ApiError } from '../../../lib/api/client'
-import { confirmDialog, notify } from '../../../components/ui/dialogs'
+import { notify } from '../../../components/ui/dialogs'
 
 const VAT_LABELS: Record<VatCondition, string> = {
   responsable_inscripto: 'Responsable Inscripto',
   monotributo: 'Monotributista',
   exento: 'Exento',
   consumidor_final: 'Consumidor Final',
-  no_categorizado: 'No categorizado',
+  no_responsable: 'No Responsable',
 }
 
 const COLUMNS: DataTableColumn<SupplierDto>[] = [
@@ -44,6 +44,14 @@ export function SuppliersPage() {
   const [page, setPage] = useState(1)
   const [creating, setCreating] = useState(false)
   const [editing, setEditing] = useState<SupplierDto | null>(null)
+  const [showDeleted, setShowDeleted] = useState(false)
+  const [deleting, setDeleting] = useState<SupplierDto | null>(null)
+  const [deleteReason, setDeleteReason] = useState('')
+  const [deleteBusy, setDeleteBusy] = useState(false)
+  const [formAddress, setFormAddress] = useState('')
+  const [formPhone, setFormPhone] = useState('')
+  const [formEmail, setFormEmail] = useState('')
+  const [formNotes, setFormNotes] = useState('')
 
   const [formName, setFormName] = useState('')
   const [formCuit, setFormCuit] = useState('')
@@ -52,8 +60,8 @@ export function SuppliersPage() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['suppliers', search, page],
-    queryFn: () => suppliersApi.search(search || null, page),
+    queryKey: ['suppliers', search, page, showDeleted],
+    queryFn: () => suppliersApi.search(search || null, page, 25, showDeleted),
   })
 
   function handleSearch(e: React.FormEvent) {
@@ -66,6 +74,10 @@ export function SuppliersPage() {
     setFormName('')
     setFormCuit('')
     setFormVat('responsable_inscripto')
+    setFormAddress('')
+    setFormPhone('')
+    setFormEmail('')
+    setFormNotes('')
     setFormError(null)
     setCreating(true)
     setEditing(null)
@@ -75,6 +87,10 @@ export function SuppliersPage() {
     setFormName(s.name)
     setFormCuit(s.cuit ?? '')
     setFormVat(s.vatCondition)
+    setFormAddress(s.address ?? '')
+    setFormPhone(s.phone ?? '')
+    setFormEmail(s.email ?? '')
+    setFormNotes(s.notes ?? '')
     setFormError(null)
     setEditing(s)
     setCreating(false)
@@ -89,6 +105,10 @@ export function SuppliersPage() {
         name: formName.trim(),
         cuit: formCuit.trim() || null,
         vatCondition: formVat,
+        address: formAddress.trim() || null,
+        phone: formPhone.trim() || null,
+        email: formEmail.trim() || null,
+        notes: formNotes.trim() || null,
       }
       if (editing) {
         await suppliersApi.update(editing.id, body, editing.version)
@@ -105,13 +125,36 @@ export function SuppliersPage() {
     }
   }
 
-  async function handleDelete(s: SupplierDto) {
-    if (!(await confirmDialog(`¿Dar de baja al proveedor "${s.name}"?`, { danger: true }))) return
+  async function openDelete(s: SupplierDto) {
+    // El detalle trae cuántas compras vigentes tiene, para avisar antes de dar de baja.
     try {
-      await suppliersApi.delete(s.id, 'Baja manual')
+      setDeleting(await suppliersApi.get(s.id))
+      setDeleteReason('')
+    } catch (err) {
+      notify(err instanceof ApiError ? err.detail : 'No se pudo leer el proveedor')
+    }
+  }
+
+  async function confirmDelete() {
+    if (!deleting || !deleteReason.trim()) return
+    setDeleteBusy(true)
+    try {
+      await suppliersApi.delete(deleting.id, deleteReason.trim())
       queryClient.invalidateQueries({ queryKey: ['suppliers'] })
+      setDeleting(null)
     } catch (err) {
       notify(err instanceof ApiError ? err.detail : 'Error al dar de baja')
+    } finally {
+      setDeleteBusy(false)
+    }
+  }
+
+  async function handleRestore(s: SupplierDto) {
+    try {
+      await suppliersApi.restore(s.id)
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] })
+    } catch (err) {
+      notify(err instanceof ApiError ? err.detail : 'Error al restaurar')
     }
   }
 
@@ -133,6 +176,10 @@ export function SuppliersPage() {
           className={filterInputCls}
         />
         <Button type="submit" variant="secondary" size="sm">Buscar</Button>
+        <label className="ml-2 flex items-center gap-1.5 whitespace-nowrap text-sm text-tc-text-secondary">
+          <input type="checkbox" className="h-4 w-4" checked={showDeleted} onChange={e => { setShowDeleted(e.target.checked); setPage(1) }} />
+          Ver dados de baja
+        </label>
       </form>
 
       {showForm && (
@@ -173,6 +220,10 @@ export function SuppliersPage() {
                   <option key={k} value={k}>{v}</option>
                 ))}
               </FormSelect>
+              <FormField label="Teléfono" type="tel" value={formPhone} onChange={e => setFormPhone(e.target.value)} />
+              <FormField label="Email" type="email" value={formEmail} onChange={e => setFormEmail(e.target.value)} />
+              <FormField label="Dirección" className="col-span-2" value={formAddress} onChange={e => setFormAddress(e.target.value)} />
+              <FormTextarea label="Notas" rows={2} className="col-span-2" value={formNotes} onChange={e => setFormNotes(e.target.value)} />
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="secondary" size="sm" onClick={() => { setCreating(false); setEditing(null) }}>
@@ -189,26 +240,51 @@ export function SuppliersPage() {
         columns={sortableWhen(COLUMNS, (data?.total ?? 0) <= (data?.pageSize ?? 25))}
         rows={data?.items ?? []}
         getRowId={s => s.id}
-        actions={s => (
-          <>
-            <RowAction tone="purple" onClick={() => openEdit(s)}>Editar</RowAction>
-            <RowAction tone="danger" onClick={() => handleDelete(s)}>Baja</RowAction>
-          </>
-        )}
+        actions={s =>
+          showDeleted ? (
+            <RowAction tone="purple" onClick={() => handleRestore(s)}>Restaurar</RowAction>
+          ) : (
+            <>
+              <RowAction tone="purple" onClick={() => openEdit(s)}>Editar</RowAction>
+              <RowAction tone="danger" onClick={() => openDelete(s)}>Baja</RowAction>
+            </>
+          )
+        }
         renderCard={s => (
           <>
             <p className="truncate text-sm font-medium text-tc-text">{s.name}</p>
             <p className="font-mono text-xs tabular-nums text-tc-text-muted">{s.cuit ?? '—'}</p>
             <p className="text-xs text-tc-text-secondary">{VAT_LABELS[s.vatCondition]}</p>
+            {(s.phone || s.email) && <p className="truncate text-xs text-tc-text-muted">{[s.phone, s.email].filter(Boolean).join(' · ')}</p>}
           </>
         )}
         loading={isLoading}
         error={!!error}
         onRetry={() => refetch()}
-        emptyMessage="No hay proveedores."
+        emptyMessage={showDeleted ? 'No hay proveedores dados de baja.' : 'No hay proveedores.'}
       />
 
       {data && <Pagination page={page} pageSize={data.pageSize} total={data.total} noun="proveedores" onPage={setPage} />}
+
+      {deleting && (
+        <Modal title="Dar de baja al proveedor" onClose={() => setDeleting(null)} className="max-w-sm">
+          <div className="space-y-4">
+            <p className="text-sm text-tc-text-secondary">
+              «{deleting.name}» deja de ofrecerse al cargar compras. Las compras que ya tiene no cambian, y lo podés restaurar desde «Ver dados de baja».
+            </p>
+            {(deleting.purchaseCount ?? 0) > 0 && (
+              <p role="alert" className="border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                Este proveedor tiene {deleting.purchaseCount} compra{deleting.purchaseCount === 1 ? '' : 's'} vigente{deleting.purchaseCount === 1 ? '' : 's'} (en borrador o confirmada{deleting.purchaseCount === 1 ? '' : 's'}).
+              </p>
+            )}
+            <FormTextarea label="Motivo" requiredMark rows={2} value={deleteReason} onChange={e => setDeleteReason(e.target.value)} />
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="secondary" size="sm" onClick={() => setDeleting(null)}>Volver</Button>
+              <Button variant="danger" size="sm" loading={deleteBusy} disabled={!deleteReason.trim()} onClick={confirmDelete}>Dar de baja</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }

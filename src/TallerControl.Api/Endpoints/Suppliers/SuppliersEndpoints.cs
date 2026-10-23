@@ -19,8 +19,8 @@ internal static class SuppliersEndpoints
     {
         app.MapGet("/api/v1/suppliers",
                 (SearchSuppliersHandler handler, CancellationToken ct,
-                 string? q = null, int page = 1, int pageSize = 25) =>
-                    handler.HandleAsync(q, page, pageSize, ct))
+                 string? q = null, bool deleted = false, int page = 1, int pageSize = 25) =>
+                    handler.HandleAsync(q, deleted, page, pageSize, ct))
             .RequirePermission(Permission.SuppliersRead);
 
         app.MapPost("/api/v1/suppliers",
@@ -42,8 +42,9 @@ internal static class SuppliersEndpoints
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
         app.MapDelete("/api/v1/suppliers/{id:guid}",
-                (Guid id, DeleteSupplierHandler handler, CancellationToken ct) =>
-                    DeleteAsync(id, handler, ct))
+                (Guid id, [Microsoft.AspNetCore.Mvc.FromBody] DeleteSupplierRequest request,
+                 DeleteSupplierHandler handler, CancellationToken ct) =>
+                    DeleteAsync(id, request.Reason, handler, ct))
             .RequirePermission(Permission.SuppliersWrite)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
@@ -96,9 +97,9 @@ internal static class SuppliersEndpoints
     }
 
     private static async Task<IResult> DeleteAsync(
-        Guid id, DeleteSupplierHandler handler, CancellationToken ct)
+        Guid id, string? reason, DeleteSupplierHandler handler, CancellationToken ct)
     {
-        await handler.HandleAsync(id, ct);
+        await handler.HandleAsync(id, reason, ct);
         return Results.NoContent();
     }
 

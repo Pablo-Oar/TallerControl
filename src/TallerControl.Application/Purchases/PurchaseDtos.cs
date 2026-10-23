@@ -29,7 +29,8 @@ public sealed record PurchaseDto(
     PurchaseStatus Status,
     Guid? AccountId,
     IReadOnlyList<PurchaseItemDto> Items,
-    uint Version
+    uint Version,
+    string? CancelReason = null
 );
 
 public sealed record CreatePurchaseItemRequest(
@@ -49,6 +50,18 @@ public sealed record CreatePurchaseRequest(
     decimal Retentions,
     IReadOnlyList<CreatePurchaseItemRequest> Items
 );
+
+public sealed record UpdatePurchaseRequest(
+    DateTimeOffset InvoiceDate,
+    int? PointOfSale,
+    int? InvoiceNumber,
+    decimal Perceptions,
+    decimal Retentions,
+    IReadOnlyList<CreatePurchaseItemRequest> Items,
+    uint Version
+);
+
+public sealed record CancelPurchaseRequest(string? Reason);
 
 public sealed record ConfirmPurchaseRequest(
     Guid? AccountId,

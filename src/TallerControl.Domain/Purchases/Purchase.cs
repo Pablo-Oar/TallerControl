@@ -57,6 +57,10 @@ public sealed class Purchase : Entity, ITenantOwned, IVersioned, IAuditable, ISo
     public decimal Total { get; private set; }
     public PurchaseStatus Status { get; private set; }
     public Guid? AccountId { get; private set; }
+
+    /// <summary>Motivo y momento de la anulación (una compra confirmada se anula con contraasiento de stock y de caja).</summary>
+    public string? CancelReason { get; private set; }
+    public DateTimeOffset? CancelledAt { get; private set; }
     public uint Version { get; private set; }
 
     // IAuditable
@@ -87,6 +91,37 @@ public sealed class Purchase : Entity, ITenantOwned, IVersioned, IAuditable, ISo
         RecalculateTotals();
     }
 
+    /// <summary>Corrige los datos de la factura de una compra en borrador.</summary>
+    public void UpdateHeader(
+        DateTimeOffset invoiceDate, int? pointOfSale, int? invoiceNumber, decimal perceptions, decimal retentions)
+    {
+        if (Status != PurchaseStatus.Draft)
+            throw new InvalidOperationException("Solo se puede editar una compra en borrador.");
+        if (perceptions < 0)
+            throw new ArgumentOutOfRangeException(nameof(perceptions), "Las percepciones no pueden ser negativas.");
+        if (retentions < 0)
+            throw new ArgumentOutOfRangeException(nameof(retentions), "Las retenciones no pueden ser negativas.");
+
+        InvoiceDate = invoiceDate;
+        PointOfSale = pointOfSale;
+        InvoiceNumber = invoiceNumber;
+        Perceptions = perceptions;
+        Retentions = retentions;
+        RecalculateTotals();
+    }
+
+    /// <summary>Vacía los renglones de un borrador para cargarlos de nuevo; devuelve los quitados (para borrarlos de la base).</summary>
+    public IReadOnlyList<PurchaseItem> ClearItems()
+    {
+        if (Status != PurchaseStatus.Draft)
+            throw new InvalidOperationException("Solo se pueden cambiar los ítems de una compra en borrador.");
+
+        var removed = _items.ToList();
+        _items.Clear();
+        RecalculateTotals();
+        return removed;
+    }
+
     public void Confirm(Guid? accountId)
     {
         if (Status != PurchaseStatus.Draft)
@@ -98,14 +133,19 @@ public sealed class Purchase : Entity, ITenantOwned, IVersioned, IAuditable, ISo
         Status = PurchaseStatus.Confirmed;
     }
 
-    public void Cancel()
+    /// <summary>
+    /// Anula la compra. Un borrador se descarta sin más; una confirmada exige motivo (el handler revierte el stock y la caja).
+    /// </summary>
+    public void Cancel(string? reason, DateTimeOffset at)
     {
         if (Status == PurchaseStatus.Cancelled)
             throw new InvalidOperationException("La compra ya está cancelada.");
-        if (Status == PurchaseStatus.Confirmed)
-            throw new InvalidOperationException("No se puede cancelar una compra ya confirmada.");
+        if (Status == PurchaseStatus.Confirmed && string.IsNullOrWhiteSpace(reason))
+            throw new ArgumentException("El motivo de la anulación es obligatorio.", nameof(reason));
 
         Status = PurchaseStatus.Cancelled;
+        CancelReason = reason?.Trim();
+        CancelledAt = at;
     }
 
     public void SoftDelete(string? reason, Guid? deletedBy, DateTimeOffset deletedAt)

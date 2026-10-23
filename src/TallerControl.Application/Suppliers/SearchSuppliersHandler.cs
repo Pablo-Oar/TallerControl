@@ -13,11 +13,11 @@ public sealed class SearchSuppliersHandler
         _tenant = tenant;
     }
 
-    public async Task<Page<SupplierDto>> HandleAsync(string? query, int page, int pageSize, CancellationToken ct)
+    public async Task<Page<SupplierDto>> HandleAsync(string? query, bool deleted, int page, int pageSize, CancellationToken ct)
     {
         var tenantId = _tenant.TenantId
             ?? throw new InvalidOperationException("No hay taller en la sesión.");
-        var result = await _repo.SearchAsync(tenantId, query, page, pageSize, ct);
+        var result = await _repo.SearchAsync(tenantId, query, deleted, page, pageSize, ct);
         return new Page<SupplierDto>(
             result.Items.Select(CreateSupplierHandler.MapToDto).ToList(),
             result.PageNumber, result.PageSize, result.Total);

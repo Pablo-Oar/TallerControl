@@ -26,9 +26,11 @@ internal sealed class EfSupplierRepository : ISupplierRepository
             .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == tenantId && s.DeletedAt != null, ct);
 
     public async Task<Page<Supplier>> SearchAsync(
-        Guid tenantId, string? query, int page, int pageSize, CancellationToken ct)
+        Guid tenantId, string? query, bool deleted, int page, int pageSize, CancellationToken ct)
     {
-        var q = _db.Set<Supplier>().AsNoTracking();
+        var q = deleted
+            ? _db.Set<Supplier>().IgnoreQueryFilters().AsNoTracking().Where(s => s.TenantId == tenantId && s.DeletedAt != null)
+            : _db.Set<Supplier>().AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(query))
         {
@@ -48,6 +50,11 @@ internal sealed class EfSupplierRepository : ISupplierRepository
 
         return new Page<Supplier>(items, page, pageSize, total);
     }
+
+    public Task<int> CountOpenPurchasesAsync(Guid tenantId, Guid supplierId, CancellationToken ct) =>
+        _db.Set<TallerControl.Domain.Purchases.Purchase>()
+            .CountAsync(p => p.SupplierId == supplierId
+                             && p.Status != TallerControl.Domain.Purchases.PurchaseStatus.Cancelled, ct);
 
     public async Task AddAsync(Supplier supplier, CancellationToken ct) =>
         await _db.Set<Supplier>().AddAsync(supplier, ct);

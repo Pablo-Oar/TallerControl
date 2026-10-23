@@ -45,6 +45,8 @@ internal sealed class EfPurchaseRepository : IPurchaseRepository
     public async Task AddAsync(Purchase purchase, CancellationToken ct) =>
         await _db.Set<Purchase>().AddAsync(purchase, ct);
 
+    public void DeleteItem(PurchaseItem item) => _db.Set<PurchaseItem>().Remove(item);
+
     public Task<Guid?> GetMainBranchIdAsync(Guid tenantId, CancellationToken ct) =>
         _db.Set<Branch>()
             .AsNoTracking()

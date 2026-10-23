@@ -246,6 +246,7 @@ public static class DependencyInjection
         services.AddScoped<CreatePurchaseHandler>();
         services.AddScoped<ConfirmPurchaseHandler>();
         services.AddScoped<CancelPurchaseHandler>();
+        services.AddScoped<UpdatePurchaseHandler>();
         services.AddScoped<GetPurchaseHandler>();
         services.AddScoped<SearchPurchasesHandler>();
         services.AddScoped<DeletePurchaseHandler>();
