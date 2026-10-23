@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { attachmentsApi } from '../lib/api/attachments'
-import { ApiError } from '../lib/api/client'
 import { Button } from './ui/Button'
+import { confirmDialog } from './ui/dialogs'
+import { actionErrorMessage } from '../lib/api/errors'
 
 /**
  * Fotos de una orden de trabajo (REQ-13, doc 06 /m/ordenes/:id "subir fotos desde la cámara").
@@ -60,13 +61,13 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = fal
   const upload = useMutation({
     mutationFn: async (file: File) => attachmentsApi.upload('work_order', workOrderId, await prepareImage(file)),
     onSuccess: () => queryClient.invalidateQueries({ queryKey }),
-    onError: e => setError(e instanceof ApiError ? e.detail : 'No se pudo subir la foto. Probá de nuevo.'),
+    onError: e => setError(actionErrorMessage(e, 'No se pudo subir la foto. Probá de nuevo.')),
   })
 
   const remove = useMutation({
     mutationFn: (id: string) => attachmentsApi.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey }),
-    onError: e => setError(e instanceof ApiError ? e.detail : 'No se pudo quitar la foto.'),
+    onError: e => setError(actionErrorMessage(e, 'No se pudo quitar la foto.')),
   })
 
   // Celular/tablet (puntero táctil): "Sacar foto" + "Desde la galería". Escritorio: un solo "Adjuntar imágenes"
@@ -136,7 +137,9 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = fal
               {canDelete && (
                 <button
                   type="button"
-                  onClick={() => remove.mutate(p.id)}
+                  onClick={async () => {
+                    if (await confirmDialog('¿Quitar esta foto de la orden?', { confirmLabel: 'Quitar', danger: true })) remove.mutate(p.id)
+                  }}
                   disabled={remove.isPending}
                   aria-label={`Quitar foto ${i + 1}`}
                   className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center bg-tc-navy/80 text-xs font-bold text-white hover:bg-tc-stamp-red"

@@ -39,9 +39,10 @@ describe('shell de la SPA', () => {
     expect(await screen.findByRole('heading', { name: /bienvenido de nuevo/i })).toBeInTheDocument()
   })
 
-  it('/m muestra el área del mecánico', async () => {
+  it('/m sin sesión redirige a /login (el portal del mecánico no se muestra)', async () => {
     renderEn('/m')
-    expect(await screen.findByRole('heading', { name: 'Mis trabajos' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /bienvenido de nuevo/i })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Mis trabajos' })).toBeNull()
   })
 
   it('/login muestra la página de ingreso', async () => {

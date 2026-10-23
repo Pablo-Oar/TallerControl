@@ -985,6 +985,14 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, (await mechanic.GetAsync($"/api/v1/work-orders/{foreign}")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await ChangeStatusAsync(mechanic, foreign, "in_progress")).StatusCode);
 
+        // Las notas del trabajo también son solo del mecánico asignado.
+        var notes = new HttpRequestMessage(HttpMethod.Patch, $"/api/v1/work-orders/{foreign}/mechanic-notes")
+        {
+            Content = JsonContent.Create(new { mechanicNotes = "intruso" }),
+        };
+        notes.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(mechanic));
+        Assert.Equal(HttpStatusCode.Forbidden, (await mechanic.SendAsync(notes)).StatusCode);
+
         // Y subirle fotos también.
         var upload = new HttpRequestMessage(HttpMethod.Post, "/api/v1/attachments/upload-url")
         {

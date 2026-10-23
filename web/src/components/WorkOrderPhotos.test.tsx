@@ -10,6 +10,8 @@ const api = vi.hoisted(() => ({
   delete: vi.fn(),
 }))
 vi.mock('../lib/api/attachments', () => ({ attachmentsApi: api }))
+const confirm = vi.hoisted(() => vi.fn())
+vi.mock('./ui/dialogs', () => ({ confirmDialog: confirm }))
 
 const photo = { id: 'a1', status: 'ready', contentType: 'image/jpeg', downloadUrl: 'https://r2.test/a1.jpg' }
 
@@ -39,8 +41,19 @@ describe('WorkOrderPhotos', () => {
     api.listForWorkOrder.mockResolvedValue([photo, { ...photo, id: 'a2', status: 'pending_upload' }])
     renderIt(true)
     expect(await screen.findAllByRole('img')).toHaveLength(1)
+    confirm.mockResolvedValue(true)
     await userEvent.click(screen.getByRole('button', { name: /quitar foto 1/i }))
     await waitFor(() => expect(api.delete).toHaveBeenCalledWith('a1'))
+  })
+
+  it('pide confirmación y no quita la foto si se cancela', async () => {
+    api.listForWorkOrder.mockResolvedValue([photo])
+    renderIt(true)
+    await screen.findByRole('img')
+    confirm.mockResolvedValue(false)
+    await userEvent.click(screen.getByRole('button', { name: /quitar foto 1/i }))
+    await waitFor(() => expect(confirm).toHaveBeenCalled())
+    expect(api.delete).not.toHaveBeenCalled()
   })
 
   it('el mecánico no ve el botón de quitar', async () => {

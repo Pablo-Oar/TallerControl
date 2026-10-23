@@ -38,7 +38,7 @@ export function PushTestButton() {
 
   return (
     <div className="mt-3 space-y-2">
-      <Button variant="secondary" size="sm" loading={busy} onClick={run}>
+      <Button variant="secondary" className="min-h-[44px]" loading={busy} onClick={run}>
         Enviar aviso de prueba
       </Button>
       {message && <p role="status" className="text-xs text-tc-text-secondary">{message}</p>}
