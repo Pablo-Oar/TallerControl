@@ -148,7 +148,7 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         var assignedId = assigned.GetProperty("id").GetGuid();
 
         // Orden asignada al admin (otro role) → mecánico NO la puede ver.
-        var adminOrder = await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.AdminMembershipId);
+        var adminOrder = await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.OtherMechanicMembershipId);
         var adminOrderId = adminOrder.GetProperty("id").GetGuid();
 
         var listResp = await mechanicClient.GetAsync("/api/v1/work-orders");
@@ -394,7 +394,7 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
 
         var mine = await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.MechanicMembershipId);
         var free = await CreateOrderAsync(ownerClient);
-        var other = await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.AdminMembershipId);
+        var other = await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.OtherMechanicMembershipId);
 
         async Task<HttpStatusCode> HistoryAsync(JsonElement order) =>
             (await mechanicClient.GetAsync($"/api/v1/work-orders/{order.GetProperty("id").GetGuid()}/history")).StatusCode;
@@ -414,7 +414,7 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         await LoginAsync(mechanicClient, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
 
         // Orden asignada al Admin (no al mecánico que consulta).
-        var order = await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.AdminMembershipId);
+        var order = await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.OtherMechanicMembershipId);
         var id = order.GetProperty("id").GetGuid();
 
         var resp = await mechanicClient.GetAsync($"/api/v1/work-orders/{id}");
@@ -860,7 +860,7 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
 
         var mine = (await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.MechanicMembershipId)).GetProperty("id").GetGuid();
         var free = (await CreateOrderAsync(ownerClient)).GetProperty("id").GetGuid();
-        var other = (await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.AdminMembershipId)).GetProperty("id").GetGuid();
+        var other = (await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.OtherMechanicMembershipId)).GetProperty("id").GetGuid();
 
         async Task<List<Guid>> IdsAsync(string assignment)
         {
@@ -924,6 +924,89 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
 
         var other = await ownerClient.GetFromJsonAsync<JsonElement>($"/api/v1/work-orders?customerId={Guid.NewGuid()}");
         Assert.Equal(0, other.GetProperty("total").GetInt32());
+    }
+
+    [Fact(DisplayName = "T-WO-19: El mecánico no recibe importes de los renglones ni las notas internas, y no opera sobre órdenes ajenas")]
+    public async Task Mecanico_no_recibe_precios_ni_notas_internas_y_no_toca_ordenes_ajenas()
+    {
+        using var owner = CreateClient();
+        using var mechanic = CreateClient();
+        await LoginAsync(owner, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        await LoginAsync(mechanic, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
+
+        var created = await CreateOrderAsync(owner, assignedMechanicId: _factory.MechanicMembershipId,
+            items: new object[] { new { kind = "service", description = "Servicio con precio", quantity = 1m, unitNetPrice = 1234m, vatRate = 21m } });
+        var id = created.GetProperty("id").GetGuid();
+
+        var edit = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/work-orders/{id}")
+        {
+            Content = JsonContent.Create(new
+            {
+                odometerKm = 0,
+                fuelLevel = (int?)null,
+                reportedIssue = (string?)null,
+                internalNotes = "Cliente conflictivo: no dar descuento",
+                priority = "normal",
+                assignedMechanicId = _factory.MechanicMembershipId,
+                items = new object[] { new { kind = "service", description = "Servicio con precio", quantity = 1m, unitNetPrice = 1234m, vatRate = 21m } },
+            }),
+        };
+        edit.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(owner));
+        edit.Headers.TryAddWithoutValidation("If-Match", $"\"{created.GetProperty("version").GetUInt32()}\"");
+        Assert.Equal(HttpStatusCode.OK, (await owner.SendAsync(edit)).StatusCode);
+
+        // El dueño sí los recibe.
+        var asOwner = await owner.GetFromJsonAsync<JsonElement>($"/api/v1/work-orders/{id}");
+        Assert.Equal(1234m, asOwner.GetProperty("items")[0].GetProperty("unitNetPrice").GetDecimal());
+        Assert.False(string.IsNullOrEmpty(asOwner.GetProperty("internalNotes").GetString()));
+
+        // El mecánico no: ni importes por renglón ni notas internas.
+        var asMechanic = await mechanic.GetFromJsonAsync<JsonElement>($"/api/v1/work-orders/{id}");
+        var item = asMechanic.GetProperty("items")[0];
+        Assert.Equal(JsonValueKind.Null, item.GetProperty("unitNetPrice").ValueKind);
+        Assert.Equal(JsonValueKind.Null, item.GetProperty("lineTotal").ValueKind);
+        Assert.Equal(JsonValueKind.Null, asMechanic.GetProperty("internalNotes").ValueKind);
+
+        // Una orden asignada a otra persona: cambiar el estado es un 404 para el mecánico.
+        var foreign = (await CreateOrderAsync(owner, assignedMechanicId: _factory.OtherMechanicMembershipId)).GetProperty("id").GetGuid();
+        Assert.Equal(HttpStatusCode.NotFound, (await ChangeStatusAsync(mechanic, foreign, "in_progress")).StatusCode);
+
+        // Y subirle fotos también.
+        var upload = new HttpRequestMessage(HttpMethod.Post, "/api/v1/attachments/upload-url")
+        {
+            Content = JsonContent.Create(new { ownerType = "work_order", ownerId = foreign, contentType = "image/jpeg", size = 1000 }),
+        };
+        upload.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(mechanic));
+        Assert.Equal(HttpStatusCode.NotFound, (await mechanic.SendAsync(upload)).StatusCode);
+    }
+
+    [Fact(DisplayName = "T-WO-20: el mecánico de una orden tiene que ser un mecánico activo del taller")]
+    public async Task Asignar_a_quien_no_es_mecanico_del_taller_se_rechaza()
+    {
+        using var owner = CreateClient();
+        await LoginAsync(owner, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+
+        async Task<HttpResponseMessage> Post(Guid mechanicId)
+        {
+            var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/work-orders")
+            {
+                Content = JsonContent.Create(new
+                {
+                    customerId = _factory.CustomerId,
+                    vehicleId = _factory.VehicleId,
+                    odometerKm = 0,
+                    priority = "normal",
+                    assignedMechanicId = mechanicId,
+                    items = Array.Empty<object>(),
+                }),
+            };
+            req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(owner));
+            return await owner.SendAsync(req);
+        }
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await Post(_factory.AdminMembershipId)).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await Post(Guid.NewGuid())).StatusCode);
+        Assert.Equal(HttpStatusCode.Created, (await Post(_factory.MechanicMembershipId)).StatusCode);
     }
 
     [Fact(DisplayName = "T-WO-15b: una clave de orden desconocida no rompe el listado (cae al orden por defecto)")]
@@ -1155,7 +1238,7 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
         await LoginAsync(mechanicClient, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
 
-        var order = await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.AdminMembershipId);
+        var order = await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.OtherMechanicMembershipId);
         var resp = await mechanicClient.GetAsync($"/api/v1/work-orders/{order.GetProperty("id").GetGuid()}/pdf");
 
         Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);

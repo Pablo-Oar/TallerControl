@@ -58,7 +58,7 @@ function toFormData(order: WorkOrderDto): FormData {
       description: i.description,
       catalogItemId: i.catalogItemId,
       quantity: i.quantity,
-      unitNetPrice: i.unitNetPrice,
+      unitNetPrice: i.unitNetPrice ?? 0,
       vatRate: i.vatRate,
     })),
   }
@@ -88,6 +88,15 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
 
   const selectedCustomerId = watch('customerId')
+
+  // Solo al crear: el mecánico se puede elegir desde el inicio (después se reasigna desde el detalle).
+  const [mechanicId, setMechanicId] = useState('')
+  const { data: mechanics } = useQuery({
+    queryKey: ['work-order-mechanics'],
+    queryFn: () => workOrdersApi.listMechanics(),
+    staleTime: 60_000,
+    enabled: !isEdit,
+  })
 
   const { data: customerDetail } = useQuery({
     queryKey: ['customer', selectedCustomerId],
@@ -152,6 +161,7 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
         fuelLevel: data.fuelLevel,
         reportedIssue: data.reportedIssue,
         priority: data.priority as WorkOrderPriority,
+        assignedMechanicId: mechanicId || null,
         items: data.items.map(item => ({
           kind: item.kind,
           description: item.description,
@@ -252,6 +262,15 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
             <option value="high">Alta</option>
           </FormSelect>
 
+          {!isEdit && (mechanics?.length ?? 0) > 0 && (
+            <FormSelect label="Mecánico" value={mechanicId} onChange={e => setMechanicId(e.target.value)}>
+              <option value="">Sin asignar (lo toma un mecánico)</option>
+              {mechanics!.map(m => (
+                <option key={m.membershipId} value={m.membershipId}>{m.displayName}</option>
+              ))}
+            </FormSelect>
+          )}
+
           {/* Problema reportado */}
           <FormTextarea label="Problema reportado" rows={2} placeholder="Descripción del problema…" {...register('reportedIssue')} />
 
@@ -345,8 +364,8 @@ function ItemRow({ index, register, errors, onSelectCatalog, onRemove }: {
           {...register(`items.${index}.description`)}
         />
         <div className="grid grid-cols-3 gap-2">
-          <FormField label="Cantidad" size="sm" type="number" min={0} step="1" inputClassName="tabular-nums" {...register(`items.${index}.quantity`, { valueAsNumber: true })} />
-          <FormField label="Precio neto" size="sm" type="number" min={0} step="1" inputClassName="tabular-nums" {...register(`items.${index}.unitNetPrice`, { valueAsNumber: true })} />
+          <FormField label="Cantidad" size="sm" type="number" min={0} step="0.001" inputClassName="tabular-nums" {...register(`items.${index}.quantity`, { valueAsNumber: true })} />
+          <FormField label="Precio neto" size="sm" type="number" min={0} step="0.01" inputClassName="tabular-nums" {...register(`items.${index}.unitNetPrice`, { valueAsNumber: true })} />
           <FormField label="IVA %" size="sm" type="number" min={0} max={100} inputClassName="tabular-nums" {...register(`items.${index}.vatRate`, { valueAsNumber: true })} />
         </div>
       </div>

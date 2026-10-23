@@ -28,7 +28,7 @@ const DOC_OPTIONS: { value: DocType; label: string }[] = [
 
 const schema = z.object({
   name: z.string().trim().min(1, 'Requerido').max(150),
-  email: z.string().trim().max(200).optional(),
+  email: z.string().trim().max(200).refine(v => v === '' || /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(v), 'Email inválido').optional(),
   phone: z.string().trim().max(50).optional(),
   docType: z.string().optional(),
   docNumber: z.string().trim().max(30).optional(),

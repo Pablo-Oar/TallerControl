@@ -27,11 +27,11 @@ public sealed record WorkOrderItemDto(
     string Description,
     Guid? CatalogItemId,
     decimal Quantity,
-    decimal UnitNetPrice,
+    decimal? UnitNetPrice,
     decimal VatRate,
-    decimal LineNet,
-    decimal LineVat,
-    decimal LineTotal,
+    decimal? LineNet,
+    decimal? LineVat,
+    decimal? LineTotal,
     int Position);
 
 /// <summary>Detalle completo de una orden (doc 05 §2.7).</summary>

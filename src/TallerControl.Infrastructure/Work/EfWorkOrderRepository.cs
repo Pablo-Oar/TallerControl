@@ -163,7 +163,7 @@ internal sealed class EfWorkOrderRepository : IWorkOrderRepository
         return new Page<WorkOrderListDto>(items, page, pageSize, total);
     }
 
-    public async Task<WorkOrderDto?> GetFullAsync(Guid id, bool includePrices, CancellationToken ct)
+    public async Task<WorkOrderDto?> GetFullAsync(Guid id, bool includePrices, CancellationToken ct, bool includeInternalNotes = true)
     {
         var order = await _db.Set<WorkOrder>()
             .Include(w => w.Items)
@@ -200,8 +200,8 @@ internal sealed class EfWorkOrderRepository : IWorkOrderRepository
         var itemDtos = order.Items
             .Select(i => new WorkOrderItemDto(
                 i.Id, i.Kind, i.Description, i.CatalogItemId,
-                i.Quantity, i.UnitNetPrice, i.VatRate,
-                i.LineNet, i.LineVat, i.LineTotal, i.Position))
+                i.Quantity, includePrices ? i.UnitNetPrice : null, i.VatRate,
+                includePrices ? i.LineNet : null, includePrices ? i.LineVat : null, includePrices ? i.LineTotal : null, i.Position))
             .OrderBy(i => i.Position)
             .ToList();
 
@@ -212,7 +212,7 @@ internal sealed class EfWorkOrderRepository : IWorkOrderRepository
             vehicle?.Brand, vehicle?.Model,
             order.AssignedMechanicId, mechanicName,
             order.OdometerKm, order.FuelLevel,
-            order.ReportedIssue, order.MechanicNotes, order.InternalNotes,
+            order.ReportedIssue, order.MechanicNotes, includeInternalNotes ? order.InternalNotes : null,
             order.SourceQuoteId,
             includePrices ? order.SubtotalNet : null,
             includePrices ? order.DiscountAmount : null,

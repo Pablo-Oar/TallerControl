@@ -282,11 +282,11 @@ export function WorkOrderDetailPage() {
                     <td className="px-3 py-2.5">{item.description}</td>
                     <td className="px-3 py-2.5 text-right tabular-nums">{item.quantity}</td>
                     <td className="px-3 py-2.5 text-right tabular-nums text-tc-purple">
-                      {order.subtotalNet != null ? fmtARS(item.unitNetPrice) : '—'}
+                      {item.unitNetPrice != null ? fmtARS(item.unitNetPrice) : '—'}
                     </td>
                     <td className="px-3 py-2.5 text-right text-tc-text-secondary">{item.vatRate}%</td>
                     <td className="px-3 py-2.5 text-right tabular-nums font-semibold text-tc-purple">
-                      {order.total != null ? fmtARS(item.lineTotal) : '—'}
+                      {item.lineTotal != null ? fmtARS(item.lineTotal) : '—'}
                     </td>
                   </tr>
                 ))}
@@ -415,7 +415,8 @@ export function WorkOrderDetailPage() {
           <p className="mb-3 text-sm text-tc-text-muted">Sin cobros registrados.</p>
         )}
 
-        {canAct && (payments?.balance ?? 0) > 0 && (
+        {/* Se puede cobrar una orden ya entregada (saldo pendiente); solo una anulada no admite cobros. */}
+        {order.status !== 'cancelled' && (payments?.balance ?? 0) > 0 && (
           <Button variant="secondary" size="sm" onClick={() => setCreatingPayment(true)}>
             + Registrar cobro
           </Button>

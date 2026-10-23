@@ -32,7 +32,7 @@ public sealed class Supplier : Entity, ITenantOwned, IVersioned, IAuditable, ISo
         VatCondition = vatCondition;
         Address = address?.Trim();
         Phone = phone?.Trim();
-        Email = email?.Trim().ToLowerInvariant();
+        Email = Common.EmailFormat.NormalizeOptional(email);
         Notes = notes?.Trim();
     }
 
@@ -73,7 +73,7 @@ public sealed class Supplier : Entity, ITenantOwned, IVersioned, IAuditable, ISo
         VatCondition = vatCondition;
         Address = address?.Trim();
         Phone = phone?.Trim();
-        Email = email?.Trim().ToLowerInvariant();
+        Email = Common.EmailFormat.NormalizeOptional(email);
         Notes = notes?.Trim();
     }
 

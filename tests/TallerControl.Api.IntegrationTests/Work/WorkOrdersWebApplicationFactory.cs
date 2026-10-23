@@ -36,6 +36,7 @@ internal sealed class WorkOrdersWebApplicationFactory : WebApplicationFactory<Pr
     public Guid VehicleId { get; private set; }
     public Guid CatalogItemId { get; private set; }
     public Guid MechanicMembershipId { get; private set; }
+    public Guid OtherMechanicMembershipId { get; private set; }
     public Guid MechanicUserId { get; private set; }
 
     /// <summary>Sustituye al envío push real: registra a quién se le avisó.</summary>
@@ -103,10 +104,12 @@ internal sealed class WorkOrdersWebApplicationFactory : WebApplicationFactory<Pr
         var owner = new User(OwnerEmail, "Dueño OT Test");
         var admin = new User(AdminEmail, "Administrativo OT");
         var mechanic = new User(MechanicEmail, "Mecánico OT Test");
+        var otherMechanic = new User("other-mechanic@wo-test.com", "Otro mecánico OT");
 
         owner.Activate(hasher.Hash(Password));
         admin.Activate(hasher.Hash(Password));
         mechanic.Activate(hasher.Hash(Password));
+        otherMechanic.Activate(hasher.Hash(Password));
 
         await using (var db = new AppDbContext(
             BuildOptions(ownerConnectionString), new TestTenantContext(), new TestActorContext(), TimeProvider.System))
@@ -114,6 +117,7 @@ internal sealed class WorkOrdersWebApplicationFactory : WebApplicationFactory<Pr
             db.Add(owner);
             db.Add(admin);
             db.Add(mechanic);
+            db.Add(otherMechanic);
             await db.SaveChangesAsync();
         }
 
@@ -121,6 +125,7 @@ internal sealed class WorkOrdersWebApplicationFactory : WebApplicationFactory<Pr
         var ownerMembership = new Membership(tenant.Id, owner.Id, TenantRole.Owner);
         var adminMembership = new Membership(tenant.Id, admin.Id, TenantRole.AdminStaff);
         var mechanicMembership = new Membership(tenant.Id, mechanic.Id, TenantRole.Mechanic);
+        var otherMechanicMembership = new Membership(tenant.Id, otherMechanic.Id, TenantRole.Mechanic);
         var branch = Branch.CreateMain(tenant.Id);
 
         await using (var db = new AppDbContext(
@@ -129,6 +134,7 @@ internal sealed class WorkOrdersWebApplicationFactory : WebApplicationFactory<Pr
             db.Add(ownerMembership);
             db.Add(adminMembership);
             db.Add(mechanicMembership);
+            db.Add(otherMechanicMembership);
             db.Add(branch);
             await db.SaveChangesAsync();
         }
@@ -136,6 +142,7 @@ internal sealed class WorkOrdersWebApplicationFactory : WebApplicationFactory<Pr
         OwnerMembershipId = ownerMembership.Id;
         AdminMembershipId = adminMembership.Id;
         MechanicMembershipId = mechanicMembership.Id;
+        OtherMechanicMembershipId = otherMechanicMembership.Id;
         MechanicUserId = mechanic.Id;
 
         // ── Cliente y vehículo ────────────────────────────────────────────────

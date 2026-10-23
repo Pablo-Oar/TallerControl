@@ -37,10 +37,15 @@ public sealed class ChangeWorkOrderStatusHandler
         bool isMechanic,
         bool canDeliver,
         bool canCancel,
-        CancellationToken ct)
+        CancellationToken ct,
+        Guid? mechanicMembershipId = null)
     {
         var order = await _repo.FindByIdAsync(id, ct)
             ?? throw new NotFoundException("La orden no existe.");
+
+        // El mecánico solo opera sobre sus órdenes o las que están libres; una ajena es un 404 (REQ-14).
+        if (isMechanic && order.AssignedMechanicId is { } assigned && assigned != mechanicMembershipId)
+            throw new NotFoundException("La orden no existe.");
 
         var actorId = _actorContext.ActorId;
         var now = _clock.GetUtcNow();

@@ -365,6 +365,21 @@ public sealed class CustomersEndpointsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, balance.StatusCode);
     }
 
+    [Fact(DisplayName = "T-CUS-11: el email del cliente se valida (formato) y se normaliza a minúsculas")]
+    public async Task Email_del_cliente_se_valida()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CustomersVehiclesWebApplicationFactory.OwnerEmail,
+            CustomersVehiclesWebApplicationFactory.OwnerPassword);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await PostCustomerAsync(client, "Mail malo", email: "no-es-email")).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await PostCustomerAsync(client, "Mail malo 2", email: "a@b")).StatusCode);
+
+        var ok = await PostCustomerAsync(client, "Mail bueno", email: " Cliente@Ejemplo.COM ");
+        Assert.Equal(HttpStatusCode.Created, ok.StatusCode);
+        Assert.Equal("cliente@ejemplo.com", (await ok.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("email").GetString());
+    }
+
     [Fact(DisplayName = "T-CUS-10: includeDeleted lista también los clientes borrados, marcados isDeleted")]
     public async Task Listado_con_includeDeleted_incluye_borrados()
     {

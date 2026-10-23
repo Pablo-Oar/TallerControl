@@ -39,7 +39,8 @@ public sealed class RequestAttachmentUploadUrlHandler
         AttachmentOwnerType ownerType,
         Guid ownerId,
         RequestAttachmentUploadUrlRequest request,
-        CancellationToken ct)
+        CancellationToken ct,
+        Guid? mechanicMembershipId = null)
     {
         var tenantId = _tenantContext.TenantId
             ?? throw new InvalidOperationException("No hay taller en la sesión.");
@@ -47,7 +48,10 @@ public sealed class RequestAttachmentUploadUrlHandler
         // Verificar que el dueño exista y pertenezca al taller (T-ATT-01).
         if (ownerType == AttachmentOwnerType.WorkOrder)
         {
-            _ = await _woRepo.FindByIdAsync(ownerId, ct)
+            // El mecánico solo sube fotos a sus órdenes o a las libres; una ajena es un 404 (REQ-14).
+            _ = (mechanicMembershipId is { } mechanicId
+                    ? await _woRepo.FindVisibleToMechanicAsync(ownerId, mechanicId, ct)
+                    : await _woRepo.FindByIdAsync(ownerId, ct))
                 ?? throw new NotFoundException("La orden no existe.");
         }
 

@@ -50,11 +50,11 @@ export interface WorkOrderItemDto {
   description: string
   catalogItemId: string | null
   quantity: number
-  unitNetPrice: number
+  unitNetPrice: number | null
   vatRate: number
-  lineNet: number
-  lineVat: number
-  lineTotal: number
+  lineNet: number | null
+  lineVat: number | null
+  lineTotal: number | null
   position: number
 }
 
