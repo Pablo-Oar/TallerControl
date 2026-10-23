@@ -9,6 +9,7 @@ const AcceptInvitationPage = lazy(() => import('./invitations/AcceptInvitationPa
 const PublicQuotePage = lazy(() => import('./quotes/PublicQuotePage').then(m => ({ default: m.PublicQuotePage })))
 const PublicWorkOrderPage = lazy(() => import('./work-orders/PublicWorkOrderPage').then(m => ({ default: m.PublicWorkOrderPage })))
 const PublicPaymentPage = lazy(() => import('./payments/PublicPaymentPage').then(m => ({ default: m.PublicPaymentPage })))
+const PublicAppointmentPage = lazy(() => import('./appointments/PublicAppointmentPage').then(m => ({ default: m.PublicAppointmentPage })))
 const PublicQrPage = lazy(() => import('./qr/PublicQrPage').then(m => ({ default: m.PublicQrPage })))
 const OwnerVehiclePage = lazy(() => import('./qr/OwnerVehiclePage').then(m => ({ default: m.OwnerVehiclePage })))
 const PrivacidadPage = lazy(() => import('./PrivacidadPage').then(m => ({ default: m.PrivacidadPage })))
@@ -41,6 +42,7 @@ export function Component() {
         <Route path="p/:token" element={<PublicQuotePage />} />
         <Route path="o/:token" element={<PublicWorkOrderPage />} />
         <Route path="c/:token" element={<PublicPaymentPage />} />
+        <Route path="t/:token" element={<PublicAppointmentPage />} />
         {/* Portal QR del dueño del vehículo */}
         <Route path="q/:code" element={<PublicQrPage />} />
         <Route path="q/:code/mi-vehiculo" element={<OwnerVehiclePage />} />

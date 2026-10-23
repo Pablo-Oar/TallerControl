@@ -4,6 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { appointmentsApi, type AppointmentDto } from '../../../lib/api/appointments'
+import { workOrdersApi } from '../../../lib/api/workOrders'
+import { useCan } from '../../../lib/auth/permissions'
+import { toDateTimeLocal } from '../../../lib/dates'
 import { customersApi } from '../../../lib/api/customers'
 import { catalogApi } from '../../../lib/api/catalog'
 import { Button } from '../../../components/ui/Button'
@@ -33,11 +36,23 @@ type FormValues = z.infer<typeof schema>
 interface Props {
   editData?: AppointmentDto | null
   onClose: () => void
+  /** Al crear: recibe el enlace para que el cliente confirme (el token solo se ve en este momento). */
+  onCreated?: (link: string) => void
 }
 
-export function AppointmentFormModal({ editData, onClose }: Props) {
+export function AppointmentFormModal({ editData, onClose, onCreated }: Props) {
   const qc = useQueryClient()
+  const can = useCan()
   const isEdit = !!editData
+  const canForce = can('settings.manage')
+  const [force, setForce] = useState(false)
+
+  // El dueño y el administrativo eligen mecánico; sin lista, queda «Automático».
+  const { data: mechanics } = useQuery({
+    queryKey: ['assignable-mechanics'],
+    queryFn: () => workOrdersApi.listMechanics(),
+    enabled: can('workorders.write'),
+  })
 
   const { register, handleSubmit, control, reset, watch, setValue, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -86,7 +101,7 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
       reset({
         customerId: editData.customerId,
         vehicleId: editData.vehicleId,
-        scheduledAt: editData.scheduledAt.slice(0, 16),
+        scheduledAt: toDateTimeLocal(editData.scheduledAt),
         mechanicMembershipId: editData.mechanicMembershipId ?? null,
         notes: editData.notes ?? null,
         services: editData.services.map(s => ({
@@ -105,6 +120,7 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
           scheduledAt: new Date(values.scheduledAt).toISOString(),
           mechanicMembershipId: values.mechanicMembershipId ?? null,
           notes: values.notes ?? null,
+          force: force || undefined,
         })
       }
       const resp = await appointmentsApi.create({
@@ -114,11 +130,16 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
         scheduledAt: new Date(values.scheduledAt).toISOString(),
         notes: values.notes ?? null,
         services: values.services,
+        force: force || undefined,
       })
-      return resp.appointment
+      return resp
     },
-    onSuccess: () => {
+    onSuccess: result => {
       qc.invalidateQueries({ queryKey: ['appointments'] })
+      if (!isEdit && onCreated && result && 'confirmationToken' in result) {
+        onCreated(`${window.location.origin}/t/${result.confirmationToken}`)
+        return
+      }
       onClose()
     },
   })
@@ -168,7 +189,30 @@ export function AppointmentFormModal({ editData, onClose }: Props) {
           {...register('scheduledAt')}
         />
 
+        {mechanics && (
+          <FormSelect
+            label="Mecánico"
+            hint="Automático: el que tenga menos turnos ese día y esté libre."
+            {...register('mechanicMembershipId', { setValueAs: v => v || null })}
+          >
+            <option value="">Automático</option>
+            {mechanics.map(m => (
+              <option key={m.membershipId} value={m.membershipId}>{m.displayName}</option>
+            ))}
+          </FormSelect>
+        )}
+
         <FormTextarea label="Notas (opcional)" rows={2} {...register('notes')} />
+
+        {canForce && (
+          <label className="flex items-start gap-2 text-sm text-tc-text-secondary">
+            <input type="checkbox" checked={force} onChange={e => setForce(e.target.checked)} className="mt-1 accent-tc-purple" />
+            <span>
+              Agendar igual aunque quede fuera del horario del mecánico o encimado con otro turno
+              <span className="block text-xs text-tc-text-muted">Solo el Dueño puede hacerlo.</span>
+            </span>
+          </label>
+        )}
 
         {!isEdit && (
           <div>

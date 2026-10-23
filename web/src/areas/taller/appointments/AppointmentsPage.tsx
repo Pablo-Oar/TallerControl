@@ -1,11 +1,17 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   appointmentsApi,
   getAppointmentStatusLabel,
+  type AppointmentDto,
   type AppointmentListDto,
   type AppointmentStatus,
 } from '../../../lib/api/appointments'
+import { useCan } from '../../../lib/auth/permissions'
+import { ShareLink } from '../../../components/ShareLink'
+import { AppointmentsTabs } from './AppointmentsTabs'
+import { ConvertAppointmentModal } from './ConvertAppointmentModal'
 import { Button } from '../../../components/ui/Button'
 import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
@@ -25,7 +31,7 @@ const STATUS_OPTIONS: { value: AppointmentStatus | ''; label: string }[] = [
 const fmtWhen = (iso: string) =>
   new Date(iso).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
 
-const canCancel = (a: AppointmentListDto) => a.status === 'pending' || a.status === 'confirmed'
+const isOpen = (a: AppointmentListDto) => a.status === 'pending' || a.status === 'confirmed'
 
 const COLUMNS: DataTableColumn<AppointmentListDto>[] = [
   {
@@ -53,10 +59,16 @@ const COLUMNS: DataTableColumn<AppointmentListDto>[] = [
 
 export function AppointmentsPage() {
   const qc = useQueryClient()
+  const navigate = useNavigate()
+  const can = useCan()
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState<AppointmentStatus | ''>('')
   const [date, setDate] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const [editing, setEditing] = useState<AppointmentDto | null>(null)
+  const [converting, setConverting] = useState<AppointmentListDto | null>(null)
+  const [convertError, setConvertError] = useState<string | null>(null)
+  const [shareLink, setShareLink] = useState<{ url: string; created: boolean } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [cancellingId, setCancellingId] = useState<string | null>(null)
   const [cancelReason, setCancelReason] = useState('')
@@ -85,6 +97,33 @@ export function AppointmentsPage() {
     onError: (e: Error) => setError(e.message),
   })
 
+  const convertMut = useMutation({
+    mutationFn: ({ id, odometerKm }: { id: string; odometerKm: number }) =>
+      appointmentsApi.convertToWorkOrder(id, { odometerKm }),
+    onSuccess: order => {
+      invalidate()
+      setConverting(null)
+      navigate(`/app/work-orders/${order.id}`)
+    },
+    onError: (e: Error) => setConvertError(e.message),
+  })
+
+  async function openEdit(id: string) {
+    try {
+      setEditing(await appointmentsApi.get(id))
+    } catch (e) {
+      setError((e as Error).message)
+    }
+  }
+
+  async function openLink(id: string) {
+    try {
+      setShareLink({ url: await appointmentsApi.publicLink(id), created: false })
+    } catch (e) {
+      setError((e as Error).message)
+    }
+  }
+
   const items: AppointmentListDto[] = data?.items ?? []
   const total = data?.total ?? 0
 
@@ -94,6 +133,8 @@ export function AppointmentsPage() {
         <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Agenda</h1>
         <Button size="sm" onClick={() => setShowModal(true)}>Nuevo turno</Button>
       </div>
+
+      <AppointmentsTabs />
 
       {error && (
         <div className="border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 flex items-center justify-between">
@@ -126,10 +167,19 @@ export function AppointmentsPage() {
         rows={items}
         getRowId={a => a.id}
         actions={a =>
-          canCancel(a) ? (
-            <RowAction tone="danger" onClick={() => { setCancellingId(a.id); setCancelReason('') }}>
-              Cancelar
-            </RowAction>
+          isOpen(a) ? (
+            <>
+              {can('workorders.write') && (
+                <RowAction tone="purple" onClick={() => { setConvertError(null); setConverting(a) }}>
+                  Crear orden
+                </RowAction>
+              )}
+              <RowAction tone="purple" onClick={() => openEdit(a.id)}>Editar</RowAction>
+              <RowAction tone="purple" onClick={() => openLink(a.id)}>Enlace</RowAction>
+              <RowAction tone="danger" onClick={() => { setCancellingId(a.id); setCancelReason('') }}>
+                Cancelar
+              </RowAction>
+            </>
           ) : null
         }
         cardStub={a => <span className="text-center text-[11px] font-bold leading-tight tabular-nums text-tc-text-secondary">{new Date(a.scheduledAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</span>}
@@ -148,7 +198,42 @@ export function AppointmentsPage() {
       <Pagination page={page} pageSize={25} total={total} noun="turnos" onPage={setPage} />
 
       {showModal && (
-        <AppointmentFormModal onClose={() => { setShowModal(false); invalidate() }} />
+        <AppointmentFormModal
+          onClose={() => { setShowModal(false); invalidate() }}
+          onCreated={url => { setShowModal(false); invalidate(); setShareLink({ url, created: true }) }}
+        />
+      )}
+
+      {editing && (
+        <AppointmentFormModal editData={editing} onClose={() => { setEditing(null); invalidate() }} />
+      )}
+
+      {converting && (
+        <ConvertAppointmentModal
+          vehicleId={converting.vehicleId}
+          vehiclePlate={converting.vehiclePlate}
+          busy={convertMut.isPending}
+          error={convertError}
+          onConfirm={odometerKm => convertMut.mutate({ id: converting.id, odometerKm })}
+          onClose={() => setConverting(null)}
+        />
+      )}
+
+      {shareLink && (
+        <Modal title={shareLink.created ? 'Turno creado' : 'Enlace del turno'} onClose={() => setShareLink(null)} className="max-w-md">
+          <div className="space-y-3">
+            <p className="text-sm text-tc-text-secondary">
+              Con este enlace el cliente ve su turno y lo confirma (o avisa que no puede ir).
+              {shareLink.created
+                ? ' Si el cliente tiene email, ya se le envió.'
+                : ' Este enlace reemplaza al anterior: el que se mandó antes deja de servir.'}
+            </p>
+            <ShareLink label="Enlace del turno" url={shareLink.url} whatsappText="Confirmá tu turno en el taller:" />
+            <div className="flex justify-end">
+              <Button size="sm" onClick={() => setShareLink(null)}>Listo</Button>
+            </div>
+          </div>
+        </Modal>
       )}
 
       {cancellingId && (

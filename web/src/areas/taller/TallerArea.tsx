@@ -14,6 +14,8 @@ const WorkOrdersPage = lazy(() => import('./work-orders/WorkOrdersPage').then(m 
 const WorkOrderDetailPage = lazy(() => import('./work-orders/WorkOrderDetailPage').then(m => ({ default: m.WorkOrderDetailPage })))
 const QuotesPage = lazy(() => import('./quotes/QuotesPage').then(m => ({ default: m.QuotesPage })))
 const QuoteDetailPage = lazy(() => import('./quotes/QuoteDetailPage').then(m => ({ default: m.QuoteDetailPage })))
+const AppointmentCalendarPage = lazy(() => import('./appointments/AppointmentCalendarPage').then(m => ({ default: m.AppointmentCalendarPage })))
+const AvailabilityPage = lazy(() => import('./appointments/AvailabilityPage').then(m => ({ default: m.AvailabilityPage })))
 const AppointmentsPage = lazy(() => import('./appointments/AppointmentsPage').then(m => ({ default: m.AppointmentsPage })))
 const RemindersPage = lazy(() => import('./reminders/RemindersPage').then(m => ({ default: m.RemindersPage })))
 const QrCardsPage = lazy(() => import('./qr/QrCardsPage').then(m => ({ default: m.QrCardsPage })))
@@ -63,6 +65,8 @@ export function Component() {
             <Route path="work-orders" element={<WorkOrdersPage />} />
             <Route path="work-orders/:id" element={<WorkOrderDetailPage />} />
             <Route path="appointments" element={<AppointmentsPage />} />
+            <Route path="appointments/calendar" element={<AppointmentCalendarPage />} />
+            <Route path="appointments/schedule" element={<AvailabilityPage />} />
             <Route path="reminders" element={<RemindersPage />} />
             <Route path="qr" element={<QrCardsPage />} />
             <Route path="cash" element={<CashPage />} />
