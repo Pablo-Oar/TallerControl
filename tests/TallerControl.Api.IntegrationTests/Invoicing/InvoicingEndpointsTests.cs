@@ -359,6 +359,26 @@ public sealed class InvoicingEndpointsTests : IAsyncLifetime
 
     // ── T-INV-06: POST void crea nota de crédito ─────────────────────────────
 
+    [Fact(DisplayName = "T-INV-11: Una factura autorizada se descarga en PDF; el Contador también puede")]
+    public async Task Factura_autorizada_se_descarga_en_pdf()
+    {
+        using var owner = CreateClient();
+        await LoginAsync(owner, InvoicingWebApplicationFactory.OwnerEmail, InvoicingWebApplicationFactory.Password);
+        var invoice = await PostWithCsrfAsync(owner, $"/api/v1/work-orders/{_factory.WorkOrderId}/invoice",
+            new { fiscalPointOfSaleId = _factory.PointOfSaleId, concept = 1 });
+        var id = invoice.GetProperty("id").GetGuid();
+
+        var resp = await owner.GetAsync($"/api/v1/invoicing/invoices/{id}/pdf");
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        Assert.Equal("application/pdf", resp.Content.Headers.ContentType?.MediaType);
+        var bytes = await resp.Content.ReadAsByteArrayAsync();
+        Assert.True(bytes.Length > 1000);
+        Assert.Equal("%PDF", System.Text.Encoding.ASCII.GetString(bytes, 0, 4));
+
+        // Otro taller / inexistente → 404
+        Assert.Equal(HttpStatusCode.NotFound, (await owner.GetAsync($"/api/v1/invoicing/invoices/{Guid.NewGuid()}/pdf")).StatusCode);
+    }
+
     [Fact(DisplayName = "T-INV-06: Anular factura autorizada crea nota de crédito")]
     public async Task Anular_factura_autorizada_crea_nota_de_credito()
     {

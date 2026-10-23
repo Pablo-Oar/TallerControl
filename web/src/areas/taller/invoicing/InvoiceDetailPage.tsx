@@ -95,6 +95,19 @@ export function InvoiceDetailPage() {
         <Item label="Vencimiento del CAE">{invoice.caeExpiresAt ? fmtDate(invoice.caeExpiresAt) : '—'}</Item>
       </dl>
 
+      {invoice.status === 'authorized' && (
+        <div className="flex justify-end">
+          <a
+            href={`/api/v1/invoicing/invoices/${invoice.id}/pdf`}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex min-h-[32px] items-center border border-tc-border bg-white px-3 text-xs font-bold tracking-wider uppercase text-tc-text-secondary transition-colors hover:bg-tc-surface"
+          >
+            Descargar PDF
+          </a>
+        </div>
+      )}
+
       {canEmit && invoice.status === 'authorized' && !invoice.isCredit && (
         <div className="flex justify-end">
           <Button variant="danger" size="sm" loading={voidMut.isPending} onClick={handleVoid}>
