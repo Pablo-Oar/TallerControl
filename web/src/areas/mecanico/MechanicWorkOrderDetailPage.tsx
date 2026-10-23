@@ -213,7 +213,7 @@ export function MechanicWorkOrderDetailPage() {
       )}
 
       <Section title="Fotos">
-        <WorkOrderPhotos workOrderId={order.id} readOnly={isOthers} />
+        <WorkOrderPhotos workOrderId={order.id} readOnly={isOthers} canDelete={order.assignedMechanicId != null && !isOthers} />
       </Section>
 
       <Section title={isOthers ? 'Notas del mecánico' : 'Mis notas'}>

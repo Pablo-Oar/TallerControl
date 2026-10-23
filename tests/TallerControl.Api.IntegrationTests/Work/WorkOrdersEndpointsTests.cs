@@ -994,15 +994,47 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.Forbidden, (await mechanic.SendAsync(upload)).StatusCode);
     }
 
-    [Fact(DisplayName = "T-ATT-08: El mecánico no puede quitar ni editar adjuntos (→ 403)")]
-    public async Task Mecanico_no_puede_quitar_ni_editar_adjuntos()
+    [Fact(DisplayName = "T-ATT-10: El mecánico quita fotos de su propia orden, pero no las de otro mecánico ni las de una orden libre")]
+    public async Task Mecanico_quita_fotos_solo_de_sus_ordenes()
+    {
+        using var owner = CreateClient();
+        using var mechanic = CreateClient();
+        await LoginAsync(owner, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        await LoginAsync(mechanic, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
+
+        async Task<Guid> UploadAsync(HttpClient who, Guid orderId)
+        {
+            var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/attachments/upload-url")
+            {
+                Content = JsonContent.Create(new { ownerType = "work_order", ownerId = orderId, contentType = "image/jpeg", size = 1000 }),
+            };
+            req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(who));
+            var resp = await who.SendAsync(req);
+            Assert.True(resp.StatusCode == HttpStatusCode.OK, await resp.Content.ReadAsStringAsync());
+            return (await resp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("attachmentId").GetGuid();
+        }
+
+        async Task<HttpStatusCode> DeleteAsync(HttpClient who, Guid attachmentId)
+        {
+            var req = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/attachments/{attachmentId}");
+            req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(who));
+            return (await who.SendAsync(req)).StatusCode;
+        }
+
+        var own = (await CreateOrderAsync(owner, assignedMechanicId: _factory.MechanicMembershipId)).GetProperty("id").GetGuid();
+        var others = (await CreateOrderAsync(owner, assignedMechanicId: _factory.OtherMechanicMembershipId)).GetProperty("id").GetGuid();
+        var free = (await CreateOrderAsync(owner)).GetProperty("id").GetGuid();
+
+        Assert.Equal(HttpStatusCode.NoContent, await DeleteAsync(mechanic, await UploadAsync(mechanic, own)));
+        Assert.Equal(HttpStatusCode.Forbidden, await DeleteAsync(mechanic, await UploadAsync(owner, others)));
+        Assert.Equal(HttpStatusCode.Forbidden, await DeleteAsync(mechanic, await UploadAsync(owner, free)));
+    }
+
+    [Fact(DisplayName = "T-ATT-08: El mecánico no puede editar adjuntos (→ 403)")]
+    public async Task Mecanico_no_puede_editar_adjuntos()
     {
         using var mechanic = CreateClient();
         await LoginAsync(mechanic, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
-
-        var del = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/attachments/{Guid.NewGuid()}");
-        del.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(mechanic));
-        Assert.Equal(HttpStatusCode.Forbidden, (await mechanic.SendAsync(del)).StatusCode);
 
         var patch = new HttpRequestMessage(HttpMethod.Patch, $"/api/v1/attachments/{Guid.NewGuid()}")
         {

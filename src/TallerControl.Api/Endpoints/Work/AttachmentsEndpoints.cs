@@ -44,9 +44,9 @@ internal static class AttachmentsEndpoints
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
         app.MapDelete("/api/v1/attachments/{id:guid}",
-                (Guid id, DeleteAttachmentHandler handler, CancellationToken ct) =>
-                    DeleteAsync(id, handler, ct))
-            .RequirePermission(Permission.AttachmentsManage)
+                (Guid id, DeleteAttachmentHandler handler, IAuthRepository auth, HttpContext ctx, CancellationToken ct) =>
+                    DeleteAsync(id, handler, auth, ctx, ct))
+            .RequirePermission(Permission.AttachmentsWrite)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
         return app;
@@ -59,24 +59,26 @@ internal static class AttachmentsEndpoints
         HttpContext ctx,
         CancellationToken ct)
     {
-        Guid? mechanicMembershipId = null;
-        if (Guid.TryParse(ctx.User.FindFirst(SessionClaims.UserId)?.Value, out var userId))
-        {
-            var membership = await auth.FindActiveMembershipAsync(userId, ct);
-            if (membership?.Membership.Role == TenantRole.Mechanic)
-                mechanicMembershipId = membership.Membership.Id;
-        }
-
-        var dto = await handler.HandleAsync(request.OwnerType, request.OwnerId, request, ct, mechanicMembershipId);
+        var dto = await handler.HandleAsync(request.OwnerType, request.OwnerId, request, ct, await MechanicMembershipIdAsync(auth, ctx, ct));
         return Results.Ok(dto);
+    }
+
+    /// <summary>Id de membresía si quien llama es mecánico (las reglas de «solo lo mío» dependen de él); si no, nulo.</summary>
+    private static async Task<Guid?> MechanicMembershipIdAsync(IAuthRepository auth, HttpContext ctx, CancellationToken ct)
+    {
+        if (!Guid.TryParse(ctx.User.FindFirst(SessionClaims.UserId)?.Value, out var userId)) return null;
+        var membership = await auth.FindActiveMembershipAsync(userId, ct);
+        return membership?.Membership.Role == TenantRole.Mechanic ? membership.Membership.Id : null;
     }
 
     private static async Task<IResult> DeleteAsync(
         Guid id,
         DeleteAttachmentHandler handler,
+        IAuthRepository auth,
+        HttpContext ctx,
         CancellationToken ct)
     {
-        await handler.HandleAsync(id, ct);
+        await handler.HandleAsync(id, ct, await MechanicMembershipIdAsync(auth, ctx, ct));
         return Results.NoContent();
     }
 }
