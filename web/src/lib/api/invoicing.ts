@@ -161,6 +161,21 @@ export const createCertificate = (req: CreateFiscalCertificateRequest): Promise<
 export const uploadCertificate = (id: string, req: UploadFiscalCertificateRequest): Promise<FiscalCertificateDto> =>
   api.post<FiscalCertificateDto>(`/api/v1/invoicing/certificates/${id}/upload`, req, true)
 
+export const revokeCertificate = (id: string): Promise<FiscalCertificateDto> =>
+  api.post<FiscalCertificateDto>(`/api/v1/invoicing/certificates/${id}/revoke`, {}, true)
+
+/** Genera una clave y un CSR nuevos para el mismo CUIT; el certificado queda Pendiente hasta cargar el de ARCA. */
+export const renewCertificate = (id: string): Promise<FiscalCertificateDto> =>
+  api.post<FiscalCertificateDto>(`/api/v1/invoicing/certificates/${id}/renew`, {}, true)
+
+/** Días que faltan para el vencimiento (negativo si ya venció); null si no hay fecha. */
+export function daysToExpire(cert: { expiresAt: string | null }, now = Date.now()): number | null {
+  if (!cert.expiresAt) return null
+  return Math.ceil((new Date(cert.expiresAt).getTime() - now) / 86_400_000)
+}
+
+export const EXPIRY_WARNING_DAYS = 30
+
 export const testConnection = (certId: string, posId: string): Promise<TestFiscalConnectionResponse> =>
   api.post<TestFiscalConnectionResponse>(`/api/v1/invoicing/certificates/${certId}/test?pointOfSaleId=${posId}`, undefined, true)
 
