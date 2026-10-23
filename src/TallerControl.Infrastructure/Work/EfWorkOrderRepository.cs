@@ -36,16 +36,16 @@ internal sealed class EfWorkOrderRepository : IWorkOrderRepository
         bool includePrices,
         SortSpec sort,
         CancellationToken ct,
-        Guid? customerId = null)
+        Guid? customerId = null,
+        string? plate = null)
     {
         var query = _db.Set<WorkOrder>().AsNoTracking();
 
         if (status.HasValue)
             query = query.Where(w => w.Status == status.Value);
 
-        if (mechanicFilterForced && forcedMechanicId.HasValue)
-            query = query.Where(w => w.AssignedMechanicId == forcedMechanicId || w.AssignedMechanicId == null);
-        else if (mechanicId.HasValue)
+        // El mecánico ve todas las órdenes del taller (solo lectura en las ajenas); «Mías»/«Sin asignar» son filtros.
+        if (mechanicId.HasValue)
             query = query.Where(w => w.AssignedMechanicId == mechanicId.Value);
 
         // Pestañas del portal del mecánico: "Mías" (asignadas a la sesión) y "Sin asignar".
@@ -65,6 +65,13 @@ internal sealed class EfWorkOrderRepository : IWorkOrderRepository
 
         if (customerId.HasValue)
             query = query.Where(w => w.CustomerId == customerId.Value);
+
+        if (!string.IsNullOrWhiteSpace(plate))
+        {
+            var normalized = new string(plate.Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant();
+            if (normalized.Length > 0)
+                query = query.Where(w => _db.Set<Vehicle>().Any(v => v.Id == w.VehicleId && v.Plate.Contains(normalized)));
+        }
 
         if (from.HasValue)
             query = query.Where(w => w.CreatedAt >= from.Value);
@@ -231,11 +238,6 @@ internal sealed class EfWorkOrderRepository : IWorkOrderRepository
             .Include(w => w.Items)
             .Include(w => w.StatusChanges)
             .FirstOrDefaultAsync(w => w.Id == id, ct);
-
-    public Task<WorkOrder?> FindVisibleToMechanicAsync(Guid id, Guid mechanicMembershipId, CancellationToken ct) =>
-        _db.Set<WorkOrder>()
-            .FirstOrDefaultAsync(w => w.Id == id
-                && (w.AssignedMechanicId == mechanicMembershipId || w.AssignedMechanicId == null), ct);
 
     public async Task<IReadOnlyList<StatusChangeDto>> GetHistoryAsync(Guid workOrderId, CancellationToken ct)
     {

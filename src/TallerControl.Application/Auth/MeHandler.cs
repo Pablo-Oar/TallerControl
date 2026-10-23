@@ -38,6 +38,7 @@ public sealed class MeHandler
             Permissions: permissions,
             TimeZone: membership.Tenant.TimeZone,
             Home: home,
-            PlanCode: membership.Tenant.PlanCode);
+            PlanCode: membership.Tenant.PlanCode,
+            MembershipId: membership.Membership.Id);
     }
 }

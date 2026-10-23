@@ -130,8 +130,8 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.True(page.GetProperty("items").GetArrayLength() >= 2);
     }
 
-    [Fact(DisplayName = "T-WO-01: Mecánico solo ve órdenes sin asignar o asignadas a él mismo")]
-    public async Task Mecanico_solo_ve_sus_propias_ordenes_y_las_sin_asignar()
+    [Fact(DisplayName = "T-WO-01: Mecánico ve todas las órdenes del taller y puede filtrar las suyas / las libres")]
+    public async Task Mecanico_ve_todas_las_ordenes_y_filtra_las_suyas()
     {
         using var ownerClient = CreateClient();
         using var mechanicClient = CreateClient();
@@ -162,7 +162,20 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
 
         Assert.Contains(unassignedId, ids);
         Assert.Contains(assignedId, ids);
-        Assert.DoesNotContain(adminOrderId, ids);
+        Assert.Contains(adminOrderId, ids); // las de otro mecánico se ven (solo lectura)
+
+        async Task<HashSet<Guid>> IdsAsync(string query) =>
+            (await mechanicClient.GetFromJsonAsync<JsonElement>($"/api/v1/work-orders?{query}"))
+                .GetProperty("items").EnumerateArray().Select(i => i.GetProperty("id").GetGuid()).ToHashSet();
+
+        var mine = await IdsAsync("assignment=mine&pageSize=100");
+        Assert.Contains(assignedId, mine);
+        Assert.DoesNotContain(adminOrderId, mine);
+        Assert.DoesNotContain(unassignedId, mine);
+
+        var free = await IdsAsync("assignment=unassigned&pageSize=100");
+        Assert.Contains(unassignedId, free);
+        Assert.DoesNotContain(adminOrderId, free);
     }
 
     // ── T-WO-02: POST crea orden y descuenta stock ────────────────────────────
@@ -384,8 +397,8 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, await PutAsync(8_000m, fresh));
     }
 
-    [Fact(DisplayName = "T-WO-17: El mecánico ve el historial de sus órdenes y de las libres, pero no el de las ajenas (404)")]
-    public async Task Historial_respeta_la_visibilidad_del_mecanico()
+    [Fact(DisplayName = "T-WO-17: El mecánico ve el historial de cualquier orden del taller")]
+    public async Task Historial_es_visible_para_el_mecanico()
     {
         using var ownerClient = CreateClient();
         using var mechanicClient = CreateClient();
@@ -401,11 +414,11 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
 
         Assert.Equal(HttpStatusCode.OK, await HistoryAsync(mine));
         Assert.Equal(HttpStatusCode.OK, await HistoryAsync(free));
-        Assert.Equal(HttpStatusCode.NotFound, await HistoryAsync(other));
+        Assert.Equal(HttpStatusCode.OK, await HistoryAsync(other));
     }
 
-    [Fact(DisplayName = "T-WO-05: Mecánico NO puede ver una orden asignada a otro rol → 404")]
-    public async Task Mecanico_no_puede_ver_orden_asignada_a_otro()
+    [Fact(DisplayName = "T-WO-05: Mecánico puede ver (solo leer) una orden asignada a otro mecánico, sin importes ni notas internas")]
+    public async Task Mecanico_puede_ver_orden_asignada_a_otro()
     {
         using var ownerClient = CreateClient();
         using var mechanicClient = CreateClient();
@@ -418,7 +431,7 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         var id = order.GetProperty("id").GetGuid();
 
         var resp = await mechanicClient.GetAsync($"/api/v1/work-orders/{id}");
-        Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
     }
 
     [Fact(DisplayName = "T-WO-05: Owner puede ver cualquier orden → 200")]
@@ -967,9 +980,10 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.Equal(JsonValueKind.Null, item.GetProperty("lineTotal").ValueKind);
         Assert.Equal(JsonValueKind.Null, asMechanic.GetProperty("internalNotes").ValueKind);
 
-        // Una orden asignada a otra persona: cambiar el estado es un 404 para el mecánico.
+        // Una orden de otro mecánico se puede ver, pero no cambiarle el estado (403) ni subirle fotos.
         var foreign = (await CreateOrderAsync(owner, assignedMechanicId: _factory.OtherMechanicMembershipId)).GetProperty("id").GetGuid();
-        Assert.Equal(HttpStatusCode.NotFound, (await ChangeStatusAsync(mechanic, foreign, "in_progress")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await mechanic.GetAsync($"/api/v1/work-orders/{foreign}")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await ChangeStatusAsync(mechanic, foreign, "in_progress")).StatusCode);
 
         // Y subirle fotos también.
         var upload = new HttpRequestMessage(HttpMethod.Post, "/api/v1/attachments/upload-url")
@@ -977,7 +991,23 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
             Content = JsonContent.Create(new { ownerType = "work_order", ownerId = foreign, contentType = "image/jpeg", size = 1000 }),
         };
         upload.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(mechanic));
-        Assert.Equal(HttpStatusCode.NotFound, (await mechanic.SendAsync(upload)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await mechanic.SendAsync(upload)).StatusCode);
+    }
+
+    [Fact(DisplayName = "T-WO-21: La búsqueda por patente se resuelve en el servidor (sin guiones ni espacios)")]
+    public async Task Busqueda_por_patente_en_el_servidor()
+    {
+        using var owner = CreateClient();
+        await LoginAsync(owner, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        var order = await CreateOrderAsync(owner);
+        var plate = order.GetProperty("vehiclePlate").GetString()!;
+        var spaced = string.Join(" ", plate.ToLowerInvariant().Select(c => c.ToString()));
+
+        var hit = await owner.GetFromJsonAsync<JsonElement>($"/api/v1/work-orders?plate={Uri.EscapeDataString(spaced)}&pageSize=100");
+        Assert.Contains(hit.GetProperty("items").EnumerateArray(), i => i.GetProperty("id").GetGuid() == order.GetProperty("id").GetGuid());
+
+        var miss = await owner.GetFromJsonAsync<JsonElement>("/api/v1/work-orders?plate=ZZZZZZ9");
+        Assert.Equal(0, miss.GetProperty("total").GetInt32());
     }
 
     [Fact(DisplayName = "T-WO-20: el mecánico de una orden tiene que ser un mecánico activo del taller")]
@@ -1230,8 +1260,8 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
 
     // ── T-DOC-02: el PDF de la orden respeta visibilidad y precios (REQ-14) ────
 
-    [Fact(DisplayName = "T-DOC-02: Mecánico no obtiene el PDF de una orden asignada a otro → 404")]
-    public async Task Pdf_de_orden_ajena_para_mecanico_devuelve_404()
+    [Fact(DisplayName = "T-DOC-02: Mecánico puede obtener el PDF de una orden de otro mecánico (solo lectura, sin importes)")]
+    public async Task Pdf_de_orden_ajena_para_mecanico_es_de_solo_lectura()
     {
         using var ownerClient = CreateClient();
         using var mechanicClient = CreateClient();
@@ -1241,7 +1271,7 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         var order = await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.OtherMechanicMembershipId);
         var resp = await mechanicClient.GetAsync($"/api/v1/work-orders/{order.GetProperty("id").GetGuid()}/pdf");
 
-        Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
     }
 
     [Fact(DisplayName = "T-DOC-02: El PDF del mecánico sale sin importes (más corto que el del dueño)")]

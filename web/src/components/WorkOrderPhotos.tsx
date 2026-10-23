@@ -40,9 +40,11 @@ interface Props {
   workOrderId: string
   /** Dueño y administrativo pueden quitar fotos; el mecánico solo agrega. */
   canDelete?: boolean
+  /** Solo mirar: sin cámara, galería ni subida (órdenes de otro mecánico). */
+  readOnly?: boolean
 }
 
-export function WorkOrderPhotos({ workOrderId, canDelete = false }: Props) {
+export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = false }: Props) {
   const queryClient = useQueryClient()
   const inputRef = useRef<HTMLInputElement>(null)
   const galleryRef = useRef<HTMLInputElement>(null)
@@ -147,7 +149,7 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false }: Props) {
         </ul>
       )}
 
-      {touch ? (
+      {readOnly ? null : touch ? (
         <>
           {/* `capture` fuerza la cámara en Android; sin él se abre la galería/archivos. */}
           <input

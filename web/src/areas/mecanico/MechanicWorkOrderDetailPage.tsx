@@ -16,6 +16,7 @@ import { WorkOrderPhotos } from '../../components/WorkOrderPhotos'
 import { Timeline } from '../../components/ui/Timeline'
 import { vehiclesApi } from '../../lib/api/vehicles'
 import { ApiError } from '../../lib/api/client'
+import { useAuth } from '../../lib/auth/AuthContext'
 
 const MECHANIC_TRANSITIONS: Partial<Record<WorkOrderStatus, WorkOrderStatus[]>> = {
   pending: ['in_progress'],
@@ -38,6 +39,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export function MechanicWorkOrderDetailPage() {
   const { id } = useParams<{ id: string }>()
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   const [changingStatus, setChangingStatus] = useState<WorkOrderStatus | null>(null)
   const [note, setNote] = useState('')
   const [statusError, setStatusError] = useState<string | null>(null)
@@ -135,7 +137,9 @@ export function MechanicWorkOrderDetailPage() {
     )
   }
 
-  const transitions = MECHANIC_TRANSITIONS[order.status] ?? []
+  // Se ven todas las órdenes del taller, pero solo se modifican las propias (o las libres).
+  const isOthers = order.assignedMechanicId != null && order.assignedMechanicId !== user?.membershipId
+  const transitions = isOthers ? [] : (MECHANIC_TRANSITIONS[order.status] ?? [])
   const vehicleLabel = [order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ')
 
   return (
@@ -149,6 +153,12 @@ export function MechanicWorkOrderDetailPage() {
           ← Volver
         </Link>
       </div>
+
+      {isOthers && (
+        <div role="note" className="border border-tc-border bg-tc-stub-bg px-4 py-3 text-sm text-tc-text-secondary">
+          Esta orden es de <strong>{order.assignedMechanicName ?? 'otro mecánico'}</strong>. Podés verla, pero solo él o ella puede cambiarle el estado, anotar o subir fotos.
+        </div>
+      )}
 
       {order.assignedMechanicId == null && order.status !== 'delivered' && order.status !== 'cancelled' && (
         <Section title="Asignación">
@@ -203,10 +213,10 @@ export function MechanicWorkOrderDetailPage() {
       )}
 
       <Section title="Fotos">
-        <WorkOrderPhotos workOrderId={order.id} />
+        <WorkOrderPhotos workOrderId={order.id} readOnly={isOthers} />
       </Section>
 
-      <Section title="Mis notas">
+      <Section title={isOthers ? 'Notas del mecánico' : 'Mis notas'}>
         {editingNotes ? (
           <div className="space-y-2">
             <FormTextarea
@@ -229,12 +239,12 @@ export function MechanicWorkOrderDetailPage() {
               ? <p className="text-sm text-tc-text-secondary">{order.mechanicNotes}</p>
               : <p className="text-sm text-tc-text-muted">Sin notas</p>
             }
-            <button
+            {!isOthers && <button
               onClick={() => { setMechanicNotes(order.mechanicNotes ?? ''); setEditingNotes(true) }}
               className="text-xs font-bold tracking-wider uppercase text-tc-purple hover:opacity-70 shrink-0"
             >
               {order.mechanicNotes ? 'Editar' : 'Agregar'}
-            </button>
+            </button>}
           </div>
         )}
       </Section>

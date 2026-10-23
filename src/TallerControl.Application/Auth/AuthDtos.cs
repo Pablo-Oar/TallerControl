@@ -15,7 +15,9 @@ public sealed record MeResponse(
     /// <summary>Ruta inicial del rol: <c>/app</c> para Owner y AdminStaff, <c>/m</c> para Mechanic.</summary>
     string Home,
     /// <summary>Plan comercial del taller (D-17). "free" en el MVP.</summary>
-    string PlanCode);
+    string PlanCode,
+    /// <summary>Id de la membresía de la sesión (el portal del mecánico lo compara con el mecánico de cada orden).</summary>
+    Guid MembershipId = default);
 
 public sealed record MeUserDto(Guid Id, string Email, string DisplayName);
 
