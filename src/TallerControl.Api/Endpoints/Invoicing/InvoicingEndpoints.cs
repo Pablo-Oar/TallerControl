@@ -27,6 +27,7 @@ namespace TallerControl.Api.Endpoints.Invoicing;
 /// POST   /api/v1/invoicing/invoices/{id}/void          → invoicing.emit  (O, A)
 ///
 /// Libro IVA / CITI:
+/// GET    /api/v1/invoicing/invoices/{id}/pdf           → invoicing.read  (O, A, Contador)
 /// GET    /api/v1/invoicing/iva-book                    → invoicing.read  (O, A, Contador)
 /// GET    /api/v1/invoicing/citi-export                 → invoicing.read  (O, A, Contador)
 /// </summary>
@@ -103,6 +104,14 @@ internal static class InvoicingEndpoints
         app.MapGet("/api/v1/invoicing/invoices/{id:guid}",
                 (Guid id, GetInvoiceHandler handler, CancellationToken ct) =>
                     handler.HandleAsync(id, ct))
+            .RequirePermission(Permission.InvoicingRead);
+
+        app.MapGet("/api/v1/invoicing/invoices/{id:guid}/pdf",
+                async (Guid id, GetInvoicePdfHandler handler, CancellationToken ct) =>
+                {
+                    var (bytes, fileName) = await handler.HandleAsync(id, ct);
+                    return Results.File(bytes, "application/pdf", fileName);
+                })
             .RequirePermission(Permission.InvoicingRead);
 
         app.MapPost("/api/v1/work-orders/{id:guid}/invoice",
