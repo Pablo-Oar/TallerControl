@@ -60,7 +60,9 @@ public sealed record CreateCatalogItemRequest(
     int? DurationMinutes = null,
     int? BufferMinutes = null,
     string? Description = null,
-    decimal? StockMax = null);
+    decimal? StockMax = null,
+    // Solo productos con control de stock: existencias de partida (quedan como un movimiento).
+    decimal? InitialStockQty = null);
 
 /// <summary>Cuerpo de <c>PUT /api/v1/catalog/{id}</c> (doc 05 §2.5). El stock <strong>no</strong> se toca acá.</summary>
 public sealed record UpdateCatalogItemRequest(

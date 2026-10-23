@@ -33,7 +33,7 @@ public sealed class MeHandler
 
         return new MeResponse(
             User: new MeUserDto(user.Id, user.Email, user.DisplayName),
-            Tenant: new MeTenantDto(membership.Tenant.Id, membership.Tenant.Name, membership.DefaultVatRate),
+            Tenant: new MeTenantDto(membership.Tenant.Id, membership.Tenant.Name, membership.DefaultVatRate, membership.QuoteValidityDays),
             Role: membership.Membership.Role,
             Permissions: permissions,
             TimeZone: membership.Tenant.TimeZone,

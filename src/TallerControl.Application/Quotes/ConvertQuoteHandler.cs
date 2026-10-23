@@ -1,6 +1,7 @@
 using TallerControl.Application.Catalog;
 using TallerControl.Application.Common;
 using TallerControl.Application.Tenancy;
+using TallerControl.Application.Vehicles;
 using TallerControl.Application.Work;
 using TallerControl.Domain.Catalog;
 using TallerControl.Domain.Quotes;
@@ -18,6 +19,7 @@ public sealed class ConvertQuoteHandler
     private readonly IQuoteRepository _quoteRepo;
     private readonly IWorkOrderRepository _woRepo;
     private readonly ICatalogRepository _catalogRepo;
+    private readonly IVehicleRepository _vehicleRepo;
     private readonly ITenantContext _tenantContext;
     private readonly IBranchContext _branchContext;
     private readonly IActorContext _actorContext;
@@ -28,6 +30,7 @@ public sealed class ConvertQuoteHandler
         IQuoteRepository quoteRepo,
         IWorkOrderRepository woRepo,
         ICatalogRepository catalogRepo,
+        IVehicleRepository vehicleRepo,
         ITenantContext tenantContext,
         IBranchContext branchContext,
         IActorContext actorContext,
@@ -37,6 +40,7 @@ public sealed class ConvertQuoteHandler
         _quoteRepo = quoteRepo;
         _woRepo = woRepo;
         _catalogRepo = catalogRepo;
+        _vehicleRepo = vehicleRepo;
         _tenantContext = tenantContext;
         _branchContext = branchContext;
         _actorContext = actorContext;
@@ -139,6 +143,11 @@ public sealed class ConvertQuoteHandler
             order.SetGlobalDiscountFromQuote(quote.GlobalDiscountPct);
 
         quote.MarkConverted(order.Id, now);
+
+        // Como al crear una orden: el kilometraje del vehículo sube si el de ingreso es mayor (T-WO-03).
+        var vehicle = await _vehicleRepo.FindByIdAsync(quote.VehicleId, ct);
+        if (vehicle is not null && request.OdometerKm > vehicle.OdometerKm)
+            vehicle.UpdateOdometer(request.OdometerKm, allowDecrease: false);
 
         await _woRepo.AddAsync(order, ct);
         foreach (var (movement, _) in stockMovements)

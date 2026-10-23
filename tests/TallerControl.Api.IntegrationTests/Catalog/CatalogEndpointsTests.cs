@@ -181,6 +181,26 @@ public sealed class CatalogEndpointsTests : IAsyncLifetime
         Assert.Equal(0m, dto.GetProperty("stockQty").GetDecimal());
     }
 
+    [Fact(DisplayName = "T-CAT-08: Crear un producto con control de stock y stock inicial lo deja como movimiento")]
+    public async Task Crear_con_stock_inicial_registra_movimiento()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CatalogWebApplicationFactory.OwnerEmail, CatalogWebApplicationFactory.OwnerPassword);
+
+        var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/catalog")
+        {
+            Content = JsonContent.Create(new { kind = "product", name = "Aceite 5W30 T-CAT-08", netPrice = 100m, vatRate = 21, trackStock = true, initialStockQty = 12m }),
+        };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(client));
+        var resp = await client.SendAsync(req);
+        Assert.Equal(HttpStatusCode.Created, resp.StatusCode);
+        var created = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(12m, created.GetProperty("stockQty").GetDecimal());
+
+        var movements = await client.GetFromJsonAsync<JsonElement>($"/api/v1/catalog/{created.GetProperty("id").GetGuid()}/stock-movements");
+        Assert.Contains(movements.EnumerateArray(), m => m.GetProperty("quantity").GetDecimal() == 12m);
+    }
+
     // ── T-CAT-03: PUT no toca stock (solo metadatos) ──────────────────────────
 
     [Fact(DisplayName = "T-CAT-03: PUT /catalog/{id} actualiza nombre sin tocar el stock")]

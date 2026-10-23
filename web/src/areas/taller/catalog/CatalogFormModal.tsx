@@ -115,6 +115,7 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
           vatRate: data.vatRate,
           cost: canCost ? numOrNull(data.cost) : null,
           trackStock: data.trackStock,
+          initialStockQty: data.kind === 'product' && data.trackStock ? numOrNull(data.initialStockQty) : null,
           stockMin: numOrNull(data.minStockQty),
           stockMax: numOrNull(data.maxStockQty),
           durationMinutes: data.kind === 'service' ? numOrNull(data.durationMinutes) : null,

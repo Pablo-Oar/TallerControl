@@ -20,4 +20,4 @@ public sealed record MeResponse(
 public sealed record MeUserDto(Guid Id, string Email, string DisplayName);
 
 /// <summary><c>DefaultVatRate</c>: el IVA por defecto de la configuración del taller (precarga los renglones manuales y los ítems nuevos).</summary>
-public sealed record MeTenantDto(Guid Id, string Name, decimal DefaultVatRate = 21m);
+public sealed record MeTenantDto(Guid Id, string Name, decimal DefaultVatRate = 21m, int QuoteValidityDays = 15);

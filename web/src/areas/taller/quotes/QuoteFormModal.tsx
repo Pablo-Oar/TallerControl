@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useDefaultVat } from '../../../lib/auth/defaults'
+import { useDefaultVat, useQuoteValidityDays } from '../../../lib/auth/defaults'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -46,6 +46,7 @@ interface Props {
 
 export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
   const defaultVat = useDefaultVat()
+  const validityDays = useQuoteValidityDays()
   const isEditing = !!quote
   const [serverError, setServerError] = useState<string | null>(null)
 
@@ -109,9 +110,9 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
 
   useEffect(() => {
     if (!isEditing) {
-      setValue('validUntil', localDateISO(15))
+      setValue('validUntil', localDateISO(validityDays))
     }
-  }, [isEditing, setValue])
+  }, [isEditing, setValue, validityDays])
 
   const vehicles = customerDetail?.vehicles ?? []
 
