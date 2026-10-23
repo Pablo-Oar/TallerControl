@@ -18,10 +18,7 @@ public sealed class GetWorkOrderHandler
     {
         if (isMechanic && mechanicMembershipId.HasValue)
         {
-            // Mecánico: solo puede ver sus propias órdenes o las sin asignar → 404 si es de otro (REQ-14).
-            var wo = await _repo.FindVisibleToMechanicAsync(id, mechanicMembershipId.Value, ct)
-                ?? throw new NotFoundException();
-
+            // Mecánico: ve todas las órdenes del taller (las ajenas solo para leer), sin notas internas ni importes sin permiso.
             return await _repo.GetFullAsync(id, includePrices, ct, includeInternalNotes: false) ?? throw new NotFoundException();
         }
 

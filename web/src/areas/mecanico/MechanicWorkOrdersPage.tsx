@@ -9,11 +9,13 @@ import {
 } from '../../lib/api/workOrders'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { LoadError } from '../../components/LoadError'
+import { useAuth } from '../../lib/auth/AuthContext'
 
-type Tab = 'mine' | 'unassigned'
+type Tab = 'mine' | 'all' | 'unassigned'
 
 const TABS: { id: Tab; label: string; empty: string }[] = [
   { id: 'mine', label: 'Mías', empty: 'No tenés órdenes asignadas. Mirá las que están sin asignar.' },
+  { id: 'all', label: 'Todas', empty: 'El taller no tiene órdenes que coincidan.' },
   { id: 'unassigned', label: 'Sin asignar', empty: 'No hay órdenes sin asignar.' },
 ]
 
@@ -25,15 +27,16 @@ export function MechanicWorkOrdersPage() {
   const [page, setPage] = useState(1)
   const [params, setParams] = useSearchParams()
   // Búsqueda por patente de la barra del encabezado (`/m?q=`): filtra las órdenes ya cargadas, sin salir del área.
-  const q = (params.get('q') ?? '').trim().toUpperCase()
+  const q = (params.get('q') ?? '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '')
+  const { user } = useAuth()
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['mechanic-work-orders', tab, statusFilter, page],
+    queryKey: ['mechanic-work-orders', tab, statusFilter, page, q],
     queryFn: () =>
-      workOrdersApi.search(statusFilter || null, null, null, null, null, null, page, 25, tab),
+      workOrdersApi.search(statusFilter || null, null, null, null, null, null, page, 25, tab, null, null, q || null),
   })
 
-  const visible = (data?.items ?? []).filter(o => !q || o.vehiclePlate.toUpperCase().includes(q))
+  const visible = data?.items ?? []
 
   return (
     <div className="space-y-4 px-4 pb-6">
@@ -138,8 +141,12 @@ export function MechanicWorkOrdersPage() {
                   <span className="font-mono tracking-widest">{order.vehiclePlate}</span>
                   {order.vehicleBrand && <> — {order.vehicleBrand} {order.vehicleModel}</>}
                 </p>
-                {order.assignedMechanicName == null && (
+                {order.assignedMechanicName == null ? (
                   <p className="mt-1 text-[10px] font-bold tracking-wider uppercase text-amber-600">Sin asignar</p>
+                ) : order.assignedMechanicId === user?.membershipId ? (
+                  <p className="mt-1 text-[10px] font-bold tracking-wider uppercase text-tc-purple">Tuya</p>
+                ) : (
+                  <p className="mt-1 text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">De {order.assignedMechanicName} · solo lectura</p>
                 )}
               </div>
             </Link>

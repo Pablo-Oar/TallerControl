@@ -40,13 +40,13 @@ internal static class AttachmentsEndpoints
         app.MapPatch("/api/v1/attachments/{id:guid}",
                 (Guid id, UpdateAttachmentRequest request, UpdateAttachmentHandler handler, CancellationToken ct) =>
                     handler.HandleAsync(id, request, ct))
-            .RequirePermission(Permission.AttachmentsWrite)
+            .RequirePermission(Permission.AttachmentsManage)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
         app.MapDelete("/api/v1/attachments/{id:guid}",
                 (Guid id, DeleteAttachmentHandler handler, CancellationToken ct) =>
                     DeleteAsync(id, handler, ct))
-            .RequirePermission(Permission.AttachmentsWrite)
+            .RequirePermission(Permission.AttachmentsManage)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
         return app;

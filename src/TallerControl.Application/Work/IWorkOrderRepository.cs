@@ -20,7 +20,8 @@ public interface IWorkOrderRepository
         bool includePrices,
         SortSpec sort,
         CancellationToken ct,
-        Guid? customerId = null);
+        Guid? customerId = null,
+        string? plate = null);
 
     /// <param name="includePrices">Sin permiso de precios, ni los importes de los renglones viajan.</param>
     /// <param name="includeInternalNotes">Las notas internas son del taller: el mecánico no las recibe.</param>
@@ -37,8 +38,6 @@ public interface IWorkOrderRepository
     /// <summary>
     /// Busca una orden que el mecánico pueda ver: la suya o sin asignar.
     /// Devuelve null si la orden es de otro mecánico (→ 404, no 403, REQ-14).
-    /// </summary>
-    Task<WorkOrder?> FindVisibleToMechanicAsync(Guid id, Guid mechanicMembershipId, CancellationToken ct);
 
     Task<IReadOnlyList<StatusChangeDto>> GetHistoryAsync(Guid workOrderId, CancellationToken ct);
 

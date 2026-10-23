@@ -28,12 +28,6 @@ public sealed class GetWorkOrderPdfHandler
         bool includePrices,
         CancellationToken ct)
     {
-        if (isMechanic && mechanicMembershipId.HasValue)
-        {
-            _ = await _repo.FindVisibleToMechanicAsync(id, mechanicMembershipId.Value, ct)
-                ?? throw new NotFoundException("La orden no existe.");
-        }
-
         var order = await _repo.GetFullAsync(id, includePrices, ct)
             ?? throw new NotFoundException("La orden no existe.");
 

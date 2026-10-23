@@ -48,11 +48,12 @@ public sealed class RequestAttachmentUploadUrlHandler
         // Verificar que el dueño exista y pertenezca al taller (T-ATT-01).
         if (ownerType == AttachmentOwnerType.WorkOrder)
         {
-            // El mecánico solo sube fotos a sus órdenes o a las libres; una ajena es un 404 (REQ-14).
-            _ = (mechanicMembershipId is { } mechanicId
-                    ? await _woRepo.FindVisibleToMechanicAsync(ownerId, mechanicId, ct)
-                    : await _woRepo.FindByIdAsync(ownerId, ct))
+            var order = await _woRepo.FindByIdAsync(ownerId, ct)
                 ?? throw new NotFoundException("La orden no existe.");
+
+            // El mecánico ve todas las órdenes, pero solo sube fotos a las suyas o a las libres (REQ-14).
+            if (mechanicMembershipId is { } mechanicId && order.AssignedMechanicId is { } assigned && assigned != mechanicId)
+                throw new UnauthorizedAccessException("La orden está asignada a otro mecánico.");
         }
 
         if (!Attachment.IsContentTypeAllowed(request.ContentType))

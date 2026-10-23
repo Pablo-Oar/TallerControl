@@ -43,9 +43,9 @@ public sealed class ChangeWorkOrderStatusHandler
         var order = await _repo.FindByIdAsync(id, ct)
             ?? throw new NotFoundException("La orden no existe.");
 
-        // El mecánico solo opera sobre sus órdenes o las que están libres; una ajena es un 404 (REQ-14).
+        // El mecánico ve todas las órdenes, pero solo opera sobre las suyas o las libres: en una ajena, 403 (REQ-14).
         if (isMechanic && order.AssignedMechanicId is { } assigned && assigned != mechanicMembershipId)
-            throw new NotFoundException("La orden no existe.");
+            throw new UnauthorizedAccessException("La orden está asignada a otro mecánico.");
 
         var actorId = _actorContext.ActorId;
         var now = _clock.GetUtcNow();

@@ -7,6 +7,7 @@ export interface MeResponse {
   permissions: string[]
   timeZone: string
   home: string
+  membershipId: string
 }
 
 export interface LoginRequest {
