@@ -994,6 +994,34 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.Forbidden, (await mechanic.SendAsync(upload)).StatusCode);
     }
 
+    [Fact(DisplayName = "T-ATT-09: El mecánico sube fotos a su propia orden y a una libre; las ve en la lista")]
+    public async Task Mecanico_sube_fotos_a_su_orden_y_a_una_libre()
+    {
+        using var owner = CreateClient();
+        using var mechanic = CreateClient();
+        await LoginAsync(owner, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        await LoginAsync(mechanic, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
+
+        var own = (await CreateOrderAsync(owner, assignedMechanicId: _factory.MechanicMembershipId)).GetProperty("id").GetGuid();
+        var free = (await CreateOrderAsync(owner)).GetProperty("id").GetGuid();
+
+        foreach (var orderId in new[] { own, free })
+        {
+            var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/attachments/upload-url")
+            {
+                Content = JsonContent.Create(new { ownerType = "work_order", ownerId = orderId, contentType = "image/jpeg", size = 250_000 }),
+            };
+            req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(mechanic));
+            var resp = await mechanic.SendAsync(req);
+            Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+            var dto = await resp.Content.ReadFromJsonAsync<JsonElement>();
+            Assert.False(string.IsNullOrEmpty(dto.GetProperty("uploadUrl").GetString()));
+        }
+
+        // La lista de adjuntos de su orden también es accesible para él.
+        Assert.Equal(HttpStatusCode.OK, (await mechanic.GetAsync($"/api/v1/work-orders/{own}/attachments")).StatusCode);
+    }
+
     [Fact(DisplayName = "T-ATT-08: El mecánico no puede quitar ni editar adjuntos (→ 403)")]
     public async Task Mecanico_no_puede_quitar_ni_editar_adjuntos()
     {

@@ -144,9 +144,9 @@ export function MechanicWorkOrdersPage() {
                 {order.assignedMechanicName == null ? (
                   <p className="mt-1 text-[10px] font-bold tracking-wider uppercase text-amber-600">Sin asignar</p>
                 ) : order.assignedMechanicId === user?.membershipId ? (
-                  <p className="mt-1 text-[10px] font-bold tracking-wider uppercase text-tc-purple">Tuya</p>
+                  <p className="mt-1 text-[10px] font-bold tracking-wider uppercase text-tc-purple">{order.assignedMechanicName}</p>
                 ) : (
-                  <p className="mt-1 text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">De {order.assignedMechanicName} · solo lectura</p>
+                  <p className="mt-1 text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">{order.assignedMechanicName} · solo lectura</p>
                 )}
               </div>
             </Link>
