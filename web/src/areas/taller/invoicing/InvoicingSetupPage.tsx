@@ -4,6 +4,11 @@ import {
   listCertificates,
   listPointsOfSale,
   createCertificate,
+  revokeCertificate,
+  renewCertificate,
+  updatePointOfSale,
+  daysToExpire,
+  EXPIRY_WARNING_DAYS,
   uploadCertificate,
   testConnection,
   createPointOfSale,
@@ -12,6 +17,7 @@ import {
   type FiscalPointOfSaleDto,
 } from '../../../lib/api/invoicing'
 import { Button } from '../../../components/ui/Button'
+import { confirmDialog } from '../../../components/ui/dialogs'
 import { InvoicingTabs } from './InvoicingTabs'
 import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
@@ -72,6 +78,42 @@ function CertificatesSection({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [csrResult, setCsrResult] = useState<string | null>(null)
+  const [busyId, setBusyId] = useState<string | null>(null)
+
+  async function handleRevoke(cert: FiscalCertificateDto) {
+    const ok = await confirmDialog(
+      `¿Revocar el certificado «${cert.name}»? Dejás de poder facturar con él y no se puede reactivar (podés renovarlo para generar uno nuevo).`,
+      { confirmLabel: 'Revocar', danger: true },
+    )
+    if (!ok) return
+    setBusyId(cert.id)
+    try {
+      await revokeCertificate(cert.id)
+      onUpdated()
+    } catch (err) {
+      setError(err instanceof ApiError ? err.detail : 'No se pudo revocar el certificado')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  async function handleRenew(cert: FiscalCertificateDto) {
+    const ok = await confirmDialog(
+      `Se genera una clave y una solicitud (CSR) nuevas para «${cert.name}». Mientras no cargues el certificado nuevo que firme ARCA, no vas a poder facturar con este CUIT. ¿Renovar?`,
+      { confirmLabel: 'Renovar' },
+    )
+    if (!ok) return
+    setBusyId(cert.id)
+    try {
+      const renewed = await renewCertificate(cert.id)
+      setCsrResult(renewed.csrPem)
+      onUpdated()
+    } catch (err) {
+      setError(err instanceof ApiError ? err.detail : 'No se pudo renovar el certificado')
+    } finally {
+      setBusyId(null)
+    }
+  }
 
   const [uploadId, setUploadId] = useState<string | null>(null)
   const [certPem, setCertPem] = useState('')
@@ -189,15 +231,29 @@ function CertificatesSection({
                               : 'border-red-300 text-red-700'
                         }`}
                       >
-                        {cert.status === 'active' ? 'Activo' : cert.status === 'pending' ? 'Pendiente' : 'Inactivo'}
+                        {cert.status === 'active' ? 'Activo' : cert.status === 'pending' ? 'Pendiente' : cert.status === 'revoked' ? 'Revocado' : 'Vencido'}
                       </span>
                     </div>
-                    {cert.status === 'pending' && canConfigure && (
-                      <Button size="sm" variant="secondary" onClick={() => setUploadId(cert.id)}>
-                        Subir cert.
-                      </Button>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {cert.status === 'pending' && canConfigure && (
+                        <Button size="sm" variant="secondary" onClick={() => setUploadId(cert.id)}>
+                          Subir cert.
+                        </Button>
+                      )}
+                      {canConfigure && cert.status !== 'pending' && (
+                        <Button size="sm" variant="secondary" loading={busyId === cert.id} onClick={() => handleRenew(cert)}>
+                          Renovar
+                        </Button>
+                      )}
+                      {canConfigure && cert.status !== 'revoked' && (
+                        <Button size="sm" variant="secondary" loading={busyId === cert.id} onClick={() => handleRevoke(cert)}>
+                          Revocar
+                        </Button>
+                      )}
+                    </div>
                   </div>
+
+                  <ExpiryLine cert={cert} />
 
                   {cert.status === 'pending' && (
                     <details className="border-t border-tc-border">
@@ -367,6 +423,26 @@ function CertificatesSection({
   )
 }
 
+/** Vencimiento del certificado: aviso cuando faltan 30 días o menos, o cuando ya venció. */
+function ExpiryLine({ cert }: { cert: FiscalCertificateDto }) {
+  const days = daysToExpire(cert)
+  if (days === null || cert.status === 'revoked' || cert.status === 'pending') return null
+  const expired = days < 0
+  const soon = !expired && days <= EXPIRY_WARNING_DAYS
+  return (
+    <p
+      className={`border-t border-tc-border px-4 py-2 text-xs ${expired ? 'text-tc-stamp-red' : soon ? 'text-amber-700' : 'text-tc-text-muted'}`}
+      role={expired || soon ? 'alert' : undefined}
+    >
+      {expired
+        ? `Venció el ${new Date(cert.expiresAt!).toLocaleDateString('es-AR')}: no se puede facturar. Renovalo y cargá el certificado nuevo.`
+        : soon
+          ? `Vence en ${days} día${days === 1 ? '' : 's'} (${new Date(cert.expiresAt!).toLocaleDateString('es-AR')}): renovalo con tiempo para no quedarte sin facturar.`
+          : `Vence el ${new Date(cert.expiresAt!).toLocaleDateString('es-AR')}.`}
+    </p>
+  )
+}
+
 function PointsOfSaleSection({
   points,
   certs,
@@ -380,11 +456,30 @@ function PointsOfSaleSection({
 }) {
   const canConfigure = useCan()('invoicing.write')
   const [showForm, setShowForm] = useState(false)
+  const [editPos, setEditPos] = useState<FiscalPointOfSaleDto | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editActive, setEditActive] = useState(true)
   const [certId, setCertId] = useState('')
   const [number, setNumber] = useState('')
   const [name, setName] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  async function handleEdit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editPos) return
+    setSaving(true)
+    setError(null)
+    try {
+      await updatePointOfSale(editPos.id, { name: editName, isActive: editActive, version: editPos.version })
+      onUpdated()
+      setEditPos(null)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.detail : 'No se pudo guardar el punto de venta')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
@@ -431,6 +526,7 @@ function PointsOfSaleSection({
                 <th className="pb-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nº</th>
                 <th className="pb-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nombre</th>
                 <th className="pb-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
+                {canConfigure && <th className="pb-2" />}
               </tr>
             </thead>
             <tbody>
@@ -447,12 +543,36 @@ function PointsOfSaleSection({
                       {pos.isActive ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>
+                  {canConfigure && (
+                    <td className="py-2.5 text-right">
+                      <Button size="sm" variant="secondary" onClick={() => { setEditPos(pos); setEditName(pos.name); setEditActive(pos.isActive) }}>
+                        Editar
+                      </Button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
+
+      {editPos && (
+        <Modal title={`Punto de venta ${String(editPos.number).padStart(5, '0')}`} onClose={() => setEditPos(null)} className="max-w-md">
+          <form onSubmit={handleEdit} className="space-y-3">
+            <FormField label="Nombre" value={editName} onChange={e => setEditName(e.target.value)} required />
+            <label className="flex items-center gap-2 text-sm text-tc-text-secondary">
+              <input type="checkbox" checked={editActive} onChange={e => setEditActive(e.target.checked)} className="accent-tc-purple" />
+              Activo (un punto de venta inactivo no se ofrece para facturar)
+            </label>
+            {error && <p className="text-sm text-tc-stamp-red">{error}</p>}
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" type="button" onClick={() => setEditPos(null)}>Cancelar</Button>
+              <Button type="submit" loading={saving}>Guardar</Button>
+            </div>
+          </form>
+        </Modal>
+      )}
 
       {showForm && (
         <Modal title="Nuevo punto de venta" onClose={() => setShowForm(false)} className="max-w-md">

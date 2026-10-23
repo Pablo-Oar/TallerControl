@@ -53,6 +53,18 @@ internal static class InvoicingEndpoints
             .RequirePermission(Permission.InvoicingWrite)
             .AddEndpointFilter<AntiforgeryEndpointFilter>();
 
+        app.MapPost("/api/v1/invoicing/certificates/{id:guid}/revoke",
+                async (Guid id, RevokeFiscalCertificateHandler handler, CancellationToken ct) =>
+                    Results.Ok(await handler.HandleAsync(id, ct)))
+            .RequirePermission(Permission.InvoicingWrite)
+            .AddEndpointFilter<AntiforgeryEndpointFilter>();
+
+        app.MapPost("/api/v1/invoicing/certificates/{id:guid}/renew",
+                async (Guid id, RenewFiscalCertificateHandler handler, CancellationToken ct) =>
+                    Results.Ok(await handler.HandleAsync(id, ct)))
+            .RequirePermission(Permission.InvoicingWrite)
+            .AddEndpointFilter<AntiforgeryEndpointFilter>();
+
         app.MapPost("/api/v1/invoicing/certificates/{id:guid}/test",
                 (Guid id, TestFiscalConnectionHandler handler, CancellationToken ct,
                  Guid? pointOfSaleId = null) =>

@@ -51,6 +51,8 @@ public sealed class UpdateFiscalPointOfSaleHandler
             throw new ConcurrencyException();
 
         pos.Update(request.Name);
+        if (request.IsActive is true) pos.Activate();
+        else if (request.IsActive is false) pos.Deactivate();
         await _repo.SaveChangesAsync(ct);
 
         return CreateFiscalPointOfSaleHandler.MapToDto(pos);

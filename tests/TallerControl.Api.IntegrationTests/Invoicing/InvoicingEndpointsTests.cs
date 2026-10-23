@@ -118,6 +118,70 @@ public sealed class InvoicingEndpointsTests : IAsyncLifetime
         Assert.Equal("homologation", prueba.GetProperty("environment").GetString());
     }
 
+    [Fact(DisplayName = "T-CERT-06: Revocar un certificado lo deja sin poder facturar; renovarlo genera un CSR nuevo y vuelve a Pendiente")]
+    public async Task Revocar_y_renovar_un_certificado()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, InvoicingWebApplicationFactory.OwnerEmail, InvoicingWebApplicationFactory.Password);
+
+        var revoked = await PostWithCsrfAsync(client, $"/api/v1/invoicing/certificates/{_factory.CertificateId}/revoke", new { });
+        Assert.Equal("revoked", revoked.GetProperty("status").GetString());
+        Assert.False(revoked.GetProperty("isPrimary").GetBoolean());
+
+        // Sin certificado activo no se puede emitir.
+        var emit = await PostWithCsrfRawAsync(client, $"/api/v1/work-orders/{_factory.WorkOrderId}/invoice",
+            new { fiscalPointOfSaleId = _factory.PointOfSaleId, concept = 1 });
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, emit.StatusCode);
+
+        var csrAntes = revoked.GetProperty("csrPem").GetString();
+        var renewed = await PostWithCsrfAsync(client, $"/api/v1/invoicing/certificates/{_factory.CertificateId}/renew", new { });
+        Assert.Equal("pending", renewed.GetProperty("status").GetString());
+        Assert.NotEqual(csrAntes, renewed.GetProperty("csrPem").GetString());
+        Assert.Contains("BEGIN CERTIFICATE REQUEST", renewed.GetProperty("csrPem").GetString());
+        Assert.False(renewed.TryGetProperty("privateKeyEncrypted", out _));
+    }
+
+    [Fact(DisplayName = "T-CERT-07: El Administrativo no puede revocar ni renovar certificados (403)")]
+    public async Task Administrativo_no_gestiona_certificados()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, InvoicingWebApplicationFactory.AdminEmail, InvoicingWebApplicationFactory.Password);
+
+        var revoke = await PostWithCsrfRawAsync(client, $"/api/v1/invoicing/certificates/{_factory.CertificateId}/revoke", new { });
+        var renew = await PostWithCsrfRawAsync(client, $"/api/v1/invoicing/certificates/{_factory.CertificateId}/renew", new { });
+        Assert.Equal(HttpStatusCode.Forbidden, revoke.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, renew.StatusCode);
+    }
+
+    [Fact(DisplayName = "T-POS-01: Editar el nombre de un punto de venta y desactivarlo; uno inactivo no emite")]
+    public async Task Editar_y_desactivar_un_punto_de_venta()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, InvoicingWebApplicationFactory.OwnerEmail, InvoicingWebApplicationFactory.Password);
+
+        var list = await client.GetFromJsonAsync<JsonElement>("/api/v1/invoicing/points-of-sale");
+        var pos = list.EnumerateArray().First(p => p.GetProperty("id").GetGuid() == _factory.PointOfSaleId);
+        var version = pos.GetProperty("version").GetUInt32();
+
+        var csrf = await FetchCsrfAsync(client);
+        var put = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/invoicing/points-of-sale/{_factory.PointOfSaleId}")
+        {
+            Content = JsonContent.Create(new { name = "Mostrador renombrado", isActive = false }),
+        };
+        put.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        put.Headers.TryAddWithoutValidation("If-Match", $"\"{version}\"");
+        var resp = await client.SendAsync(put);
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var updated = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("Mostrador renombrado", updated.GetProperty("name").GetString());
+        Assert.False(updated.GetProperty("isActive").GetBoolean());
+
+        var emit = await PostWithCsrfRawAsync(client, $"/api/v1/work-orders/{_factory.WorkOrderId}/invoice",
+            new { fiscalPointOfSaleId = _factory.PointOfSaleId, concept = 1 });
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, emit.StatusCode);
+    }
+
     // ── T-CERT-02: POST .../upload activa el certificado ─────────────────────
 
     [Fact(DisplayName = "T-CERT-02: Cargar certificado PEM lo activa")]

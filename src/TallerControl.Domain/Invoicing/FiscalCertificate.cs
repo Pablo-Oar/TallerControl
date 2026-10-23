@@ -86,9 +86,24 @@ public sealed class FiscalCertificate : Entity, ITenantOwned, IVersioned, IAudit
         Status = FiscalCertificateStatus.Expired;
     }
 
+    /// <summary>Da de baja el certificado: deja de poder facturar y ya no puede ser el principal.</summary>
     public void Revoke()
     {
         Status = FiscalCertificateStatus.Revoked;
+        IsPrimary = false;
+    }
+
+    /// <summary>
+    /// Renovación: nueva clave y nuevo CSR para el mismo CUIT. El certificado vuelve a Pendiente (no factura) hasta que
+    /// se cargue el que firme ARCA. Sirve para un certificado vencido, por vencer o revocado.
+    /// </summary>
+    public void Renew(byte[] privateKeyEncrypted, string csrPem)
+    {
+        PrivateKeyEncrypted = privateKeyEncrypted;
+        CsrPem = csrPem.Trim();
+        CertificatePem = null;
+        ExpiresAt = null;
+        Status = FiscalCertificateStatus.Pending;
     }
 
     public void SetPrimary(bool isPrimary) => IsPrimary = isPrimary;

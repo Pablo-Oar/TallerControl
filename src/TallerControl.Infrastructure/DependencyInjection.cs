@@ -268,6 +268,8 @@ public static class DependencyInjection
         services.AddScoped<IIvaBookRepository, EfIvaBookRepository>();
         services.AddScoped<CreateFiscalCertificateHandler>();
         services.AddScoped<UploadFiscalCertificateHandler>();
+        services.AddScoped<RevokeFiscalCertificateHandler>();
+        services.AddScoped<RenewFiscalCertificateHandler>();
         services.AddScoped<TestFiscalConnectionHandler>();
         services.AddScoped<ListFiscalCertificatesHandler>();
         services.AddScoped<CreateFiscalPointOfSaleHandler>();

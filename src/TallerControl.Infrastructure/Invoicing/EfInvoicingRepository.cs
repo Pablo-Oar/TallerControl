@@ -22,7 +22,9 @@ internal sealed class EfInvoicingRepository : IInvoicingRepository
 
     public Task<FiscalCertificate?> FindActiveCertificateByTenantAsync(CancellationToken ct) =>
         _db.Set<FiscalCertificate>()
-            .Where(c => c.IsPrimary && c.Status == FiscalCertificateStatus.Active)
+            // Un certificado vencido no sirve aunque siga marcado como activo.
+            .Where(c => c.IsPrimary && c.Status == FiscalCertificateStatus.Active
+                        && (c.ExpiresAt == null || c.ExpiresAt > DateTimeOffset.UtcNow))
             .FirstOrDefaultAsync(ct);
 
     public async Task<IReadOnlyList<FiscalCertificate>> ListCertificatesAsync(CancellationToken ct) =>

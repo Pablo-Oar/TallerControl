@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { searchInvoices, type InvoiceListDto, type InvoiceStatus, type InvoiceSourceType } from '../../../lib/api/invoicing'
+import { searchInvoices, listCertificates, daysToExpire, EXPIRY_WARNING_DAYS, type InvoiceListDto, type InvoiceStatus, type InvoiceSourceType } from '../../../lib/api/invoicing'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { DataTable, sortableWhen, type DataTableColumn } from '../../../components/ui/DataTable'
 import { Pagination } from '../../../components/ui/Pagination'
@@ -78,11 +78,27 @@ export function InvoicingPage() {
     queryFn: () => searchInvoices({ status: status || undefined, page, pageSize: 25 }),
   })
 
+  const { data: certs } = useQuery({ queryKey: ['fiscal-certificates'], queryFn: listCertificates })
+  const expiring = (certs ?? [])
+    .filter(c => c.status === 'active')
+    .map(c => ({ cert: c, days: daysToExpire(c) }))
+    .filter(x => x.days !== null && x.days <= EXPIRY_WARNING_DAYS)
+    .sort((a, b) => (a.days ?? 0) - (b.days ?? 0))[0]
+
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Facturación Electrónica</h1>
 
       <InvoicingTabs />
+
+      {expiring && (
+        <p role="alert" className="border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          {(expiring.days ?? 0) < 0
+            ? `El certificado «${expiring.cert.name}» está vencido: no se puede facturar.`
+            : `El certificado «${expiring.cert.name}» vence en ${expiring.days} día${expiring.days === 1 ? '' : 's'}.`}{' '}
+          <NavLink to="/app/invoicing/setup" className="font-semibold underline">Ir a Configuración ARCA</NavLink>
+        </p>
+      )}
 
       <div className="flex gap-2">
         <select

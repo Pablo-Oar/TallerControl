@@ -44,7 +44,8 @@ public sealed record FiscalPointOfSaleDto(
 
 public sealed record CreateFiscalPointOfSaleRequest(Guid FiscalCertificateId, int Number, string Name);
 
-public sealed record UpdateFiscalPointOfSaleRequest(string Name);
+/// <summary><c>IsActive</c> nulo deja el estado como está.</summary>
+public sealed record UpdateFiscalPointOfSaleRequest(string Name, bool? IsActive = null);
 
 // ── Invoices ──────────────────────────────────────────────────────────────────
 
