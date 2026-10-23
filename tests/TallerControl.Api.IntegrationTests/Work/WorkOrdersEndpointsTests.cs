@@ -745,6 +745,26 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.Contains(_factory.Push.Sent, x => x.UserId == _factory.MechanicUserId && x.Message.Title == "Aviso de prueba");
     }
 
+    [Fact(DisplayName = "T-PUSH-07: Un dispositivo se registra y se da de baja (el rol de la API puede borrar suscripciones)")]
+    public async Task Suscripcion_push_se_registra_y_se_da_de_baja()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
+        const string endpoint = "https://fcm.googleapis.com/fcm/send/prueba-baja";
+
+        var csrf = await FetchCsrfAsync(client);
+        var save = new HttpRequestMessage(HttpMethod.Post, "/api/v1/push-subscriptions")
+        {
+            Content = JsonContent.Create(new { endpoint, p256Dh = "BP4z9KsN6nGRTbVYI_c7VJSPQTBtkgcy27mlmlMoZIIgDll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A8", auth = "BTBZMqHH6r4Tts7J_aSIgg" }),
+        };
+        save.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        Assert.Equal(HttpStatusCode.NoContent, (await client.SendAsync(save)).StatusCode);
+
+        var delete = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/push-subscriptions?endpoint={Uri.EscapeDataString(endpoint)}");
+        delete.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        Assert.Equal(HttpStatusCode.NoContent, (await client.SendAsync(delete)).StatusCode);
+    }
+
     [Fact(DisplayName = "T-WO-12: El dueño asigna un mecánico activo del taller; un id ajeno o de otro rol → 422")]
     public async Task Owner_asigna_mecanico_y_valida_el_destinatario()
     {

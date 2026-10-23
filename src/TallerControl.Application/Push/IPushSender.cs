@@ -1,7 +1,8 @@
 namespace TallerControl.Application.Push;
 
 /// <summary>Aviso push para un dispositivo: título, texto y la ruta a abrir al tocarlo.</summary>
-public sealed record PushMessage(string Title, string Body, string? Url = null);
+/// <param name="Tag">Avisos con la misma etiqueta se reemplazan entre sí en el dispositivo (evita duplicados).</param>
+public sealed record PushMessage(string Title, string Body, string? Url = null, string? Tag = null);
 
 /// <summary>Resultado de un envío: dispositivos del usuario, entregados y el motivo de cada falla.</summary>
 public sealed record PushResult(int Subscriptions, int Delivered, IReadOnlyList<string> Failures, IReadOnlyList<int>? Statuses = null);

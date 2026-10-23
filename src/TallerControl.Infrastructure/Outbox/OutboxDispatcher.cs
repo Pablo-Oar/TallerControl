@@ -124,7 +124,8 @@ internal sealed class OutboxDispatcher : BackgroundService
 
                 var result = await push.SendToUserAsync(
                     userId.Value,
-                    new PushMessage("Nueva orden asignada", $"Te asignaron la orden N° {payload.OrderNumber}.", $"/m/work-orders/{payload.WorkOrderId}"),
+                    new PushMessage("Nueva orden asignada", $"Te asignaron la orden N° {payload.OrderNumber}.", $"/m/work-orders/{payload.WorkOrderId}",
+                        $"work-order-{payload.WorkOrderId}"),
                     ct);
 
                 // Con dispositivos suscriptos y ninguna entrega, el mensaje falla: queda el motivo en last_error y se reintenta.

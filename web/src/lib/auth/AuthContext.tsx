@@ -2,6 +2,7 @@ import { createContext, useContext, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { authApi, type MeResponse } from '../api/auth'
 import { clearCsrfToken } from '../api/client'
+import { unregisterPush } from '../push'
 
 interface AuthContextValue {
   user: MeResponse | null
@@ -25,6 +26,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function logout() {
     try {
+      // Antes de cerrar la sesión (hace falta estar autenticado para dar de baja la suscripción).
+      await unregisterPush()
       await authApi.logout()
     } finally {
       clearCsrfToken()

@@ -58,7 +58,7 @@ internal sealed class WebPushSender : IPushSender
                 """)
             .ToListAsync(ct);
 
-        var body = JsonSerializer.SerializeToUtf8Bytes(new { title = message.Title, body = message.Body, url = message.Url });
+        var body = JsonSerializer.SerializeToUtf8Bytes(new { title = message.Title, body = message.Body, url = message.Url, tag = message.Tag });
         var delivered = 0;
         var failures = new List<string>();
         var statuses = new List<int>();
@@ -87,9 +87,18 @@ internal sealed class WebPushSender : IPushSender
                 }
                 else if (response.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Gone)
                 {
-                    // El navegador dio de baja la suscripción: se descarta.
-                    await _db.Database.ExecuteSqlAsync(
-                        $"DELETE FROM push_subscriptions WHERE user_id = {userId} AND endpoint = {sub.Endpoint}", ct);
+                    // El navegador dio de baja la suscripción: se descarta. Un fallo al limpiar no debe frenar el envío
+                    // a los demás dispositivos.
+                    failures.Add($"{(int)response.StatusCode} suscripción vencida (descartada)");
+                    try
+                    {
+                        await _db.Database.ExecuteSqlAsync(
+                            $"DELETE FROM push_subscriptions WHERE user_id = {userId} AND endpoint = {sub.Endpoint}", ct);
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        _logger.LogWarning(ex, "No se pudo descartar una suscripción push vencida");
+                    }
                 }
                 else
                 {
@@ -99,7 +108,7 @@ internal sealed class WebPushSender : IPushSender
                     _logger.LogWarning("El servicio push rechazó el aviso: {Reason}", reason);
                 }
             }
-            catch (Exception ex) when (ex is HttpRequestException or FormatException or ArgumentException or TaskCanceledException)
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
             {
                 failures.Add($"{ex.GetType().Name}: {ex.Message}");
                 _logger.LogWarning(ex, "No se pudo enviar el aviso push a una suscripción");

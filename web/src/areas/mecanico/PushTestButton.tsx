@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from '../../components/ui/Button'
-import { api } from '../../lib/api/client'
+import { api, ApiError } from '../../lib/api/client'
 
 interface PushTestResult {
   configured: boolean
@@ -27,8 +27,10 @@ export function PushTestButton() {
       else if (r.subscriptions === 0) setMessage('Este usuario no tiene ningún celular registrado. Tocá «Activar avisos» y volvé a probar.')
       else if (r.delivered === 0) setMessage(`Google rechazó el aviso: ${r.failures.join(' | ') || 'sin detalle'}`)
       else setMessage(`Aviso enviado a ${r.delivered} de ${r.subscriptions} dispositivo(s) (respuesta ${r.statuses.join(', ')}). Si no aparece en unos segundos, el problema está en el celular.`)
-    } catch {
-      setMessage('No se pudo pedir la prueba. Revisá tu conexión.')
+    } catch (err) {
+      setMessage(err instanceof ApiError
+        ? `El servidor respondió ${err.status}: ${err.detail}`
+        : 'No se pudo conectar con el servidor. Revisá tu conexión.')
     } finally {
       setBusy(false)
     }
