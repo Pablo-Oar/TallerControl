@@ -101,6 +101,9 @@ public static class DependencyInjection
         services.AddScoped<IPasswordResetRepository, EfPasswordResetRepository>();
         services.AddScoped<IMembershipRepository, EfMembershipRepository>();
         services.AddScoped<CreateInvitationHandler>();
+        services.AddScoped<UpdateProfileHandler>();
+        services.AddScoped<ChangePasswordHandler>();
+        services.AddScoped<ResendVerificationHandler>();
         services.AddScoped<ListInvitationsHandler>();
         services.AddScoped<ResendInvitationHandler>();
         services.AddScoped<CancelInvitationHandler>();

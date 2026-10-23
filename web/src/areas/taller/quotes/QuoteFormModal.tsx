@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useDefaultVat } from '../../../lib/auth/defaults'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -44,6 +45,7 @@ interface Props {
 }
 
 export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
+  const defaultVat = useDefaultVat()
   const isEditing = !!quote
   const [serverError, setServerError] = useState<string | null>(null)
 
@@ -178,7 +180,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                   catalogItemId: null,
                   quantity: 1,
                   unitNetPrice: 0,
-                  vatRate: 21,
+                  vatRate: defaultVat,
                   requiredForApproval: true,
                 })
               }

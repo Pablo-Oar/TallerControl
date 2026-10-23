@@ -193,4 +193,27 @@ public sealed class RegistrationEndpointsTests : IAsyncLifetime
         var body = await loginResp.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal("email_not_verified", body.GetProperty("code").GetString());
     }
+
+    [Fact(DisplayName = "T-REG-07: reenviar verificación responde 202 uniforme, emite un enlace nuevo y respeta el intervalo")]
+    public async Task Reenviar_verificacion()
+    {
+        using var client = _factory.CreateClient();
+        const string email = "resend@test.com";
+        await client.PostAsync("/api/public/v1/register", RegisterBody(email: email));
+
+        // Dentro del minuto siguiente al registro no se reenvía, pero la respuesta es igual.
+        var first = await client.PostAsJsonAsync("/api/public/v1/resend-verification", new { email });
+        Assert.Equal(HttpStatusCode.Accepted, first.StatusCode);
+
+        // Un email que no existe responde igual (no revela quién tiene cuenta).
+        var unknown = await client.PostAsJsonAsync("/api/public/v1/resend-verification", new { email = "nadie@test.com" });
+        Assert.Equal(HttpStatusCode.Accepted, unknown.StatusCode);
+
+        await using var scope = _factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var sent = (await db.Set<OutboxMessage>().IgnoreQueryFilters()
+            .Where(m => m.Type == "email.email_verification").ToListAsync())
+            .Count(m => m.PayloadJson.Contains(email));
+        Assert.Equal(1, sent);
+    }
 }

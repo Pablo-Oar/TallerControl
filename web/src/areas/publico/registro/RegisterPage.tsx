@@ -1,4 +1,5 @@
 import { useForm } from 'react-hook-form'
+import { ResendVerification } from '../../../components/ui/ResendVerification'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
@@ -72,6 +73,7 @@ export function RegisterPage() {
           cuenta.
         </p>
         <p className="mt-4 text-center text-xs text-tc-text-muted">¿No llegó? Revisá la carpeta de spam.</p>
+        <ResendVerification email={submittedEmail} />
       </AuthCard>
     )
   }

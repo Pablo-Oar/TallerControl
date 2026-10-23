@@ -39,5 +39,17 @@ internal sealed class EfRegistrationRepository : IRegistrationRepository
     public Task<User?> FindUserByIdAsync(Guid userId, CancellationToken ct) =>
         _db.Set<User>().FirstOrDefaultAsync(u => u.Id == userId, ct);
 
+    public Task<User?> FindUserByEmailAsync(string email, CancellationToken ct) =>
+        _db.Set<User>().FirstOrDefaultAsync(u => u.Email == email, ct);
+
+    public async Task<DateTimeOffset?> LastVerificationTokenAtAsync(Guid userId, CancellationToken ct) =>
+        await _db.Set<EmailVerificationToken>().AsNoTracking()
+            .Where(t => t.UserId == userId)
+            .OrderByDescending(t => t.ExpiresAt)
+            .Select(t => (DateTimeOffset?)t.ExpiresAt)
+            .FirstOrDefaultAsync(ct);
+
+    public void AddVerificationToken(EmailVerificationToken token) => _db.Set<EmailVerificationToken>().Add(token);
+
     public Task SaveChangesAsync(CancellationToken ct) => _db.SaveChangesAsync(ct);
 }

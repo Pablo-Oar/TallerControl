@@ -19,6 +19,8 @@ export interface VerifyEmailResponse {
 export const registrationApi = {
   register: (body: RegisterRequest) =>
     api.post<RegisterResponse>('/api/public/v1/register', body),
+  resendVerification: (email: string) =>
+    api.post<void>('/api/public/v1/resend-verification', { email }),
   verifyEmail: (token: string) =>
     api.get<VerifyEmailResponse>(`/api/public/v1/verify-email?token=${encodeURIComponent(token)}`),
 }

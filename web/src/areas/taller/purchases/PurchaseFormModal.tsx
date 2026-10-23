@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useDefaultVat } from '../../../lib/auth/defaults'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -46,6 +47,7 @@ interface Props {
 export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
   const [serverError, setServerError] = useState<string | null>(null)
   const isEdit = !!purchase
+  const defaultVat = useDefaultVat()
 
   const { data: suppliersPage } = useQuery({
     queryKey: ['suppliers-picker'],
@@ -77,7 +79,7 @@ export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
       invoiceNumber: '',
       perceptions: 0,
       retentions: 0,
-      items: [{ catalogItemId: '', description: '', quantity: 1, unitCost: 0, vatRate: 21 }],
+      items: [{ catalogItemId: '', description: '', quantity: 1, unitCost: 0, vatRate: defaultVat }],
     },
   })
 
@@ -155,7 +157,7 @@ export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
             <span className={labelCls}>Ítems *</span>
             <button
               type="button"
-              onClick={() => append({ catalogItemId: '', description: '', quantity: '1' as unknown as number, unitCost: '0' as unknown as number, vatRate: '21' as unknown as number })}
+              onClick={() => append({ catalogItemId: '', description: '', quantity: '1' as unknown as number, unitCost: '0' as unknown as number, vatRate: String(defaultVat) as unknown as number })}
               className="text-xs font-bold tracking-wider uppercase text-tc-purple hover:opacity-70 transition-opacity"
             >
               + Agregar ítem

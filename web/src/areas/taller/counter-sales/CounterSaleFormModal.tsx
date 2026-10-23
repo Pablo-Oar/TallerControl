@@ -1,4 +1,5 @@
 import { useForm, useFieldArray } from 'react-hook-form'
+import { useDefaultVat } from '../../../lib/auth/defaults'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
@@ -35,12 +36,13 @@ interface Props {
 
 export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
   const [serverError, setServerError] = useState<string | null>(null)
+  const defaultVat = useDefaultVat()
 
   const { register, handleSubmit, control, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       customerId: '',
-      items: [{ catalogItemId: '', description: '', quantity: 1, unitPrice: 0, vatRate: 21 }],
+      items: [{ catalogItemId: '', description: '', quantity: 1, unitPrice: 0, vatRate: defaultVat }],
     },
   })
 
@@ -92,7 +94,7 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
             <span className={labelCls}>Ítems</span>
             <button
               type="button"
-              onClick={() => append({ catalogItemId: '', description: '', quantity: 1, unitPrice: 0, vatRate: 21 })}
+              onClick={() => append({ catalogItemId: '', description: '', quantity: 1, unitPrice: 0, vatRate: defaultVat })}
               className="text-xs text-tc-purple hover:opacity-70"
             >
               + Agregar ítem

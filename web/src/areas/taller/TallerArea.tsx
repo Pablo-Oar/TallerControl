@@ -29,6 +29,7 @@ const InvoicingSetupPage = lazy(() => import('./invoicing/InvoicingSetupPage').t
 const InvoiceDetailPage = lazy(() => import('./invoicing/InvoiceDetailPage').then(m => ({ default: m.InvoiceDetailPage })))
 const IvaBookPage = lazy(() => import('./invoicing/IvaBookPage').then(m => ({ default: m.IvaBookPage })))
 const GeneralSettingsPage = lazy(() => import('./settings/general/GeneralSettingsPage').then(m => ({ default: m.GeneralSettingsPage })))
+const ProfilePage = lazy(() => import('./settings/profile/ProfilePage').then(m => ({ default: m.ProfilePage })))
 const UsersSettingsPage = lazy(() => import('./settings/users/UsersSettingsPage').then(m => ({ default: m.UsersSettingsPage })))
 
 /** Inicio del panel: el resumen si la sesión puede verlo; si no (p. ej. Contador), su primera pantalla permitida. */
@@ -86,6 +87,7 @@ export function Component() {
                 </RequireAuth>
               }
             />
+            <Route path="settings/profile" element={<ProfilePage />} />
             <Route
               path="settings/users"
               element={

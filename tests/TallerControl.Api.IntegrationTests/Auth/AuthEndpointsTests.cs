@@ -231,4 +231,61 @@ public sealed class AuthEndpointsTests : IAsyncLifetime
             .Select(u => u.SecurityStamp)
             .SingleAsync();
     }
+
+    // ── U-02: perfil y contraseña ─────────────────────────────────────────────
+
+    private async Task<HttpResponseMessage> SendAsync(HttpClient client, HttpMethod method, string url, object body)
+    {
+        var req = new HttpRequestMessage(method, url) { Content = JsonContent.Create(body) };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchAntiforgeryTokenAsync(client));
+        return await client.SendAsync(req);
+    }
+
+    private async Task<HttpClient> LoggedInClientAsync()
+    {
+        var client = CreateClient();
+        var login = await client.SendAsync(LoginRequest(
+            AuthWebApplicationFactory.MechanicEmail, AuthWebApplicationFactory.MechanicPassword,
+            await FetchAntiforgeryTokenAsync(client)));
+        Assert.Equal(HttpStatusCode.NoContent, login.StatusCode);
+        return client;
+    }
+
+    [Fact(DisplayName = "T-AUTH-10: el usuario cambia su nombre y /me lo refleja; /me trae el IVA por defecto")]
+    public async Task Cambiar_nombre_del_perfil()
+    {
+        using var client = await LoggedInClientAsync();
+
+        var resp = await SendAsync(client, HttpMethod.Patch, "/api/v1/auth/profile", new { displayName = "  Nombre Nuevo " });
+        Assert.Equal(HttpStatusCode.NoContent, resp.StatusCode);
+
+        var me = await client.GetFromJsonAsync<JsonElement>("/api/v1/auth/me");
+        Assert.Equal("Nombre Nuevo", me.GetProperty("user").GetProperty("displayName").GetString());
+        Assert.True(me.GetProperty("tenant").GetProperty("defaultVatRate").GetDecimal() >= 0);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity,
+            (await SendAsync(client, HttpMethod.Patch, "/api/v1/auth/profile", new { displayName = "  " })).StatusCode);
+    }
+
+    [Fact(DisplayName = "T-AUTH-11: cambiar la contraseña pide la actual, mantiene esta sesión y permite entrar con la nueva")]
+    public async Task Cambiar_contrasena()
+    {
+        using var client = await LoggedInClientAsync();
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await SendAsync(client, HttpMethod.Post, "/api/v1/auth/change-password",
+            new { currentPassword = "incorrecta-1234", newPassword = "NuevaClave!2026" })).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await SendAsync(client, HttpMethod.Post, "/api/v1/auth/change-password",
+            new { currentPassword = AuthWebApplicationFactory.MechanicPassword, newPassword = "corta" })).StatusCode);
+
+        Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(client, HttpMethod.Post, "/api/v1/auth/change-password",
+            new { currentPassword = AuthWebApplicationFactory.MechanicPassword, newPassword = "NuevaClave!2026" })).StatusCode);
+
+        // Esta sesión sigue vigente (se re-emitió la cookie con el sello nuevo).
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/v1/auth/me")).StatusCode);
+
+        using var other = CreateClient();
+        var login = await other.SendAsync(LoginRequest(
+            AuthWebApplicationFactory.MechanicEmail, "NuevaClave!2026", await FetchAntiforgeryTokenAsync(other)));
+        Assert.Equal(HttpStatusCode.NoContent, login.StatusCode);
+    }
 }

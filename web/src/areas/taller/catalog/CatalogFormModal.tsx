@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useDefaultVat } from '../../../lib/auth/defaults'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -68,12 +69,13 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
   const [serverError, setServerError] = useState<string | null>(null)
   const isEdit = !!item
   const canCost = useCan()('costs.view')
+  const defaultVat = useDefaultVat()
 
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: makeResolver(item),
     defaultValues: item
       ? toFormData(item)
-      : { kind: 'service' as const, vatRate: 21, trackStock: false, isActive: true },
+      : { kind: 'service' as const, vatRate: defaultVat, trackStock: false, isActive: true },
   })
 
   const kind = watch('kind')

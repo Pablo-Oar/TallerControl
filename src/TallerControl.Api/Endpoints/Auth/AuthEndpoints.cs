@@ -38,6 +38,38 @@ internal static class AuthEndpoints
         group.MapGet("/me", MeAsync)
             .RequireAuthorization();
 
+        group.MapPatch("/profile",
+                async (UpdateProfileRequest request, HttpContext context, UpdateProfileHandler handler, CancellationToken ct) =>
+                {
+                    if (!Guid.TryParse(context.User.FindFirst(SessionClaims.UserId)?.Value, out var userId))
+                        return Results.Unauthorized();
+                    await handler.HandleAsync(userId, request, ct);
+                    return Results.NoContent();
+                })
+            .RequireAuthorization()
+            .AddEndpointFilter<AntiforgeryEndpointFilter>();
+
+        group.MapPost("/change-password",
+                async (ChangePasswordRequest request, HttpContext context, ChangePasswordHandler handler, CancellationToken ct) =>
+                {
+                    if (!Guid.TryParse(context.User.FindFirst(SessionClaims.UserId)?.Value, out var userId))
+                        return Results.Unauthorized();
+
+                    var result = await handler.HandleAsync(userId, request, ct);
+
+                    // El cambio rota el sello de seguridad (cierra las demás sesiones): se vuelve a emitir esta cookie con el nuevo.
+                    var current = await context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    var claims = context.User.Claims.Where(c => c.Type != SessionClaims.SecurityStamp).ToList();
+                    claims.Add(new Claim(SessionClaims.SecurityStamp, result.SecurityStamp));
+                    await context.SignInAsync(
+                        CookieAuthenticationDefaults.AuthenticationScheme,
+                        new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)),
+                        new AuthenticationProperties { IsPersistent = current.Properties?.IsPersistent ?? false, AllowRefresh = true });
+                    return Results.NoContent();
+                })
+            .RequireAuthorization()
+            .AddEndpointFilter<AntiforgeryEndpointFilter>();
+
         group.MapPost("/forgot-password",
                 (ForgotPasswordRequest request, ForgotPasswordHandler handler, CancellationToken ct) =>
                     ForgotPasswordAsync(request, handler, frontendBaseUrl, ct))

@@ -26,4 +26,4 @@ public interface IAuthRepository
 }
 
 /// <summary>Proyección: membresía + datos del taller necesarios para <c>/me</c>.</summary>
-public sealed record MembershipWithTenant(Membership Membership, Tenant Tenant);
+public sealed record MembershipWithTenant(Membership Membership, Tenant Tenant, decimal DefaultVatRate = 21m);
