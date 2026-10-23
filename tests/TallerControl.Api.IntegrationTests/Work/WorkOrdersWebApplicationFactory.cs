@@ -74,6 +74,10 @@ internal sealed class WorkOrdersWebApplicationFactory : WebApplicationFactory<Pr
 
         builder.ConfigureServices(services =>
         {
+            // Sin RustFS en los tests: las URLs prefirmadas salen de un almacenamiento falso.
+            services.RemoveAll<IObjectStorage>();
+            services.AddSingleton<IObjectStorage>(new TallerControl.Api.IntegrationTests.Settings.FakeObjectStorage());
+
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(new FakeEmailSender());
             services.RemoveAll<IPushSender>();
