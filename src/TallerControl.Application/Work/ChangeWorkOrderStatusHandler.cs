@@ -15,13 +15,16 @@ public sealed class ChangeWorkOrderStatusHandler
     private readonly ICatalogRepository _catalogRepo;
     private readonly IActorContext _actorContext;
     private readonly TimeProvider _clock;
+    private readonly IOutbox _outbox;
 
     public ChangeWorkOrderStatusHandler(
         IWorkOrderRepository repo,
         ICatalogRepository catalogRepo,
         IActorContext actorContext,
-        TimeProvider clock)
+        TimeProvider clock,
+        IOutbox outbox)
     {
+        _outbox = outbox;
         _repo = repo;
         _catalogRepo = catalogRepo;
         _actorContext = actorContext;
@@ -68,11 +71,55 @@ public sealed class ChangeWorkOrderStatusHandler
         if (request.ToStatus == WorkOrderStatus.Cancelled)
             await RestockAsync(order, actorId, now, ct);
 
+        NotifyStatusChange(order, request.ToStatus, isMechanic);
+
         await _repo.SaveChangesAsync(ct);
 
         return await _repo.GetFullAsync(id, includePrices: true, ct)
             ?? throw new InvalidOperationException("La orden actualizada no se pudo leer.");
     }
+
+    /// <summary>
+    /// Avisos del cambio de estado, por la cola de salida (misma transacción que el cambio):
+    /// si lo cambia otra persona, el mecánico asignado recibe un aviso en el celular; si lo cambia el mecánico a
+    /// «Completada» o «Esperando repuestos», aparece un aviso en la campanita del panel.
+    /// </summary>
+    private void NotifyStatusChange(WorkOrder order, WorkOrderStatus status, bool isMechanic)
+    {
+        var label = StatusLabel(status);
+
+        if (!isMechanic && order.AssignedMechanicId is { } mechanicId)
+        {
+            _outbox.Enqueue("push.work_order_status", new
+            {
+                membershipId = mechanicId,
+                orderNumber = order.Number,
+                workOrderId = order.Id,
+                statusLabel = label,
+            });
+        }
+
+        if (isMechanic && status is WorkOrderStatus.Completed or WorkOrderStatus.WaitingParts)
+        {
+            _outbox.Enqueue("notification.work_order_status", new
+            {
+                orderNumber = order.Number,
+                workOrderId = order.Id,
+                statusLabel = label,
+            });
+        }
+    }
+
+    private static string StatusLabel(WorkOrderStatus status) => status switch
+    {
+        WorkOrderStatus.Pending => "Pendiente",
+        WorkOrderStatus.InProgress => "En proceso",
+        WorkOrderStatus.WaitingParts => "Esperando repuestos",
+        WorkOrderStatus.Completed => "Completada",
+        WorkOrderStatus.Delivered => "Entregada",
+        WorkOrderStatus.Cancelled => "Anulada",
+        _ => status.ToString(),
+    };
 
     private async Task RestockAsync(WorkOrder order, Guid? actorId, DateTimeOffset now, CancellationToken ct)
     {
