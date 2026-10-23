@@ -4,6 +4,7 @@ using TallerControl.Application.Scheduling;
 using TallerControl.Domain.Catalog;
 using TallerControl.Domain.Customers;
 using TallerControl.Domain.Scheduling;
+using TallerControl.Domain.Tenancy;
 using TallerControl.Domain.Users;
 using TallerControl.Domain.Vehicles;
 using TallerControl.Infrastructure.Persistence;
@@ -13,26 +14,67 @@ namespace TallerControl.Infrastructure.Scheduling;
 internal sealed class EfSchedulingRepository : ISchedulingRepository
 {
     private readonly AppDbContext _db;
+    private readonly ITenantContext _tenantContext;
+    private TimeZoneInfo? _zone;
 
-    public EfSchedulingRepository(AppDbContext db) => _db = db;
+    public EfSchedulingRepository(AppDbContext db, ITenantContext tenantContext)
+    {
+        _db = db;
+        _tenantContext = tenantContext;
+    }
+
+    // ── Zona horaria del taller ───────────────────────────────────────────────
+    // Los horarios de atención son «hora de pared» del taller (09:00 es 09:00 en Argentina), así que se convierten
+    // a UTC con la zona del taller; los turnos se guardan en UTC.
+
+    private async Task<TimeZoneInfo> ZoneAsync(CancellationToken ct) =>
+        _zone ??= await LoadZoneAsync(_tenantContext.TenantId, ct);
+
+    private async Task<TimeZoneInfo> LoadZoneAsync(Guid? tenantId, CancellationToken ct)
+    {
+        var name = await _db.Set<Tenant>().AsNoTracking().IgnoreQueryFilters()
+            .Where(t => t.Id == tenantId)
+            .Select(t => t.TimeZone)
+            .FirstOrDefaultAsync(ct);
+        try
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(name ?? Tenant.DefaultTimeZone);
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return TimeZoneInfo.Utc;
+        }
+    }
+
+    private static DateTimeOffset LocalToUtc(DateOnly date, TimeOnly time, TimeZoneInfo zone) =>
+        new(TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(date.ToDateTime(time), DateTimeKind.Unspecified), zone), TimeSpan.Zero);
+
+    private static DateOnly LocalDay(DateTimeOffset at, TimeZoneInfo zone) =>
+        DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(at, zone).DateTime);
+
+    public async Task<string> GetTenantTimeZoneIdAsync(CancellationToken ct) => (await ZoneAsync(ct)).Id;
 
     public async Task<Page<AppointmentListDto>> SearchAsync(
-        DateOnly? date, Guid? mechanicMembershipId, AppointmentStatus? status,
+        DateOnly? from, DateOnly? to, Guid? mechanicMembershipId, AppointmentStatus? status,
         int page, int pageSize, CancellationToken ct)
     {
+        var zone = await ZoneAsync(ct);
         var query = _db.Set<Appointment>().AsNoTracking()
             .Join(_db.Set<Customer>().AsNoTracking(), a => a.CustomerId, c => c.Id,
                 (a, c) => new { Appt = a, CustomerName = c.Name })
             .Join(_db.Set<Vehicle>().AsNoTracking(), x => x.Appt.VehicleId, v => v.Id,
                 (x, v) => new { x.Appt, x.CustomerName, VehiclePlate = v.Plate });
 
-        if (date.HasValue)
+        if (from.HasValue)
         {
-            var start = date.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-            var end = date.Value.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
-            var startDto = new DateTimeOffset(start, TimeSpan.Zero);
-            var endDto = new DateTimeOffset(end, TimeSpan.Zero);
-            query = query.Where(x => x.Appt.ScheduledAt >= startDto && x.Appt.ScheduledAt <= endDto);
+            var startUtc = LocalToUtc(from.Value, TimeOnly.MinValue, zone);
+            query = query.Where(x => x.Appt.ScheduledAt >= startUtc);
+        }
+
+        if (to.HasValue)
+        {
+            var endUtc = LocalToUtc(to.Value.AddDays(1), TimeOnly.MinValue, zone);
+            query = query.Where(x => x.Appt.ScheduledAt < endUtc);
         }
 
         if (mechanicMembershipId.HasValue)
@@ -101,16 +143,14 @@ internal sealed class EfSchedulingRepository : ISchedulingRepository
                 .FirstOrDefaultAsync(ct);
         }
 
-        var serviceDtos = await Task.WhenAll(appt.Services.Select(async s =>
+        // En serie: un DbContext no admite consultas concurrentes.
+        var serviceDtos = new List<AppointmentServiceDto>();
+        foreach (var s in appt.Services)
         {
             var item = await _db.Set<CatalogItem>().AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == s.CatalogItemId, ct);
-            return new AppointmentServiceDto(
-                s.CatalogItemId,
-                item?.Name ?? string.Empty,
-                s.DurationMinutes,
-                s.BufferMinutes);
-        }));
+            serviceDtos.Add(new AppointmentServiceDto(s.CatalogItemId, item?.Name ?? string.Empty, s.DurationMinutes, s.BufferMinutes));
+        }
 
         return new AppointmentDto(
             appt.Id,
@@ -221,6 +261,7 @@ internal sealed class EfSchedulingRepository : ISchedulingRepository
     public async Task<IReadOnlyList<AvailabilitySlotDto>> GetAvailabilitySlotsAsync(
         DateOnly date, int requiredMinutes, CancellationToken ct)
     {
+        var zone = await ZoneAsync(ct);
         var dayOfWeek = date.DayOfWeek;
 
         // Reglas activas para ese día de la semana.
@@ -233,58 +274,37 @@ internal sealed class EfSchedulingRepository : ISchedulingRepository
             .Where(e => e.Date == date)
             .ToListAsync(ct);
 
-        // Turnos ya agendados ese día.
-        var dayStart = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero);
-        var dayEnd = new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc), TimeSpan.Zero);
+        // Turnos ya agendados ese día (día calendario del taller).
+        var dayStart = LocalToUtc(date, TimeOnly.MinValue, zone);
+        var dayEnd = LocalToUtc(date.AddDays(1), TimeOnly.MinValue, zone);
         var existing = await _db.Set<Appointment>().AsNoTracking()
-            .Where(a => a.ScheduledAt >= dayStart && a.ScheduledAt <= dayEnd
-                     && a.Status != AppointmentStatus.Cancelled)
+            .Where(a => a.ScheduledAt >= dayStart.AddHours(-12) && a.ScheduledAt < dayEnd
+                     && a.Status != AppointmentStatus.Cancelled && a.Status != AppointmentStatus.Completed)
             .ToListAsync(ct);
 
+        var names = await MechanicNamesAsync(rules.Select(r => r.MechanicMembershipId).Distinct().ToList(), ct);
         var slots = new List<AvailabilitySlotDto>();
 
         foreach (var rule in rules)
         {
             var mechId = rule.MechanicMembershipId;
+            var window = EffectiveWindow(rule, exceptions);
+            if (window is null) continue;
 
-            // Verificar si hay excepción de bloqueo para este mecánico o para todo el taller.
-            var blocked = exceptions.Any(e =>
-                e.IsBlocked &&
-                (e.MechanicMembershipId == null || e.MechanicMembershipId == mechId));
-
-            if (blocked) continue;
-
-            // Horario efectivo: puede haber una excepción con horario especial.
-            var specialRule = exceptions.FirstOrDefault(e =>
-                !e.IsBlocked &&
-                (e.MechanicMembershipId == null || e.MechanicMembershipId == mechId));
-
-            var start = specialRule?.StartTime ?? rule.StartTime;
-            var end = specialRule?.EndTime ?? rule.EndTime;
-
-            // Calcular slots libres dentro del horario con granularidad de requiredMinutes.
-            var current = start;
-            while (current.AddMinutes(requiredMinutes) <= end)
+            // Slots libres dentro del horario con granularidad de requiredMinutes.
+            var current = window.Value.Start;
+            while (current.AddMinutes(requiredMinutes) <= window.Value.End)
             {
-                var slotStart = new DateTimeOffset(
-                    date.ToDateTime(current, DateTimeKind.Utc), TimeSpan.Zero);
+                var slotStart = LocalToUtc(date, current, zone);
                 var slotEnd = slotStart.AddMinutes(requiredMinutes);
 
-                // Verificar que no colisione con turnos existentes del mecánico.
                 var busy = existing.Any(a =>
                     a.MechanicMembershipId == mechId &&
                     a.ScheduledAt < slotEnd &&
                     a.ScheduledAt.AddMinutes(a.TotalDurationMinutes) > slotStart);
 
                 if (!busy)
-                {
-                    var mechName = await _db.Set<Membership>()
-                        .Where(m => m.Id == mechId)
-                        .Join(_db.Set<User>(), m => m.UserId, u => u.Id, (m, u) => u.DisplayName)
-                        .FirstOrDefaultAsync(ct);
-
-                    slots.Add(new AvailabilitySlotDto(mechId, mechName, slotStart, slotEnd));
-                }
+                    slots.Add(new AvailabilitySlotDto(mechId, names.GetValueOrDefault(mechId), slotStart, slotEnd));
 
                 current = current.AddMinutes(requiredMinutes);
             }
@@ -293,8 +313,28 @@ internal sealed class EfSchedulingRepository : ISchedulingRepository
         return slots.OrderBy(s => s.Start).ThenBy(s => s.MechanicMembershipId).ToList();
     }
 
+    /// <summary>Horario efectivo del mecánico ese día: el de la regla, el de una excepción con horario especial, o ninguno si está bloqueado.</summary>
+    private static (TimeOnly Start, TimeOnly End)? EffectiveWindow(AvailabilityRule rule, List<AvailabilityException> dayExceptions)
+    {
+        var mechId = rule.MechanicMembershipId;
+        if (dayExceptions.Any(e => e.IsBlocked && (e.MechanicMembershipId == null || e.MechanicMembershipId == mechId)))
+            return null;
+
+        var special = dayExceptions.FirstOrDefault(e =>
+            !e.IsBlocked && (e.MechanicMembershipId == null || e.MechanicMembershipId == mechId));
+
+        return (special?.StartTime ?? rule.StartTime, special?.EndTime ?? rule.EndTime);
+    }
+
+    private async Task<Dictionary<Guid, string>> MechanicNamesAsync(IReadOnlyCollection<Guid> membershipIds, CancellationToken ct) =>
+        await _db.Set<Membership>().AsNoTracking()
+            .Where(m => membershipIds.Contains(m.Id))
+            .Join(_db.Set<User>().AsNoTracking(), m => m.UserId, u => u.Id, (m, u) => new { m.Id, u.DisplayName })
+            .ToDictionaryAsync(x => x.Id, x => x.DisplayName, ct);
+
     public async Task<Guid?> FindMechanicWithLeastWorkloadAsync(DateOnly date, CancellationToken ct)
     {
+        var zone = await ZoneAsync(ct);
         var dayOfWeek = date.DayOfWeek;
 
         var mechanics = await _db.Set<AvailabilityRule>().AsNoTracking()
@@ -305,22 +345,177 @@ internal sealed class EfSchedulingRepository : ISchedulingRepository
 
         if (mechanics.Count == 0) return null;
 
-        var dayStart = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero);
-        var dayEnd = new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc), TimeSpan.Zero);
-
-        var workloads = await _db.Set<Appointment>().AsNoTracking()
-            .Where(a => a.ScheduledAt >= dayStart && a.ScheduledAt <= dayEnd
-                     && a.Status != AppointmentStatus.Cancelled
-                     && a.MechanicMembershipId != null)
-            .GroupBy(a => a.MechanicMembershipId)
-            .Select(g => new { MechanicId = g.Key, Count = g.Count() })
-            .ToListAsync(ct);
+        var workloads = await WorkloadsAsync(date, zone, ct);
 
         // El mecánico con menos turnos ese día; desempate por ID (determinístico).
         return mechanics
-            .OrderBy(m => workloads.FirstOrDefault(w => w.MechanicId == m)?.Count ?? 0)
+            .OrderBy(m => workloads.GetValueOrDefault(m))
             .ThenBy(m => m)
             .FirstOrDefault();
+    }
+
+    private async Task<Dictionary<Guid, int>> WorkloadsAsync(DateOnly date, TimeZoneInfo zone, CancellationToken ct)
+    {
+        var dayStart = LocalToUtc(date, TimeOnly.MinValue, zone);
+        var dayEnd = LocalToUtc(date.AddDays(1), TimeOnly.MinValue, zone);
+
+        var rows = await _db.Set<Appointment>().AsNoTracking()
+            .Where(a => a.ScheduledAt >= dayStart && a.ScheduledAt < dayEnd
+                     && a.Status != AppointmentStatus.Cancelled
+                     && a.MechanicMembershipId != null)
+            .GroupBy(a => a.MechanicMembershipId!.Value)
+            .Select(g => new { MechanicId = g.Key, Count = g.Count() })
+            .ToListAsync(ct);
+        return rows.ToDictionary(r => r.MechanicId, r => r.Count);
+    }
+
+    // ── A-05: validación de horario y solapamiento ───────────────────────────
+
+    public async Task<SlotConflict?> CheckSlotAsync(
+        Guid mechanicId, DateTimeOffset start, int minutes, Guid? excludeAppointmentId, CancellationToken ct)
+    {
+        var zone = await ZoneAsync(ct);
+        var end = start.AddMinutes(minutes);
+        var localDay = LocalDay(start, zone);
+
+        // Horario: solo se exige si el mecánico tiene alguno cargado (sin horarios configurados, no se restringe).
+        var rules = await _db.Set<AvailabilityRule>().AsNoTracking()
+            .Where(r => r.MechanicMembershipId == mechanicId)
+            .ToListAsync(ct);
+
+        if (rules.Count > 0)
+        {
+            var dayExceptions = await _db.Set<AvailabilityException>().AsNoTracking()
+                .Where(e => e.Date == localDay)
+                .ToListAsync(ct);
+
+            var blocked = dayExceptions.FirstOrDefault(e =>
+                e.IsBlocked && (e.MechanicMembershipId == null || e.MechanicMembershipId == mechanicId));
+            if (blocked is not null)
+                return new SlotConflict("Ese día está bloqueado" + (string.IsNullOrWhiteSpace(blocked.Reason) ? "." : $" ({blocked.Reason})."));
+
+            var rule = rules.FirstOrDefault(r => r.DayOfWeek == localDay.DayOfWeek);
+            if (rule is null)
+                return new SlotConflict("El mecánico no atiende ese día de la semana.");
+
+            var window = EffectiveWindow(rule, dayExceptions)!.Value;
+            var winStart = LocalToUtc(localDay, window.Start, zone);
+            var winEnd = LocalToUtc(localDay, window.End, zone);
+            if (start < winStart || end > winEnd)
+                return new SlotConflict($"Queda fuera del horario del mecánico ({window.Start:HH\\:mm} a {window.End:HH\\:mm}).");
+        }
+
+        // Solapamiento con otros turnos abiertos del mismo mecánico.
+        var others = await _db.Set<Appointment>().AsNoTracking()
+            .Where(a => a.MechanicMembershipId == mechanicId
+                     && a.Status != AppointmentStatus.Cancelled && a.Status != AppointmentStatus.Completed
+                     && a.ScheduledAt < end && a.ScheduledAt >= start.AddHours(-24)
+                     && (excludeAppointmentId == null || a.Id != excludeAppointmentId))
+            .ToListAsync(ct);
+
+        var overlap = others.FirstOrDefault(a => a.ScheduledAt.AddMinutes(a.TotalDurationMinutes) > start);
+        if (overlap is not null)
+        {
+            var from = TimeZoneInfo.ConvertTime(overlap.ScheduledAt, zone);
+            var to = from.AddMinutes(overlap.TotalDurationMinutes);
+            return new SlotConflict($"El mecánico ya tiene un turno de {from:HH\\:mm} a {to:HH\\:mm}.");
+        }
+
+        return null;
+    }
+
+    public async Task<AvailabilitySlotDto?> FindNextFreeSlotAsync(
+        Guid? mechanicId, DateTimeOffset from, int minutes, CancellationToken ct)
+    {
+        var zone = await ZoneAsync(ct);
+        var firstDay = LocalDay(from, zone);
+
+        for (var offset = 0; offset < 14; offset++)
+        {
+            var slots = await GetAvailabilitySlotsAsync(firstDay.AddDays(offset), minutes, ct);
+            var next = slots.FirstOrDefault(s => s.Start >= from && (mechanicId is null || s.MechanicMembershipId == mechanicId));
+            if (next is not null) return next;
+        }
+
+        return null;
+    }
+
+    public async Task<(Guid? MechanicId, SlotConflict? Conflict)> PickMechanicAsync(
+        DateTimeOffset start, int minutes, CancellationToken ct)
+    {
+        var zone = await ZoneAsync(ct);
+        var localDay = LocalDay(start, zone);
+
+        // Mecánicos con horario cargado ese día de la semana.
+        var mechanics = await _db.Set<AvailabilityRule>().AsNoTracking()
+            .Where(r => r.DayOfWeek == localDay.DayOfWeek)
+            .Select(r => r.MechanicMembershipId)
+            .Distinct()
+            .ToListAsync(ct);
+
+        if (mechanics.Count == 0) return (null, null);
+
+        var workloads = await WorkloadsAsync(localDay, zone, ct);
+        SlotConflict? last = null;
+
+        foreach (var id in mechanics.OrderBy(m => workloads.GetValueOrDefault(m)).ThenBy(m => m))
+        {
+            var conflict = await CheckSlotAsync(id, start, minutes, null, ct);
+            if (conflict is null) return (id, null);
+            last = conflict;
+        }
+
+        return (null, last ?? new SlotConflict("Ningún mecánico está libre en ese horario."));
+    }
+
+    public async Task<CustomerContact?> GetCustomerContactAsync(Guid customerId, CancellationToken ct) =>
+        await _db.Set<Customer>().AsNoTracking()
+            .Where(c => c.Id == customerId)
+            .Select(c => new CustomerContact(c.Name, c.Email, c.DoNotContact))
+            .FirstOrDefaultAsync(ct);
+
+    public async Task<PublicAppointmentDto?> GetPublicSummaryAsync(byte[] tokenHash, CancellationToken ct)
+    {
+        var appt = await _db.Set<Appointment>().AsNoTracking().IgnoreQueryFilters()
+            .Include(a => a.Services)
+            .FirstOrDefaultAsync(a => a.ConfirmationTokenHash != null && a.ConfirmationTokenHash == tokenHash, ct);
+
+        if (appt is null || appt.Status is not (AppointmentStatus.Pending or AppointmentStatus.Confirmed))
+            return null;
+
+        var zone = await LoadZoneAsync(appt.TenantId, ct);
+        var vehicle = await _db.Set<Vehicle>().AsNoTracking().IgnoreQueryFilters()
+            .Where(v => v.Id == appt.VehicleId)
+            .Select(v => new { v.Brand, v.Model })
+            .FirstOrDefaultAsync(ct);
+
+        var ids = appt.Services.Select(s => s.CatalogItemId).ToList();
+        var serviceNames = await _db.Set<CatalogItem>().AsNoTracking().IgnoreQueryFilters()
+            .Where(c => ids.Contains(c.Id))
+            .Select(c => c.Name)
+            .ToListAsync(ct);
+
+        var label = vehicle is null ? null : $"{vehicle.Brand} {vehicle.Model}".Trim();
+        return new PublicAppointmentDto(
+            appt.ScheduledAt, zone.Id, appt.TotalDurationMinutes, appt.Status,
+            string.IsNullOrEmpty(label) ? null : label, serviceNames);
+    }
+
+    public async Task<IReadOnlyList<AvailabilityExceptionDto>> GetExceptionsRangeAsync(
+        DateOnly from, DateOnly to, CancellationToken ct)
+    {
+        var rows = await _db.Set<AvailabilityException>().AsNoTracking()
+            .Where(e => e.Date >= from && e.Date <= to)
+            .OrderBy(e => e.Date)
+            .ToListAsync(ct);
+
+        var names = await MechanicNamesAsync(
+            rows.Where(e => e.MechanicMembershipId.HasValue).Select(e => e.MechanicMembershipId!.Value).Distinct().ToList(), ct);
+
+        return rows.Select(e => new AvailabilityExceptionDto(
+            e.Id, e.MechanicMembershipId,
+            e.MechanicMembershipId.HasValue ? names.GetValueOrDefault(e.MechanicMembershipId.Value) : null,
+            e.Date, e.IsBlocked, e.StartTime, e.EndTime, e.Reason)).ToList();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

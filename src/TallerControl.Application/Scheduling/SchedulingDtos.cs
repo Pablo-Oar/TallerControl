@@ -82,7 +82,8 @@ public sealed record CreateAppointmentRequest(
     Guid? MechanicMembershipId,
     DateTimeOffset ScheduledAt,
     IReadOnlyList<AppointmentServiceRequest> Services,
-    string? Notes = null);
+    string? Notes = null,
+    bool Force = false);
 
 /// <summary>Servicio a incluir en el turno al crearlo.</summary>
 public sealed record AppointmentServiceRequest(
@@ -92,7 +93,22 @@ public sealed record AppointmentServiceRequest(
 public sealed record UpdateAppointmentRequest(
     DateTimeOffset ScheduledAt,
     Guid? MechanicMembershipId,
-    string? Notes = null);
+    string? Notes = null,
+    bool Force = false);
+
+/// <summary>
+/// Lo que ve el cliente al abrir el enlace de su turno. DTO dedicado: sin datos del taller ni la patente.
+/// </summary>
+public sealed record PublicAppointmentDto(
+    DateTimeOffset ScheduledAt,
+    string TimeZone,
+    int TotalDurationMinutes,
+    AppointmentStatus Status,
+    string? VehicleLabel,
+    IReadOnlyList<string> Services);
+
+/// <summary>Respuesta de POST /api/v1/appointments/{id}/public-link (el token solo se ve una vez).</summary>
+public sealed record AppointmentLinkResponse(string Token);
 
 /// <summary>Cuerpo de DELETE /api/v1/appointments/{id}.</summary>
 public sealed record CancelAppointmentRequest(

@@ -158,6 +158,8 @@ internal sealed class OutboxDispatcher : BackgroundService
                 return Single(BuildQrOtpEmail(message.PayloadJson));
             case "qr.found_keys_alert":
                 return await BuildFoundKeysAlertAsync(message.PayloadJson, db, frontendBase, now, ct);
+            case "email.appointment":
+                return Single(BuildAppointmentEmail(message.PayloadJson, frontendBase));
             case "reminder.due":
                 return Single(BuildReminderEmail(message.PayloadJson));
             default:
@@ -166,6 +168,38 @@ internal sealed class OutboxDispatcher : BackgroundService
 
         static IReadOnlyList<EmailMessage> Single(EmailMessage? email) => email is null ? [] : [email];
     }
+
+    private static EmailMessage? BuildAppointmentEmail(string json, string frontendBase)
+    {
+        var payload = JsonSerializer.Deserialize<AppointmentPayload>(json, PayloadOptions);
+        if (payload is null || string.IsNullOrWhiteSpace(payload.To)) return null;
+
+        TimeZoneInfo zone;
+        try
+        {
+            zone = TimeZoneInfo.FindSystemTimeZoneById(payload.TimeZone);
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            zone = TimeZoneInfo.Utc;
+        }
+
+        var local = TimeZoneInfo.ConvertTime(payload.ScheduledAt, zone);
+        var when = local.ToString("dddd d 'de' MMMM 'a las' HH:mm", System.Globalization.CultureInfo.GetCultureInfo("es-AR"));
+        var link = $"{frontendBase}/t/{Uri.EscapeDataString(payload.Token)}";
+
+        return new EmailMessage(
+            To: payload.To,
+            Subject: "Tu turno en el taller — confirmalo",
+            HtmlBody: $"""
+                <p>Hola {System.Net.WebUtility.HtmlEncode(payload.CustomerName)},</p>
+                <p>Te reservamos un turno para el <b>{when}</b>.</p>
+                <p><a href="{link}">Confirmar mi turno</a></p>
+                <p>Si no podés asistir, avisanos desde el mismo enlace.</p>
+                """);
+    }
+
+    private sealed record AppointmentPayload(string To, string CustomerName, string Token, DateTimeOffset ScheduledAt, string TimeZone);
 
     private static EmailMessage? BuildQrOtpEmail(string json)
     {

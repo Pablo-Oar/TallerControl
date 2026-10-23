@@ -149,11 +149,11 @@ public sealed class AppointmentsTests : IAsyncLifetime
         var (_, token, _) = await CreateAppointmentAsync(client);
 
         // Primera confirmación → 200
-        var resp1 = await client.GetAsync($"/api/public/v1/appointments/{token}/confirm");
+        var resp1 = await client.PostAsync($"/api/public/v1/appointments/{token}/confirm", null);
         Assert.Equal(HttpStatusCode.OK, resp1.StatusCode);
 
         // Segunda confirmación del mismo token → 409
-        var resp2 = await client.GetAsync($"/api/public/v1/appointments/{token}/confirm");
+        var resp2 = await client.PostAsync($"/api/public/v1/appointments/{token}/confirm", null);
         Assert.Equal(HttpStatusCode.Conflict, resp2.StatusCode);
     }
 
@@ -195,5 +195,160 @@ public sealed class AppointmentsTests : IAsyncLifetime
 
         var resp = await client.SendAsync(req);
         Assert.Equal(HttpStatusCode.NoContent, resp.StatusCode);
+    }
+
+    // ── A-05 / A-03 / A-04 ─────────────────────────────────────────────────────
+
+    /// <summary>Hora local del taller (Argentina, UTC-3 sin horario de verano) de mañana, a la hora indicada.</summary>
+    private static (DateTimeOffset Utc, DateOnly LocalDay) TomorrowAt(int hour)
+    {
+        var localDay = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-3)).AddDays(1);
+        return (new DateTimeOffset(localDay.ToDateTime(new TimeOnly(hour, 0)), TimeSpan.Zero).AddHours(3), localDay);
+    }
+
+    private async Task<HttpResponseMessage> PostAppointmentAsync(
+        HttpClient client, DateTimeOffset at, Guid? mechanic, bool force = false)
+    {
+        var csrf = await FetchCsrfAsync(client);
+        var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/appointments")
+        {
+            Content = JsonContent.Create(new
+            {
+                customerId = _factory.CustomerId,
+                vehicleId = _factory.VehicleId,
+                mechanicMembershipId = mechanic,
+                scheduledAt = at,
+                force,
+                services = new[] { new { catalogItemId = _factory.CatalogItemId } },
+            }),
+        };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        return await client.SendAsync(req);
+    }
+
+    private static async Task<HttpResponseMessage> PostJsonAsync(HttpClient client, string url, object? body)
+    {
+        var csrf = await FetchCsrfAsync(client);
+        var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = JsonContent.Create(body ?? new { }) };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        return await client.SendAsync(req);
+    }
+
+    [Fact(DisplayName = "T-APT-05: No se pisa el turno de un mecánico (justo antes y justo después sí); el Dueño puede forzar y el mecánico no")]
+    public async Task No_se_pisan_turnos_del_mismo_mecanico()
+    {
+        using var owner = CreateClient();
+        using var mechanic = CreateClient();
+        await LoginAsync(owner, AppointmentsWebApplicationFactory.OwnerEmail);
+        await LoginAsync(mechanic, AppointmentsWebApplicationFactory.MechanicEmail);
+        var m = _factory.MechanicMembershipId;
+        var (ten, _) = TomorrowAt(10); // el servicio dura 60 min con su intervalo
+
+        Assert.Equal(HttpStatusCode.Created, (await PostAppointmentAsync(owner, ten, m)).StatusCode);
+
+        // Encima del existente → 422 con el motivo.
+        var clash = await PostAppointmentAsync(owner, ten.AddMinutes(30), m);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, clash.StatusCode);
+        Assert.Contains("ya tiene un turno", await clash.Content.ReadAsStringAsync());
+
+        // Justo antes (termina cuando empieza el otro) y justo después → libres.
+        Assert.Equal(HttpStatusCode.Created, (await PostAppointmentAsync(owner, ten.AddMinutes(-60), m)).StatusCode);
+        Assert.Equal(HttpStatusCode.Created, (await PostAppointmentAsync(owner, ten.AddMinutes(60), m)).StatusCode);
+
+        // El Dueño puede forzar; el mecánico no.
+        Assert.Equal(HttpStatusCode.Created, (await PostAppointmentAsync(owner, ten.AddMinutes(30), m, force: true)).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await PostAppointmentAsync(mechanic, ten.AddMinutes(30), m, force: true)).StatusCode);
+    }
+
+    [Fact(DisplayName = "T-APT-06: Con horario cargado, un turno fuera del horario o en un día bloqueado se rechaza (hora local del taller)")]
+    public async Task Respeta_horarios_y_bloqueos()
+    {
+        using var owner = CreateClient();
+        await LoginAsync(owner, AppointmentsWebApplicationFactory.OwnerEmail);
+        var m = _factory.MechanicMembershipId;
+        var (tenAm, day) = TomorrowAt(10);
+
+        var rule = await PostJsonAsync(owner, "/api/v1/availability/rules", new
+        {
+            mechanicMembershipId = m,
+            dayOfWeek = day.DayOfWeek.ToString().ToLowerInvariant(),
+            startTime = "09:00:00",
+            endTime = "12:00:00",
+        });
+        Assert.Equal(HttpStatusCode.Created, rule.StatusCode);
+
+        // 10:00 local está dentro; 14:00 local, fuera.
+        Assert.Equal(HttpStatusCode.Created, (await PostAppointmentAsync(owner, tenAm, m)).StatusCode);
+        var late = await PostAppointmentAsync(owner, TomorrowAt(14).Utc, m);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, late.StatusCode);
+        Assert.Contains("fuera del horario", await late.Content.ReadAsStringAsync());
+
+        // Día bloqueado para todo el taller.
+        var block = await PostJsonAsync(owner, "/api/v1/availability/exceptions", new
+        {
+            date = day.ToString("yyyy-MM-dd"),
+            isBlocked = true,
+            reason = "Feriado",
+        });
+        Assert.Equal(HttpStatusCode.Created, block.StatusCode);
+        var blocked = await PostAppointmentAsync(owner, TomorrowAt(11).Utc, m);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, blocked.StatusCode);
+        Assert.Contains("Feriado", await blocked.Content.ReadAsStringAsync());
+
+        // Las excepciones se listan por rango.
+        var list = await owner.GetFromJsonAsync<JsonElement>($"/api/v1/availability/exceptions?from={day:yyyy-MM-dd}&to={day:yyyy-MM-dd}");
+        Assert.Single(list.EnumerateArray());
+    }
+
+    [Fact(DisplayName = "T-APT-07: El enlace del turno muestra un resumen sin datos del taller, confirma, cancela con «No puedo ir» y se puede reemplazar")]
+    public async Task Enlace_publico_del_turno()
+    {
+        using var owner = CreateClient();
+        using var anon = CreateClient();
+        await LoginAsync(owner, AppointmentsWebApplicationFactory.OwnerEmail);
+
+        var (id, token, _) = await CreateAppointmentAsync(owner);
+
+        var summary = await anon.GetAsync($"/api/public/v1/appointments/{token}");
+        Assert.Equal(HttpStatusCode.OK, summary.StatusCode);
+        var body = await summary.Content.ReadAsStringAsync();
+        Assert.Contains("Servicio Prueba Agenda", body);
+        Assert.DoesNotContain("APT001", body);          // la patente nunca viaja
+        Assert.DoesNotContain("Cliente Agenda", body);   // ni el nombre del cliente
+        Assert.Contains("no-store", summary.Headers.CacheControl?.ToString());
+
+        // El dueño pide un enlace nuevo: el viejo deja de servir.
+        var fresh = await (await PostJsonAsync(owner, $"/api/v1/appointments/{id}/public-link", null)).Content.ReadFromJsonAsync<JsonElement>();
+        var newToken = fresh.GetProperty("token").GetString()!;
+        Assert.Equal(HttpStatusCode.NotFound, (await anon.GetAsync($"/api/public/v1/appointments/{token}")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await anon.GetAsync($"/api/public/v1/appointments/{newToken}")).StatusCode);
+
+        // «No puedo ir» cancela el turno con ese motivo y el enlace deja de servir.
+        Assert.Equal(HttpStatusCode.OK, (await anon.PostAsync($"/api/public/v1/appointments/{newToken}/decline", null)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await anon.GetAsync($"/api/public/v1/appointments/{newToken}")).StatusCode);
+        var detail = await owner.GetFromJsonAsync<JsonElement>($"/api/v1/appointments/{id}");
+        Assert.Equal("cancelled", detail.GetProperty("status").GetString());
+        Assert.Contains("no puede asistir", detail.GetProperty("cancellationReason").GetString());
+
+        // Un token inventado es un 404 uniforme.
+        Assert.Equal(HttpStatusCode.NotFound, (await anon.GetAsync("/api/public/v1/appointments/token-que-no-existe")).StatusCode);
+    }
+
+    [Fact(DisplayName = "T-APT-08: Los turnos se agrupan por día del taller, no por día UTC (22:00 locales es otro día en UTC)")]
+    public async Task Los_dias_son_del_taller()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, AppointmentsWebApplicationFactory.OwnerEmail);
+        var (night, day) = TomorrowAt(22);
+
+        var created = await PostAppointmentAsync(client, night, null);
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        var id = (await created.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("appointment").GetProperty("id").GetString();
+
+        var sameDay = await client.GetFromJsonAsync<JsonElement>($"/api/v1/appointments?date={day:yyyy-MM-dd}");
+        Assert.Contains(sameDay.GetProperty("items").EnumerateArray(), x => x.GetProperty("id").GetString() == id);
+
+        var nextDay = await client.GetFromJsonAsync<JsonElement>($"/api/v1/appointments?date={day.AddDays(1):yyyy-MM-dd}");
+        Assert.DoesNotContain(nextDay.GetProperty("items").EnumerateArray(), x => x.GetProperty("id").GetString() == id);
     }
 }
