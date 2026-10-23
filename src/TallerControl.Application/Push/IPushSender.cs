@@ -4,7 +4,7 @@ namespace TallerControl.Application.Push;
 public sealed record PushMessage(string Title, string Body, string? Url = null);
 
 /// <summary>Resultado de un envío: dispositivos del usuario, entregados y el motivo de cada falla.</summary>
-public sealed record PushResult(int Subscriptions, int Delivered, IReadOnlyList<string> Failures);
+public sealed record PushResult(int Subscriptions, int Delivered, IReadOnlyList<string> Failures, IReadOnlyList<int>? Statuses = null);
 
 /// <summary>
 /// Envía avisos push (Web Push con VAPID) a los dispositivos de un usuario. Si el servidor no tiene claves VAPID
