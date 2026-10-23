@@ -19,6 +19,10 @@ public sealed class GetCashAccountHandler
             ?? throw new InvalidOperationException("No hay taller en la sesión.");
         var account = await _repo.FindAccountByIdAsync(tenantId, id, ct)
             ?? throw new NotFoundException("La cuenta de caja no existe.");
-        return CreateCashAccountHandler.MapToDto(account);
+        // El saldo es la suma de los movimientos: el detalle también lo informa (antes solo el listado).
+        return CreateCashAccountHandler.MapToDto(account) with
+        {
+            Balance = await _repo.GetBalanceAsync(tenantId, id, ct),
+        };
     }
 }

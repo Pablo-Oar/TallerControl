@@ -11,6 +11,7 @@ import { CounterSaleFormModal } from './CounterSaleFormModal'
 import { InvoiceSection } from '../invoicing/InvoiceSection'
 import { confirmDialog, notify } from '../../../components/ui/dialogs'
 import { ConfirmWithCashModal } from '../../../components/ConfirmWithCashModal'
+import { FormTextarea } from '../../../components/ui/FormField'
 
 const STATUS_LABELS: Record<CounterSaleStatus, string> = {
   draft: 'Borrador',
@@ -64,6 +65,9 @@ export function CounterSalesPage() {
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<CounterSaleDto | null>(null)
   const [confirming, setConfirming] = useState<CounterSaleDto | null>(null)
+  const [returning, setReturning] = useState<CounterSaleDto | null>(null)
+  const [returnReason, setReturnReason] = useState('')
+  const [returnBusy, setReturnBusy] = useState(false)
   const [creating, setCreating] = useState(false)
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -91,8 +95,26 @@ export function CounterSalesPage() {
     setSelected(null)
   }
 
+  async function handleReturn() {
+    if (!returning || !returnReason.trim()) return
+    setReturnBusy(true)
+    try {
+      await counterSalesApi.cancel(returning.id, returnReason.trim())
+      queryClient.invalidateQueries({ queryKey: ['counter-sales'] })
+      queryClient.invalidateQueries({ queryKey: ['cash-accounts'] })
+      queryClient.invalidateQueries({ queryKey: ['catalog'] })
+      queryClient.invalidateQueries({ queryKey: ['invoices'] })
+      setReturning(null)
+      setSelected(null)
+    } catch (err) {
+      notify(err instanceof ApiError ? err.detail : 'No se pudo registrar la devolución')
+    } finally {
+      setReturnBusy(false)
+    }
+  }
+
   async function handleCancel(s: CounterSaleDto) {
-    if (!(await confirmDialog('¿Cancelar la venta?', { danger: true }))) return
+    if (!(await confirmDialog('¿Descartar el borrador de la venta?', { danger: true }))) return
     try {
       await counterSalesApi.cancel(s.id)
       queryClient.invalidateQueries({ queryKey: ['counter-sales'] })
@@ -210,6 +232,12 @@ export function CounterSalesPage() {
               </div>
             )}
 
+            {detail.status === 'cancelled' && (
+              <p className="border border-tc-border bg-tc-surface px-3 py-2 text-xs text-tc-text-secondary">
+                Venta devuelta{detail.cancelReason ? `: ${detail.cancelReason}` : '.'}
+              </p>
+            )}
+
             <div>
               <p className="mb-1 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Facturación</p>
               <InvoiceSection
@@ -221,14 +249,33 @@ export function CounterSalesPage() {
             </div>
 
             <div className="flex justify-end gap-2">
+              {detail.status === 'confirmed' && (
+                <Button size="sm" variant="danger" onClick={() => { setReturning(detail); setReturnReason('') }}>Devolución</Button>
+              )}
               {detail.status === 'draft' && (
                 <>
                   <Button size="sm" onClick={() => setConfirming(detail)}>Confirmar</Button>
-                  <Button size="sm" variant="secondary" onClick={() => handleCancel(detail)}>Cancelar</Button>
+                  <Button size="sm" variant="secondary" onClick={() => handleCancel(detail)}>Descartar</Button>
                   <Button size="sm" variant="danger" onClick={() => handleDelete(detail)}>Eliminar</Button>
                 </>
               )}
               <Button size="sm" variant="secondary" onClick={() => setSelected(null)}>Cerrar</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {returning && (
+        <Modal title={`Devolución de la venta #${returning.documentNumber}`} onClose={() => setReturning(null)} className="max-w-sm">
+          <div className="space-y-4">
+            <p className="text-sm text-tc-text-secondary">
+              Los productos vuelven al stock y, si se cobró en una cuenta de Caja, el importe sale de esa cuenta. Si la venta estaba
+              facturada, se emite la <b>nota de crédito</b> en ARCA primero: si ARCA la rechaza, la devolución no se registra.
+            </p>
+            <FormTextarea label="Motivo" requiredMark rows={2} value={returnReason} onChange={e => setReturnReason(e.target.value)} />
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="secondary" size="sm" onClick={() => setReturning(null)}>Volver</Button>
+              <Button variant="danger" size="sm" loading={returnBusy} disabled={!returnReason.trim()} onClick={handleReturn}>Registrar devolución</Button>
             </div>
           </div>
         </Modal>

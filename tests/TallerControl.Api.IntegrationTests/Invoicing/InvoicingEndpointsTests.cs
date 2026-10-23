@@ -549,4 +549,29 @@ public sealed class InvoicingEndpointsTests : IAsyncLifetime
             JsonContent.Create(new { fiscalPointOfSaleId = _factory.PointOfSaleId, concept = 1 }));
         Assert.Equal(HttpStatusCode.Unauthorized, badEmitResp.StatusCode);
     }
+
+    [Fact(DisplayName = "T-INV-12: Una factura anulada con nota de crédito no se anula dos veces y el documento se puede volver a facturar")]
+    public async Task Anular_y_volver_a_facturar()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, InvoicingWebApplicationFactory.OwnerEmail, InvoicingWebApplicationFactory.Password);
+
+        var first = await PostWithCsrfAsync(client, $"/api/v1/work-orders/{_factory.WorkOrderId}/invoice",
+            new { fiscalPointOfSaleId = _factory.PointOfSaleId, concept = 1 });
+        var firstId = first.GetProperty("id").GetGuid();
+
+        // Mientras está vigente, no se factura dos veces (409).
+        Assert.Equal(HttpStatusCode.Conflict, (await PostWithCsrfRawAsync(client, $"/api/v1/work-orders/{_factory.WorkOrderId}/invoice",
+            new { fiscalPointOfSaleId = _factory.PointOfSaleId, concept = 1 })).StatusCode);
+
+        Assert.Equal(HttpStatusCode.Created, (await PostWithCsrfRawAsync(client, $"/api/v1/invoicing/invoices/{firstId}/void", new { })).StatusCode);
+
+        // Una segunda nota de crédito sobre la misma factura se rechaza.
+        Assert.Equal(HttpStatusCode.Conflict, (await PostWithCsrfRawAsync(client, $"/api/v1/invoicing/invoices/{firstId}/void", new { })).StatusCode);
+
+        // Anulada, el documento se puede volver a facturar.
+        var again = await PostWithCsrfRawAsync(client, $"/api/v1/work-orders/{_factory.WorkOrderId}/invoice",
+            new { fiscalPointOfSaleId = _factory.PointOfSaleId, concept = 1 });
+        Assert.Equal(HttpStatusCode.Created, again.StatusCode);
+    }
 }

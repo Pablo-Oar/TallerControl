@@ -25,7 +25,10 @@ public record CounterSaleDto(
     CounterSaleStatus Status,
     Guid? AccountId,
     IReadOnlyList<CounterSaleItemDto> Items,
-    uint Version);
+    uint Version,
+    string? CancelReason = null);
+
+public record CancelCounterSaleRequest(string? Reason);
 
 public record CreateCounterSaleItemRequest(
     Guid? CatalogItemId,

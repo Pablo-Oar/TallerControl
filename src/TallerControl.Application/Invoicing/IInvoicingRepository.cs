@@ -38,7 +38,10 @@ public interface IInvoicingRepository
     // ── Invoices ──────────────────────────────────────────────────────────────
 
     Task<Invoice?> FindInvoiceByIdAsync(Guid id, CancellationToken ct);
+    /// <summary>La factura vigente del documento: autorizada y sin nota de crédito (anulada, se puede volver a facturar).</summary>
     Task<Invoice?> FindAuthorizedInvoiceBySourceAsync(InvoiceSourceType sourceType, Guid sourceId, CancellationToken ct);
+
+    Task<bool> HasAuthorizedCreditNoteAsync(Guid originalInvoiceId, CancellationToken ct);
     Task<Page<InvoiceListDto>> SearchInvoicesAsync(InvoiceStatus? status, InvoiceSourceType? sourceType, Guid? sourceId, int page, int pageSize, CancellationToken ct);
     Task<InvoiceDto?> GetInvoiceDtoAsync(Guid id, CancellationToken ct);
     Task AddInvoiceAsync(Invoice invoice, CancellationToken ct);
