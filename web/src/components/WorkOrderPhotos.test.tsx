@@ -25,6 +25,9 @@ function renderIt(canDelete = false) {
 
 describe('WorkOrderPhotos', () => {
   beforeEach(() => {
+    // jsdom no implementa las URL de vista previa local.
+    URL.createObjectURL = vi.fn(() => 'blob:preview')
+    URL.revokeObjectURL = vi.fn()
     api.listForWorkOrder.mockReset().mockResolvedValue([])
     api.upload.mockReset().mockResolvedValue({})
     api.delete.mockReset().mockResolvedValue(undefined)
@@ -76,6 +79,37 @@ describe('WorkOrderPhotos', () => {
     await userEvent.upload(input, new File(['x'], 'foto.jpg', { type: 'image/jpeg' }))
     await waitFor(() => expect(api.upload).toHaveBeenCalledTimes(1))
     expect(api.upload.mock.calls[0].slice(0, 2)).toEqual(['work_order', 'wo1'])
+  })
+
+  it('muestra la foto elegida al instante con «Subiendo…» y la reemplaza por la del servidor', async () => {
+    let finish!: () => void
+    api.upload.mockReturnValue(new Promise<void>(resolve => { finish = resolve }))
+    renderIt()
+    await screen.findByText(/sin fotos todavía/i)
+
+    await userEvent.upload(screen.getByLabelText('Sacar foto'), new File(['x'], 'foto.jpg', { type: 'image/jpeg' }))
+    // Antes de que el servidor responda ya está la vista previa local con el aviso.
+    expect(await screen.findByText(/subiendo…/i)).toBeInTheDocument()
+    expect(screen.getByAltText(/foto que se está subiendo/i)).toHaveAttribute('src', 'blob:preview')
+
+    api.listForWorkOrder.mockResolvedValue([photo])
+    finish()
+    await waitFor(() => expect(screen.queryByText(/subiendo…/i)).toBeNull())
+    expect(await screen.findByAltText(/foto 1 de la orden/i)).toBeInTheDocument()
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:preview')
+  })
+
+  it('si la subida falla deja la foto con «No se subió» y permite reintentar o descartar', async () => {
+    api.upload.mockRejectedValueOnce(new Error('sin red'))
+    renderIt()
+    await screen.findByText(/sin fotos todavía/i)
+
+    await userEvent.upload(screen.getByLabelText('Sacar foto'), new File(['x'], 'foto.jpg', { type: 'image/jpeg' }))
+    expect(await screen.findByText(/no se subió/i)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: /reintentar/i }))
+    await waitFor(() => expect(api.upload).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(screen.queryByText(/no se subió/i)).toBeNull())
   })
 
   it('en escritorio (puntero fino) ofrece un solo botón "Adjuntar imágenes" y sube varias', async () => {

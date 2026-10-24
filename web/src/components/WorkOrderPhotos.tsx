@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { attachmentsApi } from '../lib/api/attachments'
 import { Button } from './ui/Button'
@@ -37,6 +37,14 @@ export async function prepareImage(file: File): Promise<File> {
   }
 }
 
+/** Foto que se está subiendo: se muestra al instante con la imagen local, sin esperar al servidor. */
+interface PendingPhoto {
+  key: string
+  file: File
+  previewUrl: string
+  status: 'queued' | 'uploading' | 'failed'
+}
+
 interface Props {
   workOrderId: string
   /** Dueño y administrativo pueden quitar fotos; el mecánico solo agrega. */
@@ -51,6 +59,13 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = fal
   const galleryRef = useRef<HTMLInputElement>(null)
   const [broken, setBroken] = useState<Set<string>>(new Set())
   const [error, setError] = useState<string | null>(null)
+  const [pending, setPending] = useState<PendingPhoto[]>([])
+  const pendingRef = useRef(pending)
+  pendingRef.current = pending
+  const nextKey = useRef(0)
+
+  // Al salir de la pantalla se liberan las vistas previas locales.
+  useEffect(() => () => pendingRef.current.forEach(p => URL.revokeObjectURL(p.previewUrl)), [])
   const queryKey = ['work-order-attachments', workOrderId]
 
   const { data: attachments } = useQuery({
@@ -75,29 +90,65 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = fal
   const touch = typeof window.matchMedia !== 'function' || window.matchMedia('(pointer: coarse)').matches
   const [dragging, setDragging] = useState(false)
 
-  async function uploadFiles(files: File[]) {
+  function setStatus(key: string, status: PendingPhoto['status']) {
+    setPending(list => list.map(p => (p.key === key ? { ...p, status } : p)))
+  }
+
+  function discard(key: string) {
+    setPending(list => {
+      const found = list.find(p => p.key === key)
+      if (found) URL.revokeObjectURL(found.previewUrl)
+      return list.filter(p => p.key !== key)
+    })
+  }
+
+  /** Sube de a una (en orden). Cada foto aparece en la grilla apenas se elige, con su vista previa local. */
+  async function uploadQueue(items: PendingPhoto[]) {
+    for (const item of items) {
+      setStatus(item.key, 'uploading')
+      try {
+        await upload.mutateAsync(item.file) // al resolver, la lista del servidor ya está refrescada
+        discard(item.key)
+      } catch {
+        setStatus(item.key, 'failed') // el error ya lo muestra la mutación
+        // Las que seguían en cola quedan para reintentar: no se insiste con una conexión caída.
+        setPending(list => list.map(p => (p.status === 'queued' && items.some(i => i.key === p.key) ? { ...p, status: 'failed' } : p)))
+        return
+      }
+    }
+  }
+
+  function uploadFiles(files: File[]) {
     setError(null)
     const valid = files.filter(f => ACCEPTED.includes(f.type))
     if (valid.length < files.length) setError('Las fotos deben ser JPG, PNG o WebP.')
-    for (const file of valid) {
-      try {
-        await upload.mutateAsync(file)
-      } catch {
-        break // el error ya lo muestra la mutación
-      }
-    }
+    if (valid.length === 0) return
+    const items: PendingPhoto[] = valid.map(file => ({
+      key: `local-${nextKey.current++}`, // sin crypto.randomUUID: no existe fuera de https/localhost (p. ej. por IP de la red)
+      file,
+      previewUrl: URL.createObjectURL(file),
+      status: 'queued',
+    }))
+    setPending(list => [...list, ...items])
+    void uploadQueue(items)
+  }
+
+  function retry(item: PendingPhoto) {
+    setError(null)
+    setStatus(item.key, 'queued')
+    void uploadQueue([item])
   }
 
   function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
     e.target.value = '' // permite volver a elegir el mismo archivo
-    if (files.length) void uploadFiles(files)
+    if (files.length) uploadFiles(files)
   }
 
   function onDrop(e: React.DragEvent) {
     e.preventDefault()
     setDragging(false)
-    if (!touch) void uploadFiles(Array.from(e.dataTransfer.files))
+    if (!touch) uploadFiles(Array.from(e.dataTransfer.files))
   }
 
   const photos = (attachments ?? []).filter(a => a.status === 'ready' && a.contentType.startsWith('image/') && a.downloadUrl)
@@ -113,7 +164,7 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = fal
       onDragLeave={() => setDragging(false)}
       onDrop={onDrop}
     >
-      {photos.length === 0 ? (
+      {photos.length === 0 && pending.length === 0 ? (
         <p className="text-sm text-tc-text-muted">Sin fotos todavía.</p>
       ) : (
         <ul className="grid grid-cols-3 gap-2 md:grid-cols-6 xl:grid-cols-8" aria-label="Fotos de la orden">
@@ -146,6 +197,42 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = fal
                 >
                   ×
                 </button>
+              )}
+            </li>
+          ))}
+          {pending.map(p => (
+            <li key={p.key} className="relative" aria-live="polite">
+              <div className="relative block overflow-hidden border border-tc-border bg-tc-surface">
+                <img src={p.previewUrl} alt="Foto que se está subiendo" className={`aspect-square w-full object-cover ${p.status === 'failed' ? 'opacity-40' : 'opacity-70'}`} />
+                <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-tc-navy/80 px-1 py-1 text-[11px] font-semibold text-white">
+                  {p.status === 'failed' ? (
+                    <span>No se subió</span>
+                  ) : (
+                    <>
+                      <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true" />
+                      <span>{p.status === 'uploading' ? 'Subiendo…' : 'En cola…'}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              {p.status === 'failed' && (
+                <div className="absolute right-1 top-1 flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => retry(p)}
+                    className="min-h-[28px] bg-tc-purple px-2 text-[11px] font-bold text-white hover:opacity-90"
+                  >
+                    Reintentar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => discard(p.key)}
+                    aria-label="Descartar foto"
+                    className="flex h-7 w-7 items-center justify-center bg-tc-navy/80 text-xs font-bold text-white hover:bg-tc-stamp-red"
+                  >
+                    ×
+                  </button>
+                </div>
               )}
             </li>
           ))}
