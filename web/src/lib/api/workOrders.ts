@@ -174,10 +174,13 @@ export const workOrdersApi = {
     customerId?: string | null,
     /** Búsqueda por patente (en el servidor, sin guiones ni espacios). */
     plate?: string | null,
+    /** false = solo en juego (sin entregadas ni anuladas); true = solo cerradas; omitido = todas. */
+    closed?: boolean | null,
   ) => {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
     if (customerId) params.set('customerId', customerId)
     if (plate) params.set('plate', plate)
+    if (closed != null) params.set('closed', String(closed))
     if (assignment) params.set('assignment', assignment)
     if (sort) {
       params.set('sort', sort.key)

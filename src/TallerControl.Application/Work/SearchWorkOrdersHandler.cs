@@ -31,7 +31,8 @@ public sealed class SearchWorkOrdersHandler
         SortSpec sort,
         CancellationToken ct,
         Guid? customerId = null,
-        string? plate = null)
+        string? plate = null,
+        bool? closed = null)
     {
         _ = _tenantContext.TenantId ?? throw new InvalidOperationException("No hay taller en la sesión.");
 
@@ -42,6 +43,6 @@ public sealed class SearchWorkOrdersHandler
         return await _repo.SearchAsync(
             status, mechanicId, vehicleId, withBalance, from, to,
             mechanicFilterForced, forcedMechanicId, assignment,
-            page, pageSize, includePrices, sort, ct, customerId, plate);
+            page, pageSize, includePrices, sort, ct, customerId, plate, closed);
     }
 }

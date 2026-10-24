@@ -1080,6 +1080,36 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.Forbidden, (await mechanic.SendAsync(patch)).StatusCode);
     }
 
+    [Fact(DisplayName = "T-WO-22: closed=false oculta las entregadas y anuladas; closed=true las muestra (portal del mecánico)")]
+    public async Task Listado_separa_ordenes_en_juego_y_cerradas()
+    {
+        using var owner = CreateClient();
+        using var mechanic = CreateClient();
+        await LoginAsync(owner, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+        await LoginAsync(mechanic, WorkOrdersWebApplicationFactory.MechanicEmail, WorkOrdersWebApplicationFactory.Password);
+
+        var open = (await CreateOrderAsync(owner)).GetProperty("id").GetGuid();
+        var toCancel = (await CreateOrderAsync(owner)).GetProperty("id").GetGuid();
+        Assert.Equal(HttpStatusCode.OK, (await ChangeStatusAsync(owner, toCancel, "cancelled", cancelReason: "Prueba T-WO-22")).StatusCode);
+
+        async Task<HashSet<Guid>> IdsAsync(HttpClient who, string query) =>
+            (await who.GetFromJsonAsync<JsonElement>($"/api/v1/work-orders?{query}&pageSize=100"))
+                .GetProperty("items").EnumerateArray().Select(i => i.GetProperty("id").GetGuid()).ToHashSet();
+
+        var inPlay = await IdsAsync(mechanic, "closed=false");
+        Assert.Contains(open, inPlay);
+        Assert.DoesNotContain(toCancel, inPlay);
+
+        var closed = await IdsAsync(mechanic, "closed=true");
+        Assert.Contains(toCancel, closed);
+        Assert.DoesNotContain(open, closed);
+
+        // Sin el parámetro (panel del taller) se ven todas.
+        var all = await IdsAsync(owner, "assignment=all");
+        Assert.Contains(open, all);
+        Assert.Contains(toCancel, all);
+    }
+
     [Fact(DisplayName = "T-WO-21: La búsqueda por patente se resuelve en el servidor (sin guiones ni espacios)")]
     public async Task Busqueda_por_patente_en_el_servidor()
     {
