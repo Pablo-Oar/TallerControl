@@ -19,7 +19,7 @@ const TABS: { id: Tab; label: string; empty: string }[] = [
   { id: 'unassigned', label: 'Sin asignar', empty: 'No hay órdenes sin asignar.' },
 ]
 
-// «En juego» (por defecto) deja afuera las entregadas y anuladas; «Cerradas» las muestra.
+// «Activas» (por defecto) deja afuera las entregadas y anuladas; «Cerradas» las muestra.
 const MECHANIC_STATUSES: WorkOrderStatus[] = ['pending', 'in_progress', 'waiting_parts', 'completed']
 
 type StatusFilter = WorkOrderStatus | 'open' | 'closed'
@@ -78,7 +78,7 @@ export function MechanicWorkOrdersPage() {
               : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'
           }`}
         >
-          En juego
+          Activas
         </button>
         {MECHANIC_STATUSES.map(s => (
           <button

@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { OfflineBanner } from '../../components/OfflineBanner'
-import { Route, Routes, useNavigate } from 'react-router'
+import { Route, Routes, useNavigate, useSearchParams } from 'react-router'
 import { PlateSearchBar } from '../../components/PlateSearchBar'
 import { PwaInstallBanner } from './PwaInstallBanner'
 import { PushTestButton } from './PushTestButton'
@@ -15,6 +15,9 @@ const MechanicWorkOrderDetailPage = lazy(() => import('./MechanicWorkOrderDetail
 export function Component() {
   const navigate = useNavigate()
   const { logout } = useAuth()
+  // El aviso de prueba es una herramienta de diagnóstico (soporte): solo aparece con `?diag=1`, no en el uso diario.
+  const [params] = useSearchParams()
+  const showDiagnostics = params.get('diag') === '1'
 
   async function handleLogout() {
     try {
@@ -50,7 +53,7 @@ export function Component() {
           <Button variant="secondary" className="min-h-[44px]" onClick={handleLogout}>
             Cerrar sesión
           </Button>
-          <PushTestButton />
+          {showDiagnostics && <PushTestButton />}
         </div>
       </main>
     </div>
