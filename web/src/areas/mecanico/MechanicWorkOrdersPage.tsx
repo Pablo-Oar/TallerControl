@@ -57,7 +57,7 @@ export function MechanicWorkOrdersPage() {
             role="tab"
             aria-selected={tab === t.id}
             onClick={() => { setTab(t.id); setPage(1) }}
-            className={`min-h-[44px] flex-1 border-b-2 px-3 text-sm font-bold tracking-wider uppercase transition-colors ${
+            className={`min-h-[44px] flex-1 whitespace-nowrap border-b-2 px-1 text-xs font-bold tracking-wide uppercase transition-colors ${
               tab === t.id
                 ? 'border-tc-purple text-tc-purple'
                 : 'border-transparent text-tc-text-secondary hover:text-tc-text-secondary'
@@ -69,7 +69,7 @@ export function MechanicWorkOrdersPage() {
       </div>
 
       {/* Filtros de estado — chips horizontales */}
-      <div className="flex flex-wrap gap-2">
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <button
           onClick={() => { setStatusFilter('open'); setPage(1) }}
           className={`min-h-[40px] whitespace-nowrap border px-3 py-1 text-xs font-bold tracking-wider uppercase transition-colors ${
@@ -117,7 +117,7 @@ export function MechanicWorkOrdersPage() {
       {error && <LoadError what="los trabajos" onRetry={() => refetch()} />}
 
       {data && (
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {q && (
             <div className="flex items-center justify-between gap-2 border border-tc-border bg-white px-3 py-2 text-sm">
               <span>
@@ -141,37 +141,51 @@ export function MechanicWorkOrdersPage() {
                   : TABS.find(t => t.id === tab)!.empty}
             </p>
           )}
-          {visible.map(order => (
-            <Link
-              key={order.id}
-              to={`/m/work-orders/${order.id}`}
-              className="flex items-stretch border border-tc-border bg-white hover:bg-tc-surface transition-colors"
-            >
-              {/* Stub lateral */}
-              <div className="w-1.5 shrink-0 bg-tc-stub-bg border-r border-tc-border" />
-              <div className="flex-1 px-4 py-3">
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-sm text-tc-text">#{order.number}</span>
-                    <StatusBadge status={order.status} label={STATUS_LABELS[order.status]} />
-                  </div>
-                  <span className="text-xs text-tc-text-muted shrink-0">{PRIORITY_LABELS[order.priority]}</span>
+          {visible.map(order => {
+            const vehicle = [order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ')
+            const mine = order.assignedMechanicId != null && order.assignedMechanicId === user?.membershipId
+            return (
+              <Link
+                key={order.id}
+                to={`/m/work-orders/${order.id}`}
+                className="flex items-stretch overflow-hidden rounded-xl border border-tc-border bg-white transition-colors hover:bg-tc-surface"
+              >
+                {/* Talón: número de orden, igual que en el panel del taller */}
+                <div className="flex w-14 shrink-0 items-center justify-center border-r border-tc-border bg-tc-stub-bg px-1">
+                  <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{order.number}</span>
                 </div>
-                <p className="font-medium text-sm text-tc-text">{order.customerName}</p>
-                <p className="text-xs text-tc-text-secondary mt-0.5">
-                  <span className="font-mono tracking-widest">{order.vehiclePlate}</span>
-                  {order.vehicleBrand && <> — {order.vehicleBrand} {order.vehicleModel}</>}
-                </p>
-                {order.assignedMechanicName == null ? (
-                  <p className="mt-1 text-[10px] font-bold tracking-wider uppercase text-amber-600">Sin asignar</p>
-                ) : order.assignedMechanicId === user?.membershipId ? (
-                  <p className="mt-1 text-xs font-bold text-tc-purple">{order.assignedMechanicName}</p>
-                ) : (
-                  <p className="mt-1 text-xs font-medium text-tc-text-muted">{order.assignedMechanicName} · solo lectura</p>
-                )}
-              </div>
-            </Link>
-          ))}
+
+                <div className="min-w-0 flex-1 px-3 py-3">
+                  <p className="truncate text-sm font-medium text-tc-text">{order.customerName}</p>
+                  <div className="mt-0.5 flex items-center gap-1.5">
+                    <span className="font-mono text-[11px] font-bold tracking-widest text-tc-text-muted">{order.vehiclePlate}</span>
+                    {vehicle && <span className="truncate text-xs text-tc-text-muted">— {vehicle}</span>}
+                  </div>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <StatusBadge status={order.status} label={STATUS_LABELS[order.status]} />
+                    {order.priority === 'high' && (
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700">{PRIORITY_LABELS[order.priority]}</span>
+                    )}
+                  </div>
+                  <p className="mt-1.5 truncate text-xs">
+                    {order.assignedMechanicName == null ? (
+                      <span className="font-semibold text-amber-700">Sin asignar</span>
+                    ) : mine ? (
+                      <span className="font-semibold text-tc-purple">{order.assignedMechanicName}</span>
+                    ) : (
+                      <span className="text-tc-text-muted">{order.assignedMechanicName} · solo lectura</span>
+                    )}
+                  </p>
+                </div>
+
+                <div className="flex min-h-[44px] w-11 shrink-0 items-center justify-center border-l border-tc-border bg-tc-stub-bg text-tc-navy-text-dim" aria-hidden="true">
+                  <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              </Link>
+            )
+          })}
         </div>
       )}
 
