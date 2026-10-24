@@ -19,11 +19,14 @@ const TABS: { id: Tab; label: string; empty: string }[] = [
   { id: 'unassigned', label: 'Sin asignar', empty: 'No hay órdenes sin asignar.' },
 ]
 
-const MECHANIC_STATUSES: WorkOrderStatus[] = ['pending', 'in_progress', 'waiting_parts']
+// «En juego» (por defecto) deja afuera las entregadas y anuladas; «Cerradas» las muestra.
+const MECHANIC_STATUSES: WorkOrderStatus[] = ['pending', 'in_progress', 'waiting_parts', 'completed']
+
+type StatusFilter = WorkOrderStatus | 'open' | 'closed'
 
 export function MechanicWorkOrdersPage() {
   const [tab, setTab] = useState<Tab>('mine')
-  const [statusFilter, setStatusFilter] = useState<WorkOrderStatus | ''>('')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('open')
   const [page, setPage] = useState(1)
   const [params, setParams] = useSearchParams()
   // Búsqueda por patente de la barra del encabezado (`/m?q=`): filtra las órdenes ya cargadas, sin salir del área.
@@ -33,7 +36,11 @@ export function MechanicWorkOrdersPage() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['mechanic-work-orders', tab, statusFilter, page, q],
     queryFn: () =>
-      workOrdersApi.search(statusFilter || null, null, null, null, null, null, page, 25, tab, null, null, q || null),
+      workOrdersApi.search(
+        statusFilter === 'open' || statusFilter === 'closed' ? null : statusFilter,
+        null, null, null, null, null, page, 25, tab, null, null, q || null,
+        statusFilter === 'open' ? false : statusFilter === 'closed' ? true : null,
+      ),
   })
 
   const visible = data?.items ?? []
@@ -64,14 +71,14 @@ export function MechanicWorkOrdersPage() {
       {/* Filtros de estado — chips horizontales */}
       <div className="flex flex-wrap gap-2">
         <button
-          onClick={() => { setStatusFilter(''); setPage(1) }}
+          onClick={() => { setStatusFilter('open'); setPage(1) }}
           className={`min-h-[40px] whitespace-nowrap border px-3 py-1 text-xs font-bold tracking-wider uppercase transition-colors ${
-            statusFilter === ''
+            statusFilter === 'open'
               ? 'border-tc-navy bg-tc-navy text-white'
               : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'
           }`}
         >
-          Todos
+          En juego
         </button>
         {MECHANIC_STATUSES.map(s => (
           <button
@@ -86,6 +93,16 @@ export function MechanicWorkOrdersPage() {
             {STATUS_LABELS[s]}
           </button>
         ))}
+        <button
+          onClick={() => { setStatusFilter('closed'); setPage(1) }}
+          className={`min-h-[40px] whitespace-nowrap border px-3 py-1 text-xs font-bold tracking-wider uppercase transition-colors ${
+            statusFilter === 'closed'
+              ? 'border-tc-navy bg-tc-navy text-white'
+              : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'
+          }`}
+        >
+          Cerradas
+        </button>
       </div>
 
       {isLoading && (
@@ -117,7 +134,11 @@ export function MechanicWorkOrdersPage() {
           )}
           {visible.length === 0 && (
             <p className="border border-dashed border-tc-border px-4 py-8 text-center text-sm text-tc-text-muted">
-              {q ? `Ninguna orden de esta pestaña tiene la patente ${q}.` : TABS.find(t => t.id === tab)!.empty}
+              {q
+                ? `Ninguna orden de esta pestaña tiene la patente ${q}.`
+                : statusFilter === 'closed'
+                  ? 'No hay órdenes cerradas (entregadas o anuladas) en esta pestaña.'
+                  : TABS.find(t => t.id === tab)!.empty}
             </p>
           )}
           {visible.map(order => (

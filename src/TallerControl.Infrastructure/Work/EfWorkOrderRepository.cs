@@ -37,7 +37,8 @@ internal sealed class EfWorkOrderRepository : IWorkOrderRepository
         SortSpec sort,
         CancellationToken ct,
         Guid? customerId = null,
-        string? plate = null)
+        string? plate = null,
+        bool? closed = null)
     {
         var query = _db.Set<WorkOrder>().AsNoTracking();
 
@@ -65,6 +66,12 @@ internal sealed class EfWorkOrderRepository : IWorkOrderRepository
 
         if (customerId.HasValue)
             query = query.Where(w => w.CustomerId == customerId.Value);
+
+        // «Cerradas» = entregadas y anuladas; el resto sigue en juego (incluye las completadas, que esperan la entrega).
+        if (closed == true)
+            query = query.Where(w => w.Status == WorkOrderStatus.Delivered || w.Status == WorkOrderStatus.Cancelled);
+        else if (closed == false)
+            query = query.Where(w => w.Status != WorkOrderStatus.Delivered && w.Status != WorkOrderStatus.Cancelled);
 
         if (!string.IsNullOrWhiteSpace(plate))
         {

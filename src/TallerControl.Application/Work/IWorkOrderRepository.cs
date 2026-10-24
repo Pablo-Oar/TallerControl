@@ -21,7 +21,8 @@ public interface IWorkOrderRepository
         SortSpec sort,
         CancellationToken ct,
         Guid? customerId = null,
-        string? plate = null);
+        string? plate = null,
+        bool? closed = null);
 
     /// <param name="includePrices">Sin permiso de precios, ni los importes de los renglones viajan.</param>
     /// <param name="includeInternalNotes">Las notas internas son del taller: el mecánico no las recibe.</param>
