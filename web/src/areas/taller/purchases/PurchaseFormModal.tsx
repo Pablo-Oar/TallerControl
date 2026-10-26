@@ -138,7 +138,7 @@ export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
             disabled={isEdit}
             {...register('supplierId')}
           >
-            <option value="">Seleccioná un proveedor</option>
+            <option value="">Elegir proveedor…</option>
             {suppliersPage?.items.map(s => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}

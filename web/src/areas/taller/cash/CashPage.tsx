@@ -137,7 +137,7 @@ export function CashPage() {
                     <Button size="sm" onClick={() => setDialog({ kind: 'open', account })}>Abrir sesión</Button>
                   )}
                   {open && can('cash.close') && (
-                    <Button size="sm" onClick={() => setDialog({ kind: 'close', account })}>Cerrar sesión</Button>
+                    <Button size="sm" onClick={() => setDialog({ kind: 'close', account })}>Cerrar caja</Button>
                   )}
                   <Button size="sm" variant="secondary" onClick={() => setDialog({ kind: 'movements', account })}>Movimientos</Button>
                   {can('cash.open') && (
@@ -253,7 +253,7 @@ function CloseSessionModal({ account, onDone, onClose }: { account: CashAccountD
   })
 
   return (
-    <Modal title={`Cerrar sesión · ${account.name}`} onClose={onClose} className="max-w-sm">
+    <Modal title={`Cerrar caja · ${account.name}`} onClose={onClose} className="max-w-sm">
       <form onSubmit={e => { e.preventDefault(); setError(null); close.mutate() }} className="space-y-4">
         <div className="flex items-center justify-between rounded-xl border border-tc-border bg-tc-surface px-4 py-2.5">
           <span className="text-xs font-bold tracking-wider uppercase text-tc-text-muted">Saldo esperado</span>
@@ -278,7 +278,7 @@ function CloseSessionModal({ account, onDone, onClose }: { account: CashAccountD
         <FormTextarea label="Nota de cierre (opcional)" rows={2} value={note} onChange={e => setNote(e.target.value)} maxLength={500} />
         <div className="flex justify-end gap-2">
           <Button type="button" variant="secondary" size="sm" onClick={onClose}>Cancelar</Button>
-          <Button type="submit" size="sm" loading={close.isPending}>Cerrar sesión</Button>
+          <Button type="submit" size="sm" loading={close.isPending}>Cerrar caja</Button>
         </div>
       </form>
     </Modal>

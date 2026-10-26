@@ -1,3 +1,4 @@
+import { confirmDialog } from '../../../components/ui/dialogs'
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -151,7 +152,7 @@ export function QrCardsPage() {
             href="/api/v1/qr/cards/print-sheet"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex min-h-[32px] items-center border border-tc-border bg-white px-3 text-xs font-bold tracking-wider uppercase text-tc-text-secondary transition-colors hover:bg-tc-surface"
+            className="inline-flex items-center border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider text-tc-text-secondary transition-colors hover:bg-tc-surface max-md:min-h-11"
           >
             Imprimir libres
           </a>
@@ -195,8 +196,21 @@ export function QrCardsPage() {
           <>
             {c.status === 'assigned' && (
               <>
-                <RowAction tone="warn" onClick={() => markLostMut.mutate({ id: c.id, lost: true })}>Marcar perdida</RowAction>
-                <RowAction onClick={() => unassignMut.mutate(c.id)}>Desasignar</RowAction>
+                <RowAction
+                  tone="warn"
+                  onClick={async () => {
+                    if (await confirmDialog('¿Marcar esta tarjeta como perdida? Deja de servir para ver el vehículo hasta que la desmarques.', { confirmLabel: 'Marcar perdida', danger: true })) markLostMut.mutate({ id: c.id, lost: true })
+                  }}
+                >
+                  Marcar perdida
+                </RowAction>
+                <RowAction
+                  onClick={async () => {
+                    if (await confirmDialog('¿Desasignar esta tarjeta del vehículo? Queda libre para asignarla a otro.', { confirmLabel: 'Desasignar' })) unassignMut.mutate(c.id)
+                  }}
+                >
+                  Desasignar
+                </RowAction>
                 <RowActionLink tone="purple" href={getQrCardPrintUrl(c.id)} target="_blank" rel="noreferrer">PDF</RowActionLink>
               </>
             )}

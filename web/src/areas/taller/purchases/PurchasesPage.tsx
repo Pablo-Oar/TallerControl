@@ -1,3 +1,4 @@
+import { formatDateOnly } from '../../../lib/dates'
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { purchasesApi, type PurchaseDto, type PurchaseStatus } from '../../../lib/api/purchases'
@@ -36,7 +37,7 @@ const COLUMNS: DataTableColumn<PurchaseDto>[] = [
     widthClass: 'w-36',
     sortable: true,
     sortValue: p => p.invoiceDate,
-    cell: p => <span className="tabular-nums text-tc-text-secondary">{new Date(p.invoiceDate).toLocaleDateString('es-AR')}</span>,
+    cell: p => <span className="tabular-nums text-tc-text-secondary">{formatDateOnly(p.invoiceDate)}</span>,
   },
   {
     key: 'total',
@@ -172,7 +173,7 @@ export function PurchasesPage() {
         cardStub={p => <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{p.documentNumber}</span>}
         renderCard={p => (
           <>
-            <p className="text-sm tabular-nums text-tc-text-secondary">{new Date(p.invoiceDate).toLocaleDateString('es-AR')}</p>
+            <p className="text-sm tabular-nums text-tc-text-secondary">{formatDateOnly(p.invoiceDate)}</p>
             <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
               <StatusBadge status={p.status} label={STATUS_LABELS[p.status]} />
               <span className="text-sm font-bold tabular-nums text-tc-purple">{fmtARS(p.total)}</span>
@@ -236,7 +237,7 @@ export function PurchasesPage() {
               </div>
               <div>
                 <p className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Fecha</p>
-                <p className="text-sm text-tc-text tabular-nums">{new Date(detail.invoiceDate).toLocaleDateString('es-AR')}</p>
+                <p className="text-sm text-tc-text tabular-nums">{formatDateOnly(detail.invoiceDate)}</p>
               </div>
               <div>
                 <p className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Total</p>

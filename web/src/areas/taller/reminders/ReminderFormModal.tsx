@@ -1,3 +1,4 @@
+import { dateOnlyToUtcIso } from '../../../lib/dates'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -65,7 +66,7 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
         title: existing.title,
         notes: existing.notes ?? '',
         dueDate: existing.dueDate
-          ? new Date(existing.dueDate).toISOString().slice(0, 10)
+          ? existing.dueDate.slice(0, 10)
           : '',
         dueKm: existing.dueKm ?? undefined,
       })
@@ -79,7 +80,7 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
         kind: values.kind,
         title: values.title,
         notes: values.notes || null,
-        dueDate: values.dueDate ? new Date(values.dueDate).toISOString() : null,
+        dueDate: values.dueDate ? dateOnlyToUtcIso(values.dueDate) : null,
         dueKm: values.dueKm ?? null,
       }),
     onSuccess: onSaved,
@@ -95,7 +96,7 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
         kind: values.kind,
         title: values.title,
         notes: values.notes || null,
-        dueDate: values.dueDate ? new Date(values.dueDate).toISOString() : null,
+        dueDate: values.dueDate ? dateOnlyToUtcIso(values.dueDate) : null,
         dueKm: values.dueKm ?? null,
       }),
     onSuccess: onSaved,
