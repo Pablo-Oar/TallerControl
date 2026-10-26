@@ -1,3 +1,4 @@
+import { LineItemsList } from '../../../components/ui/LineItemsList'
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -158,7 +159,7 @@ export function QuoteDetailPage() {
       {/* Encabezado */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <Link to="/app/quotes" className="text-xs font-bold tracking-wider uppercase text-tc-navy-text hover:text-tc-purple transition-colors">
+          <Link to="/app/quotes" className="inline-flex min-h-11 items-center text-xs font-bold tracking-wider uppercase text-tc-navy-text hover:text-tc-purple transition-colors">
             ← Presupuestos
           </Link>
           <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">
@@ -178,7 +179,7 @@ export function QuoteDetailPage() {
       {/* Datos principales */}
       <div className="border border-tc-border bg-white overflow-hidden">
         <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Datos del presupuesto</span>
+          <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Datos del presupuesto</span>
         </div>
         <div className="grid grid-cols-2 gap-0 sm:grid-cols-3 divide-x divide-tc-border">
           <DataCell label="Cliente">{quote.customerName}</DataCell>
@@ -206,13 +207,13 @@ export function QuoteDetailPage() {
           <div className="border-t border-tc-perf p-4 space-y-3">
             {quote.customerNotes && (
               <div>
-                <p className="mb-1 text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Notas para el cliente</p>
+                <p className="mb-1 text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Notas para el cliente</p>
                 <p className="text-sm text-tc-text-secondary">{quote.customerNotes}</p>
               </div>
             )}
             {quote.internalNotes && (
               <div>
-                <p className="mb-1 text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Notas internas</p>
+                <p className="mb-1 text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Notas internas</p>
                 <p className="text-sm text-tc-text-secondary italic">{quote.internalNotes}</p>
               </div>
             )}
@@ -223,14 +224,30 @@ export function QuoteDetailPage() {
       {/* Ítems */}
       <div className="border border-tc-border bg-white overflow-hidden">
         <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ítems</span>
+          <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ítems</span>
         </div>
-        <div className="overflow-x-auto">
+        {/* Celular: una fila por ítem (la tabla de 6 columnas cortaba los importes). */}
+        <div className="md:hidden">
+          {quote.items.length === 0 ? (
+            <p className="px-4 py-6 text-center text-sm text-tc-text-muted">Sin ítems</p>
+          ) : (
+            <LineItemsList
+              label="Ítems del presupuesto"
+              items={quote.items.map(item => ({
+                id: item.id,
+                title: item.description,
+                detail: `${KIND_LABELS[item.kind] ?? item.kind} · ${item.quantity} × ${fmtARS(item.unitNetPrice)} · IVA ${item.vatRate}%`,
+                amount: fmtARS(item.lineTotal),
+              }))}
+            />
+          )}
+        </div>
+        <div className="hidden overflow-x-auto md:block">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-tc-border">
                 {['Descripción', 'Tipo', 'Cant.', 'Precio neto', 'IVA%', 'Total'].map((h, i) => (
-                  <th key={i} className={`px-4 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${i > 1 ? 'text-right' : 'text-left'}`}>
+                  <th key={i} className={`px-4 py-2 text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${i > 1 ? 'text-right' : 'text-left'}`}>
                     {h}
                   </th>
                 ))}
@@ -336,7 +353,7 @@ export function QuoteDetailPage() {
       {/* Enlace público (presupuesto para el cliente, u OT) */}
       {publicLink && (
         <div className="border border-tc-border bg-tc-stub-bg px-4 py-3">
-          <p className="mb-2 text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">{publicLink.label}</p>
+          <p className="mb-2 text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">{publicLink.label}</p>
           <div className="flex flex-wrap items-end gap-2">
             <FormField label="Enlace" size="sm" readOnly value={publicLink.url} className="min-w-0 flex-1" />
             <Button variant="secondary" size="sm" onClick={() => navigator.clipboard.writeText(publicLink.url)}>
@@ -358,7 +375,7 @@ export function QuoteDetailPage() {
       {confirmCancel && (
         <div className="border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Cancelar presupuesto</span>
+            <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Cancelar presupuesto</span>
           </div>
           <div className="p-4 space-y-3">
             <input
@@ -389,7 +406,7 @@ export function QuoteDetailPage() {
       {responses && responses.length > 0 && (
         <div className="border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Respuestas del cliente</span>
+            <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Respuestas del cliente</span>
           </div>
           <div className="px-4 py-4">
             <Timeline
@@ -405,7 +422,7 @@ export function QuoteDetailPage() {
                   <>
                     <StatusBadge status={r.decision} label={DECISION_LABEL[r.decision] ?? r.decision} />
                     {r.isCurrent && (
-                      <span className="text-[10px] font-bold tracking-wider uppercase text-tc-done-text">Vigente</span>
+                      <span className="text-[11px] font-bold tracking-wider uppercase text-tc-done-text">Vigente</span>
                     )}
                   </>
                 ),
@@ -442,7 +459,7 @@ export function QuoteDetailPage() {
 function DataCell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="px-4 py-3">
-      <p className="mb-0.5 text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">{label}</p>
+      <p className="mb-0.5 text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">{label}</p>
       <p className="text-sm text-tc-text">{children}</p>
     </div>
   )
@@ -476,7 +493,7 @@ function ResponseEvidence({ quoteId, responses }: { quoteId: string; responses: 
   return (
     <div className="border border-tc-border bg-white overflow-hidden">
       <div className="border-b border-tc-border bg-tc-stub-bg px-4 py-2">
-        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Firma y documento del cliente</span>
+        <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Firma y documento del cliente</span>
       </div>
       <ul className="divide-y divide-tc-border">
         {responses.filter(r => r.signatureUrl || r.hasSignerDocument).map(r => (

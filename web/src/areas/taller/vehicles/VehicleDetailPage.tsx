@@ -87,23 +87,23 @@ export function VehicleDetailPage() {
 
       <section className="border border-tc-border bg-white">
         <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Datos</span>
+          <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Datos</span>
         </div>
         <dl className="grid grid-cols-2 gap-4 p-4 text-sm md:grid-cols-4">
           <div>
-            <dt className="mb-1 text-[10px] font-bold uppercase tracking-wider text-tc-text-muted">Cliente</dt>
+            <dt className="mb-1 text-[11px] font-bold uppercase tracking-wider text-tc-text-muted">Cliente</dt>
             <dd className="text-tc-text">{vehicle.customerName}</dd>
           </div>
           <div>
-            <dt className="mb-1 text-[10px] font-bold uppercase tracking-wider text-tc-text-muted">Kilometraje</dt>
+            <dt className="mb-1 text-[11px] font-bold uppercase tracking-wider text-tc-text-muted">Kilometraje</dt>
             <dd className="tabular-nums text-tc-text">{vehicle.odometerKm.toLocaleString('es-AR')} km</dd>
           </div>
           <div>
-            <dt className="mb-1 text-[10px] font-bold uppercase tracking-wider text-tc-text-muted">Año</dt>
+            <dt className="mb-1 text-[11px] font-bold uppercase tracking-wider text-tc-text-muted">Año</dt>
             <dd className="tabular-nums text-tc-text">{vehicle.year ?? '—'}</dd>
           </div>
           <div>
-            <dt className="mb-1 text-[10px] font-bold uppercase tracking-wider text-tc-text-muted">Color</dt>
+            <dt className="mb-1 text-[11px] font-bold uppercase tracking-wider text-tc-text-muted">Color</dt>
             <dd className="text-tc-text">{vehicle.color ?? '—'}</dd>
           </div>
         </dl>
@@ -111,7 +111,7 @@ export function VehicleDetailPage() {
 
       <section className="border border-tc-border bg-white">
         <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
+          <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
             Historial{total > 0 ? ` (${total})` : ''}
           </span>
         </div>

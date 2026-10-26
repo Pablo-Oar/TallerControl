@@ -61,9 +61,9 @@ const COLUMNS: DataTableColumn<PurchaseDto>[] = [
     widthClass: 'w-28',
     cell: p =>
       p.isExcludedFromCiti ? (
-        <span className="text-[10px] font-bold tracking-wider uppercase text-amber-600">Excluida</span>
+        <span className="text-[11px] font-bold tracking-wider uppercase text-amber-600">Excluida</span>
       ) : (
-        <span className="text-[10px] font-bold tracking-wider uppercase text-green-700">Incluida</span>
+        <span className="text-[11px] font-bold tracking-wider uppercase text-green-700">Incluida</span>
       ),
   },
 ]
@@ -147,20 +147,20 @@ export function PurchasesPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Compras</h1>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Compras</h1>
         <Button onClick={() => setCreating(true)} size="sm">Nueva compra</Button>
       </div>
 
-      <form onSubmit={handleSearch} className="flex gap-1">
+      <form onSubmit={handleSearch} className="flex flex-wrap items-center gap-2">
         <input
           type="search"
           value={q}
           onChange={e => setQ(e.target.value)}
           placeholder="Buscar compras…"
-          className="flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-border-mid transition-colors"
+          className="min-w-0 flex-1 basis-48 border border-tc-border bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-border-mid transition-colors"
         />
-        <Button type="submit" variant="secondary" size="sm">Buscar</Button>
+        <Button type="submit" variant="secondary" size="sm" className="shrink-0">Buscar</Button>
       </form>
 
       <DataTable<PurchaseDto>
@@ -231,15 +231,15 @@ export function PurchasesPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2 border border-tc-border bg-tc-stub-bg p-3">
               <div>
-                <p className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Estado</p>
+                <p className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Estado</p>
                 <StatusBadge status={detail.status} label={STATUS_LABELS[detail.status]} />
               </div>
               <div>
-                <p className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Fecha</p>
+                <p className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Fecha</p>
                 <p className="text-sm text-tc-text tabular-nums">{new Date(detail.invoiceDate).toLocaleDateString('es-AR')}</p>
               </div>
               <div>
-                <p className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Total</p>
+                <p className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Total</p>
                 <p className="text-sm font-bold text-tc-purple tabular-nums">{fmtARS(detail.total)}</p>
               </div>
             </div>
@@ -259,14 +259,14 @@ export function PurchasesPage() {
             {detail.items.length > 0 && (
               <div className="border border-tc-border bg-white overflow-hidden">
                 <div className="bg-tc-stub-bg border-b border-tc-border px-3 py-1.5">
-                  <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ítems</span>
+                  <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ítems</span>
                 </div>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-tc-border">
-                      <th className="px-3 py-1.5 text-left text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Descripción</th>
-                      <th className="px-3 py-1.5 text-right text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Cant.</th>
-                      <th className="px-3 py-1.5 text-right text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Total</th>
+                      <th className="px-3 py-1.5 text-left text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Descripción</th>
+                      <th className="px-3 py-1.5 text-right text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Cant.</th>
+                      <th className="px-3 py-1.5 text-right text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Total</th>
                     </tr>
                   </thead>
                   <tbody>

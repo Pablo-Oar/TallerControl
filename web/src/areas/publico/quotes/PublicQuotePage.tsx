@@ -70,7 +70,7 @@ export function PublicQuotePage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-tc-navy px-4 text-center">
         <div className="border border-tc-border bg-white p-8 max-w-sm w-full">
-          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted mb-2">Error</p>
+          <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted mb-2">Error</p>
           <p className="font-bold text-tc-text">Presupuesto no encontrado</p>
           <p className="mt-2 text-sm text-tc-text-secondary">El enlace puede haber expirado o ser incorrecto.</p>
         </div>
@@ -142,24 +142,24 @@ export function PublicQuotePage() {
         {/* Encabezado del presupuesto */}
         <div className="border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3 flex items-center justify-between">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Presupuesto</span>
+            <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Presupuesto</span>
             <StatusBadge status={data.status} label={QUOTE_STATUS_LABELS[data.status] ?? data.status} />
           </div>
           <div className="px-6 py-5">
             <p className="font-mono font-bold text-2xl text-tc-text mb-4">#{data.number}</p>
             <dl className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <dt className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted mb-1">Cliente</dt>
+                <dt className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted mb-1">Cliente</dt>
                 <dd className="text-tc-text">{data.customerName}</dd>
               </div>
               <div>
-                <dt className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted mb-1">Vehículo</dt>
+                <dt className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted mb-1">Vehículo</dt>
                 <dd className="text-tc-text font-mono">
                   {[data.vehicleBrand, data.vehicleModel, data.vehiclePlate].filter(Boolean).join(' · ')}
                 </dd>
               </div>
               <div>
-                <dt className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted mb-1">Válido hasta</dt>
+                <dt className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted mb-1">Válido hasta</dt>
                 <dd className={isExpired ? 'text-tc-stamp-red font-bold' : 'text-tc-text'}>
                   {formatDateOnly(data.validUntil)}
                   {isExpired && ' — vencido'}
@@ -168,7 +168,7 @@ export function PublicQuotePage() {
             </dl>
             {data.customerNotes && (
               <div className="mt-4 border-t border-tc-border pt-3 text-sm text-tc-text-secondary">
-                <p className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted mb-1">Notas</p>
+                <p className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted mb-1">Notas</p>
                 {data.customerNotes}
               </div>
             )}
@@ -178,16 +178,16 @@ export function PublicQuotePage() {
         {/* Ítems del presupuesto */}
         <div className="border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ítems</span>
+            <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ítems</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-tc-border">
-                  <th className="px-3 py-2 sm:px-4 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Descripción</th>
-                  <th className="hidden px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted sm:table-cell">Cant.</th>
-                  <th className="hidden px-4 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted sm:table-cell">Precio unit.</th>
-                  <th className="px-3 py-2 sm:px-4 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Subtotal</th>
+                  <th className="px-3 py-2 sm:px-4 text-left text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Descripción</th>
+                  <th className="hidden px-4 py-2 text-right text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted sm:table-cell">Cant.</th>
+                  <th className="hidden px-4 py-2 text-right text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted sm:table-cell">Precio unit.</th>
+                  <th className="px-3 py-2 sm:px-4 text-right text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Subtotal</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-tc-border">
@@ -197,7 +197,7 @@ export function PublicQuotePage() {
                       {item.description}
                       {canRespond && !isExpired && (
                         item.requiredForApproval ? (
-                          <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-tc-text-muted">Obligatorio</span>
+                          <span className="ml-2 text-[11px] font-bold uppercase tracking-wider text-tc-text-muted">Obligatorio</span>
                         ) : (
                           <label className="mt-1 flex min-h-[44px] cursor-pointer items-center gap-2 text-xs text-tc-text-secondary">
                             <input
@@ -257,7 +257,7 @@ export function PublicQuotePage() {
         {canRespond && !isExpired && (
           <div className="border border-tc-border bg-white overflow-hidden">
             <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3">
-              <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Su respuesta</span>
+              <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Su respuesta</span>
             </div>
             <div className="px-6 py-5">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">

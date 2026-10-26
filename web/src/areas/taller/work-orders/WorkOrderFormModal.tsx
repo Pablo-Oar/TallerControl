@@ -291,7 +291,7 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
               <button
                 type="button"
                 onClick={addItem}
-                className="text-xs text-blue-600 hover:underline"
+                className="text-xs font-bold uppercase tracking-wider text-tc-purple hover:opacity-70"
               >
                 + Agregar
               </button>
@@ -322,7 +322,7 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
             <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
           )}
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="sticky bottom-0 -mx-5 -mb-5 mt-2 flex justify-end gap-3 border-t border-tc-border bg-white px-5 py-3">
             <Button type="button" variant="secondary" size="sm" onClick={onClose}>Cancelar</Button>
             <Button type="submit" size="sm" loading={isSubmitting}>{isEdit ? 'Guardar cambios' : 'Crear orden'}</Button>
           </div>

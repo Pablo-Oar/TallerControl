@@ -153,6 +153,10 @@ export function RegisterPage() {
             <ArrowRightIcon />
           </span>
         </Button>
+        <p className="text-center text-xs text-tc-text-secondary">
+          Al crear la cuenta aceptás el{' '}
+          <Link to="/privacidad" className="font-semibold underline">Aviso de privacidad</Link>.
+        </p>
       </form>
     </AuthCard>
   )

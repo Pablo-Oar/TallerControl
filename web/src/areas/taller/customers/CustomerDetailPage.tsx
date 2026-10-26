@@ -26,7 +26,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <section className="border border-tc-border bg-white">
       <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">{title}</span>
+        <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">{title}</span>
       </div>
       <div className="p-4">{children}</div>
     </section>
@@ -36,7 +36,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <dt className="mb-1 text-[10px] font-bold uppercase tracking-wider text-tc-text-muted">{label}</dt>
+      <dt className="mb-1 text-[11px] font-bold uppercase tracking-wider text-tc-text-muted">{label}</dt>
       <dd className="text-tc-text">{children}</dd>
     </div>
   )

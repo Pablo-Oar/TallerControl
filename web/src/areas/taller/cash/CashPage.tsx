@@ -67,7 +67,7 @@ export function CashPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Cuentas de Caja</h1>
+        <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Cuentas de Caja</h1>
         {can('cash.open') && <Button size="sm" onClick={() => setDialog({ kind: 'create' })}>Nueva cuenta</Button>}
       </div>
 
@@ -109,14 +109,14 @@ export function CashPage() {
                     <p className="text-xs text-tc-text-secondary">{KIND_LABELS[account.kind]}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       <span
-                        className={`rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
+                        className={`rounded-full border px-2 py-0.5 text-[11px] font-bold tracking-wider uppercase ${
                           account.isActive ? 'border-green-300 bg-green-50 text-green-700' : 'border-tc-border bg-tc-surface text-tc-text-secondary'
                         }`}
                       >
                         {account.isActive ? 'Activa' : 'Inactiva'}
                       </span>
                       <span
-                        className={`rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
+                        className={`rounded-full border px-2 py-0.5 text-[11px] font-bold tracking-wider uppercase ${
                           open ? 'border-tc-purple bg-tc-purple-light text-tc-purple-mid' : 'border-tc-border bg-tc-surface text-tc-text-secondary'
                         }`}
                       >
@@ -125,7 +125,7 @@ export function CashPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Saldo</p>
+                    <p className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Saldo</p>
                     <p className={`text-xl font-bold tabular-nums ${account.balance < 0 ? 'text-tc-stamp-red' : 'text-tc-text'}`}>
                       {fmtARS(account.balance)}
                     </p>
@@ -334,7 +334,7 @@ function MovementsModal({
             onSubmit={e => { e.preventDefault(); setError(null); add.mutate() }}
             className="space-y-3 rounded-xl border border-tc-border p-3"
           >
-            <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ajuste manual</p>
+            <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ajuste manual</p>
             <ErrorBox message={error} />
             <div className="grid grid-cols-2 gap-3">
               <FormSelect label="Tipo" value={direction} onChange={e => setDirection(e.target.value as 'in' | 'out')}>
@@ -367,9 +367,9 @@ function MovementsModal({
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-tc-surface">
                 <tr>
-                  <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
-                  <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Concepto</th>
-                  <th className="px-3 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Monto</th>
+                  <th className="px-3 py-2 text-left text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
+                  <th className="px-3 py-2 text-left text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Concepto</th>
+                  <th className="px-3 py-2 text-right text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Monto</th>
                 </tr>
               </thead>
               <tbody>

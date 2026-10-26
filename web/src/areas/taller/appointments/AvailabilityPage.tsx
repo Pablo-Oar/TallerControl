@@ -16,7 +16,6 @@ import { confirmDialog } from '../../../components/ui/dialogs'
 import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { AppointmentsTabs } from './AppointmentsTabs'
 
-const dayLabel = (d: WeekDay) => WEEK_DAYS.find(x => x.value === d)?.label ?? d
 const errorText = (e: unknown) => (e instanceof ApiError ? e.detail : 'No se pudo guardar. Probá de nuevo.')
 
 /** Horario semanal de cada mecánico y días bloqueados / con horario especial (feriados, vacaciones). */
@@ -54,14 +53,16 @@ export function AvailabilityPage() {
     onError: e => setError(errorText(e)),
   })
 
-  async function removeRule(rule: AvailabilityRuleDto) {
-    if (!(await confirmDialog(`¿Quitar el horario del ${dayLabel(rule.dayOfWeek).toLowerCase()} de ${rule.mechanicName}?`, { danger: true }))) return
+  async function removeRules(rules: AvailabilityRuleDto[], who: string, label: string) {
+    if (!(await confirmDialog(`¿Quitar el horario de ${label} de ${who}?`, { danger: true }))) return
     try {
-      await availabilityApi.deleteRule(rule.id)
-      qc.invalidateQueries({ queryKey: ['availability-rules'] })
-      qc.invalidateQueries({ queryKey: ['availability'] })
+      for (const r of rules) await availabilityApi.deleteRule(r.id)
+      setError(null)
     } catch (e) {
       setError(errorText(e))
+    } finally {
+      qc.invalidateQueries({ queryKey: ['availability-rules'] })
+      qc.invalidateQueries({ queryKey: ['availability'] })
     }
   }
 
@@ -106,6 +107,23 @@ export function AvailabilityPage() {
   const byMechanic = new Map<string, AvailabilityRuleDto[]>()
   for (const r of rules ?? []) byMechanic.set(r.mechanicMembershipId, [...(byMechanic.get(r.mechanicMembershipId) ?? []), r])
   const weekOrder = (d: WeekDay) => WEEK_DAYS.findIndex(x => x.value === d)
+  const nameOf = (id: string, fallback: string) => mechanics?.find(m => m.membershipId === id)?.displayName ?? fallback
+
+  /** Agrupa los días con el mismo rango: "Lun–Vie 09:00–18:00" en un solo chip. */
+  function groupRules(list: AvailabilityRuleDto[]) {
+    const byRange = new Map<string, AvailabilityRuleDto[]>()
+    for (const r of [...list].sort((x, y) => weekOrder(x.dayOfWeek) - weekOrder(y.dayOfWeek))) {
+      const key = `${hhmm(r.startTime)}–${hhmm(r.endTime)}`
+      byRange.set(key, [...(byRange.get(key) ?? []), r])
+    }
+    return [...byRange.entries()].map(([range, rs]) => {
+      const idx = rs.map(r => weekOrder(r.dayOfWeek))
+      const consecutive = rs.length > 2 && idx.every((v, i) => i === 0 || v === idx[i - 1] + 1)
+      const short = (r: AvailabilityRuleDto) => WEEK_DAYS[weekOrder(r.dayOfWeek)].short
+      const days = consecutive ? `${short(rs[0])}–${short(rs[rs.length - 1])}` : rs.map(short).join(', ')
+      return { range, rules: rs, days }
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -126,7 +144,7 @@ export function AvailabilityPage() {
 
       {/* ── Horario semanal ───────────────────────────────────────────────── */}
       <section className="overflow-hidden border border-tc-border bg-white">
-        <h2 className="border-b border-tc-border bg-tc-stub-bg px-4 py-2 text-[10px] font-bold tracking-[0.14em] text-tc-text-muted uppercase">
+        <h2 className="border-b border-tc-border bg-tc-stub-bg px-4 py-2 text-[11px] font-bold tracking-[0.14em] text-tc-text-muted uppercase">
           Horario semanal de cada mecánico
         </h2>
 
@@ -135,31 +153,34 @@ export function AvailabilityPage() {
           {!rulesLoading && byMechanic.size === 0 && (
             <p className="px-4 py-3 text-sm text-tc-text-muted">Todavía no hay horarios cargados.</p>
           )}
-          {[...byMechanic.entries()].map(([id, list]) => (
-            <div key={id} className="px-4 py-3">
-              <p className="mb-2 text-sm font-bold text-tc-text">{list[0].mechanicName}</p>
-              <ul className="flex flex-wrap gap-2">
-                {[...list].sort((a, b) => weekOrder(a.dayOfWeek) - weekOrder(b.dayOfWeek)).map(r => (
-                  <li key={r.id} className="flex items-center gap-2 border border-tc-border px-2 py-1 text-xs">
-                    <span className="font-bold">{dayLabel(r.dayOfWeek)}</span>
-                    <span className="tabular-nums text-tc-text-secondary">{hhmm(r.startTime)}–{hhmm(r.endTime)}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeRule(r)}
-                      aria-label={`Quitar ${dayLabel(r.dayOfWeek)} de ${r.mechanicName}`}
-                      className="px-1 text-tc-stamp-red hover:opacity-70"
-                    >
-                      ×
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {[...byMechanic.entries()].map(([id, list]) => {
+            const who = nameOf(id, list[0].mechanicName)
+            return (
+              <div key={id} className="px-4 py-3">
+                <p className="mb-2 text-sm font-bold text-tc-text">{who}</p>
+                <ul className="flex flex-wrap gap-2">
+                  {groupRules(list).map(g => (
+                    <li key={g.range} className="flex items-center border border-tc-border bg-white pl-3 text-sm">
+                      <span className="font-bold text-tc-text">{g.days}</span>
+                      <span className="ml-2 tabular-nums text-tc-text-secondary">{g.range}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeRules(g.rules, who, g.days)}
+                        aria-label={`Quitar ${g.days} ${g.range} de ${who}`}
+                        className="ml-1 flex h-11 w-11 items-center justify-center text-lg leading-none text-tc-text-muted transition-colors hover:text-tc-stamp-red"
+                      >
+                        ×
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          })}
         </div>
 
         <form
-          className="space-y-3 border-t border-tc-border p-4"
+          className="space-y-3 border-t border-tc-border p-4 [&>*]:max-w-xl"
           onSubmit={e => {
             e.preventDefault()
             if (ruleMechanic && ruleDays.length > 0) addRules.mutate()
@@ -174,7 +195,7 @@ export function AvailabilityPage() {
             <legend className="mb-1 text-xs font-bold tracking-wider text-tc-text-muted uppercase">Días</legend>
             <div className="flex flex-wrap gap-2">
               {WEEK_DAYS.map(d => (
-                <label key={d.value} className="flex items-center gap-1.5 border border-tc-border px-2 py-1 text-xs">
+                <label key={d.value} className="flex min-h-11 cursor-pointer items-center gap-2 border border-tc-border px-3 text-sm">
                   <input
                     type="checkbox"
                     className="accent-tc-purple"
@@ -190,7 +211,7 @@ export function AvailabilityPage() {
             <FormField label="Desde" type="time" value={ruleStart} onChange={e => setRuleStart(e.target.value)} />
             <FormField label="Hasta" type="time" value={ruleEnd} onChange={e => setRuleEnd(e.target.value)} />
           </div>
-          <Button type="submit" size="sm" loading={addRules.isPending} disabled={!ruleMechanic || ruleDays.length === 0 || ruleStart >= ruleEnd}>
+          <Button type="submit" size="sm" className="disabled:bg-tc-surface disabled:text-tc-text-muted disabled:opacity-100 disabled:border disabled:border-tc-border" loading={addRules.isPending} disabled={!ruleMechanic || ruleDays.length === 0 || ruleStart >= ruleEnd}>
             Agregar horario
           </Button>
         </form>
@@ -198,7 +219,7 @@ export function AvailabilityPage() {
 
       {/* ── Días bloqueados / horario especial ────────────────────────────── */}
       <section className="overflow-hidden border border-tc-border bg-white">
-        <h2 className="border-b border-tc-border bg-tc-stub-bg px-4 py-2 text-[10px] font-bold tracking-[0.14em] text-tc-text-muted uppercase">
+        <h2 className="border-b border-tc-border bg-tc-stub-bg px-4 py-2 text-[11px] font-bold tracking-[0.14em] text-tc-text-muted uppercase">
           Feriados, vacaciones y horarios especiales (próximos 12 meses)
         </h2>
 
@@ -208,12 +229,12 @@ export function AvailabilityPage() {
           {exceptions?.map(e => (
             <li key={e.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2 text-sm">
               <span className="font-bold tabular-nums text-tc-text">{formatDateOnly(e.date)}</span>
-              <span className="text-tc-text-secondary">{e.mechanicName ?? 'Todo el taller'}</span>
+              <span className="text-tc-text-secondary">{e.mechanicMembershipId ? nameOf(e.mechanicMembershipId, e.mechanicName ?? '') : 'Todo el taller'}</span>
               <span className={e.isBlocked ? 'font-bold text-tc-stamp-red' : 'text-amber-700'}>
                 {e.isBlocked ? 'Bloqueado' : `Horario ${hhmm(e.startTime)}–${hhmm(e.endTime)}`}
               </span>
               {e.reason && <span className="text-tc-text-muted">{e.reason}</span>}
-              <button type="button" onClick={() => removeException(e)} className="ml-auto text-xs font-bold text-tc-stamp-red uppercase hover:opacity-70">
+              <button type="button" onClick={() => removeException(e)} className="ml-auto min-h-11 px-2 text-xs font-bold text-tc-text-muted uppercase transition-colors hover:text-tc-stamp-red">
                 Quitar
               </button>
             </li>
@@ -221,7 +242,7 @@ export function AvailabilityPage() {
         </ul>
 
         <form
-          className="space-y-3 border-t border-tc-border p-4"
+          className="space-y-3 border-t border-tc-border p-4 [&>*]:max-w-xl"
           onSubmit={ev => {
             ev.preventDefault()
             addException.mutate()
@@ -237,11 +258,11 @@ export function AvailabilityPage() {
           </div>
           <fieldset className="flex flex-wrap gap-4 text-sm text-tc-text-secondary">
             <legend className="sr-only">Tipo</legend>
-            <label className="flex items-center gap-2">
+            <label className="flex min-h-11 cursor-pointer items-center gap-2">
               <input type="radio" name="ex-kind" className="accent-tc-purple" checked={exKind === 'blocked'} onChange={() => setExKind('blocked')} />
               Día bloqueado (no se agenda)
             </label>
-            <label className="flex items-center gap-2">
+            <label className="flex min-h-11 cursor-pointer items-center gap-2">
               <input type="radio" name="ex-kind" className="accent-tc-purple" checked={exKind === 'special'} onChange={() => setExKind('special')} />
               Horario especial
             </label>
@@ -253,7 +274,7 @@ export function AvailabilityPage() {
             </div>
           )}
           <FormField label="Motivo (opcional)" value={exReason} onChange={e => setExReason(e.target.value)} placeholder="Feriado, vacaciones, capacitación…" />
-          <Button type="submit" size="sm" loading={addException.isPending} disabled={!exDate || (exKind === 'special' && exStart >= exEnd)}>
+          <Button type="submit" size="sm" className="disabled:bg-tc-surface disabled:text-tc-text-muted disabled:opacity-100 disabled:border disabled:border-tc-border" loading={addException.isPending} disabled={!exDate || (exKind === 'special' && exStart >= exEnd)}>
             Agregar
           </Button>
         </form>

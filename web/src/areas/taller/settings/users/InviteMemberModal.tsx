@@ -87,7 +87,7 @@ export function InviteMemberModal({ onSuccess, onClose }: Props) {
           </p>
         )}
 
-        <div className="flex justify-end gap-3 pt-2">
+        <div className="sticky bottom-0 -mx-5 -mb-5 mt-2 flex justify-end gap-3 border-t border-tc-border bg-white px-5 py-3">
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancelar
           </Button>

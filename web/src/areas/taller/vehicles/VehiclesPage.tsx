@@ -84,7 +84,7 @@ export function VehiclesPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Vehículos</h1>
         <Button onClick={() => setCreating(true)} size="sm">Nuevo vehículo</Button>
       </div>
@@ -102,7 +102,7 @@ export function VehiclesPage() {
         </form>
         <button
           onClick={() => { setShowDeleted(v => !v); setPage(1) }}
-          className={`shrink-0 whitespace-nowrap border px-3 py-2 text-xs font-bold tracking-wider uppercase transition-colors ${showDeleted ? 'border-red-300 bg-red-50 text-red-700' : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'}`}
+          className={`shrink-0 whitespace-nowrap border px-3 py-2 max-md:min-h-11 text-xs font-bold tracking-wider uppercase transition-colors ${showDeleted ? 'border-red-300 bg-red-50 text-red-700' : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'}`}
         >
           {showDeleted ? 'Ocultar eliminados' : 'Ver eliminados'}
         </button>

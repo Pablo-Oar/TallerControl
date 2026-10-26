@@ -41,7 +41,7 @@ export function PublicAppointmentPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-tc-navy px-4 text-center">
         <div className="w-full max-w-sm border border-tc-border bg-white p-8">
-          <p className="mb-2 text-[10px] font-bold tracking-[0.14em] text-tc-text-muted uppercase">
+          <p className="mb-2 text-xs font-bold tracking-[0.14em] text-tc-text-secondary uppercase">
             {decline.isSuccess ? 'Turno cancelado' : 'Turno'}
           </p>
           <p className="font-bold text-tc-text">
@@ -73,9 +73,9 @@ export function PublicAppointmentPage() {
       <div className="mx-auto max-w-md px-4 py-10">
         <div className="overflow-hidden border border-tc-border bg-white">
           <div className="flex items-center justify-between border-b border-tc-border bg-tc-stub-bg px-6 py-3">
-            <span className="text-[10px] font-bold tracking-[0.14em] text-tc-text-muted uppercase">Tu turno</span>
+            <span className="text-xs font-bold tracking-[0.14em] text-tc-text-secondary uppercase">Tu turno</span>
             {confirmed && (
-              <span className="border border-green-300 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-green-700 uppercase">
+              <span className="border border-green-300 px-1.5 py-0.5 text-[11px] font-bold tracking-wider text-green-700 uppercase">
                 Confirmado
               </span>
             )}
@@ -87,12 +87,12 @@ export function PublicAppointmentPage() {
             <dl className="space-y-3 text-sm">
               {data.vehicleLabel && (
                 <div className="flex justify-between border-b border-tc-border pb-2">
-                  <dt className="text-[10px] font-bold tracking-wider text-tc-text-muted uppercase">Vehículo</dt>
+                  <dt className="text-xs font-bold tracking-wider text-tc-text-secondary uppercase">Vehículo</dt>
                   <dd className="text-tc-text-secondary">{data.vehicleLabel}</dd>
                 </div>
               )}
               <div className="border-b border-tc-border pb-2">
-                <dt className="mb-1 text-[10px] font-bold tracking-wider text-tc-text-muted uppercase">Servicios</dt>
+                <dt className="mb-1 text-xs font-bold tracking-wider text-tc-text-secondary uppercase">Servicios</dt>
                 <dd>
                   <ul className="list-inside list-disc text-tc-text-secondary">
                     {data.services.map(s => <li key={s}>{s}</li>)}
@@ -100,7 +100,7 @@ export function PublicAppointmentPage() {
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-[10px] font-bold tracking-wider text-tc-text-muted uppercase">Duración estimada</dt>
+                <dt className="text-xs font-bold tracking-wider text-tc-text-secondary uppercase">Duración estimada</dt>
                 <dd className="tabular-nums text-tc-text-secondary">{data.totalDurationMinutes} min</dd>
               </div>
             </dl>

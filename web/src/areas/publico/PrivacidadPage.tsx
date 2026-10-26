@@ -2,19 +2,22 @@ import { Link } from 'react-router'
 
 export function PrivacidadPage() {
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4">
+    <div className="min-h-screen bg-tc-surface py-10 px-4">
       <div className="mx-auto max-w-2xl">
-        <div className="mb-6">
-          <Link to="/" className="text-sm text-blue-600 hover:underline">
+        <div className="mb-6 flex items-center justify-between">
+          <span className="text-sm font-bold tracking-[0.2em] uppercase text-tc-text">
+            Taller<span className="text-tc-purple">Control</span>
+          </span>
+          <Link to="/" className="inline-flex min-h-[44px] items-center text-sm font-semibold text-tc-purple hover:underline">
             ← Volver al inicio
           </Link>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="border border-tc-border bg-white p-6 sm:p-8">
           <h1 className="text-2xl font-bold text-tc-text mb-1">
             Aviso de Privacidad
           </h1>
-          <p className="text-sm text-tc-text-muted mb-6">
+          <p className="text-sm text-tc-text-secondary mb-6">
             Última actualización: octubre de 2026
           </p>
 
@@ -78,7 +81,7 @@ export function PrivacidadPage() {
               suprimir su información personal. Para ejercer estos derechos, debe
               contactar directamente al Taller responsable.
             </p>
-            <p className="text-xs text-tc-text-muted mt-2">
+            <p className="text-xs text-tc-text-secondary mt-2">
               "El titular de los datos personales tiene la facultad de ejercer el
               derecho de acceso a los mismos en forma gratuita a intervalos no
               inferiores a seis meses, salvo que se acredite un interés legítimo al
@@ -96,7 +99,7 @@ export function PrivacidadPage() {
               personales, comuníquese con el Taller directamente o escriba a{' '}
               <a
                 href="mailto:privacidad@tallercontrol.com.ar"
-                className="text-blue-600 hover:underline"
+                className="text-tc-purple hover:underline"
               >
                 privacidad@tallercontrol.com.ar
               </a>

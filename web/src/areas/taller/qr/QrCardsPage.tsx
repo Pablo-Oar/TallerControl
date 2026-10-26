@@ -139,7 +139,7 @@ export function QrCardsPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Tarjetas QR</h1>
+        <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Tarjetas QR</h1>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" size="sm" onClick={() => setShowScannerModal(true)}>
             Escanear código

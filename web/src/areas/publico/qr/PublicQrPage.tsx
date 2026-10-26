@@ -47,7 +47,7 @@ export function PublicQrPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-tc-navy px-4 text-center">
         <div className="border border-tc-border bg-white p-8 max-w-sm w-full">
-          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted mb-2">Error</p>
+          <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted mb-2">Error</p>
           <p className="font-bold text-tc-text">Tarjeta QR no válida</p>
           <p className="mt-2 text-sm text-tc-text-secondary">Este código QR no está registrado o fue revocado.</p>
         </div>
@@ -59,7 +59,7 @@ export function PublicQrPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-tc-navy px-4 text-center">
         <div className="border border-tc-border bg-white p-8 max-w-sm w-full">
-          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted mb-2">{scanData.workshop.name}</p>
+          <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted mb-2">{scanData.workshop.name}</p>
           <p className="font-bold text-tc-text">Tarjeta no asignada</p>
           <p className="mt-2 text-sm text-tc-text-secondary">Esta tarjeta QR aún no está vinculada a un vehículo.</p>
         </div>
@@ -120,7 +120,7 @@ export function PublicQrPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-tc-navy px-4 py-8">
       <div className="w-full max-w-sm border border-tc-border bg-white overflow-hidden">
         <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3">
-          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
+          <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
             {scanData.workshop.name}
           </p>
         </div>

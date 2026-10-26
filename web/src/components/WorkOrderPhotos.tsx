@@ -193,7 +193,7 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = fal
                   }}
                   disabled={remove.isPending}
                   aria-label={`Quitar foto ${i + 1}`}
-                  className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center bg-tc-navy/80 text-xs font-bold text-white hover:bg-tc-stamp-red"
+                  className="absolute right-1 top-1 flex h-10 w-10 items-center justify-center bg-tc-navy/80 text-lg font-bold text-white hover:bg-tc-stamp-red"
                 >
                   ×
                 </button>
@@ -228,7 +228,7 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = fal
                     type="button"
                     onClick={() => discard(p.key)}
                     aria-label="Descartar foto"
-                    className="flex h-7 w-7 items-center justify-center bg-tc-navy/80 text-xs font-bold text-white hover:bg-tc-stamp-red"
+                    className="flex h-10 w-10 items-center justify-center bg-tc-navy/80 text-lg font-bold text-white hover:bg-tc-stamp-red"
                   >
                     ×
                   </button>

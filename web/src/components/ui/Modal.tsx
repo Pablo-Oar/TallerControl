@@ -148,7 +148,7 @@ export function Modal({ title, onClose, children, className = 'max-w-lg' }: Moda
         tabIndex={-1}
         // Un diálogo que no es el superior queda inerte: el foco y los clics solo llegan al de arriba.
         inert={!isTop}
-        className={`tc-modal-panel relative flex max-h-[92dvh] w-full flex-col bg-white shadow-2xl outline-none max-sm:max-w-none sm:max-h-none ${className}`}
+        className={`tc-modal-panel relative flex max-h-[92dvh] w-full flex-col bg-white shadow-2xl outline-none max-sm:max-w-none sm:max-h-[calc(100dvh-5rem)] ${className}`}
       >
         {/* Header */}
         <div className="flex flex-none items-center justify-between bg-tc-navy px-5 py-3">
@@ -167,7 +167,7 @@ export function Modal({ title, onClose, children, className = 'max-w-lg' }: Moda
         {/* Perforation line */}
         <div className="h-px w-full flex-none bg-tc-perf" />
         {/* Body: en móvil (hoja) hace scroll propio; en escritorio crece con el contenido */}
-        <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:overflow-visible">
+        <div className="min-h-0 flex-1 overflow-y-auto p-5">
           {children}
         </div>
       </div>

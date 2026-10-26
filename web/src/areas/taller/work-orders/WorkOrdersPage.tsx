@@ -108,7 +108,7 @@ export function WorkOrdersPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Órdenes de trabajo</h1>
         <Button onClick={() => setCreating(true)} size="sm">Nueva orden</Button>
       </div>

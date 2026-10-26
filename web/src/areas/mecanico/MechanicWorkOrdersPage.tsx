@@ -46,7 +46,7 @@ export function MechanicWorkOrdersPage() {
   const visible = data?.items ?? []
 
   return (
-    <div className="space-y-4 px-4 pb-6">
+    <div className="space-y-4 pb-6">
       <h1 className="text-lg font-bold tracking-tight text-tc-text">Mis trabajos</h1>
 
       {/* Pestañas: órdenes mías / sin asignar (doc 06 /m) */}
@@ -57,10 +57,10 @@ export function MechanicWorkOrdersPage() {
             role="tab"
             aria-selected={tab === t.id}
             onClick={() => { setTab(t.id); setPage(1) }}
-            className={`min-h-[44px] flex-1 whitespace-nowrap border-b-2 px-1 text-xs font-bold tracking-wide uppercase transition-colors ${
+            className={`min-h-[44px] flex-1 whitespace-nowrap border-b-4 px-1 text-sm font-bold tracking-wide uppercase transition-colors ${
               tab === t.id
                 ? 'border-tc-purple text-tc-purple'
-                : 'border-transparent text-tc-text-secondary hover:text-tc-text-secondary'
+                : 'border-transparent text-tc-text-secondary hover:text-tc-text'
             }`}
           >
             {t.label}
@@ -68,41 +68,26 @@ export function MechanicWorkOrdersPage() {
         ))}
       </div>
 
-      {/* Filtros de estado — chips horizontales */}
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <button
-          onClick={() => { setStatusFilter('open'); setPage(1) }}
-          className={`min-h-[40px] whitespace-nowrap border px-3 py-1 text-xs font-bold tracking-wider uppercase transition-colors ${
-            statusFilter === 'open'
-              ? 'border-tc-navy bg-tc-navy text-white'
-              : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'
-          }`}
-        >
-          Activas
-        </button>
-        {MECHANIC_STATUSES.map(s => (
+      {/* Filtros de estado: grilla de 3 columnas, ningún texto se corta */}
+      <div className="grid grid-cols-3 gap-1.5">
+        {([
+          ['open', 'Activas'],
+          ...MECHANIC_STATUSES.map(s => [s, STATUS_LABELS[s]] as [StatusFilter, string]),
+          ['closed', 'Cerradas'],
+        ] as [StatusFilter, string][]).map(([value, label]) => (
           <button
-            key={s}
-            onClick={() => { setStatusFilter(s); setPage(1) }}
-            className={`min-h-[40px] whitespace-nowrap border px-3 py-1 text-xs font-bold tracking-wider uppercase transition-colors ${
-              statusFilter === s
+            key={value}
+            onClick={() => { setStatusFilter(value); setPage(1) }}
+            aria-pressed={statusFilter === value}
+            className={`min-h-[44px] border px-1.5 py-1 text-center text-xs font-bold leading-tight tracking-wide uppercase transition-colors ${
+              statusFilter === value
                 ? 'border-tc-navy bg-tc-navy text-white'
                 : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'
             }`}
           >
-            {STATUS_LABELS[s]}
+            {label}
           </button>
         ))}
-        <button
-          onClick={() => { setStatusFilter('closed'); setPage(1) }}
-          className={`min-h-[40px] whitespace-nowrap border px-3 py-1 text-xs font-bold tracking-wider uppercase transition-colors ${
-            statusFilter === 'closed'
-              ? 'border-tc-navy bg-tc-navy text-white'
-              : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'
-          }`}
-        >
-          Cerradas
-        </button>
       </div>
 
       {isLoading && (
@@ -156,29 +141,31 @@ export function MechanicWorkOrdersPage() {
                 </div>
 
                 <div className="min-w-0 flex-1 px-3 py-3">
-                  <p className="truncate text-sm font-medium text-tc-text">{order.customerName}</p>
+                  <p className="truncate text-sm text-tc-text-secondary">{order.customerName}</p>
                   <div className="mt-0.5 flex items-center gap-1.5">
-                    <span className="font-mono text-[11px] font-bold tracking-widest text-tc-text-muted">{order.vehiclePlate}</span>
-                    {vehicle && <span className="truncate text-xs text-tc-text-muted">— {vehicle}</span>}
+                    <span className="font-mono text-sm font-bold tracking-widest text-tc-text">{order.vehiclePlate}</span>
+                    {vehicle && <span className="truncate text-xs text-tc-text-secondary">— {vehicle}</span>}
                   </div>
                   <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                     <StatusBadge status={order.status} label={STATUS_LABELS[order.status]} />
                     {order.priority === 'high' && (
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700">{PRIORITY_LABELS[order.priority]}</span>
+                      <span className="border border-amber-600 bg-amber-100 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-amber-800">{PRIORITY_LABELS[order.priority]}</span>
                     )}
                   </div>
                   <p className="mt-1.5 truncate text-xs">
                     {order.assignedMechanicName == null ? (
-                      <span className="font-semibold text-amber-700">Sin asignar</span>
+                      order.status === 'delivered' || order.status === 'cancelled'
+                        ? null
+                        : <span className="font-semibold text-amber-700">Sin asignar</span>
                     ) : mine ? (
                       <span className="font-semibold text-tc-purple">{order.assignedMechanicName}</span>
                     ) : (
-                      <span className="text-tc-text-muted">{order.assignedMechanicName} · solo lectura</span>
+                      <span className="text-tc-text-secondary">{order.assignedMechanicName} · solo lectura</span>
                     )}
                   </p>
                 </div>
 
-                <div className="flex min-h-[44px] w-11 shrink-0 items-center justify-center border-l border-tc-border bg-tc-stub-bg text-tc-navy-text-dim" aria-hidden="true">
+                <div className="flex min-h-[44px] w-8 shrink-0 items-center justify-center border-l border-tc-border bg-tc-stub-bg text-tc-navy-text-dim" aria-hidden="true">
                   <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
@@ -194,17 +181,17 @@ export function MechanicWorkOrdersPage() {
           <button
             onClick={() => setPage(p => p - 1)}
             disabled={page === 1}
-            className="min-h-[44px] border border-tc-border bg-white px-3 py-1.5 text-xs disabled:opacity-40 hover:bg-tc-surface"
+            className="min-h-[48px] flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm disabled:opacity-40 hover:bg-tc-surface"
           >
             ← Anterior
           </button>
-          <span className="border border-tc-border bg-tc-stub-bg px-3 py-1.5 text-xs tabular-nums">
+          <span className="border border-tc-border bg-tc-stub-bg px-3 py-3 text-sm tabular-nums">
             Pág. {page}
           </span>
           <button
             onClick={() => setPage(p => p + 1)}
             disabled={page * data.pageSize >= data.total}
-            className="min-h-[44px] border border-tc-border bg-white px-3 py-1.5 text-xs disabled:opacity-40 hover:bg-tc-surface"
+            className="min-h-[48px] flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm disabled:opacity-40 hover:bg-tc-surface"
           >
             Siguiente →
           </button>

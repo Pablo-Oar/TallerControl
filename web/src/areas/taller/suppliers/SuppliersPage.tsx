@@ -35,7 +35,7 @@ const COLUMNS: DataTableColumn<SupplierDto>[] = [
   },
 ]
 
-const filterInputCls = 'border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text outline-none focus:border-tc-border-mid transition-colors flex-1'
+const filterInputCls = 'min-w-0 flex-1 basis-48 border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text outline-none focus:border-tc-border-mid transition-colors'
 
 export function SuppliersPage() {
   const queryClient = useQueryClient()
@@ -162,12 +162,12 @@ export function SuppliersPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Proveedores</h1>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Proveedores</h1>
         <Button size="sm" onClick={openCreate}>Nuevo proveedor</Button>
       </div>
 
-      <form onSubmit={handleSearch} className="flex gap-1">
+      <form onSubmit={handleSearch} className="flex flex-wrap items-center gap-2">
         <input
           type="search"
           value={q}
@@ -175,8 +175,8 @@ export function SuppliersPage() {
           placeholder="Buscar por nombre o CUIT…"
           className={filterInputCls}
         />
-        <Button type="submit" variant="secondary" size="sm">Buscar</Button>
-        <label className="ml-2 flex items-center gap-1.5 whitespace-nowrap text-sm text-tc-text-secondary">
+        <Button type="submit" variant="secondary" size="sm" className="shrink-0">Buscar</Button>
+        <label className="flex items-center gap-1.5 whitespace-nowrap text-sm text-tc-text-secondary">
           <input type="checkbox" className="h-4 w-4" checked={showDeleted} onChange={e => { setShowDeleted(e.target.checked); setPage(1) }} />
           Ver dados de baja
         </label>
@@ -225,7 +225,7 @@ export function SuppliersPage() {
               <FormField label="Dirección" className="col-span-2" value={formAddress} onChange={e => setFormAddress(e.target.value)} />
               <FormTextarea label="Notas" rows={2} className="col-span-2" value={formNotes} onChange={e => setFormNotes(e.target.value)} />
             </div>
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="sticky bottom-0 -mx-5 -mb-5 mt-2 flex justify-end gap-2 border-t border-tc-border bg-white px-5 py-3">
               <Button type="button" variant="secondary" size="sm" onClick={() => { setCreating(false); setEditing(null) }}>
                 Cancelar
               </Button>

@@ -1,3 +1,4 @@
+import { LineItemsList } from '../../../components/ui/LineItemsList'
 import { useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -177,26 +178,26 @@ export function WorkOrderDetailPage() {
             {PRIORITY_LABELS[order.priority]}
           </span>
         </div>
-        <div className="flex gap-2">
-          <Link to="/app/work-orders">
-            <Button variant="secondary" size="sm">← Volver</Button>
+        <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto">
+          <Link to="/app/work-orders" className="contents">
+            <Button variant="secondary" size="sm" className="whitespace-nowrap">← Volver</Button>
           </Link>
           <a
             href={`/api/v1/work-orders/${order.id}/pdf`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-tc-text-secondary transition-colors hover:bg-tc-surface"
+            className="inline-flex items-center justify-center border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-tc-text-secondary transition-colors hover:bg-tc-surface max-md:min-h-11"
           >
             PDF
           </a>
-          {canAct && (
-            <Button variant="secondary" size="sm" onClick={shareOrderLink}>Enlace para el cliente</Button>
-          )}
           {canAct && can('workorders.write') && (
             <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>Editar</Button>
           )}
           {canAct && (
-            <Button size="sm" onClick={() => { setInitialStatus(undefined); setChangingStatus(true) }}>Cambiar estado</Button>
+            <Button variant="secondary" size="sm" className="col-span-3 sm:col-auto" onClick={shareOrderLink}>Enlace para el cliente</Button>
+          )}
+          {canAct && (
+            <Button size="sm" className="col-span-3 sm:col-auto" onClick={() => { setInitialStatus(undefined); setChangingStatus(true) }}>Cambiar estado</Button>
           )}
         </div>
       </div>
@@ -265,12 +266,24 @@ export function WorkOrderDetailPage() {
       {/* Renglones */}
       {order.items.length > 0 && (
         <Section title="Renglones">
-          <div className="overflow-x-auto">
+          {/* Celular: una fila por renglón (la tabla de 5 columnas cortaba los importes). */}
+          <div className="md:hidden">
+            <LineItemsList
+              label="Renglones de la orden"
+              items={order.items.map(item => ({
+                id: item.id,
+                title: item.description,
+                detail: `${item.quantity} × ${item.unitNetPrice != null ? fmtARS(item.unitNetPrice) : '—'} · IVA ${item.vatRate}%`,
+                amount: item.lineTotal != null ? fmtARS(item.lineTotal) : '—',
+              }))}
+            />
+          </div>
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-tc-border bg-tc-stub-bg">
                   {['Descripción', 'Cant.', 'P. neto', 'IVA', 'Total línea'].map((h, i) => (
-                    <th key={i} className={`px-3 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${i > 0 ? 'text-right' : 'text-left'}`}>
+                    <th key={i} className={`px-3 py-2 text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${i > 0 ? 'text-right' : 'text-left'}`}>
                       {h}
                     </th>
                   ))}
@@ -294,7 +307,7 @@ export function WorkOrderDetailPage() {
             </table>
           </div>
           {order.total != null && (
-            <div className="mt-3 border-t border-tc-perf pt-3 flex justify-end gap-6 text-sm">
+            <div className="mt-3 flex flex-wrap justify-end gap-x-6 gap-y-1 border-t border-tc-perf px-4 pt-3 text-sm md:px-0">
               <span className="text-tc-text-secondary">
                 Subtotal neto <span className="tabular-nums text-tc-text">{fmtARS(order.subtotalNet ?? 0)}</span>
               </span>
@@ -319,13 +332,13 @@ export function WorkOrderDetailPage() {
         <Section title="Notas">
           {order.internalNotes && (
             <div>
-              <p className="mb-1 text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Internas</p>
+              <p className="mb-1 text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Internas</p>
               <p className="text-sm text-tc-text-secondary">{order.internalNotes}</p>
             </div>
           )}
           {order.mechanicNotes && (
             <div className={order.internalNotes ? 'mt-3' : ''}>
-              <p className="mb-1 text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Del mecánico</p>
+              <p className="mb-1 text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Del mecánico</p>
               <p className="text-sm text-tc-text-secondary">{order.mechanicNotes}</p>
             </div>
           )}
@@ -358,7 +371,7 @@ export function WorkOrderDetailPage() {
             <thead>
               <tr className="border-b border-tc-border">
                 {['#', 'Método', 'Monto', 'Fecha', 'Estado', ''].map((h, i) => (
-                  <th key={i} className={`pb-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${i === 2 ? 'text-right px-3' : i > 0 ? 'px-3 text-left' : 'text-left'}`}>
+                  <th key={i} className={`pb-2 text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted ${i === 2 ? 'text-right px-3' : i > 0 ? 'px-3 text-left' : 'text-left'}`}>
                     {h}
                   </th>
                 ))}
@@ -384,20 +397,20 @@ export function WorkOrderDetailPage() {
                         href={getPaymentPdfUrl(id!, pay.id)}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-[10px] font-bold tracking-wider uppercase text-tc-navy-text-dim hover:text-tc-purple transition-colors"
+                        className="text-[11px] font-bold tracking-wider uppercase text-tc-navy-text-dim hover:text-tc-purple transition-colors"
                       >
                         PDF
                       </a>
                       <button
                         onClick={() => shareReceipt(pay.id, pay.number)}
-                        className="text-[10px] font-bold tracking-wider uppercase text-tc-navy-text-dim hover:text-tc-purple transition-colors"
+                        className="text-[11px] font-bold tracking-wider uppercase text-tc-navy-text-dim hover:text-tc-purple transition-colors"
                       >
                         Enlace
                       </button>
                       {pay.status === 'valid' && can('payments.void') && (
                         <button
                           onClick={() => setVoidingPaymentId(pay.id)}
-                          className="text-[10px] font-bold tracking-wider uppercase text-tc-stamp-red hover:text-red-700 transition-colors"
+                          className="text-[11px] font-bold tracking-wider uppercase text-tc-stamp-red hover:text-red-700 transition-colors"
                         >
                           Anular
                         </button>
@@ -530,7 +543,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <div className="border border-tc-border bg-white overflow-hidden">
       <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">{title}</span>
+        <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">{title}</span>
       </div>
       <div className="p-4">{children}</div>
     </div>

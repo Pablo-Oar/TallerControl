@@ -93,8 +93,8 @@ export function UsersSettingsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Usuarios del taller</h1>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Usuarios del taller</h1>
         <Button size="sm" onClick={() => setInviting(true)}>Invitar usuario</Button>
       </div>
 
@@ -119,7 +119,7 @@ export function UsersSettingsPage() {
 
       {invitations.length > 0 && (
         <section aria-label="Invitaciones pendientes" className="overflow-hidden border border-tc-border bg-white">
-          <h2 className="border-b border-tc-border bg-tc-stub-bg px-4 py-2 text-[10px] font-bold tracking-[0.14em] text-tc-text-muted uppercase">
+          <h2 className="border-b border-tc-border bg-tc-stub-bg px-4 py-2 text-[11px] font-bold tracking-[0.14em] text-tc-text-muted uppercase">
             Invitaciones pendientes
           </h2>
           <ul className="divide-y divide-tc-border">

@@ -154,7 +154,7 @@ export function GeneralSettingsPage() {
       {/* Logo */}
       <section className="border border-tc-border bg-white">
         <div className="bg-tc-stub-bg border-b border-tc-border px-5 py-2.5">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Logo del taller</span>
+          <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Logo del taller</span>
         </div>
         <div className="flex items-center gap-5 p-5">
           <div className="flex h-20 w-36 shrink-0 items-center justify-center border border-dashed border-tc-border-mid bg-tc-stub-bg">
@@ -202,18 +202,18 @@ export function GeneralSettingsPage() {
         className="border border-tc-border bg-white overflow-hidden"
       >
         <div className="bg-tc-stub-bg border-b border-tc-border px-5 py-2.5">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Datos del taller</span>
+          <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Datos del taller</span>
         </div>
 
         <div className="space-y-4 p-5">
           <FormField label="Nombre del taller" requiredMark error={errors.name?.message} {...register('name')} />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label="Razón social" {...register('legalName')} />
             <FormField label="CUIT" placeholder="20-12345678-9" inputClassName="tabular-nums" {...register('taxId')} />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label="Dirección" {...register('address')} />
             <FormField label="Teléfono" {...register('phone')} />
           </div>
@@ -222,7 +222,7 @@ export function GeneralSettingsPage() {
         <div className="h-px bg-tc-perf" />
 
         <div className="bg-tc-stub-bg border-b border-tc-border px-5 py-2.5">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Parámetros operativos</span>
+          <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Parámetros operativos</span>
         </div>
 
         <div className="space-y-4 p-5">
@@ -233,14 +233,14 @@ export function GeneralSettingsPage() {
             {...register('timeZone')}
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormSelect label="IVA por defecto" {...register('defaultVatRate')}>
               {ALLOWED_VAT_RATES.map((rate) => (
                 <option key={rate} value={rate}>{rate}%</option>
               ))}
             </FormSelect>
             <FormField
-              label="Vigencia del presupuesto (días)"
+              label="Vigencia presupuesto (días)"
               type="number"
               min={1}
               max={180}

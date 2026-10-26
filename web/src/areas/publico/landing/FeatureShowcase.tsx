@@ -13,7 +13,7 @@ function Chip({ children, tone = 'muted' }: { children: ReactNode; tone?: 'muted
     green: 'bg-emerald-400/20 text-emerald-200',
     amber: 'bg-amber-400/20 text-amber-200',
   }
-  return <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${tones[tone]}`}>{children}</span>
+  return <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${tones[tone]}`}>{children}</span>
 }
 
 function HistoryArt() {
@@ -33,7 +33,7 @@ function HistoryArt() {
           <span className={`h-2 w-2 rounded-full ${i === 2 ? 'bg-tc-purple' : 'bg-white/30'}`} />
           <div className="min-w-0">
             <p className="truncate text-xs font-medium text-white">{t}</p>
-            <p className="text-[10px] text-slate-400">{d}</p>
+            <p className="text-[11px] text-slate-400">{d}</p>
           </div>
         </div>
       ))}
@@ -69,7 +69,7 @@ function PaymentArt() {
       <div className={panel}>
         <div className="flex items-baseline justify-between">
           <span className="text-[11px] text-slate-400">Cobrado</span>
-          <span className="text-sm font-bold text-white">$ 36.300 <span className="text-[10px] font-normal text-slate-400">de $ 50.000</span></span>
+          <span className="text-sm font-bold text-white">$ 36.300 <span className="text-[11px] font-normal text-slate-400">de $ 50.000</span></span>
         </div>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
           <div className="h-full w-[72%] rounded-full bg-tc-purple" />
@@ -128,11 +128,11 @@ function MechanicArt() {
       <div className="space-y-1.5">
         <div className={`${panel} p-2`}>
           <p className="text-[11px] font-semibold text-white">OT #1042</p>
-          <p className="text-[10px] text-slate-400">AB 123 CD · Service</p>
+          <p className="text-[11px] text-slate-400">AB 123 CD · Service</p>
           <div className="mt-1.5"><Chip tone="purple">En proceso</Chip></div>
         </div>
-        <div className="rounded-lg bg-tc-purple px-2 py-1.5 text-center text-[10px] font-bold text-white">Marcar como lista</div>
-        <div className="rounded-lg border border-white/15 px-2 py-1.5 text-center text-[10px] text-slate-300">Agregar foto</div>
+        <div className="rounded-lg bg-tc-purple px-2 py-1.5 text-center text-[11px] font-bold text-white">Marcar como lista</div>
+        <div className="rounded-lg border border-white/15 px-2 py-1.5 text-center text-[11px] text-slate-300">Agregar foto</div>
       </div>
     </div>
   )
@@ -257,7 +257,7 @@ export function FeatureShowcase() {
     <section className="bg-tc-surface px-6 py-16 md:py-24 border-t border-tc-border">
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto mb-12 max-w-3xl text-center">
-          <p className="mb-2 text-[10px] font-bold tracking-[0.2em] uppercase text-tc-text-muted">Funcionalidades</p>
+          <p className="mb-2 text-xs font-bold tracking-[0.2em] uppercase text-tc-text-secondary">Funcionalidades</p>
           <h2 className="text-3xl font-bold tracking-tight text-tc-text md:text-4xl">
             Todo tu taller en un solo sistema, sin complicarte
           </h2>
@@ -294,7 +294,7 @@ export function FeatureShowcase() {
         <div className="mt-16 rounded-2xl bg-tc-navy p-8 md:p-10">
           <div className="mb-8 max-w-2xl">
             <h3 className="text-2xl font-bold text-white">Cada persona ve lo que necesita</h3>
-            <p className="mt-2 text-tc-text-muted">
+            <p className="mt-2 text-white/80">
               Sumás a tu equipo con roles y permisos: cada uno trabaja en lo suyo y nadie ve lo que no debe.
             </p>
           </div>

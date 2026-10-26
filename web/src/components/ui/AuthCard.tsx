@@ -26,7 +26,7 @@ export function AuthCard({
       <div className={cn('w-full max-w-sm rounded-[28px] border border-tc-navy-mid bg-tc-stub-bg p-2', className)}>
         <div className="rounded-[22px] border border-tc-border bg-white px-5 py-7 shadow-sm sm:px-7">
           <div className="mb-6 text-center">
-            <p className="mb-3 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">TallerControl</p>
+            <p className="mb-3 text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">TallerControl</p>
             <h1 className="text-xl font-extrabold tracking-tight text-tc-text sm:text-2xl">{title}</h1>
             {subtitle && <p className="mt-1.5 text-sm leading-relaxed text-tc-text-secondary">{subtitle}</p>}
           </div>

@@ -30,7 +30,7 @@ export function PublicPaymentPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-tc-navy px-4 text-center">
         <div className="border border-tc-border bg-white p-8 max-w-sm w-full">
-          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted mb-2">Error</p>
+          <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted mb-2">Error</p>
           <p className="font-bold text-tc-text">Comprobante no encontrado</p>
           <p className="mt-2 text-sm text-tc-text-secondary">El enlace puede haber expirado o ser incorrecto.</p>
         </div>
@@ -52,9 +52,9 @@ export function PublicPaymentPage() {
       <div className="mx-auto max-w-md px-4 py-10">
         <div className="border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3 flex items-center justify-between">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Comprobante de Pago</span>
+            <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Comprobante de Pago</span>
             {isVoided && (
-              <span className="border border-tc-stamp-red px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-tc-stamp-red">
+              <span className="border border-tc-stamp-red px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-tc-stamp-red">
                 Anulado
               </span>
             )}
@@ -73,20 +73,20 @@ export function PublicPaymentPage() {
 
             <dl className="space-y-3 text-sm">
               <div className="flex justify-between border-b border-tc-border pb-2">
-                <dt className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Importe</dt>
+                <dt className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Importe</dt>
                 <dd className="font-bold text-tc-purple tabular-nums text-base">{fmtARS(data.amount)}</dd>
               </div>
               <div className="flex justify-between border-b border-tc-border pb-2">
-                <dt className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Método</dt>
+                <dt className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Método</dt>
                 <dd className="text-tc-text-secondary">{METHOD_LABELS[data.method]}</dd>
               </div>
               <div className="flex justify-between border-b border-tc-border pb-2">
-                <dt className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Fecha</dt>
+                <dt className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Fecha</dt>
                 <dd className="text-tc-text-secondary tabular-nums">{paidAt}</dd>
               </div>
               {data.reference && (
                 <div className="flex justify-between">
-                  <dt className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Referencia</dt>
+                  <dt className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Referencia</dt>
                   <dd className="text-tc-text-secondary">{data.reference}</dd>
                 </div>
               )}

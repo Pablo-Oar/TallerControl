@@ -33,7 +33,7 @@ export function OwnerAccessCode({ customerId, customerName }: { customerId: stri
 
   return (
     <div className="space-y-2 rounded-xl border border-tc-border bg-tc-surface p-3">
-      <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Código de acceso al portal QR</p>
+      <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Código de acceso al portal QR</p>
       <p className="text-xs text-tc-text-secondary">
         Es el código que {customerName} usa, junto con la patente, para ver el historial de su vehículo al escanear el
         llavero. Entregáselo en persona o por mensaje.

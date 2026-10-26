@@ -122,8 +122,8 @@ export function PwaInstallBanner() {
   if (dismissed || (!installPrompt && !(showPush && !pushGranted))) return null
 
   return (
-    <div className="mx-4 my-2 flex items-start gap-3 border border-tc-border bg-white p-3 text-sm text-tc-text">
-      <div className="min-w-0 flex-1 space-y-2">
+    <div className="mx-4 my-1 flex items-center gap-2 border border-tc-border bg-white py-1 pl-3 pr-0 text-xs text-tc-text">
+      <div className="min-w-0 flex-1 space-y-1">
         {installPrompt && <p>Instalá la app para abrirla rápido, incluso sin señal.</p>}
         {showPush && !pushGranted && <p>Activá los avisos de nuevas órdenes asignadas.</p>}
         <div className="flex flex-wrap gap-2">
