@@ -8,8 +8,8 @@
   --color-tc-navy-mid: #1e3a5f;
   --color-tc-navy-surface: #0d1f38;
   --color-tc-navy-deep: #05101f;
-  --color-tc-navy-text: #4b6fa5;
-  --color-tc-navy-text-dim: #2d4f7c;
+  --color-tc-navy-text: #6f93c8;
+  --color-tc-navy-text-dim: #5b7fb3;
 
   /* Content surface */
   --color-tc-white: #ffffff;
@@ -49,7 +49,7 @@
   /* Semantic text tokens */
   --color-tc-text: #0f172a;
   --color-tc-text-secondary: #475569;
-  --color-tc-text-muted: #94a3b8;
+  --color-tc-text-muted: #64748b;
 }
 
 /* Puente shadcn → tc-* (UI-R2, D-26 provisoria: esquinas rectas; --radius es la palanca única) */
@@ -201,4 +201,14 @@ button:focus-visible {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #4b6fa5;
+}
+
+
+/* Celular: campos y selects de la app con altura táctil de 44 px (los de los diálogos y filtros incluidos). */
+@media (max-width: 767px) {
+  main input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']),
+  main select,
+  [role='dialog'] select {
+    min-height: 44px;
+  }
 }

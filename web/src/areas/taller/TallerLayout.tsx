@@ -67,8 +67,8 @@ function SidebarLink({ to, label, end }: NavItem) {
       end={end}
       className={({ isActive }) =>
         isActive
-          ? 'flex items-center border-l-2 border-tc-purple pl-4 py-1.5 text-sm font-medium text-white'
-          : 'flex items-center border-l-2 border-transparent pl-4 py-1.5 text-sm text-tc-navy-text hover:text-white transition-colors'
+          ? 'flex items-center border-l-2 border-tc-purple pl-4 py-2.5 text-sm font-medium text-white lg:py-1.5'
+          : 'flex items-center border-l-2 border-transparent pl-4 py-2.5 text-sm text-tc-navy-text lg:py-1.5 hover:text-white transition-colors'
       }
     >
       {label}
@@ -113,7 +113,7 @@ export function TallerLayout({ children }: { children: ReactNode }) {
       <header className="flex h-[52px] flex-none items-center gap-4 border-b border-tc-navy-mid px-4">
         {/* Hamburger — mobile only */}
         <button
-          className="flex h-8 w-8 items-center justify-center text-tc-navy-text hover:text-white transition-colors lg:hidden"
+          className="-ml-2 flex h-11 w-11 shrink-0 items-center justify-center text-tc-navy-text hover:text-white transition-colors lg:hidden"
           onClick={() => setSidebarOpen(v => !v)}
           aria-label="Menú"
         >
@@ -133,10 +133,10 @@ export function TallerLayout({ children }: { children: ReactNode }) {
         </div>
 
         {/* User + logout */}
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-1 sm:gap-3">
           {/* Search icon — mobile only, goes to vehicles search */}
           <button
-            className="flex h-7 w-7 items-center justify-center text-tc-navy-text hover:text-white transition-colors md:hidden"
+            className="flex h-11 w-11 items-center justify-center text-tc-navy-text hover:text-white transition-colors md:hidden"
             onClick={() => navigate('/app/vehicles')}
             aria-label="Buscar"
           >
@@ -151,7 +151,7 @@ export function TallerLayout({ children }: { children: ReactNode }) {
           <button
             disabled={loggingOut}
             onClick={handleLogout}
-            className="flex h-7 items-center gap-1.5 border border-tc-navy-mid px-3 text-xs font-medium text-tc-navy-text hover:border-tc-navy-text hover:text-white transition-colors disabled:opacity-50"
+            className="flex h-11 items-center gap-1.5 border border-tc-navy-mid px-3 text-xs font-medium lg:h-7 text-tc-navy-text hover:border-tc-navy-text hover:text-white transition-colors disabled:opacity-50"
           >
             {loggingOut ? (
               <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -194,7 +194,7 @@ export function TallerLayout({ children }: { children: ReactNode }) {
 
               return (
                 <div key={group.label}>
-                  <p className="mb-1.5 pl-4 text-[10px] font-bold tracking-[0.15em] text-tc-navy-text-dim uppercase">
+                  <p className="mb-1.5 pl-4 text-[11px] font-bold tracking-[0.15em] text-tc-navy-text-dim uppercase">
                     {group.label}
                   </p>
                   {visibleItems.map(item => (
@@ -207,7 +207,7 @@ export function TallerLayout({ children }: { children: ReactNode }) {
 
           {/* Role chip at bottom of sidebar */}
           <div className="mt-auto px-4 pb-5">
-            <span className="inline-flex items-center border border-tc-navy-mid px-2 py-0.5 text-[10px] font-bold tracking-widest text-tc-navy-text uppercase">
+            <span className="inline-flex items-center border border-tc-navy-mid px-2 py-0.5 text-[11px] font-bold tracking-widest text-tc-navy-text uppercase">
               {({ owner: 'Dueño', admin_staff: 'Administrativo', mechanic: 'Mecánico', accountant: 'Contador' } as Record<string, string>)[role] ?? role}
             </span>
           </div>
@@ -215,7 +215,7 @@ export function TallerLayout({ children }: { children: ReactNode }) {
 
         {/* Content surface */}
         <main className="flex-1 overflow-y-auto bg-white">
-          <div className="min-h-full p-6">
+          <div className="min-h-full p-4 pb-6 md:p-6">
             {children}
           </div>
         </main>

@@ -230,7 +230,7 @@ export function AppointmentFormModal({ editData, onClose, onCreated }: Props) {
               {fields.map((field, index) => (
                 <div key={field.id} className="border border-tc-border">
                   <div className="bg-tc-stub-bg border-b border-tc-border px-3 py-1 flex items-center justify-between">
-                    <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
+                    <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
                       Servicio {index + 1}
                     </span>
                     {fields.length > 1 && (
@@ -294,7 +294,7 @@ export function AppointmentFormModal({ editData, onClose, onCreated }: Props) {
           </p>
         )}
 
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="sticky bottom-0 -mx-5 -mb-5 mt-2 flex justify-end gap-2 border-t border-tc-border bg-white px-5 py-3">
           <Button type="button" variant="secondary" size="sm" onClick={onClose} disabled={isSubmitting}>
             Cancelar
           </Button>

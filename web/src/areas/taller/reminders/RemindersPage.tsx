@@ -28,7 +28,7 @@ const COLUMNS: DataTableColumn<ReminderListDto>[] = [
     cell: r => (
       <>
         {dueSoon(r) && (
-          <span className="mr-1.5 inline-block rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-amber-700">
+          <span className="mr-1.5 inline-block rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-amber-700">
             Próximo
           </span>
         )}
@@ -99,8 +99,8 @@ export function RemindersPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Recordatorios</h1>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Recordatorios</h1>
         <div className="flex gap-2">
           <Button
             variant="secondary"
@@ -130,7 +130,7 @@ export function RemindersPage() {
             type="button"
             aria-pressed={status === value}
             onClick={() => { setStatus(value); setPage(1) }}
-            className={`min-h-[36px] rounded-md border px-3 text-xs font-bold tracking-wider uppercase ${status === value ? 'border-tc-purple bg-tc-purple text-white' : 'border-tc-border text-tc-text-secondary hover:bg-tc-surface'}`}
+            className={`min-h-[44px] rounded-md border px-3 text-xs md:min-h-[36px] font-bold tracking-wider uppercase ${status === value ? 'border-tc-purple bg-tc-purple text-white' : 'border-tc-border text-tc-text-secondary hover:bg-tc-surface'}`}
           >
             {label}
           </button>
@@ -156,7 +156,7 @@ export function RemindersPage() {
             <div className="flex flex-wrap items-center gap-x-2">
               <span className="font-mono text-sm tracking-widest text-tc-text">{r.vehiclePlate}</span>
               {dueSoon(r) && (
-                <span className="rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-amber-700">Próximo</span>
+                <span className="rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-amber-700">Próximo</span>
               )}
             </div>
             <p className="text-sm text-tc-text">{r.title}</p>

@@ -9,25 +9,24 @@ interface KpiStubProps {
   value: string | number
   to?: string
   alert?: boolean
-  money?: boolean
 }
 
-function KpiStub({ label, value, to, alert, money }: KpiStubProps) {
+function KpiStub({ label, value, to, alert }: KpiStubProps) {
   const inner = (
-    <div className="flex overflow-hidden border border-tc-border bg-white hover:border-tc-border-mid transition-colors group">
+    <div className="flex h-full overflow-hidden border border-tc-border bg-white hover:border-tc-border-mid transition-colors group">
       {/* Stub column */}
       <div className="w-2 flex-none bg-tc-stub-bg" />
       {/* Perforation */}
       <div className="perf-line flex-none self-stretch" />
       {/* Body */}
       <div className="flex flex-1 flex-col gap-2 px-4 py-4">
-        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
+        <span className="text-[11px] font-bold leading-tight tracking-[0.12em] uppercase text-tc-text-secondary">
           {label}
         </span>
         <span
           className={[
             'tabular-nums text-2xl font-bold leading-none',
-            money ? 'text-tc-purple' : alert ? 'text-amber-600' : 'text-tc-text',
+            alert ? 'text-amber-600' : 'text-tc-text',
           ].join(' ')}
         >
           {value}
@@ -45,7 +44,7 @@ function KpiStub({ label, value, to, alert, money }: KpiStubProps) {
   )
 
   return to ? (
-    <Link to={to} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tc-purple focus-visible:ring-offset-1">
+    <Link to={to} className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tc-purple focus-visible:ring-offset-1">
       {inner}
     </Link>
   ) : (
@@ -105,7 +104,7 @@ export function DashboardPage() {
 
       {/* KPI row — coupon stubs */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <KpiStub label="Por cobrar" value={totalFormatted} money />
+        <KpiStub label="Por cobrar" value={totalFormatted} />
         <KpiStub label="OTs abiertas" value={data!.openWorkOrders} to="/app/work-orders" />
         <KpiStub label="Presupuestos pendientes" value={data!.pendingQuotes} to="/app/quotes" />
         <KpiStub
@@ -121,10 +120,10 @@ export function DashboardPage() {
         <div className="border border-tc-border bg-white overflow-hidden">
           {/* Header stub */}
           <div className="flex items-center justify-between border-b border-tc-border bg-tc-stub-bg px-4 py-3">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-secondary">
+            <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-secondary">
               Guía de inicio
             </span>
-            <span className="text-[10px] font-bold tracking-wider text-tc-purple tabular-nums">
+            <span className="text-[11px] font-bold tracking-wider text-tc-purple tabular-nums">
               {onboarding.completedCount}/{onboarding.totalCount} · {pct}%
             </span>
           </div>
@@ -139,7 +138,7 @@ export function DashboardPage() {
 
           {/* Steps */}
           <ul className="divide-y divide-tc-border">
-            {onboarding.steps.map(step => (
+            {onboarding.steps.filter(step => !step.completed).map(step => (
               <li key={step.key} className="flex items-center gap-3 px-4 py-2.5">
                 {step.completed ? (
                   <svg className="h-4 w-4 flex-none text-tc-done-text" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -157,6 +156,14 @@ export function DashboardPage() {
               </li>
             ))}
           </ul>
+          {onboarding.completedCount > 0 && (
+            <p className="flex items-center gap-2 border-t border-tc-border px-4 py-2.5 text-xs text-tc-text-secondary">
+              <svg className="h-4 w-4 flex-none text-tc-done-text" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                <path d="M3 8l3.5 3.5L13 5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {onboarding.completedCount === 1 ? '1 paso ya completo' : `${onboarding.completedCount} pasos ya completos`}
+            </p>
+          )}
         </div>
       )}
     </div>

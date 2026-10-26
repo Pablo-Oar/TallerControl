@@ -12,7 +12,7 @@ type Tab = 'revenue' | 'receivables' | 'stock' | 'purchases'
 
 const TAB_LABELS: Record<Tab, string> = {
   revenue: 'Ingresos',
-  receivables: 'Cuentas por cobrar',
+  receivables: 'Por cobrar',
   stock: 'Stock',
   purchases: 'Compras',
 }
@@ -75,7 +75,7 @@ export function ReportsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Reportes</h1>
+      <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Reportes</h1>
 
       <Tabs
         label="Reportes"
@@ -89,11 +89,11 @@ export function ReportsPage() {
       {isDateRange && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Desde</span>
+            <span className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Desde</span>
             <input type="date" value={from} onChange={e => setFrom(e.target.value)} className={inputCls} />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Hasta</span>
+            <span className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Hasta</span>
             <input type="date" value={to} onChange={e => setTo(e.target.value)} className={inputCls} />
           </div>
         </div>

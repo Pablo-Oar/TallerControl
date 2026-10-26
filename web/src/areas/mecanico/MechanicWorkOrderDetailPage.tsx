@@ -29,7 +29,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <div className="border border-tc-border bg-white overflow-hidden">
       <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">{title}</span>
+        <span className="text-xs font-bold tracking-[0.14em] uppercase text-tc-text-secondary">{title}</span>
       </div>
       <div className="p-4">{children}</div>
     </div>
@@ -123,7 +123,7 @@ export function MechanicWorkOrderDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-2 px-4 pt-4">
+      <div className="space-y-2 pt-4">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="h-20 animate-pulse border border-tc-border bg-tc-surface" />
         ))}
@@ -133,7 +133,7 @@ export function MechanicWorkOrderDetailPage() {
 
   if (error || !order) {
     return (
-      <div className="px-4 pt-4">
+      <div className="pt-4">
         <LoadError what="la orden" onRetry={() => refetch()} />
       </div>
     )
@@ -145,13 +145,13 @@ export function MechanicWorkOrderDetailPage() {
   const vehicleLabel = [order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ')
 
   return (
-    <div className="space-y-3 px-4 pb-6">
-      <div className="flex items-center justify-between py-2">
+    <div className={`space-y-3 ${transitions.length > 0 ? 'pb-28' : 'pb-6'}`}>
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="font-mono font-bold text-lg text-tc-text">#{order.number}</span>
           <StatusBadge status={order.status} label={STATUS_LABELS[order.status]} />
         </div>
-        <Link to="/m" className="text-xs font-bold tracking-wider uppercase text-tc-purple hover:opacity-70">
+        <Link to="/m" className="inline-flex min-h-[44px] items-center px-2 text-sm font-bold tracking-wider uppercase text-tc-purple hover:opacity-70">
           ← Volver
         </Link>
       </div>
@@ -174,14 +174,14 @@ export function MechanicWorkOrderDetailPage() {
 
       <Section title="Vehículo">
         <div className="space-y-1">
-          <p className="font-mono font-bold tracking-widest text-tc-text">{order.vehiclePlate}</p>
+          <p className="font-mono text-xl font-bold tracking-widest text-tc-text">{order.vehiclePlate}</p>
           {vehicleLabel && <p className="text-sm text-tc-text-secondary">{vehicleLabel}</p>}
           <p className="text-sm text-tc-text-secondary">
             Odómetro:{' '}
             {order.odometerKm > 0 ? (
               <strong className="tabular-nums">{order.odometerKm.toLocaleString('es-AR')} km</strong>
             ) : (
-              <span className="text-tc-text-muted">sin registrar</span>
+              <span className="text-tc-text-secondary">sin registrar</span>
             )}
           </p>
           {order.fuelLevel != null && (
@@ -190,14 +190,14 @@ export function MechanicWorkOrderDetailPage() {
             </p>
           )}
           <p className="text-sm text-tc-text-secondary">
-            Prioridad: <strong>{PRIORITY_LABELS[order.priority]}</strong>
+            Prioridad: <strong className={order.priority === 'high' ? 'text-amber-800' : undefined}>{PRIORITY_LABELS[order.priority]}</strong>
           </p>
         </div>
       </Section>
 
       {order.reportedIssue && (
         <Section title="Problema reportado">
-          <p className="text-sm text-tc-text-secondary">{order.reportedIssue}</p>
+          <p className="text-base font-medium text-tc-text">{order.reportedIssue}</p>
         </Section>
       )}
 
@@ -207,7 +207,7 @@ export function MechanicWorkOrderDetailPage() {
             {order.items.map(item => (
               <li key={item.id} className="flex items-baseline justify-between text-sm border-b border-tc-border pb-1.5 last:border-0 last:pb-0">
                 <span className="text-tc-text-secondary">{item.description}</span>
-                <span className="text-tc-text-muted tabular-nums text-xs ml-3 shrink-0">× {item.quantity}</span>
+                <span className="text-tc-text tabular-nums text-sm ml-3 shrink-0">× {item.quantity}</span>
               </li>
             ))}
           </ul>
@@ -231,19 +231,19 @@ export function MechanicWorkOrderDetailPage() {
             />
             {notesError && <p className="text-xs text-tc-stamp-red">{notesError}</p>}
             <div className="flex gap-2">
-              <Button size="sm" loading={savingNotes} onClick={handleSaveNotes}>Guardar</Button>
-              <Button size="sm" variant="secondary" onClick={() => setEditingNotes(false)}>Cancelar</Button>
+              <Button className="min-h-[44px]" loading={savingNotes} onClick={handleSaveNotes}>Guardar</Button>
+              <Button className="min-h-[44px]" variant="secondary" onClick={() => setEditingNotes(false)}>Cancelar</Button>
             </div>
           </div>
         ) : (
           <div className="flex items-start justify-between gap-3">
             {order.mechanicNotes
               ? <p className="text-sm text-tc-text-secondary">{order.mechanicNotes}</p>
-              : <p className="text-sm text-tc-text-muted">Sin notas</p>
+              : <p className="text-sm text-tc-text-secondary">Sin notas</p>
             }
             {!isOthers && <button
               onClick={() => { setMechanicNotes(order.mechanicNotes ?? ''); setEditingNotes(true) }}
-              className="text-xs font-bold tracking-wider uppercase text-tc-purple hover:opacity-70 shrink-0"
+              className="min-h-[44px] shrink-0 px-3 text-sm font-bold tracking-wider uppercase text-tc-purple hover:opacity-70"
             >
               {order.mechanicNotes ? 'Editar' : 'Agregar'}
             </button>}
@@ -291,19 +291,20 @@ export function MechanicWorkOrderDetailPage() {
       )}
 
       {transitions.length > 0 && (
-        <Section title="Cambiar estado">
-          <div className="flex flex-wrap gap-2">
-            {transitions.map(toStatus => (
-              <button
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-tc-border bg-white px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="mx-auto flex max-w-lg gap-2" role="group" aria-label="Cambiar estado">
+            {[...transitions].sort((x, y) => (y === 'completed' ? 1 : 0) - (x === 'completed' ? 1 : 0)).map(toStatus => (
+              <Button
                 key={toStatus}
+                variant={toStatus === 'completed' || transitions.length === 1 ? 'primary' : 'secondary'}
                 onClick={() => setChangingStatus(toStatus)}
-                className="border border-tc-border bg-white px-4 py-2 text-sm font-medium text-tc-text-secondary hover:bg-tc-surface transition-colors"
+                className="min-h-[48px] flex-1 text-base"
               >
-                → {STATUS_LABELS[toStatus]}
-              </button>
+                {STATUS_LABELS[toStatus]}
+              </Button>
             ))}
           </div>
-        </Section>
+        </div>
       )}
 
       {changingStatus && (

@@ -39,8 +39,8 @@ export function InvoicingSetupPage() {
   })
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Configuración ARCA</h1>
+    <div className="space-y-4">
+      <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Facturación</h1>
 
       <InvoicingTabs />
 
@@ -187,7 +187,7 @@ function CertificatesSection({
     <div className="space-y-4">
       <div className="border border-tc-border bg-white overflow-hidden">
         <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2 flex items-center justify-between">
-          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Certificados ARCA</span>
+          <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Certificados ARCA</span>
           {certs.length < 3 && canConfigure && (
             <Button size="sm" onClick={() => setShowForm(true)}>
               Nuevo certificado
@@ -213,17 +213,17 @@ function CertificatesSection({
                       <span className="font-medium text-sm text-tc-text">{cert.name}</span>
                       <span className="font-mono text-xs text-tc-text-secondary">{cert.cuit}</span>
                       {cert.environment === 'homologation' && (
-                        <span className="border border-amber-300 px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-amber-700">
+                        <span className="border border-amber-300 px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-amber-700">
                           Homologación (pruebas)
                         </span>
                       )}
                       {cert.isPrimary && (
-                        <span className="border border-blue-300 px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-blue-700">
+                        <span className="border border-blue-300 px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-blue-700">
                           Principal
                         </span>
                       )}
                       <span
-                        className={`border px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
+                        className={`border px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase ${
                           cert.status === 'active'
                             ? 'border-green-300 text-green-700'
                             : cert.status === 'pending'
@@ -275,7 +275,7 @@ function CertificatesSection({
       {certs.some(c => c.isActive) && (
         <div className="border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Probar conexión ARCA</span>
+            <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Probar conexión ARCA</span>
           </div>
           <div className="p-4 space-y-2">
             <div className="flex gap-2">
@@ -316,7 +316,7 @@ function CertificatesSection({
       {csrResult && (
         <div className="border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
-            <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">CSR generado</span>
+            <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">CSR generado</span>
           </div>
           <div className="p-4 space-y-2">
             <p className="text-sm text-tc-text-secondary">
@@ -502,7 +502,7 @@ function PointsOfSaleSection({
   return (
     <div className="border border-tc-border bg-white overflow-hidden">
       <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2 flex items-center justify-between">
-        <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Puntos de Venta</span>
+        <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Puntos de Venta</span>
         {canConfigure && (
           <Button size="sm" onClick={() => setShowForm(true)}>
             Nuevo punto de venta
@@ -523,9 +523,9 @@ function PointsOfSaleSection({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-tc-border">
-                <th className="pb-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nº</th>
-                <th className="pb-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nombre</th>
-                <th className="pb-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
+                <th className="pb-2 text-left text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nº</th>
+                <th className="pb-2 text-left text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Nombre</th>
+                <th className="pb-2 text-left text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Estado</th>
                 {canConfigure && <th className="pb-2" />}
               </tr>
             </thead>
@@ -536,7 +536,7 @@ function PointsOfSaleSection({
                   <td className="py-2.5 pr-4 text-tc-text-secondary">{pos.name}</td>
                   <td className="py-2.5">
                     <span
-                      className={`border px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
+                      className={`border px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase ${
                         pos.isActive ? 'border-green-300 text-green-700' : 'border-tc-border text-tc-text-muted'
                       }`}
                     >

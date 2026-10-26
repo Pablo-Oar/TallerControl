@@ -53,16 +53,16 @@ function labelCls(raised: boolean, size: Size, multiline: boolean) {
   const rest = multiline
     ? 'top-3 text-sm'
     : 'top-1/2 -translate-y-1/2 text-sm'
-  const up = size === 'sm' ? 'top-0.5 translate-y-0 text-[10px]' : 'top-1.5 translate-y-0 text-[11px]'
+  const up = size === 'sm' ? 'top-0.5 translate-y-0 text-[11px]' : 'top-1.5 translate-y-0 text-[11px]'
   return cn(
     'pointer-events-none absolute left-3 origin-left truncate text-tc-text-muted transition-all duration-150 motion-reduce:transition-none',
     'max-w-[calc(100%-1.5rem)] peer-focus:text-tc-purple',
     raised
       ? cn(up, 'font-medium')
-      : cn(rest, 'peer-focus:translate-y-0 peer-focus:font-medium', size === 'sm' ? 'peer-focus:top-0.5 peer-focus:text-[10px]' : 'peer-focus:top-1.5 peer-focus:text-[11px]'),
+      : cn(rest, 'peer-focus:translate-y-0 peer-focus:font-medium', size === 'sm' ? 'peer-focus:top-0.5 peer-focus:text-[11px]' : 'peer-focus:top-1.5 peer-focus:text-[11px]'),
     !raised &&
       (size === 'sm'
-        ? 'peer-not-placeholder-shown:top-0.5 peer-not-placeholder-shown:translate-y-0 peer-not-placeholder-shown:text-[10px] peer-not-placeholder-shown:font-medium'
+        ? 'peer-not-placeholder-shown:top-0.5 peer-not-placeholder-shown:translate-y-0 peer-not-placeholder-shown:text-[11px] peer-not-placeholder-shown:font-medium'
         : 'peer-not-placeholder-shown:top-1.5 peer-not-placeholder-shown:translate-y-0 peer-not-placeholder-shown:text-[11px] peer-not-placeholder-shown:font-medium'),
   )
 }

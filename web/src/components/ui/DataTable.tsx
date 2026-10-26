@@ -165,7 +165,7 @@ export function DataTable<T>({
                   scope="col"
                   aria-sort={col.sortable ? (active === 'asc' ? 'ascending' : active === 'desc' ? 'descending' : 'none') : undefined}
                   className={cn(
-                    'bg-tc-stub-bg px-3 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted first:rounded-l-xl last:rounded-r-xl',
+                    'bg-tc-stub-bg px-3 py-2 text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted first:rounded-l-xl last:rounded-r-xl',
                     ALIGN[col.align ?? 'left'],
                     col.widthClass,
                   )}
@@ -296,7 +296,8 @@ export function RowAction({
     <button
       type="button"
       className={cn(
-        'min-h-11 rounded-md px-3 text-[11px] font-bold tracking-wider uppercase transition-colors md:min-h-8 md:px-2',
+        'min-h-11 rounded-md px-3 text-xs font-bold tracking-wider uppercase transition-colors md:min-h-8 md:px-2',
+        tone === 'danger' && 'max-md:ml-auto',
         TONE[tone],
         className,
       )}

@@ -108,7 +108,7 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
           {fields.map((field, idx) => (
             <div key={field.id} className="border border-tc-border bg-tc-surface p-3 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Ítem {idx + 1}</span>
+                <span className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Ítem {idx + 1}</span>
                 {fields.length > 1 && (
                   <button type="button" onClick={() => remove(idx)} className="text-xs text-tc-stamp-red hover:opacity-70">
                     Quitar
@@ -132,14 +132,14 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
               />
               <div className="grid grid-cols-3 gap-2">
                 <FormField label="Cantidad" size="sm" type="number" step="0.001" inputClassName="tabular-nums" {...register(`items.${idx}.quantity`)} />
-                <FormField label="Precio unitario neto" size="sm" type="number" step="0.01" inputClassName="tabular-nums" {...register(`items.${idx}.unitPrice`)} />
+                <FormField label="Precio neto" size="sm" type="number" step="0.01" inputClassName="tabular-nums" {...register(`items.${idx}.unitPrice`)} />
                 <FormField label="IVA %" size="sm" type="number" step="any" inputClassName="tabular-nums" {...register(`items.${idx}.vatRate`)} />
               </div>
             </div>
           ))}
         </div>
 
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="sticky bottom-0 -mx-5 -mb-5 mt-2 flex justify-end gap-2 border-t border-tc-border bg-white px-5 py-3">
           <Button type="button" variant="secondary" size="sm" onClick={onClose}>Cancelar</Button>
           <Button type="submit" size="sm" loading={isSubmitting}>Crear venta</Button>
         </div>

@@ -154,7 +154,7 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
 
         <FormTextarea label="Notas (opcional)" rows={2} placeholder="Observaciones adicionales" {...register('notes')} />
 
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="sticky bottom-0 -mx-5 -mb-5 mt-2 flex justify-end gap-2 border-t border-tc-border bg-white px-5 py-3">
           <Button variant="secondary" type="button" onClick={onClose}>
             Cancelar
           </Button>

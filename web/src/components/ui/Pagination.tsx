@@ -16,7 +16,7 @@ export function Pagination({
   onPage: (page: number) => void
 }) {
   if (total <= pageSize) return null
-  const btn = 'min-h-[36px] rounded-lg border border-tc-border bg-white px-3 text-xs font-medium text-tc-text-secondary transition-colors hover:bg-tc-surface disabled:opacity-40'
+  const btn = 'min-h-[44px] md:min-h-[36px] rounded-lg border border-tc-border bg-white px-3 text-xs font-medium text-tc-text-secondary transition-colors hover:bg-tc-surface disabled:opacity-40'
   return (
     <div className="flex items-center justify-between text-sm text-tc-text-secondary">
       <span className="tabular-nums">

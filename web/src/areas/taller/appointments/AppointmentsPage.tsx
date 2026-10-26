@@ -21,7 +21,7 @@ import { AppointmentFormModal } from './AppointmentFormModal'
 import { inputCls } from '../../../lib/styles'
 
 const STATUS_OPTIONS: { value: AppointmentStatus | ''; label: string }[] = [
-  { value: '', label: 'Todos' },
+  { value: '', label: 'Todos los estados' },
   { value: 'pending', label: 'Pendientes' },
   { value: 'confirmed', label: 'Confirmados' },
   { value: 'completed', label: 'Completados' },
@@ -29,7 +29,13 @@ const STATUS_OPTIONS: { value: AppointmentStatus | ''; label: string }[] = [
 ]
 
 const fmtWhen = (iso: string) =>
-  new Date(iso).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
+  new Date(iso).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short', hour12: false })
+const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })
+const fmtDay = (iso: string) =>
+  new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' }).replace('.', '').toUpperCase()
+const actionCls = 'max-md:ml-0 max-md:flex-1 max-md:basis-[45%]'
+const fieldLabelCls = 'mb-1 block text-xs font-bold tracking-wider uppercase text-tc-text-secondary'
+const ctrlCls = `${inputCls} min-h-11 sm:min-h-0`
 
 const isOpen = (a: AppointmentListDto) => a.status === 'pending' || a.status === 'confirmed'
 
@@ -143,22 +149,30 @@ export function AppointmentsPage() {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
-        <input
-          type="date"
-          value={date}
-          onChange={e => { setDate(e.target.value); setPage(1) }}
-          className={inputCls}
-        />
-        <select
-          value={status}
-          onChange={e => { setStatus(e.target.value as AppointmentStatus | ''); setPage(1) }}
-          className={inputCls}
-        >
-          {STATUS_OPTIONS.map(o => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
+      <div className="flex flex-wrap gap-3">
+        <div>
+          <label htmlFor="ap-date" className={fieldLabelCls}>Fecha</label>
+          <input
+            id="ap-date"
+            type="date"
+            value={date}
+            onChange={e => { setDate(e.target.value); setPage(1) }}
+            className={ctrlCls}
+          />
+        </div>
+        <div>
+          <label htmlFor="ap-status" className={fieldLabelCls}>Estado</label>
+          <select
+            id="ap-status"
+            value={status}
+            onChange={e => { setStatus(e.target.value as AppointmentStatus | ''); setPage(1) }}
+            className={ctrlCls}
+          >
+            {STATUS_OPTIONS.map(o => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <DataTable<AppointmentListDto>
@@ -170,22 +184,23 @@ export function AppointmentsPage() {
           isOpen(a) ? (
             <>
               {can('workorders.write') && (
-                <RowAction tone="purple" onClick={() => { setConvertError(null); setConverting(a) }}>
+                <RowAction tone="purple" className={actionCls} onClick={() => { setConvertError(null); setConverting(a) }}>
                   Crear orden
                 </RowAction>
               )}
-              <RowAction tone="purple" onClick={() => openEdit(a.id)}>Editar</RowAction>
-              <RowAction tone="purple" onClick={() => openLink(a.id)}>Enlace</RowAction>
-              <RowAction tone="danger" onClick={() => { setCancellingId(a.id); setCancelReason('') }}>
+              <RowAction tone="purple" className={actionCls} onClick={() => openEdit(a.id)}>Editar</RowAction>
+              <RowAction tone="purple" className={actionCls} onClick={() => openLink(a.id)}>Enlace</RowAction>
+              <RowAction tone="danger" className={actionCls} onClick={() => { setCancellingId(a.id); setCancelReason('') }}>
                 Cancelar
               </RowAction>
             </>
           ) : null
         }
-        cardStub={a => <span className="text-center text-[11px] font-bold leading-tight tabular-nums text-tc-text-secondary">{new Date(a.scheduledAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</span>}
+        cardStub={a => <span className="text-center text-[11px] font-bold leading-tight tabular-nums text-tc-text-secondary">{fmtDay(a.scheduledAt)}</span>}
+        rowClassName={a => (a.status === 'cancelled' ? 'opacity-60' : undefined)}
         renderCard={a => (
           <>
-            <p className="text-sm font-medium tabular-nums text-tc-text">{fmtWhen(a.scheduledAt)}</p>
+            <p className="text-sm font-medium tabular-nums text-tc-text">{fmtTime(a.scheduledAt)}</p>
             <p className="truncate text-sm text-tc-text-secondary">{a.customerName}</p>
             <p className="font-mono text-xs tracking-widest text-tc-text-muted">{a.vehiclePlate} · {a.totalDurationMinutes} min</p>
             <div className="mt-1.5"><StatusBadge status={a.status} label={getAppointmentStatusLabel(a.status)} /></div>

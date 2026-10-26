@@ -147,8 +147,8 @@ export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="Punto de venta (opcional)" type="number" placeholder="Ej. 1" min={1} {...register('pointOfSale')} />
-          <FormField label="Nro. de factura (opcional)" type="number" placeholder="Ej. 1234" min={1} {...register('invoiceNumber')} />
+          <FormField label="Punto de venta" type="number" placeholder="Ej. 1" min={1} {...register('pointOfSale')} />
+          <FormField label="Nro. de factura" type="number" placeholder="Ej. 1234" min={1} {...register('invoiceNumber')} />
         </div>
 
         {/* Ítems */}
@@ -171,7 +171,7 @@ export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
               <div key={field.id} className="grid grid-cols-3 gap-2 items-start border border-tc-border bg-tc-stub-bg p-2 sm:grid-cols-[minmax(0,1fr)_5rem_6rem_4.5rem_2rem]">
                 <div className="col-span-3 space-y-1.5 sm:col-span-1">
                   <CatalogPicker
-                    label="Catálogo (opcional)"
+                    label="Del catálogo"
                     kind="product"
                     size="sm"
                     onPick={item => handleCatalogSelect(index, item)}
@@ -244,7 +244,7 @@ export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
           <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
         )}
 
-        <div className="flex justify-end gap-3 pt-2">
+        <div className="sticky bottom-0 -mx-5 -mb-5 mt-2 flex justify-end gap-3 border-t border-tc-border bg-white px-5 py-3">
           <Button type="button" variant="secondary" size="sm" onClick={onClose}>Cancelar</Button>
           <Button type="submit" size="sm" loading={isSubmitting}>{isEdit ? 'Guardar cambios' : 'Guardar como borrador'}</Button>
         </div>

@@ -29,7 +29,7 @@ const COLUMNS: DataTableColumn<InvoiceListDto>[] = [
       <span className="font-mono text-tc-text">
         {i.number ?? '—'}
         {i.isCredit && (
-          <span className="ml-2 rounded-md border border-amber-300 px-1 py-0.5 text-[10px] font-bold tracking-wider uppercase text-amber-700">NC</span>
+          <span className="ml-2 rounded-md border border-amber-300 px-1 py-0.5 text-[11px] font-bold tracking-wider uppercase text-amber-700">NC</span>
         )}
       </span>
     ),
@@ -46,7 +46,7 @@ const COLUMNS: DataTableColumn<InvoiceListDto>[] = [
     cell: i => (
       <>
         <StatusBadge status={i.status} label={STATUS_LABELS[i.status]} />
-        {i.isHomologation && <span className="ml-2 border border-amber-300 px-1 text-[10px] font-bold tracking-wider uppercase text-amber-700" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
+        {i.isHomologation && <span className="ml-2 border border-amber-300 px-1 text-[11px] font-bold tracking-wider uppercase text-amber-700" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
       </>
     ),
   },
@@ -87,7 +87,7 @@ export function InvoicingPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Facturación Electrónica</h1>
+      <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Facturación</h1>
 
       <InvoicingTabs />
 
@@ -144,8 +144,8 @@ export function InvoicingPage() {
               <>
                 <p className="text-sm text-tc-text-secondary">
                   Fcta. {i.invoiceType.toUpperCase()} · {SOURCE_LABELS[i.sourceType]}
-                  {i.isCredit && <span className="ml-2 text-[10px] font-bold text-amber-700">NC</span>}
-                  {i.isHomologation && <span className="ml-2 border border-amber-300 px-1 text-[10px] font-bold tracking-wider uppercase text-amber-700" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
+                  {i.isCredit && <span className="ml-2 text-[11px] font-bold text-amber-700">NC</span>}
+                  {i.isHomologation && <span className="ml-2 border border-amber-300 px-1 text-[11px] font-bold tracking-wider uppercase text-amber-700" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
                 </p>
                 <p className="text-xs tabular-nums text-tc-text-muted">{new Date(i.issuedAt).toLocaleDateString('es-AR')}</p>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">

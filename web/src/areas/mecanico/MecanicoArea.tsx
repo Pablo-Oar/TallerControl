@@ -49,8 +49,8 @@ export function Component() {
             <Route path="work-orders/:id" element={<MechanicWorkOrderDetailPage />} />
           </Routes>
         </Suspense>
-        <div className="mt-8 border-t border-tc-border pt-4">
-          <Button variant="secondary" className="min-h-[44px]" onClick={handleLogout}>
+        <div className="mt-6 border-t border-tc-border pt-3 pb-4">
+          <Button variant="secondary" className="min-h-[48px] w-full" onClick={handleLogout}>
             Cerrar sesión
           </Button>
           {showDiagnostics && <PushTestButton />}

@@ -29,7 +29,7 @@ const COLUMNS: DataTableColumn<CatalogItemListDto>[] = [
     cell: i => (
       <div className="min-w-0">
         <p className="truncate font-medium text-tc-text">{i.name}</p>
-        {!i.isActive && <span className="text-[10px] font-bold tracking-wider text-tc-text-muted uppercase">Inactivo</span>}
+        {!i.isActive && <span className="text-[11px] font-bold tracking-wider text-tc-text-muted uppercase">Inactivo</span>}
       </div>
     ),
   },
@@ -54,7 +54,7 @@ const COLUMNS: DataTableColumn<CatalogItemListDto>[] = [
       i.trackStock ? (
         <span className={['tabular-nums', i.isLowStock ? 'font-semibold text-amber-600' : 'text-tc-text-secondary'].join(' ')}>
           {i.stockQty}
-          {i.isLowStock && <span className="ml-0.5 text-[10px]">▼</span>}
+          {i.isLowStock && <span className="ml-0.5 text-[11px]">▼</span>}
         </span>
       ) : (
         <span className="text-tc-text-muted">—</span>
@@ -136,7 +136,7 @@ export function CatalogPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Catálogo</h1>
         <Button onClick={() => setCreating(true)} size="sm">Nuevo ítem</Button>
       </div>
@@ -210,7 +210,7 @@ export function CatalogPage() {
         renderCard={i => (
           <>
             <p className="truncate text-sm font-medium text-tc-text">{i.name}</p>
-            {!i.isActive && <span className="text-[10px] font-bold tracking-wider text-tc-text-muted uppercase">Inactivo</span>}
+            {!i.isActive && <span className="text-[11px] font-bold tracking-wider text-tc-text-muted uppercase">Inactivo</span>}
             <p className="mt-0.5 text-xs text-tc-text-secondary">
               {KIND_LABELS[i.kind]} · <span className="tabular-nums text-tc-purple">{fmtARS(i.netPrice)}</span>
               {i.trackStock && (

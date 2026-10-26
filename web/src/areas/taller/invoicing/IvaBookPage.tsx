@@ -36,8 +36,8 @@ export function IvaBookPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-bold tracking-widest text-tc-text uppercase">Libro IVA Digital</h1>
+    <div className="space-y-4">
+      <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Facturación</h1>
 
       <InvoicingTabs />
 
@@ -89,11 +89,11 @@ export function IvaBookPage() {
           ))}
         </div>
       ) : data ? (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Ventas */}
           <div className="border border-tc-border bg-white overflow-hidden">
             <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2 flex items-center gap-4">
-              <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ventas</span>
+              <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ventas</span>
               <span className="text-xs text-tc-text-secondary">
                 {data.sales.count} comprobantes ·{' '}
                 <span className="font-bold text-tc-purple tabular-nums">{fmtARS(data.sales.totalAmount)}</span>
@@ -106,14 +106,14 @@ export function IvaBookPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-tc-border">
-                      <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
-                      <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Comprobante</th>
-                      <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Tipo</th>
-                      <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">CAE</th>
-                      <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Cliente</th>
-                      <th className="px-3 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Neto</th>
-                      <th className="px-3 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">IVA</th>
-                      <th className="px-3 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Total</th>
+                      <th className="px-3 py-2 text-left text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
+                      <th className="px-3 py-2 text-left text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Comprobante</th>
+                      <th className="px-3 py-2 text-left text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Tipo</th>
+                      <th className="px-3 py-2 text-left text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">CAE</th>
+                      <th className="px-3 py-2 text-left text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Cliente</th>
+                      <th className="px-3 py-2 text-right text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Neto</th>
+                      <th className="px-3 py-2 text-right text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">IVA</th>
+                      <th className="px-3 py-2 text-right text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Total</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -135,7 +135,7 @@ export function IvaBookPage() {
                   </tbody>
                   <tfoot>
                     <tr className="border-t border-tc-border bg-tc-stub-bg">
-                      <td colSpan={5} className="px-3 py-2 text-right text-[10px] font-bold tracking-wider uppercase text-tc-text-muted">Totales</td>
+                      <td colSpan={5} className="px-3 py-2 text-right text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Totales</td>
                       <td className="px-3 py-2 text-right tabular-nums font-bold text-tc-text-secondary">{fmtARS(data.sales.totalNet)}</td>
                       <td className="px-3 py-2 text-right tabular-nums font-bold text-tc-text-secondary">{fmtARS(data.sales.totalVat)}</td>
                       <td className="px-3 py-2 text-right tabular-nums font-bold text-tc-purple">{fmtARS(data.sales.totalAmount)}</td>
@@ -149,7 +149,7 @@ export function IvaBookPage() {
           {/* Compras */}
           <div className="border border-tc-border bg-white overflow-hidden">
             <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2 flex items-center gap-4">
-              <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Compras</span>
+              <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Compras</span>
               <span className="text-xs text-tc-text-secondary">
                 {data.purchases.count} comprobantes ·{' '}
                 <span className="font-bold text-tc-purple tabular-nums">{fmtARS(data.purchases.totalAmount)}</span>
@@ -162,12 +162,12 @@ export function IvaBookPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-tc-border">
-                      <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
-                      <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Proveedor</th>
-                      <th className="px-3 py-2 text-left text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Comprobante</th>
-                      <th className="px-3 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Neto</th>
-                      <th className="px-3 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">IVA</th>
-                      <th className="px-3 py-2 text-right text-[10px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Total</th>
+                      <th className="px-3 py-2 text-left text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Fecha</th>
+                      <th className="px-3 py-2 text-left text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Proveedor</th>
+                      <th className="px-3 py-2 text-left text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Comprobante</th>
+                      <th className="px-3 py-2 text-right text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Neto</th>
+                      <th className="px-3 py-2 text-right text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">IVA</th>
+                      <th className="px-3 py-2 text-right text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Total</th>
                     </tr>
                   </thead>
                   <tbody>

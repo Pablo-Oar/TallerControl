@@ -20,8 +20,8 @@ const variants = {
 }
 
 const sizes = {
-  sm: 'px-3 py-1.5 text-xs',
-  md: 'px-4 py-2 text-sm',
+  sm: 'px-3 py-1.5 text-xs max-md:min-h-11',
+  md: 'px-4 py-2 text-sm max-md:min-h-11',
 }
 
 /** Solo los botones rellenos llevan brillo (â‰¤200 ms, desactivado con reduced-motion). */
