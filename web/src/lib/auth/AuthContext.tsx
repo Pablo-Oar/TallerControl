@@ -31,7 +31,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authApi.logout()
     } finally {
       clearCsrfToken()
-      queryClient.removeQueries({ queryKey: ['me'] })
+      // `removeQueries` dejaba al observador con el usuario anterior en memoria (sin recargar la pantalla, el siguiente
+      // inicio de sesión —p. ej. el dueño tras un mecánico— se veía como el usuario viejo y el guard lo mandaba a /m).
+      // `resetQueries` vacía el dato y vuelve a pedirlo: sin sesión responde 401 y el usuario queda en null.
+      await queryClient.resetQueries({ queryKey: ['me'] })
       // Lo guardado para verlo sin conexión es del usuario que se va.
       navigator.serviceWorker?.controller?.postMessage('clear-data')
     }
