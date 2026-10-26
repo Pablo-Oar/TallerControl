@@ -144,7 +144,7 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(f
         placeholder={placeholder ?? ' '}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy(fieldId, error, hint)}
-        className={cn(controlBase, controlSize[size], borderCls(error), 'resize-y', inputClassName)}
+        className={cn(controlBase, controlSize[size], borderCls(error), 'resize-none', inputClassName)}
         {...props}
       />
     </Shell>

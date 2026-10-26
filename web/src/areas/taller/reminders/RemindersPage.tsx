@@ -1,3 +1,4 @@
+import { formatDateOnly, localDateISO } from '../../../lib/dates'
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { remindersApi, getReminderKindLabel, type ReminderListDto, type ReminderStatusFilter } from '../../../lib/api/reminders'
@@ -8,7 +9,7 @@ import { ReminderFormModal } from './ReminderFormModal'
 import { confirmDialog, notify } from '../../../components/ui/dialogs'
 
 const dueSoon = (r: ReminderListDto) =>
-  r.dueDate ? new Date(r.dueDate) <= new Date(Date.now() + 7 * 86400000) : false
+  r.dueDate ? r.dueDate.slice(0, 10) <= localDateISO(7) : false
 
 const dash = <span className="text-tc-text-muted">—</span>
 
@@ -42,7 +43,7 @@ const COLUMNS: DataTableColumn<ReminderListDto>[] = [
     widthClass: 'w-36',
     sortable: true,
     sortValue: r => r.dueDate ?? '9999',
-    cell: r => <span className="tabular-nums text-tc-text-secondary">{r.dueDate ? new Date(r.dueDate).toLocaleDateString('es-AR') : dash}</span>,
+    cell: r => <span className="tabular-nums text-tc-text-secondary">{r.dueDate ? formatDateOnly(r.dueDate) : dash}</span>,
   },
   {
     key: 'km',
@@ -162,7 +163,7 @@ export function RemindersPage() {
             <p className="text-sm text-tc-text">{r.title}</p>
             <p className="text-xs text-tc-text-secondary">
               {getReminderKindLabel(r.kind)}
-              {r.dueDate && ` · vence ${new Date(r.dueDate).toLocaleDateString('es-AR')}`}
+              {r.dueDate && ` · vence ${formatDateOnly(r.dueDate)}`}
               {r.dueKm != null && ` · ${r.dueKm.toLocaleString('es-AR')} km`}
             </p>
           </>

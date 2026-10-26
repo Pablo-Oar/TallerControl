@@ -78,8 +78,11 @@ export function Modal({ title, onClose, children, className = 'max-w-lg' }: Moda
     setStack([...stack, id])
 
     const panel = panelRef.current
-    const first = panel?.querySelector<HTMLElement>('[data-autofocus], input, select, textarea') ??
-      panel?.querySelector<HTMLElement>(FOCUSABLE)
+    // En el celular no se enfoca el primer campo: abriría el teclado al instante y taparía el diálogo (el foco va al panel).
+    const touch = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches
+    const first = touch
+      ? panel?.querySelector<HTMLElement>('[data-autofocus]')
+      : (panel?.querySelector<HTMLElement>('[data-autofocus], input, select, textarea') ?? panel?.querySelector<HTMLElement>(FOCUSABLE))
     ;(first ?? panel)?.focus()
 
     return () => {
@@ -156,7 +159,7 @@ export function Modal({ title, onClose, children, className = 'max-w-lg' }: Moda
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center text-tc-navy-text hover:text-white transition-colors"
+            className="flex h-11 w-11 items-center justify-center text-tc-navy-text hover:text-white transition-colors -mr-2"
             aria-label="Cerrar"
           >
             <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>

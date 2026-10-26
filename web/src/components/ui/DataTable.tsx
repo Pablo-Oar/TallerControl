@@ -258,7 +258,11 @@ export function DataTable<T>({
             )}
             <div className="min-w-0 flex-1 px-3 py-3">
               {renderCard(row)}
-              {actions && <div className="-mx-2 mt-1 flex flex-wrap items-center">{actions(row)}</div>}
+              {actions && (
+                <div className="mt-2 flex flex-wrap items-center gap-1.5 [&>*]:min-w-[7rem] [&>*]:flex-1 [&>*]:justify-center [&>*]:border [&>*]:border-tc-border [&>*]:bg-white [&>*]:text-center">
+                  {actions(row)}
+                </div>
+              )}
             </div>
             {rowHref && rowHref(row) && (
               <Link
@@ -297,7 +301,6 @@ export function RowAction({
       type="button"
       className={cn(
         'min-h-11 rounded-md px-3 text-xs font-bold tracking-wider uppercase transition-colors md:min-h-8 md:px-2',
-        tone === 'danger' && 'max-md:ml-auto',
         TONE[tone],
         className,
       )}
@@ -323,7 +326,7 @@ export function RowActionLink({
   return (
     <a
       className={cn(
-        'inline-flex min-h-11 items-center rounded-md px-3 text-[11px] font-bold tracking-wider uppercase transition-colors md:min-h-8 md:px-2',
+        'inline-flex min-h-11 items-center rounded-md px-3 text-xs font-bold tracking-wider uppercase transition-colors md:min-h-8 md:px-2',
         TONE[tone],
         className,
       )}
