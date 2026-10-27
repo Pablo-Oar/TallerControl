@@ -84,7 +84,7 @@ export function CatalogPage() {
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['catalog', search, kindFilter, activeOnly, showDeleted, page, sort],
-    queryFn: () => catalogApi.search(search || null, kindFilter || null, !showDeleted && activeOnly ? true : null, page, 25, sort, showDeleted),
+    queryFn: () => catalogApi.search(search || null, kindFilter || null, !showDeleted && activeOnly ? true : null, page, 10, sort, showDeleted),
   })
 
   const { data: editItem } = useQuery({

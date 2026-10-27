@@ -98,7 +98,7 @@ export function WorkOrdersPage() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['work-orders', statusFilter, page, sort],
     queryFn: () =>
-      workOrdersApi.search(statusFilter || null, null, null, null, null, null, page, 25, null, sort),
+      workOrdersApi.search(statusFilter || null, null, null, null, null, null, page, 10, null, sort),
   })
 
   function handleSuccess() {

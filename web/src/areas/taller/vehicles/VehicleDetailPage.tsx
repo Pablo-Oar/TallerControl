@@ -48,7 +48,7 @@ export function VehicleDetailPage() {
 
   const history = useInfiniteQuery({
     queryKey: ['vehicle-history', id],
-    queryFn: ({ pageParam }) => vehiclesApi.history(id!, pageParam, 25),
+    queryFn: ({ pageParam }) => vehiclesApi.history(id!, pageParam, 10),
     initialPageParam: 1,
     getNextPageParam: last => (last.pageNumber * last.pageSize < last.total ? last.pageNumber + 1 : undefined),
     enabled: !!id,

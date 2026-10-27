@@ -51,7 +51,7 @@ export function VehiclesPage() {
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['vehicles', search, page, showDeleted, sort],
-    queryFn: () => vehiclesApi.search(search || null, page, 25, showDeleted, sort),
+    queryFn: () => vehiclesApi.search(search || null, page, 10, showDeleted, sort),
   })
 
   const { data: editVehicle } = useQuery({

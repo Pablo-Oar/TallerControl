@@ -40,7 +40,7 @@ export function MechanicWorkOrdersPage() {
     queryFn: () =>
       workOrdersApi.search(
         statusFilter === 'open' || statusFilter === 'closed' ? null : statusFilter,
-        null, null, null, null, null, page, 25, tab, null, null, q || null,
+        null, null, null, null, null, page, 10, tab, null, null, q || null,
         statusFilter === 'open' ? false : statusFilter === 'closed' ? true : null,
       ),
   })
