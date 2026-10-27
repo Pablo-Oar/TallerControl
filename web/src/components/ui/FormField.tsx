@@ -79,6 +79,7 @@ function Shell({ id, label, error, hint, requiredMark, size = 'md', className, r
     <div className={className}>
       <div className="relative">
         {children}
+        {multiline && <span aria-hidden className="pointer-events-none absolute inset-x-px top-px h-5 bg-white peer-disabled:bg-tc-surface" />}
         <label htmlFor={id} className={labelCls(raised, size, multiline)}>
           {label}
           {requiredMark && <span aria-hidden> *</span>}
@@ -144,7 +145,7 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(f
         placeholder={placeholder ?? ' '}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy(fieldId, error, hint)}
-        className={cn(controlBase, controlSize[size], borderCls(error), 'resize-none', inputClassName)}
+        className={cn(controlBase, controlSize[size], borderCls(error), 'min-h-[5.5rem] max-h-48 resize-none [field-sizing:content]', inputClassName)}
         {...props}
       />
     </Shell>

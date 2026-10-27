@@ -170,7 +170,12 @@ export function Modal({ title, onClose, children, className = 'max-w-lg' }: Moda
         {/* Perforation line */}
         <div className="h-px w-full flex-none bg-tc-perf" />
         {/* Body: en móvil (hoja) hace scroll propio; en escritorio crece con el contenido */}
-        <div className="min-h-0 flex-1 overflow-y-auto p-5">
+        <div className="min-h-0 flex-1 scroll-pb-24 scroll-pt-4 overflow-y-auto p-5"
+          onFocusCapture={e => {
+            const t = e.target as HTMLElement
+            if (!t.matches?.('input,select,textarea') || !window.matchMedia?.('(pointer: coarse)').matches) return
+            window.setTimeout(() => t.scrollIntoView?.({ block: 'center', behavior: 'smooth' }), 300)
+          }}>
           {children}
         </div>
       </div>
