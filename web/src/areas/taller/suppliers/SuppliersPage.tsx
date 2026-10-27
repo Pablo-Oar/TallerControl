@@ -61,7 +61,7 @@ export function SuppliersPage() {
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['suppliers', search, page, showDeleted],
-    queryFn: () => suppliersApi.search(search || null, page, 25, showDeleted),
+    queryFn: () => suppliersApi.search(search || null, page, 10, showDeleted),
   })
 
   function handleSearch(e: React.FormEvent) {

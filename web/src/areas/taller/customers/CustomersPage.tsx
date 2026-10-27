@@ -24,7 +24,7 @@ export function CustomersPage() {
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['customers', search, page, showDeleted, sort],
-    queryFn: () => customersApi.search(search || null, page, 25, showDeleted, sort),
+    queryFn: () => customersApi.search(search || null, page, 10, showDeleted, sort),
   })
 
   const { data: editCustomer } = useQuery({

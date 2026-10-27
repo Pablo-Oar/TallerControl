@@ -81,7 +81,7 @@ export function QuotesPage() {
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['quotes', statusFilter, page, sort],
-    queryFn: () => quotesApi.search(statusFilter || null, null, null, null, null, page, 25, sort),
+    queryFn: () => quotesApi.search(statusFilter || null, null, null, null, null, page, 10, sort),
   })
 
   function handleSuccess() {
