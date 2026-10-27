@@ -157,7 +157,7 @@ export function CounterSalesPage() {
 
       <DataTable<CounterSaleDto>
         label="Ventas de mostrador"
-        columns={sortableWhen(COLUMNS, (data?.total ?? 0) <= (data?.pageSize ?? 25))}
+        columns={sortableWhen(COLUMNS, (data?.total ?? 0) <= (data?.pageSize ?? 10))}
         rows={data?.items ?? []}
         getRowId={s => s.id}
         actions={s => <RowAction tone="purple" onClick={() => setSelected(s)}>Ver</RowAction>}

@@ -227,7 +227,7 @@ export const quotesApi = {
     from?: string | null,
     to?: string | null,
     page = 1,
-    pageSize = 25,
+    pageSize = 10,
     /** Orden en el servidor (`number|status|total|validuntil|createdat`). */
     sort?: { key: string; dir: 'asc' | 'desc' } | null,
   ) => {

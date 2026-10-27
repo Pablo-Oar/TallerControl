@@ -10,6 +10,7 @@ import {
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { LoadError } from '../../components/LoadError'
 import { useAuth } from '../../lib/auth/AuthContext'
+import { Pagination } from '../../components/ui/Pagination'
 import { FormSelect } from '../../components/ui/FormField'
 
 type Tab = 'mine' | 'all' | 'unassigned'
@@ -169,27 +170,7 @@ export function MechanicWorkOrdersPage() {
         </div>
       )}
 
-      {data && data.total > data.pageSize && (
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setPage(p => p - 1)}
-            disabled={page === 1}
-            className="min-h-[48px] flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm disabled:opacity-40 hover:bg-tc-surface"
-          >
-            ← Anterior
-          </button>
-          <span className="border border-tc-border bg-tc-stub-bg px-3 py-3 text-sm tabular-nums">
-            Pág. {page}
-          </span>
-          <button
-            onClick={() => setPage(p => p + 1)}
-            disabled={page * data.pageSize >= data.total}
-            className="min-h-[48px] flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm disabled:opacity-40 hover:bg-tc-surface"
-          >
-            Siguiente →
-          </button>
-        </div>
-      )}
+      {data && <Pagination page={page} pageSize={data.pageSize} total={data.total} noun="trabajos" onPage={setPage} />}
     </div>
   )
 }

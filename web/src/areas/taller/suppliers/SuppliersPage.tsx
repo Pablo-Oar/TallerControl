@@ -237,7 +237,7 @@ export function SuppliersPage() {
 
       <DataTable<SupplierDto>
         label="Proveedores"
-        columns={sortableWhen(COLUMNS, (data?.total ?? 0) <= (data?.pageSize ?? 25))}
+        columns={sortableWhen(COLUMNS, (data?.total ?? 0) <= (data?.pageSize ?? 10))}
         rows={data?.items ?? []}
         getRowId={s => s.id}
         actions={s =>

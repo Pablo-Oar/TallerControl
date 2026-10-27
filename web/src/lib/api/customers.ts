@@ -58,7 +58,7 @@ export const customersApi = {
   search: (
     q?: string | null,
     page = 1,
-    pageSize = 25,
+    pageSize = 10,
     includeDeleted = false,
     /** Orden en el servidor (ver los nombres de columna del listado). */
     sort?: { key: string; dir: 'asc' | 'desc' } | null,

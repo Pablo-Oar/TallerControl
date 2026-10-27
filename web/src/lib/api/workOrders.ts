@@ -165,7 +165,7 @@ export const workOrdersApi = {
     from?: string | null,
     to?: string | null,
     page = 1,
-    pageSize = 25,
+    pageSize = 10,
     /** Pestañas del portal del mecánico: "mine" (mías) / "unassigned" (sin asignar). */
     assignment?: 'mine' | 'unassigned' | 'all' | null,
     /** Orden en el servidor (`number|status|total|balance|createdat`). */

@@ -92,7 +92,7 @@ export function QrCardsPage() {
         status: statusFilter || undefined,
         q: q || undefined,
         page,
-        pageSize: 25,
+        pageSize: 10,
       }),
   })
 

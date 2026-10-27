@@ -95,7 +95,7 @@ export const catalogApi = {
     kind?: CatalogItemKind | null,
     activeOnly?: boolean | null,
     page = 1,
-    pageSize = 25,
+    pageSize = 10,
     /** Orden en el servidor (ver los nombres de columna del listado). */
     sort?: { key: string; dir: 'asc' | 'desc' } | null,
     /** true = solo los dados de baja («Ver eliminados»). */
@@ -119,7 +119,7 @@ export const catalogApi = {
   delete: (id: string, reason: string) =>
     api.delete<void>(`/api/v1/catalog/${id}`, { reason }, true),
   restore: (id: string) => api.post<CatalogItemDto>(`/api/v1/catalog/${id}/restore`, undefined, true),
-  getMovements: (id: string, page = 1, pageSize = 25) =>
+  getMovements: (id: string, page = 1, pageSize = 10) =>
     api.get<StockMovementDto[]>(`/api/v1/catalog/${id}/stock-movements?page=${page}&pageSize=${pageSize}`),
   stockAdjust: (id: string, body: ManualStockAdjustmentRequest) =>
     api.post<CatalogItemDto>(`/api/v1/catalog/${id}/stock-adjustments`, body, true),
