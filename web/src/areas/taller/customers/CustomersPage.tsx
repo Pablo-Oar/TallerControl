@@ -57,6 +57,7 @@ export function CustomersPage() {
 
   const columns: DataTableColumn<CustomerListDto>[] = [
     { key: 'name', header: 'Nombre', sortable: true, cell: c => <span className="font-medium text-tc-text">{c.name}</span> },
+    { key: 'email', header: 'Email', sortable: true, cell: c => <span className="break-all text-tc-text-secondary">{c.email ?? '—'}</span> },
     { key: 'phone', header: 'Teléfono', widthClass: 'w-44', sortable: true, cell: c => <span className="text-tc-text-secondary">{c.phone ?? '—'}</span> },
     { key: 'doc', header: 'Documento', widthClass: 'w-40', sortable: true, cell: c => <span className="text-tc-text-secondary">{c.docNumber ?? '—'}</span> },
     {
@@ -119,7 +120,7 @@ export function CustomersPage() {
         renderCard={c => (
           <>
             <p className="truncate text-sm font-medium text-tc-text">{c.name}</p>
-            <p className="mt-0.5 text-xs text-tc-text-muted">{[c.phone, c.docNumber].filter(Boolean).join(' · ') || '—'}</p>
+            <p className="mt-0.5 break-all text-xs text-tc-text-muted">{[c.email, c.phone, c.docNumber].filter(Boolean).join(' · ') || '—'}</p>
             {c.balance > 0 && <p className="mt-1 text-sm font-semibold tabular-nums text-tc-stamp-red">Saldo {fmtARS(c.balance)}</p>}
           </>
         )}

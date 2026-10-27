@@ -6,6 +6,7 @@ namespace TallerControl.Application.Customers;
 public sealed record CustomerListDto(
     Guid Id,
     string Name,
+    string? Email,
     string? Phone,
     string? DocNumber,
     decimal Balance,

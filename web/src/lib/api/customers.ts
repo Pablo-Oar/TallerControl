@@ -13,6 +13,7 @@ export interface Page<T> {
 export interface CustomerListDto {
   id: string
   name: string
+  email: string | null
   phone: string | null
   docNumber: string | null
   balance: number

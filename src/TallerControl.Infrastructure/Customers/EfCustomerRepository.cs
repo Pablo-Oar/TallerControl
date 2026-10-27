@@ -41,6 +41,7 @@ internal sealed class EfCustomerRepository : ICustomerRepository
         var ordered = sort.Key switch
         {
             "name" => sort.Descending ? query.OrderByDescending(c => c.Name) : query.OrderBy(c => c.Name),
+            "email" => sort.Descending ? query.OrderByDescending(c => c.Email) : query.OrderBy(c => c.Email),
             "phone" => sort.Descending ? query.OrderByDescending(c => c.Phone) : query.OrderBy(c => c.Phone),
             "doc" => sort.Descending ? query.OrderByDescending(c => c.DocNumber) : query.OrderBy(c => c.DocNumber),
             "balance" => sort.Descending
@@ -56,6 +57,7 @@ internal sealed class EfCustomerRepository : ICustomerRepository
             .Select(c => new CustomerListDto(
                 c.Id,
                 c.Name,
+                c.Email,
                 c.Phone,
                 c.DocNumber,
                 // Deuda = suma de (total - cobrado) de las órdenes NO canceladas (V2: una sola definición,
