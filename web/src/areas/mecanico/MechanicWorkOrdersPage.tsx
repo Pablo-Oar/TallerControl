@@ -10,6 +10,7 @@ import {
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { LoadError } from '../../components/LoadError'
 import { useAuth } from '../../lib/auth/AuthContext'
+import { FormSelect } from '../../components/ui/FormField'
 
 type Tab = 'mine' | 'all' | 'unassigned'
 
@@ -68,27 +69,19 @@ export function MechanicWorkOrdersPage() {
         ))}
       </div>
 
-      {/* Filtros de estado: grilla de 3 columnas, ningún texto se corta */}
-      <div className="grid grid-cols-3 gap-1.5">
-        {([
-          ['open', 'Activas'],
-          ...MECHANIC_STATUSES.map(s => [s, STATUS_LABELS[s]] as [StatusFilter, string]),
-          ['closed', 'Cerradas'],
-        ] as [StatusFilter, string][]).map(([value, label]) => (
-          <button
-            key={value}
-            onClick={() => { setStatusFilter(value); setPage(1) }}
-            aria-pressed={statusFilter === value}
-            className={`min-h-[44px] border px-1.5 py-1 text-center text-xs font-bold leading-tight tracking-wide uppercase transition-colors ${
-              statusFilter === value
-                ? 'border-tc-navy bg-tc-navy text-white'
-                : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'
-            }`}
-          >
-            {label}
-          </button>
+      {/* Filtro de estado: un select compacto (la grilla de chips ocupaba ~210 px antes del primer trabajo) */}
+      <FormSelect
+        label="Estado"
+        size="sm"
+        value={statusFilter}
+        onChange={e => { setStatusFilter(e.target.value as StatusFilter); setPage(1) }}
+      >
+        <option value="open">Activas</option>
+        {MECHANIC_STATUSES.map(s => (
+          <option key={s} value={s}>{STATUS_LABELS[s]}</option>
         ))}
-      </div>
+        <option value="closed">Cerradas</option>
+      </FormSelect>
 
       {isLoading && (
         <div className="space-y-2" role="status" aria-live="polite">

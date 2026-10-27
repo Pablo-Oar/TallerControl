@@ -84,6 +84,7 @@ internal sealed class EfQrRepository : IQrRepository
 
         var cards = await query
             .OrderByDescending(c => c.AssignedAt ?? c.CreatedAt)
+            .ThenBy(c => c.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(ct);
