@@ -1,3 +1,4 @@
+import { RowMenu } from '../../../components/ui/RowMenu'
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { catalogApi, type CatalogItemDto, type CatalogItemKind, type CatalogItemListDto } from '../../../lib/api/catalog'
@@ -196,14 +197,14 @@ export function CatalogPage() {
             can('catalog.write') && <RowAction onClick={() => restore(i)}>Restaurar</RowAction>
           ) : (
             <>
-              {i.trackStock && <RowAction onClick={() => setViewingMovements(i)}>Movimientos</RowAction>}
-              {i.trackStock && i.isActive && can('stock.adjust') && (
-                <RowAction tone="warn" onClick={() => setAdjusting(i)}>Stock</RowAction>
-              )}
               <RowAction onClick={() => setEditing(i)}>Editar</RowAction>
-              {can('catalog.write') && (
-                <RowAction tone="danger" onClick={() => { setDeleting(i); setDeleteReason('') }}>Eliminar</RowAction>
-              )}
+              <RowMenu
+                items={[
+                  ...(i.trackStock ? [{ label: 'Movimientos', onSelect: () => setViewingMovements(i) }] : []),
+                  ...(i.trackStock && i.isActive && can('stock.adjust') ? [{ label: 'Ajustar stock', tone: 'warn' as const, onSelect: () => setAdjusting(i) }] : []),
+                  ...(can('catalog.write') ? [{ label: 'Eliminar', tone: 'danger' as const, onSelect: () => { setDeleting(i); setDeleteReason('') } }] : []),
+                ]}
+              />
             </>
           )
         }
