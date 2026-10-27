@@ -1,3 +1,4 @@
+import { formatDateTime } from '../../../../lib/dates'
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { usersApi, invitationsApi, ROLE_LABELS, type MemberDto, type PendingInvitationDto, type UpdateMembershipRequest, type MembershipStatus } from '../../../../lib/api/users'
@@ -131,7 +132,7 @@ export function UsersSettingsPage() {
                 </span>
                 <span className="text-xs text-tc-text-secondary">{ROLE_LABEL[inv.role]}</span>
                 <span className={`text-xs font-bold tracking-wider uppercase ${inv.isExpired ? 'text-tc-stamp-red' : 'text-tc-text-muted'}`}>
-                  {inv.isExpired ? 'Vencida' : `Vence ${new Date(inv.expiresAt).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}`}
+                  {inv.isExpired ? 'Vencida' : `Vence ${formatDateTime(inv.expiresAt)}`}
                 </span>
                 <span className="ml-auto flex gap-3">
                   <button type="button" onClick={() => resend(inv)} className="text-xs font-bold tracking-wider text-tc-purple uppercase hover:opacity-70">Reenviar</button>

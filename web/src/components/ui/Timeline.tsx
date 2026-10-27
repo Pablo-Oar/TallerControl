@@ -1,3 +1,4 @@
+import { formatDate, formatDateTime } from '../../lib/dates'
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { cn } from '@/lib/utils'
@@ -38,11 +39,11 @@ const MARKER: Record<TimelineKind, string> = {
 
 const COLLAPSE_OVER = 120
 
-function formatDate(iso: string, withTime: boolean) {
+function formatWhen(iso: string, withTime: boolean) {
   const d = new Date(iso)
   return withTime
-    ? d.toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
-    : d.toLocaleDateString('es-AR')
+    ? formatDateTime(d)
+    : formatDate(d)
 }
 
 function Detail({ text }: { text: string }) {
@@ -102,7 +103,7 @@ export function Timeline({ items, empty = 'Sin movimientos todavía.', showTime 
               <div className="flex items-center gap-2">
                 {item.badge}
                 <time dateTime={item.date} className="text-xs tabular-nums text-tc-text-muted">
-                  {formatDate(item.date, showTime)}
+                  {formatWhen(item.date, showTime)}
                 </time>
               </div>
             </div>

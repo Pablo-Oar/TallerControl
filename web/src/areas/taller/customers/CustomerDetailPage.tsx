@@ -1,3 +1,4 @@
+import { formatDate } from '../../../lib/dates'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -12,7 +13,7 @@ import { CustomerFormModal } from './CustomerFormModal'
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
 
-const fmtDate = (iso: string) => new Date(iso).toLocaleDateString('es-AR')
+const fmtDate = (iso: string) => formatDate(iso)
 
 const VAT_LABELS: Record<string, string> = {
   consumidor_final: 'Consumidor final',

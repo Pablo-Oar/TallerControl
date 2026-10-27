@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getOwnerVehicle, type OwnerWorkOrderDto } from '../../../lib/api/qrCards'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { Timeline, type TimelineItem } from '../../../components/ui/Timeline'
-import { formatDateOnly } from '../../../lib/dates'
+import { formatDate, formatDateOnly } from '../../../lib/dates'
 
 const WO_STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
@@ -20,7 +20,7 @@ const fmtARS = (n: number) =>
 /** Solo los campos que ya expone el DTO público (número, estado, fechas y total): el Timeline no recibe nada más. */
 function toTimelineItem(wo: OwnerWorkOrderDto): TimelineItem {
   const parts = [
-    wo.completedAt ? `Entrega: ${new Date(wo.completedAt).toLocaleDateString('es-AR')}` : null,
+    wo.completedAt ? `Entrega: ${formatDate(wo.completedAt)}` : null,
     wo.total != null ? `Total: ${fmtARS(wo.total)}` : null,
   ].filter(Boolean)
   return {

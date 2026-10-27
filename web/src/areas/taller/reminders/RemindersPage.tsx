@@ -1,4 +1,4 @@
-import { formatDateOnly, localDateISO } from '../../../lib/dates'
+import { formatDate, formatDateOnly, localDateISO } from '../../../lib/dates'
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { remindersApi, getReminderKindLabel, type ReminderListDto, type ReminderStatusFilter } from '../../../lib/api/reminders'
@@ -55,7 +55,7 @@ const COLUMNS: DataTableColumn<ReminderListDto>[] = [
     key: 'notified',
     header: 'Último aviso',
     widthClass: 'w-36',
-    cell: r => <span className="tabular-nums text-tc-text-secondary">{r.lastNotifiedAt ? new Date(r.lastNotifiedAt).toLocaleDateString('es-AR') : dash}</span>,
+    cell: r => <span className="tabular-nums text-tc-text-secondary">{r.lastNotifiedAt ? formatDate(r.lastNotifiedAt) : dash}</span>,
   },
 ]
 

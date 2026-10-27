@@ -1,3 +1,4 @@
+import { formatDateTime } from '../lib/dates'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -18,7 +19,7 @@ interface NotificationsDto {
   items: NotificationDto[]
 }
 
-const fmtWhen = (iso: string) => new Date(iso).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
+const fmtWhen = (iso: string) => formatDateTime(iso)
 
 /** Campanita de avisos del panel (llaves encontradas, recordatorios vencidos…). Se actualiza cada minuto. */
 export function NotificationBell() {

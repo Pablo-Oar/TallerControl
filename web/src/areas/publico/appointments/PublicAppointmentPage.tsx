@@ -64,6 +64,7 @@ export function PublicAppointmentPage() {
     month: 'long',
     hour: '2-digit',
     minute: '2-digit',
+    hour12: false,
   })
   const confirmed = data.status === 'confirmed' || confirm.isSuccess
   const failure = confirm.error ?? decline.error

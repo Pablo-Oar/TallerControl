@@ -1,3 +1,4 @@
+import { formatDate } from '../../../lib/dates'
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { counterSalesApi, type CounterSaleDto, type CounterSaleStatus } from '../../../lib/api/counterSales'
@@ -37,7 +38,7 @@ const COLUMNS: DataTableColumn<CounterSaleDto>[] = [
     widthClass: 'w-36',
     sortable: true,
     sortValue: s => s.date,
-    cell: s => <span className="tabular-nums text-tc-text-secondary">{new Date(s.date).toLocaleDateString('es-AR')}</span>,
+    cell: s => <span className="tabular-nums text-tc-text-secondary">{formatDate(s.date)}</span>,
   },
   {
     key: 'total',
@@ -163,7 +164,7 @@ export function CounterSalesPage() {
         cardStub={s => <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{s.documentNumber}</span>}
         renderCard={s => (
           <>
-            <p className="text-sm tabular-nums text-tc-text-secondary">{new Date(s.date).toLocaleDateString('es-AR')}</p>
+            <p className="text-sm tabular-nums text-tc-text-secondary">{formatDate(s.date)}</p>
             <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
               <StatusBadge status={s.status} label={STATUS_LABELS[s.status]} />
               <span className="text-sm font-bold tabular-nums text-tc-purple">{fmtARS(s.total)}</span>
@@ -198,7 +199,7 @@ export function CounterSalesPage() {
               </div>
               <div>
                 <p className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Fecha</p>
-                <p className="text-sm text-tc-text tabular-nums">{new Date(detail.date).toLocaleDateString('es-AR')}</p>
+                <p className="text-sm text-tc-text tabular-nums">{formatDate(detail.date)}</p>
               </div>
               <div>
                 <p className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Total</p>

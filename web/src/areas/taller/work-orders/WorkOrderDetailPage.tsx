@@ -1,3 +1,4 @@
+import { formatDate } from '../../../lib/dates'
 import { LineItemsList } from '../../../components/ui/LineItemsList'
 import { useState } from 'react'
 import { useParams, Link } from 'react-router'
@@ -239,17 +240,17 @@ export function WorkOrderDetailPage() {
             )}
           </Row>
           <Row label="Creada">
-            {new Date(order.createdAt ?? '').toLocaleDateString('es-AR')}
+            {formatDate(order.createdAt ?? '')}
           </Row>
           {order.completedAt && (
-            <Row label="Completada">{new Date(order.completedAt).toLocaleDateString('es-AR')}</Row>
+            <Row label="Completada">{formatDate(order.completedAt)}</Row>
           )}
           {order.deliveredAt && (
-            <Row label="Entregada">{new Date(order.deliveredAt).toLocaleDateString('es-AR')}</Row>
+            <Row label="Entregada">{formatDate(order.deliveredAt)}</Row>
           )}
           {order.cancelledAt && (
             <>
-              <Row label="Cancelada">{new Date(order.cancelledAt).toLocaleDateString('es-AR')}</Row>
+              <Row label="Cancelada">{formatDate(order.cancelledAt)}</Row>
               {order.cancelReason && <Row label="Motivo">{order.cancelReason}</Row>}
             </>
           )}
@@ -386,7 +387,7 @@ export function WorkOrderDetailPage() {
                     {fmtARS(pay.amount)}
                   </td>
                   <td className="py-2 px-3 text-tc-text-secondary text-xs">
-                    {new Date(pay.paidAt).toLocaleDateString('es-AR')}
+                    {formatDate(pay.paidAt)}
                   </td>
                   <td className="py-2 px-3">
                     <StatusBadge status={pay.status} label={PAYMENT_STATUS_LABELS[pay.status]} />

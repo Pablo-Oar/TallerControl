@@ -3,8 +3,8 @@ import { dateOnlyToUtcIso, formatDateOnly, localDateISO } from './dates'
 
 describe('dates', () => {
   it('formatDateOnly no corre el día (T-UI-DATE)', () => {
-    expect(formatDateOnly('2026-11-04')).toBe('4/11/2026')
-    expect(formatDateOnly('2026-11-04T00:00:00Z')).toBe('4/11/2026')
+    expect(formatDateOnly('2026-11-04')).toBe('04/11/2026')
+    expect(formatDateOnly('2026-11-04T00:00:00Z')).toBe('04/11/2026')
     expect(formatDateOnly(null)).toBe('')
   })
 

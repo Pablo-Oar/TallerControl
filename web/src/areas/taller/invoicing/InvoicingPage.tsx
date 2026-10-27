@@ -1,3 +1,4 @@
+import { formatDate } from '../../../lib/dates'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { searchInvoices, listCertificates, daysToExpire, EXPIRY_WARNING_DAYS, type InvoiceListDto, type InvoiceStatus, type InvoiceSourceType } from '../../../lib/api/invoicing'
@@ -65,7 +66,7 @@ const COLUMNS: DataTableColumn<InvoiceListDto>[] = [
     widthClass: 'w-32',
     sortable: true,
     sortValue: i => i.issuedAt,
-    cell: i => <span className="tabular-nums text-tc-text-secondary">{new Date(i.issuedAt).toLocaleDateString('es-AR')}</span>,
+    cell: i => <span className="tabular-nums text-tc-text-secondary">{formatDate(i.issuedAt)}</span>,
   },
 ]
 
@@ -147,7 +148,7 @@ export function InvoicingPage() {
                   {i.isCredit && <span className="ml-2 text-[11px] font-bold text-amber-700">NC</span>}
                   {i.isHomologation && <span className="ml-2 border border-amber-300 px-1 text-[11px] font-bold tracking-wider uppercase text-amber-700" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
                 </p>
-                <p className="text-xs tabular-nums text-tc-text-muted">{new Date(i.issuedAt).toLocaleDateString('es-AR')}</p>
+                <p className="text-xs tabular-nums text-tc-text-muted">{formatDate(i.issuedAt)}</p>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
                   <StatusBadge status={i.status} label={STATUS_LABELS[i.status]} />
                   <span className="text-sm font-bold tabular-nums text-tc-purple">{fmtARS(i.totalAmount)}</span>

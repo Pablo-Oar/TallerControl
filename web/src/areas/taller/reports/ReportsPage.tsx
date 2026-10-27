@@ -6,7 +6,7 @@ import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { DataTable } from '../../../components/ui/DataTable'
 import { Tabs, TabPanel } from '../../../components/ui/Tabs'
 import { inputCls } from '../../../lib/styles'
-import { localDateISO } from '../../../lib/dates'
+import { formatDate, formatDateOnly, localDateISO } from '../../../lib/dates'
 
 type Tab = 'revenue' | 'receivables' | 'stock' | 'purchases'
 
@@ -124,13 +124,13 @@ export function ReportsPage() {
               rows={revenueQuery.data.rows}
               getRowId={r => r.date}
               columns={[
-                { key: 'date', header: 'Fecha', sortable: true, sortValue: r => r.date, cell: r => <span className="tabular-nums text-tc-text-secondary">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</span> },
+                { key: 'date', header: 'Fecha', sortable: true, sortValue: r => r.date, cell: r => <span className="tabular-nums text-tc-text-secondary">{formatDateOnly(r.date)}</span> },
                 { key: 'count', header: 'Cobros', align: 'right', sortable: true, sortValue: r => r.paymentCount, cell: r => <span className="tabular-nums text-tc-text-secondary">{r.paymentCount}</span> },
                 { key: 'amount', header: 'Monto', align: 'right', sortable: true, sortValue: r => r.amount, cell: r => <span className="font-bold tabular-nums text-tc-purple">{fmtARS(r.amount)}</span> },
               ]}
               renderCard={r => (
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="tabular-nums text-sm text-tc-text-secondary">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')} · {r.paymentCount} cobro{r.paymentCount !== 1 ? 's' : ''}</span>
+                  <span className="tabular-nums text-sm text-tc-text-secondary">{formatDateOnly(r.date)} · {r.paymentCount} cobro{r.paymentCount !== 1 ? 's' : ''}</span>
                   <span className="font-bold tabular-nums text-tc-purple">{fmtARS(r.amount)}</span>
                 </div>
               )}
@@ -160,13 +160,13 @@ export function ReportsPage() {
                 { key: 'customer', header: 'Cliente', sortable: true, sortValue: r => r.customerName, cell: r => <span className="text-tc-text-secondary">{r.customerName}</span> },
                 { key: 'plate', header: 'Vehículo', widthClass: 'w-32', cell: r => <span className="font-mono tracking-widest text-tc-text-secondary">{r.vehiclePlate}</span> },
                 { key: 'balance', header: 'Saldo', align: 'right', widthClass: 'w-36', sortable: true, sortValue: r => r.balance, cell: r => <span className="font-bold tabular-nums text-tc-stamp-red">{fmtARS(r.balance)}</span> },
-                { key: 'date', header: 'Fecha', widthClass: 'w-32', sortable: true, sortValue: r => r.createdAt, cell: r => <span className="tabular-nums text-tc-text-secondary">{new Date(r.createdAt).toLocaleDateString('es-AR')}</span> },
+                { key: 'date', header: 'Fecha', widthClass: 'w-32', sortable: true, sortValue: r => r.createdAt, cell: r => <span className="tabular-nums text-tc-text-secondary">{formatDate(r.createdAt)}</span> },
               ]}
               cardStub={r => <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{r.workOrderNumber}</span>}
               renderCard={r => (
                 <>
                   <p className="truncate text-sm text-tc-text">{r.customerName}</p>
-                  <p className="font-mono text-xs tracking-widest text-tc-text-muted">{r.vehiclePlate} · {new Date(r.createdAt).toLocaleDateString('es-AR')}</p>
+                  <p className="font-mono text-xs tracking-widest text-tc-text-muted">{r.vehiclePlate} · {formatDate(r.createdAt)}</p>
                   <p className="mt-1 font-bold tabular-nums text-tc-stamp-red">{fmtARS(r.balance)}</p>
                 </>
               )}
@@ -231,7 +231,7 @@ export function ReportsPage() {
               columns={[
                 { key: 'number', header: 'Nº', widthClass: 'w-24', sortable: true, sortValue: r => r.purchaseNumber, cell: r => <span className="font-mono font-bold tabular-nums text-tc-text">#{r.purchaseNumber}</span> },
                 { key: 'supplier', header: 'Proveedor', sortable: true, sortValue: r => r.supplierName ?? '', cell: r => <span className="text-tc-text-secondary">{r.supplierName ?? '—'}</span> },
-                { key: 'date', header: 'Fecha', widthClass: 'w-32', sortable: true, sortValue: r => r.date, cell: r => <span className="tabular-nums text-tc-text-secondary">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</span> },
+                { key: 'date', header: 'Fecha', widthClass: 'w-32', sortable: true, sortValue: r => r.date, cell: r => <span className="tabular-nums text-tc-text-secondary">{formatDateOnly(r.date)}</span> },
                 { key: 'total', header: 'Total', align: 'right', widthClass: 'w-36', sortable: true, sortValue: r => r.total, cell: r => <span className="font-bold tabular-nums text-tc-purple">{fmtARS(r.total)}</span> },
                 { key: 'status', header: 'Estado', widthClass: 'w-32', cell: r => <span className="text-xs text-tc-text-secondary">{PURCHASE_STATUS_LABEL[r.status.toLowerCase()] ?? r.status}</span> },
               ]}
@@ -239,7 +239,7 @@ export function ReportsPage() {
               renderCard={r => (
                 <>
                   <p className="truncate text-sm text-tc-text">{r.supplierName ?? '—'}</p>
-                  <p className="text-xs tabular-nums text-tc-text-muted">{new Date(r.date + 'T00:00:00').toLocaleDateString('es-AR')}</p>
+                  <p className="text-xs tabular-nums text-tc-text-muted">{formatDateOnly(r.date)}</p>
                   <p className="mt-1 font-bold tabular-nums text-tc-purple">{fmtARS(r.total)}</p>
                 </>
               )}
