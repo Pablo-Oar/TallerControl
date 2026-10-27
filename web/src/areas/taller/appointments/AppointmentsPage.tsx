@@ -1,3 +1,4 @@
+import { formatDateTime } from '../../../lib/dates'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -29,7 +30,7 @@ const STATUS_OPTIONS: { value: AppointmentStatus | ''; label: string }[] = [
 ]
 
 const fmtWhen = (iso: string) =>
-  new Date(iso).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short', hour12: false })
+  formatDateTime(iso)
 const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })
 const fmtDay = (iso: string) =>
   new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' }).replace('.', '').toUpperCase()

@@ -1,3 +1,4 @@
+import { formatDate } from '../../../lib/dates'
 import { confirmDialog } from '../../../components/ui/dialogs'
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -60,7 +61,7 @@ const COLUMNS: DataTableColumn<QrCardListDto>[] = [
     widthClass: 'w-36',
     cell: c =>
       c.assignedAt ? (
-        <span className="tabular-nums text-tc-text-secondary">{new Date(c.assignedAt).toLocaleDateString('es-AR')}</span>
+        <span className="tabular-nums text-tc-text-secondary">{formatDate(c.assignedAt)}</span>
       ) : (
         <span className="text-tc-text-muted">—</span>
       ),

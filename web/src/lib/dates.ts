@@ -14,8 +14,8 @@ export function localDateISO(days = 0, months = 0): string {
 export function formatDateOnly(value: string | null | undefined): string {
   if (!value) return ''
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value)
-  if (!m) return new Date(value).toLocaleDateString('es-AR')
-  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).toLocaleDateString('es-AR')
+  if (!m) return formatDate(value)
+  return formatDate(new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])))
 }
 
 /** YYYY-MM-DD → instante UTC (mediodía) para campos `DateTimeOffset` del API: Npgsql exige offset 0. */
@@ -43,4 +43,18 @@ export function addDaysISO(dateISO: string, days: number): string {
   const [y, m, d] = dateISO.split('-').map(Number)
   const date = new Date(y, m - 1, d + days)
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
+/** Fecha y hora en el mismo formato en toda la app: 04/11/2026 14:30 (24 h, ceros a la izquierda). */
+export function formatDateTime(value: string | Date | null | undefined): string {
+  if (!value) return ''
+  return new Date(value)
+    .toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })
+    .replace(',', '')
+}
+
+/** Solo fecha: 04/11/2026. */
+export function formatDate(value: string | Date | null | undefined): string {
+  if (!value) return ''
+  return new Date(value).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }

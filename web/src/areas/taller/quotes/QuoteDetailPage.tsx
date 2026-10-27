@@ -15,7 +15,7 @@ import { Timeline } from '../../../components/ui/Timeline'
 import { ApiError } from '../../../lib/api/client'
 import { QuoteFormModal } from './QuoteFormModal'
 import { ConvertQuoteModal } from './ConvertQuoteModal'
-import { formatDateOnly } from '../../../lib/dates'
+import { formatDateOnly, formatDateTime } from '../../../lib/dates'
 import { useCan } from '../../../lib/auth/permissions'
 import { confirmDialog } from '../../../components/ui/dialogs'
 
@@ -500,7 +500,7 @@ function ResponseEvidence({ quoteId, responses }: { quoteId: string; responses: 
           <li key={r.id} className="flex flex-wrap items-center gap-4 px-4 py-3">
             <div className="min-w-0">
               <p className="text-sm font-medium text-tc-text">{r.signerName}</p>
-              <p className="text-xs text-tc-text-muted">{new Date(r.createdAt).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}</p>
+              <p className="text-xs text-tc-text-muted">{formatDateTime(r.createdAt)}</p>
             </div>
             {r.signatureUrl && (
               <img src={r.signatureUrl} alt={`Firma de ${r.signerName}`} className="h-16 max-w-[220px] rounded border border-tc-border bg-white object-contain p-1" />

@@ -1,3 +1,4 @@
+import { formatDate } from '../../../lib/dates'
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -435,10 +436,10 @@ function ExpiryLine({ cert }: { cert: FiscalCertificateDto }) {
       role={expired || soon ? 'alert' : undefined}
     >
       {expired
-        ? `Venció el ${new Date(cert.expiresAt!).toLocaleDateString('es-AR')}: no se puede facturar. Renovalo y cargá el certificado nuevo.`
+        ? `Venció el ${formatDate(cert.expiresAt!)}: no se puede facturar. Renovalo y cargá el certificado nuevo.`
         : soon
-          ? `Vence en ${days} día${days === 1 ? '' : 's'} (${new Date(cert.expiresAt!).toLocaleDateString('es-AR')}): renovalo con tiempo para no quedarte sin facturar.`
-          : `Vence el ${new Date(cert.expiresAt!).toLocaleDateString('es-AR')}.`}
+          ? `Vence en ${days} día${days === 1 ? '' : 's'} (${formatDate(cert.expiresAt!)}): renovalo con tiempo para no quedarte sin facturar.`
+          : `Vence el ${formatDate(cert.expiresAt!)}.`}
     </p>
   )
 }

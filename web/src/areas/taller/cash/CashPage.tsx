@@ -1,3 +1,4 @@
+import { formatDateTime } from '../../../lib/dates'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -27,7 +28,7 @@ const REASON_LABELS: Record<CashMovementReason, string> = {
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
-const fmtWhen = (iso: string) => new Date(iso).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
+const fmtWhen = (iso: string) => formatDateTime(iso)
 
 type Dialog =
   | { kind: 'create' }

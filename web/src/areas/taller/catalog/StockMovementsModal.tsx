@@ -1,3 +1,4 @@
+import { formatDateTime } from '../../../lib/dates'
 import { useQuery } from '@tanstack/react-query'
 import { catalogApi, STOCK_REASON_LABELS, type CatalogItemListDto } from '../../../lib/api/catalog'
 import { Modal } from '../../../components/ui/Modal'
@@ -32,7 +33,7 @@ export function StockMovementsModal({ item, onClose }: { item: CatalogItemListDt
                   {m.note && <span className="block text-xs text-tc-text-secondary">{m.note}</span>}
                 </span>
                 <span className="shrink-0 text-xs tabular-nums text-tc-text-muted">
-                  {new Date(m.createdAt).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}
+                  {formatDateTime(m.createdAt)}
                 </span>
               </li>
             ))}

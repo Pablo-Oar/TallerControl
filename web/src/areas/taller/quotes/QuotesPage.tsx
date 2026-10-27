@@ -11,7 +11,7 @@ import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { DataTable, type DataTableColumn, type SortState } from '../../../components/ui/DataTable'
 import { Pagination } from '../../../components/ui/Pagination'
 import { QuoteFormModal } from './QuoteFormModal'
-import { formatDateOnly } from '../../../lib/dates'
+import { formatDate, formatDateOnly } from '../../../lib/dates'
 
 const STATUS_OPTIONS: QuoteStatus[] = [
   'draft', 'sent', 'approved', 'partially_approved', 'rejected', 'expired', 'converted', 'cancelled',
@@ -68,7 +68,7 @@ const COLUMNS: DataTableColumn<QuoteListDto>[] = [
     header: 'Creado',
     widthClass: 'w-36',
     sortable: true,
-    cell: q => <span className="text-xs text-tc-text-muted">{new Date(q.createdAt).toLocaleDateString('es-AR')}</span>,
+    cell: q => <span className="text-xs text-tc-text-muted">{formatDate(q.createdAt)}</span>,
   },
 ]
 

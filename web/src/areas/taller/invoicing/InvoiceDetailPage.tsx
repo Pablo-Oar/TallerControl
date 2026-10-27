@@ -1,3 +1,4 @@
+import { formatDate } from '../../../lib/dates'
 import { Link, useNavigate, useParams } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getInvoice, listPointsOfSale, voidInvoice } from '../../../lib/api/invoicing'
@@ -11,7 +12,7 @@ import { INVOICE_STATUS_LABELS } from './invoiceLabels'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
-const fmtDate = (iso: string) => new Date(iso).toLocaleDateString('es-AR')
+const fmtDate = (iso: string) => formatDate(iso)
 
 export function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>()
