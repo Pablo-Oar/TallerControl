@@ -50,7 +50,7 @@ export interface ConfirmCounterSaleRequest {
 }
 
 export const counterSalesApi = {
-  search: (q?: string | null, page = 1, pageSize = 25) => {
+  search: (q?: string | null, page = 1, pageSize = 10) => {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
     if (q) params.set('q', q)
     return api.get<Page<CounterSaleDto>>(`/api/v1/counter-sales?${params}`)

@@ -69,7 +69,7 @@ export function RemindersPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['reminders', status, page],
-    queryFn: () => remindersApi.search({ status, page, pageSize: 25 }),
+    queryFn: () => remindersApi.search({ status, page, pageSize: 10 }),
   })
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['reminders'] })
@@ -140,7 +140,7 @@ export function RemindersPage() {
 
       <DataTable<ReminderListDto>
         label="Recordatorios"
-        columns={sortableWhen(COLUMNS, (data?.total ?? 0) <= (data?.pageSize ?? 25))}
+        columns={sortableWhen(COLUMNS, (data?.total ?? 0) <= (data?.pageSize ?? 10))}
         rows={data?.items ?? []}
         getRowId={r => r.id}
         actions={r => (

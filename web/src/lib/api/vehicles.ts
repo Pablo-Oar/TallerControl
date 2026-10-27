@@ -63,7 +63,7 @@ export const vehiclesApi = {
   search: (
     q?: string | null,
     page = 1,
-    pageSize = 25,
+    pageSize = 10,
     includeDeleted = false,
     /** Orden en el servidor (ver los nombres de columna del listado). */
     sort?: { key: string; dir: 'asc' | 'desc' } | null,
@@ -79,7 +79,7 @@ export const vehiclesApi = {
   },
   get: (id: string) => api.get<VehicleDto>(`/api/v1/vehicles/${id}`),
   /** Órdenes y presupuestos del vehículo por fecha descendente (REQ-07). El total es null sin prices.view. */
-  history: (id: string, page = 1, pageSize = 25) =>
+  history: (id: string, page = 1, pageSize = 10) =>
     api.get<Page<VehicleHistoryEntryDto>>(`/api/v1/vehicles/${id}/history?page=${page}&pageSize=${pageSize}`),
   create: (body: VehicleUpsertRequest) => api.post<VehicleDto>('/api/v1/vehicles', body, true),
   update: (id: string, body: VehicleUpsertRequest, version: number) =>

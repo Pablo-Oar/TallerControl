@@ -76,7 +76,7 @@ export function InvoicingPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['invoices', status, page],
-    queryFn: () => searchInvoices({ status: status || undefined, page, pageSize: 25 }),
+    queryFn: () => searchInvoices({ status: status || undefined, page, pageSize: 10 }),
   })
 
   const { data: certs } = useQuery({ queryKey: ['fiscal-certificates'], queryFn: listCertificates })
@@ -135,7 +135,7 @@ export function InvoicingPage() {
         <>
           <DataTable<InvoiceListDto>
             label="Facturas"
-            columns={sortableWhen(COLUMNS, data.totalCount <= 25)}
+            columns={sortableWhen(COLUMNS, data.totalCount <= 10)}
             rows={data.items}
             getRowId={i => i.id}
             rowHref={i => `/app/invoicing/invoices/${i.id}`}
@@ -156,7 +156,7 @@ export function InvoicingPage() {
               </>
             )}
           />
-          <Pagination page={page} pageSize={25} total={data.totalCount} noun="facturas" onPage={setPage} />
+          <Pagination page={page} pageSize={10} total={data.totalCount} noun="facturas" onPage={setPage} />
         </>
       )}
     </div>

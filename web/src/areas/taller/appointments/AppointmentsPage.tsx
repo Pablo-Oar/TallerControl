@@ -85,7 +85,7 @@ export function AppointmentsPage() {
     queryFn: () =>
       appointmentsApi.search({
         page,
-        pageSize: 25,
+        pageSize: 10,
         status: status || undefined,
         date: date || undefined,
       }),
@@ -178,7 +178,7 @@ export function AppointmentsPage() {
 
       <DataTable<AppointmentListDto>
         label="Agenda"
-        columns={sortableWhen(COLUMNS, total <= 25)}
+        columns={sortableWhen(COLUMNS, total <= 10)}
         rows={items}
         getRowId={a => a.id}
         actions={a =>
@@ -211,7 +211,7 @@ export function AppointmentsPage() {
         emptyMessage="No hay turnos para los filtros seleccionados."
       />
 
-      <Pagination page={page} pageSize={25} total={total} noun="turnos" onPage={setPage} />
+      <Pagination page={page} pageSize={10} total={total} noun="turnos" onPage={setPage} />
 
       {showModal && (
         <AppointmentFormModal

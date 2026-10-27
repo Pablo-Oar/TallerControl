@@ -62,7 +62,7 @@ export interface ConfirmPurchaseRequest {
 }
 
 export const purchasesApi = {
-  search: (q?: string | null, page = 1, pageSize = 25) => {
+  search: (q?: string | null, page = 1, pageSize = 10) => {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
     if (q) params.set('q', q)
     return api.get<Page<PurchaseDto>>(`/api/v1/purchases?${params}`)

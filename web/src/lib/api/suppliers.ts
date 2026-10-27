@@ -38,7 +38,7 @@ export interface UpdateSupplierRequest {
 }
 
 export const suppliersApi = {
-  search: (q?: string | null, page = 1, pageSize = 25, deleted = false) => {
+  search: (q?: string | null, page = 1, pageSize = 10, deleted = false) => {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
     if (q) params.set('q', q)
     if (deleted) params.set('deleted', 'true')

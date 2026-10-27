@@ -166,7 +166,7 @@ export function PurchasesPage() {
 
       <DataTable<PurchaseDto>
         label="Compras"
-        columns={sortableWhen(COLUMNS, (data?.total ?? 0) <= (data?.pageSize ?? 25))}
+        columns={sortableWhen(COLUMNS, (data?.total ?? 0) <= (data?.pageSize ?? 10))}
         rows={data?.items ?? []}
         getRowId={p => p.id}
         actions={p => <RowAction tone="purple" onClick={() => setSelected(p)}>Ver</RowAction>}

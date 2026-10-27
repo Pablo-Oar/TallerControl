@@ -120,7 +120,7 @@ export const revokeQrCard = (id: string, reason: string) =>
 
 export const getQrCardPrintUrl = (id: string) => `/api/v1/qr/cards/${id}/print?format=card`
 
-export const getQrCardEvents = (id: string, page = 1, pageSize = 25) =>
+export const getQrCardEvents = (id: string, page = 1, pageSize = 10) =>
   api.get<Page<QrEventDto>>(
     `/api/v1/qr/cards/${id}/events?page=${page}&pageSize=${pageSize}`,
   )
