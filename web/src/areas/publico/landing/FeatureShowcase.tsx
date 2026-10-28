@@ -1,6 +1,4 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router'
-import { ArrowRightIcon } from '../../../components/ui/icons'
 
 /* ── Ilustraciones: maquetas mínimas de la propia app (decorativas) ───────── */
 
@@ -210,15 +208,6 @@ function FeatureCard({ f }: { f: Feature }) {
           ))}
         </ul>
       </div>
-      <div className="border-t border-white/10 px-6 py-4">
-        <Link
-          to="/registro"
-          className="group inline-flex min-h-[44px] items-center gap-2 rounded-full bg-tc-purple px-5 text-sm font-semibold text-white transition-colors hover:bg-tc-purple-mid"
-        >
-          Probarlo gratis
-          <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-        </Link>
-      </div>
     </article>
   )
 }
@@ -254,7 +243,7 @@ const team = [
 
 export function FeatureShowcase() {
   return (
-    <section className="bg-tc-surface px-6 py-16 md:py-24 border-t border-tc-border">
+    <section className="bg-tc-surface px-6 pt-16 pb-0 md:py-24 border-t border-tc-border">
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto mb-12 max-w-3xl text-center">
           <p className="mb-2 text-xs font-bold tracking-[0.2em] uppercase text-tc-text-secondary">Funcionalidades</p>
@@ -268,7 +257,7 @@ export function FeatureShowcase() {
         </div>
 
         {/* Tarjetas unidas, una sola pieza redondeada (estilo card-15) */}
-        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 shadow-xl shadow-tc-navy/20 md:grid-cols-2 lg:grid-cols-3">
+        <div className="-mx-6 grid grid-cols-1 gap-px overflow-hidden border-y border-white/10 sm:mx-0 sm:rounded-2xl sm:border bg-white/10 shadow-xl shadow-tc-navy/20 md:grid-cols-2 lg:grid-cols-3">
           {features.map(f => (
             <FeatureCard key={f.title} f={f} />
           ))}
@@ -291,7 +280,7 @@ export function FeatureShowcase() {
         </div>
 
         {/* Para cada persona */}
-        <div className="mt-16 rounded-2xl bg-tc-navy p-8 md:p-10">
+        <div className="-mx-6 mt-16 bg-tc-navy px-6 py-10 sm:mx-0 sm:rounded-2xl sm:p-8 md:p-10">
           <div className="mb-8 max-w-2xl">
             <h3 className="text-2xl font-bold text-white">Cada persona ve lo que necesita</h3>
             <p className="mt-2 text-white/80">
@@ -307,6 +296,7 @@ export function FeatureShowcase() {
             ))}
           </dl>
         </div>
+        <div aria-hidden="true" className="-mx-6 h-1 bg-tc-purple sm:hidden" />
       </div>
     </section>
   )
