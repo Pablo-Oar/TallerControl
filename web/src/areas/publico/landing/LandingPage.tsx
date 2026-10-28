@@ -44,18 +44,18 @@ export function LandingPage() {
   return (
     <div className="min-h-screen bg-white text-tc-text">
       {/* Nav */}
-      <nav className="border-b border-tc-border bg-tc-navy px-6 py-3">
+      <nav className="border-b border-tc-border bg-tc-navy px-4 py-3 sm:px-6">
        <div className="mx-auto flex max-w-6xl items-center justify-between">
-        <span className="text-sm font-bold tracking-[0.2em] uppercase text-white">
+        <span className="text-xs font-bold tracking-[0.15em] uppercase text-white sm:text-sm sm:tracking-[0.2em]">
           Taller<span className="text-tc-purple">Control</span>
         </span>
-        <div className="flex items-center gap-2">
-          <Link to="/login" className="inline-flex items-center justify-center min-h-[44px] px-4 text-xs font-bold tracking-wider uppercase text-slate-300 hover:text-white transition-colors">
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Link to="/login" className="inline-flex items-center justify-center min-h-[44px] px-3 sm:px-4 text-xs font-bold tracking-wider uppercase text-slate-300 hover:text-white transition-colors">
             Ingresar
           </Link>
           <Link
             to="/registro"
-            className="inline-flex items-center justify-center min-h-[44px] border border-white px-4 text-xs font-bold tracking-wider uppercase text-white hover:bg-white hover:text-tc-navy transition-colors"
+            className="inline-flex items-center justify-center whitespace-nowrap min-h-[44px] border border-white px-3 text-xs sm:px-4 font-bold tracking-wider uppercase text-white hover:bg-white hover:text-tc-navy transition-colors"
           >
             Crear cuenta
           </Link>
