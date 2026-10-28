@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react'
+import { SplashScreen } from '@/components/ui/Loading'
 import { Route, Routes } from 'react-router'
 
 const LandingPage = lazy(() => import('./landing/LandingPage').then(m => ({ default: m.LandingPage })))
@@ -17,11 +18,7 @@ const RegisterPage = lazy(() => import('./registro/RegisterPage').then(m => ({ d
 const VerifyEmailPage = lazy(() => import('./verificar-email/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })))
 
 function PageFallback() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-white">
-      <div className="h-5 w-5 animate-spin border-2 border-tc-purple border-t-transparent" />
-    </div>
-  )
+  return <SplashScreen />
 }
 
 /** Área pública (`/*`): sin menú del panel. Liviana — no descarga el panel completo (doc 06 §1). */

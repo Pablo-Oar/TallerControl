@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react'
+import { PageSkeleton } from '@/components/ui/Loading'
 import { OfflineBanner } from '../../components/OfflineBanner'
 import { Route, Routes, useNavigate, useSearchParams } from 'react-router'
 import { PlateSearchBar } from '../../components/PlateSearchBar'
@@ -39,11 +40,7 @@ export function Component() {
       <OfflineBanner />
       <PwaInstallBanner />
       <main className="relative mx-auto max-w-lg p-4">
-        <Suspense fallback={
-          <div className="flex items-center justify-center py-16">
-            <div className="h-5 w-5 animate-spin border-2 border-tc-purple border-t-transparent" />
-          </div>
-        }>
+        <Suspense fallback={<PageSkeleton />}>
           <Routes>
             <Route index element={<MechanicWorkOrdersPage />} />
             <Route path="work-orders/:id" element={<MechanicWorkOrderDetailPage />} />

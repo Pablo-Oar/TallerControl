@@ -1,4 +1,5 @@
 import { formatDate } from '../../../lib/dates'
+import { PageSkeleton } from '@/components/ui/Loading'
 import { LineItemsList } from '../../../components/ui/LineItemsList'
 import { useState } from 'react'
 import { useParams, Link } from 'react-router'
@@ -149,7 +150,7 @@ export function WorkOrderDetailPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="h-6 w-6 animate-spin border-2 border-tc-purple border-t-transparent" />
+        <PageSkeleton />
       </div>
     )
   }

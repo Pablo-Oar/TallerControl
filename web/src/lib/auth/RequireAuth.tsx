@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from 'react-router'
+import { SplashScreen } from '../../components/ui/Loading'
 import type { ReactNode } from 'react'
 import { useAuth } from './AuthContext'
 import type { MeResponse } from '../api/auth'
@@ -24,11 +25,7 @@ export function RequireAuth({ children, role, area }: RequireAuthProps) {
   const location = useLocation()
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-6 w-6 animate-spin border-2 border-tc-purple border-t-transparent" />
-      </div>
-    )
+    return <SplashScreen />
   }
 
   if (!user) {
