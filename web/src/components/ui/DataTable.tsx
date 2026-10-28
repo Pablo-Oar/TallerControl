@@ -43,6 +43,8 @@ interface DataTableProps<T> {
   rowLabel?: (row: T) => string
   /** Acciones de la fila (Editar, Baja…): última columna en escritorio, fila de botones bajo la tarjeta en celular. */
   actions?: (row: T) => ReactNode
+  /** Reemplaza el estilo de la fila de acciones de las tarjetas del celular. */
+  cardActionsClassName?: string
   /** Clases extra de la fila (p. ej. atenuar eliminados). */
   rowClassName?: (row: T) => string | undefined
   /** Tarjeta móvil: talón (número) y cuerpo. */
@@ -79,6 +81,7 @@ export function DataTable<T>({
   rowHref,
   rowLabel,
   actions,
+  cardActionsClassName,
   rowClassName,
   cardStub,
   renderCard,
@@ -259,7 +262,7 @@ export function DataTable<T>({
             <div className="min-w-0 flex-1 px-3 py-3">
               {renderCard(row)}
               {actions && (
-                <div className="mt-2 flex flex-wrap items-center gap-1.5 [&>*]:min-w-[5.5rem] [&>*]:max-w-[12rem] [&>*]:flex-1 [&>*]:justify-center [&>*]:border [&>*]:border-tc-border [&>*]:bg-white [&>*]:text-center">
+                <div className={cardActionsClassName ?? 'mt-2 flex flex-wrap items-center gap-1.5 [&>*]:min-w-[5.5rem] [&>*]:max-w-[12rem] [&>*]:flex-1 [&>*]:justify-center [&>*]:border [&>*]:border-tc-border [&>*]:bg-white [&>*]:text-center'}>
                   {actions(row)}
                 </div>
               )}
