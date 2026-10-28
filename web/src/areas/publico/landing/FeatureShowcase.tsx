@@ -268,7 +268,7 @@ export function FeatureShowcase() {
           <h3 className="mb-8 text-center text-2xl font-bold text-tc-text">Qué cambia cuando ordenás el taller</h3>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {benefits.map((b, i) => (
-              <div key={b.title} className="rounded-2xl border border-tc-border bg-white p-6">
+              <div key={b.title} className="rounded-2xl border border-tc-border bg-white p-6 shadow-[0_10px_30px_-10px_rgba(10,22,40,0.25)] transition-all duration-300 motion-safe:hover:-translate-y-1.5 hover:shadow-[0_20px_40px_-12px_rgba(10,22,40,0.35)]">
                 <span className="mb-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-tc-navy text-xs font-bold text-white">
                   {i + 1}
                 </span>
@@ -280,7 +280,7 @@ export function FeatureShowcase() {
         </div>
 
         {/* Para cada persona */}
-        <div className="-mx-6 mt-16 bg-tc-navy px-6 py-10 sm:mx-0 sm:rounded-2xl sm:p-8 md:p-10">
+        <div className="-mx-6 mt-16 bg-tc-navy px-6 py-10 sm:mx-0 sm:rounded-2xl sm:p-8 sm:shadow-[0_24px_50px_-12px_rgba(10,22,40,0.55)] md:p-10">
           <div className="mb-10 max-w-2xl">
             <h3 className="text-2xl font-bold text-white">Cada persona ve lo que necesita</h3>
             <p className="mt-2 text-white/80">
