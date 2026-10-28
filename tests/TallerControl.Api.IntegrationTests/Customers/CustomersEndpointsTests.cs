@@ -365,6 +365,24 @@ public sealed class CustomersEndpointsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, balance.StatusCode);
     }
 
+    [Fact(DisplayName = "T-CUS-12: el listado de clientes trae el email y se puede ordenar por él")]
+    public async Task Listado_trae_el_email_y_ordena_por_email()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CustomersVehiclesWebApplicationFactory.OwnerEmail,
+            CustomersVehiclesWebApplicationFactory.OwnerPassword);
+
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        var mail = $"zz.lista.{suffix}@ejemplo.com";
+        (await PostCustomerAsync(client, $"Con email {suffix}", email: mail)).EnsureSuccessStatusCode();
+
+        var resp = await client.GetAsync("/api/v1/customers?sort=email&dir=desc&pageSize=100");
+        resp.EnsureSuccessStatusCode();
+        var emails = (await resp.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("items")
+            .EnumerateArray().Select(i => i.GetProperty("email").GetString()).ToList();
+        Assert.Contains(mail, emails);
+    }
+
     [Fact(DisplayName = "T-CUS-11: el email del cliente se valida (formato) y se normaliza a minúsculas")]
     public async Task Email_del_cliente_se_valida()
     {
