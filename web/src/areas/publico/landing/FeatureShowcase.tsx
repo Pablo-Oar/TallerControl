@@ -186,7 +186,11 @@ const features: Feature[] = [
 
 function FeatureCard({ f }: { f: Feature }) {
   return (
-    <article className="flex flex-col bg-tc-navy text-white transition-colors duration-300 hover:bg-[#101b33]">
+    <article className="group relative flex flex-col bg-tc-navy text-white">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-10 bg-white/[0.06] opacity-0 ring-2 ring-inset ring-tc-purple transition-opacity duration-300 group-hover:opacity-100"
+      />
       <div className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-tc-purple/25 via-tc-navy to-tc-navy px-6 py-8">
         <div
           aria-hidden="true"
