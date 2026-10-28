@@ -23,7 +23,14 @@ export function AuthCard({
   className?: string
 }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-tc-navy">
+    <div
+      className="flex min-h-dvh flex-col bg-tc-navy"
+      style={{
+        backgroundImage:
+          'linear-gradient(rgba(148,163,184,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.08) 1px, transparent 1px)',
+        backgroundSize: '44px 44px',
+      }}
+    >
      <PublicNav />
      <div className="flex flex-1 items-center justify-center px-4 py-10">
       <div className={cn('w-full max-w-sm rounded-[28px] border border-tc-navy-mid bg-tc-stub-bg p-2', className)}>
