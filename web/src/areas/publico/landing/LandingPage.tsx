@@ -96,11 +96,11 @@ export function LandingPage() {
             <p className="mb-4 text-xs font-bold tracking-[0.2em] uppercase text-slate-300">Qué incluye</p>
             <ul className="space-y-4">
               {[
-                ['Órdenes de trabajo', 'Con estados, fotos y historial por vehículo.'],
-                ['Presupuestos', 'El cliente los aprueba desde un enlace, sin instalar nada.'],
-                ['Portal del mecánico', 'Un panel simple para el celular, sin precios a la vista.'],
-                ['Tarjeta QR', 'El dueño consulta el historial de su vehículo con verificación.'],
-                ['Cobros y facturación', 'Caja, compras y facturación electrónica ARCA.'],
+                ['Órdenes de trabajo', 'Con estados, imágenes y notas del trabajo realizado, además del historial por vehículo.'],
+                ['Presupuestos', 'El cliente los verifica y aprueba desde un enlace, firmando digitalmente.'],
+                ['Portal del mecánico', 'Un panel simple para el celular, donde ve sus órdenes de trabajo y las va completando.'],
+                ['Tarjeta QR', 'El dueño consulta el historial y el estado de su vehículo en todo momento.'],
+                ['Cobros y facturación', 'Caja, compras, proveedores y facturación electrónica ARCA para quien la necesite.'],
               ].map(([title, text]) => (
                 <li key={title} className="border-l-2 border-tc-purple pl-4">
                   <p className="text-sm font-bold text-white">{title}</p>
