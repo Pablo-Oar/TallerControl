@@ -1,4 +1,5 @@
 import { formatDate } from '../../../lib/dates'
+import { PageSkeleton } from '@/components/ui/Loading'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -73,7 +74,7 @@ export function CustomerDetailPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="h-6 w-6 animate-spin border-2 border-tc-purple border-t-transparent" />
+        <PageSkeleton />
       </div>
     )
   }

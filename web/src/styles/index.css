@@ -131,6 +131,11 @@ button:focus-visible {
   stroke-dashoffset: 24;
   animation: tc-check-draw 200ms ease-out forwards;
 }
+@keyframes tc-indeterminate {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+
 @keyframes tc-check-draw {
   to {
     stroke-dashoffset: 0;

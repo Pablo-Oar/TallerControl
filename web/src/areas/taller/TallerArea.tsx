@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { PageSkeleton } from '@/components/ui/Loading'
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { RequireAuth } from '../../lib/auth/RequireAuth'
@@ -52,9 +53,7 @@ function Need({ perms, children }: { perms: string[]; children: ReactNode }) {
 
 function PageFallback() {
   return (
-    <div className="flex items-center justify-center py-16">
-      <div className="h-5 w-5 animate-spin border-2 border-tc-purple border-t-transparent" />
-    </div>
+    <PageSkeleton />
   )
 }
 

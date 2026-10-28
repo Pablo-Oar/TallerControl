@@ -292,37 +292,37 @@ export function DataTable<T>({
       {/* Celular: tarjetas */}
       <ul aria-label={label} className="space-y-1.5 md:hidden">
         {shown.map(row => (
-          <li key={getRowId(row)} className={cn('flex items-stretch overflow-hidden rounded-xl border border-tc-border bg-white', rowClassName?.(row))}>
-            {cardStub && (
-              <div className="flex w-14 shrink-0 items-center justify-center border-r border-tc-border bg-tc-stub-bg px-1">
-                {cardStub(row)}
-              </div>
-            )}
-            <div className="min-w-0 flex-1 px-3 py-3">
-              {renderCard(row)}
-              {actions && (
-                <div className={cardActionsClassName ?? CARD_ACTION_BAR}>
-                  {actions(row)}
-                  {rowHref && rowHref(row) && (
-                    <Link to={rowHref(row)!} aria-label={rowLabel?.(row) ?? 'Abrir'} className="flex text-tc-navy-text-dim hover:text-tc-purple">
-                      <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                        <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </Link>
-                  )}
+          <li key={getRowId(row)} className={cn('overflow-hidden rounded-xl border border-tc-border bg-white', rowClassName?.(row))}>
+            <div className="flex items-stretch">
+              {cardStub && (
+                <div className="flex w-14 shrink-0 items-center justify-center border-r border-tc-border bg-tc-stub-bg px-1">
+                  {cardStub(row)}
                 </div>
               )}
+              <div className="min-w-0 flex-1 px-3 py-3">{renderCard(row)}</div>
+              {!actions && rowHref && rowHref(row) && (
+                <Link
+                  to={rowHref(row)!}
+                  aria-label={rowLabel?.(row) ?? 'Abrir'}
+                  className="flex min-h-[44px] w-11 shrink-0 items-center justify-center border-l border-tc-border bg-tc-stub-bg text-tc-navy-text-dim hover:text-tc-purple"
+                >
+                  <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                    <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Link>
+              )}
             </div>
-            {!actions && rowHref && rowHref(row) && (
-              <Link
-                to={rowHref(row)!}
-                aria-label={rowLabel?.(row) ?? 'Abrir'}
-                className="flex min-h-[44px] w-11 shrink-0 items-center justify-center border-l border-tc-border bg-tc-stub-bg text-tc-navy-text-dim hover:text-tc-purple"
-              >
-                <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                  <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </Link>
+            {actions && (
+              <div className={cn('border-t border-tc-border', cardActionsClassName ?? CARD_ACTION_BAR)}>
+                {actions(row)}
+                {rowHref && rowHref(row) && (
+                  <Link to={rowHref(row)!} aria-label={rowLabel?.(row) ?? 'Abrir'} className="flex text-tc-navy-text-dim hover:text-tc-purple">
+                    <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </Link>
+                )}
+              </div>
             )}
           </li>
         ))}
@@ -342,7 +342,7 @@ const TONE = {
 /** Acción de texto de una fila: 44 px de alto táctil en celular, compacta en escritorio. */
 /** Barra de acciones de las tarjetas del celular: una fila de borde a borde con separadores finos. */
 export const CARD_ACTION_BAR =
-  'mt-3 -mx-3 -mb-3 grid grid-flow-col auto-cols-fr divide-x divide-tc-border border-t border-tc-border bg-tc-stub-bg [&>*]:min-h-11 [&>*]:min-w-0 [&>*]:items-center [&>*]:justify-center [&>*]:rounded-none [&>*]:bg-transparent [&>*]:px-1 [&>*]:text-center'
+  'grid grid-flow-col auto-cols-fr divide-x divide-tc-border border-t border-tc-border bg-tc-stub-bg [&>*]:min-h-11 [&>*]:min-w-0 [&>*]:items-center [&>*]:justify-center [&>*]:rounded-none [&>*]:bg-transparent [&>*]:px-1 [&>*]:text-center'
 
 export function RowAction({
   tone = 'default',

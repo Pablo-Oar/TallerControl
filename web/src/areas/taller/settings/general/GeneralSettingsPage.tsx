@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react' // useRef: limpiar value del input tras subir
+import { PageSkeleton } from '@/components/ui/Loading'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -132,7 +133,7 @@ export function GeneralSettingsPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="h-6 w-6 animate-spin border-2 border-tc-purple border-t-transparent" />
+        <PageSkeleton />
       </div>
     )
   }
