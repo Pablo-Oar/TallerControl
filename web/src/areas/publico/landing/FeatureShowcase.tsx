@@ -89,7 +89,7 @@ function QrArt() {
     <div className="flex items-center gap-4">
       <div className="grid shrink-0 grid-cols-8 gap-[3px] rounded-lg bg-white p-2">
         {cells.map((c, i) => (
-          <span key={i} className={`h-3 w-3 rounded-[2px] ${c === '1' ? 'bg-tc-navy' : 'bg-transparent'}`} />
+          <span key={i} className={`h-2.5 w-2.5 rounded-[2px] ${c === '1' ? 'bg-tc-navy' : 'bg-transparent'}`} />
         ))}
       </div>
       <div className="min-w-0 space-y-2">
@@ -187,18 +187,18 @@ const features: Feature[] = [
 function FeatureCard({ f }: { f: Feature }) {
   return (
     <article className="flex flex-col bg-tc-navy text-white">
-      <div className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-tc-purple/25 via-tc-navy to-tc-navy px-5 py-6">
+      <div className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-tc-purple/25 via-tc-navy to-tc-navy px-6 py-8">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -top-12 -right-12 h-40 w-40 rounded-full bg-tc-purple/30 blur-3xl"
         />
-        <div aria-hidden="true" className="relative flex min-h-[190px] flex-col justify-center">
+        <div aria-hidden="true" className="relative flex h-[210px] flex-col justify-center">
           {f.art}
         </div>
       </div>
-      <div className="flex flex-1 flex-col gap-3 p-6">
-        <h3 className="text-lg font-bold leading-snug">{f.title}</h3>
-        <p className="text-sm leading-6 text-slate-300">{f.desc}</p>
+      <div className="flex flex-1 flex-col gap-3 p-6 lg:p-8">
+        <h3 className="text-xl font-bold leading-snug">{f.title}</h3>
+        <p className="text-[15px] leading-6 text-slate-300">{f.desc}</p>
         <ul className="mt-1 space-y-1.5">
           {f.points.map(p => (
             <li key={p} className="flex items-start gap-2 text-sm text-slate-200">
@@ -244,7 +244,7 @@ const team = [
 export function FeatureShowcase() {
   return (
     <section className="bg-tc-surface px-6 pt-16 pb-0 md:py-24 border-t border-tc-border">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-7xl">
         <div className="mx-auto mb-12 max-w-3xl text-center">
           <p className="mb-2 text-xs font-bold tracking-[0.2em] uppercase text-tc-text-secondary">Funcionalidades</p>
           <h2 className="text-3xl font-bold tracking-tight text-tc-text md:text-4xl">
@@ -257,7 +257,7 @@ export function FeatureShowcase() {
         </div>
 
         {/* Tarjetas unidas, una sola pieza redondeada (estilo card-15) */}
-        <div className="-mx-6 grid grid-cols-1 gap-px overflow-hidden border-y border-white/10 sm:mx-0 sm:rounded-2xl sm:border bg-white/10 shadow-xl shadow-tc-navy/20 md:grid-cols-2 lg:grid-cols-3">
+        <div className="-mx-6 grid grid-cols-1 gap-px overflow-hidden border-y border-slate-700 sm:mx-0 sm:rounded-2xl sm:border bg-slate-700 shadow-xl shadow-tc-navy/20 md:grid-cols-2 lg:grid-cols-3">
           {features.map(f => (
             <FeatureCard key={f.title} f={f} />
           ))}
@@ -281,13 +281,13 @@ export function FeatureShowcase() {
 
         {/* Para cada persona */}
         <div className="-mx-6 mt-16 bg-tc-navy px-6 py-10 sm:mx-0 sm:rounded-2xl sm:p-8 md:p-10">
-          <div className="mb-8 max-w-2xl">
+          <div className="mb-10 max-w-2xl">
             <h3 className="text-2xl font-bold text-white">Cada persona ve lo que necesita</h3>
             <p className="mt-2 text-white/80">
               Sumás a tu equipo con roles y permisos: cada uno trabaja en lo suyo y nadie ve lo que no debe.
             </p>
           </div>
-          <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-5">
+          <dl className="grid gap-x-10 gap-y-6 sm:grid-cols-2 lg:grid-cols-5">
             {team.map(([who, what]) => (
               <div key={who} className="border-t border-white/15 pt-4">
                 <dt className="text-sm font-bold text-white">{who}</dt>
