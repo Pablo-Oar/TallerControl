@@ -221,8 +221,8 @@ internal static class WorkOrdersEndpoints
         CancellationToken ct)
     {
         var (isMechanic, membershipId, includePrices) = await ResolveSessionAsync(auth, ctx, ct);
-        var bytes = await handler.HandleAsync(id, isMechanic, membershipId, includePrices, ct);
-        return Results.File(bytes, "application/pdf", $"orden-{id}.pdf");
+        var (bytes, number) = await handler.HandleAsync(id, isMechanic, membershipId, includePrices, ct);
+        return Results.File(bytes, "application/pdf", $"orden-{number}.pdf");
     }
 
     private static async Task<IResult> PublicLinkAsync(

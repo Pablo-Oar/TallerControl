@@ -38,7 +38,7 @@ export function Component() {
       </header>
       <OfflineBanner />
       <PwaInstallBanner />
-      <main className="mx-auto max-w-lg p-4">
+      <main className="relative mx-auto max-w-lg p-4">
         <Suspense fallback={
           <div className="flex items-center justify-center py-16">
             <div className="h-5 w-5 animate-spin border-2 border-tc-purple border-t-transparent" />

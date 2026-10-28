@@ -214,7 +214,7 @@ export function TallerLayout({ children }: { children: ReactNode }) {
         </aside>
 
         {/* Content surface */}
-        <main className="flex-1 overflow-y-auto bg-white">
+        <main className="relative flex-1 overflow-y-auto bg-white">
           <div className="min-h-full p-4 pb-6 md:p-6">
             {children}
           </div>

@@ -191,8 +191,8 @@ internal static class QuotesEndpoints
     private static async Task<IResult> PdfAsync(
         Guid id, GetQuotePdfHandler handler, CancellationToken ct)
     {
-        var bytes = await handler.HandleAsync(id, ct);
-        return Results.File(bytes, "application/pdf", $"presupuesto-{id}.pdf");
+        var (bytes, number) = await handler.HandleAsync(id, ct);
+        return Results.File(bytes, "application/pdf", $"presupuesto-{number}.pdf");
     }
 
     private static bool TryParseETag(string? raw, out uint version)

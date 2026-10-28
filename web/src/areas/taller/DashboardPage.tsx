@@ -3,6 +3,11 @@ import { getDashboard } from '../../lib/api/dashboard'
 import { Link } from 'react-router'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { onboardingApi } from '../../lib/api/onboarding'
+import { workOrdersApi, STATUS_LABELS } from '../../lib/api/workOrders'
+import { appointmentsApi } from '../../lib/api/appointments'
+import { StatusBadge } from '../../components/ui/StatusBadge'
+import { useCan } from '../../lib/auth/permissions'
+import { formatDateTime, localDateISO } from '../../lib/dates'
 
 interface KpiStubProps {
   label: string
@@ -52,8 +57,78 @@ function KpiStub({ label, value, to, alert }: KpiStubProps) {
   )
 }
 
+function Panel({ title, to, children }: { title: string; to: string; children: React.ReactNode }) {
+  return (
+    <section className="border border-tc-border bg-white">
+      <div className="flex items-center justify-between border-b border-tc-border bg-tc-stub-bg px-4 py-3">
+        <h2 className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-secondary">{title}</h2>
+        <Link to={to} className="text-[11px] font-bold tracking-wider uppercase text-tc-purple hover:underline">Ver todas</Link>
+      </div>
+      {children}
+    </section>
+  )
+}
+
+function RecentOrders() {
+  const { data } = useQuery({
+    queryKey: ['dashboard-recent-orders'],
+    queryFn: () => workOrdersApi.search(null, null, null, null, null, null, 1, 6, 'all', { key: 'createdat', dir: 'desc' }),
+  })
+  return (
+    <Panel title="Últimas órdenes" to="/app/work-orders">
+      {!data?.items.length ? (
+        <p className="px-4 py-6 text-sm text-tc-text-muted">Todavía no hay órdenes.</p>
+      ) : (
+        <ul className="divide-y divide-tc-border">
+          {data.items.map(o => (
+            <li key={o.id}>
+              <Link to={`/app/work-orders/${o.id}`} className="flex min-h-11 items-center justify-between gap-3 px-4 py-2.5 hover:bg-tc-surface">
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium text-tc-text">#{o.number} · {o.customerName}</span>
+                  <span className="block truncate font-mono text-xs tracking-widest text-tc-text-muted">{o.vehiclePlate}</span>
+                </span>
+                <StatusBadge status={o.status} label={STATUS_LABELS[o.status]} />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Panel>
+  )
+}
+
+function UpcomingAppointments() {
+  const { data } = useQuery({
+    queryKey: ['dashboard-upcoming-appointments'],
+    queryFn: () => appointmentsApi.search({ from: localDateISO(), to: localDateISO(14), pageSize: 6 }),
+  })
+  const items = (data?.items ?? []).filter(a => a.status === 'pending' || a.status === 'confirmed')
+  return (
+    <Panel title="Próximos turnos" to="/app/appointments">
+      {!items.length ? (
+        <p className="px-4 py-6 text-sm text-tc-text-muted">No hay turnos en los próximos días.</p>
+      ) : (
+        <ul className="divide-y divide-tc-border">
+          {items.map(a => (
+            <li key={a.id} className="flex min-h-11 items-center justify-between gap-3 px-4 py-2.5">
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-medium text-tc-text">{a.customerName}</span>
+                <span className="block truncate text-xs text-tc-text-muted">
+                  {formatDateTime(a.scheduledAt)} · <span className="font-mono tracking-widest">{a.vehiclePlate}</span>
+                </span>
+              </span>
+              <StatusBadge status={a.status} label={a.status === 'confirmed' ? 'Confirmado' : 'Pendiente'} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </Panel>
+  )
+}
+
 export function DashboardPage() {
   const { user } = useAuth()
+  const can = useCan()
   const isOwner = user?.role === 'owner'
 
   const { data, isLoading, error } = useQuery({
@@ -113,6 +188,11 @@ export function DashboardPage() {
           to="/app/catalog"
           alert={data!.lowStockItems > 0}
         />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <RecentOrders />
+        {can('appointments.read') && <UpcomingAppointments />}
       </div>
 
       {/* Onboarding checklist — owner only, while incomplete */}
