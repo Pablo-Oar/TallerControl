@@ -280,7 +280,7 @@ export function FeatureShowcase() {
         </div>
 
         {/* Para cada persona */}
-        <div className="-mx-6 mt-16 border-b-4 border-tc-purple bg-tc-navy px-6 py-10 sm:mx-0 sm:rounded-2xl sm:border-b-0 sm:p-8 md:p-10">
+        <div className="-mx-6 mt-16 bg-tc-navy px-6 py-10 sm:mx-0 sm:rounded-2xl sm:p-8 md:p-10">
           <div className="mb-8 max-w-2xl">
             <h3 className="text-2xl font-bold text-white">Cada persona ve lo que necesita</h3>
             <p className="mt-2 text-white/80">
@@ -296,6 +296,7 @@ export function FeatureShowcase() {
             ))}
           </dl>
         </div>
+        <div aria-hidden="true" className="-mx-6 h-1 bg-tc-purple sm:hidden" />
       </div>
     </section>
   )
