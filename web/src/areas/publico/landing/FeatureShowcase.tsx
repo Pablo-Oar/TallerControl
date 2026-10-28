@@ -192,11 +192,11 @@ function FeatureCard({ f }: { f: Feature }) {
           aria-hidden="true"
           className="pointer-events-none absolute -top-12 -right-12 h-40 w-40 rounded-full bg-tc-purple/30 blur-3xl"
         />
-        <div aria-hidden="true" className="relative flex h-[210px] flex-col justify-center">
+        <div aria-hidden="true" className="relative mx-auto flex h-[210px] w-full max-w-xl lg:px-4 flex-col justify-center">
           {f.art}
         </div>
       </div>
-      <div className="flex flex-1 flex-col gap-3 p-6 lg:p-8">
+      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-3 p-6 lg:px-10 lg:py-8">
         <h3 className="text-xl font-bold leading-snug">{f.title}</h3>
         <p className="text-[15px] leading-6 text-slate-300">{f.desc}</p>
         <ul className="mt-1 space-y-1.5">
@@ -243,7 +243,7 @@ const team = [
 
 export function FeatureShowcase() {
   return (
-    <section className="bg-tc-surface px-6 pt-16 pb-0 md:py-24 border-t border-tc-border">
+    <section className="overflow-x-clip bg-tc-surface px-6 pt-16 pb-0 md:py-24 border-t border-tc-border">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto mb-12 max-w-3xl text-center">
           <p className="mb-2 text-xs font-bold tracking-[0.2em] uppercase text-tc-text-secondary">Funcionalidades</p>
@@ -257,7 +257,7 @@ export function FeatureShowcase() {
         </div>
 
         {/* Tarjetas unidas, una sola pieza redondeada (estilo card-15) */}
-        <div className="-mx-6 grid grid-cols-1 gap-px overflow-hidden border-y border-slate-700 sm:mx-0 sm:rounded-2xl sm:border bg-slate-700 shadow-xl shadow-tc-navy/20 md:grid-cols-2 lg:grid-cols-3">
+        <div className="relative left-1/2 grid w-screen -translate-x-1/2 grid-cols-1 gap-px overflow-hidden border-y border-slate-700 bg-slate-700 shadow-2xl shadow-tc-navy/30 md:grid-cols-2 lg:grid-cols-3">
           {features.map(f => (
             <FeatureCard key={f.title} f={f} />
           ))}
