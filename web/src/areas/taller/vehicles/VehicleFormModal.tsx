@@ -8,6 +8,7 @@ import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { CustomerPicker } from '../../../components/ui/EntityPickers'
 import { EditDialog } from '../../../components/ui/EditDialog'
 import { ApiError } from '../../../lib/api/client'
+import { confirmDialog } from '../../../components/ui/dialogs'
 
 const USAGE_PROFILE_OPTIONS: { value: VehicleUsageProfile; label: string }[] = [
   { value: 'regular', label: 'Regular' },
@@ -81,6 +82,13 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
 
   async function onSubmit(data: FormData) {
     setServerError(null)
+    if (vehicle && (data.odometerKm as number) < vehicle.odometerKm) {
+      const ok = await confirmDialog(
+        `El kilometraje baja de ${vehicle.odometerKm.toLocaleString('es-AR')} km a ${(data.odometerKm as number).toLocaleString('es-AR')} km. Solo corresponde si el dato anterior estaba mal. ¿Guardar igual?`,
+        { confirmLabel: 'Guardar igual', danger: true },
+      )
+      if (!ok) return
+    }
     try {
       const body: VehicleUpsertRequest = {
         plate: data.plate.toUpperCase().replace(/[\s-]/g, ''),

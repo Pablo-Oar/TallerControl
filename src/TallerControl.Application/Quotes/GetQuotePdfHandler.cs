@@ -14,12 +14,12 @@ public sealed class GetQuotePdfHandler
         _pdfGenerator = pdfGenerator;
     }
 
-    public async Task<byte[]> HandleAsync(Guid id, CancellationToken ct)
+    public async Task<(byte[] Bytes, int Number)> HandleAsync(Guid id, CancellationToken ct)
     {
         var quote = await _repo.GetFullAsync(id, ct)
             ?? throw new NotFoundException("El presupuesto no existe.");
 
-        return await _pdfGenerator.GenerateAsync(quote, ct);
+        return (await _pdfGenerator.GenerateAsync(quote, ct), quote.Number);
     }
 }
 

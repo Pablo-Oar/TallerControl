@@ -190,9 +190,11 @@ export function CounterSalesPage() {
 
       {creating && (
         <CounterSaleFormModal
-          onSuccess={() => {
+          onSuccess={dto => {
             setCreating(false)
+            // Sin pasos sueltos: la venta recién creada pasa directo a confirmar (y elegir la cuenta de caja).
             queryClient.invalidateQueries({ queryKey: ['counter-sales'] })
+            setConfirming(dto)
           }}
           onClose={() => setCreating(false)}
         />
