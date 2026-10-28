@@ -1,4 +1,5 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { FormField } from './FormField'
@@ -54,6 +55,32 @@ export function SearchPicker<T>({
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(0)
   const [pickedLabel, setPickedLabel] = useState<string | null>(null)
+  const anchorRef = useRef<HTMLDivElement>(null)
+  // La lista se dibuja en un portal con posición fija: dentro del diálogo la recortaba su área con scroll.
+  const [box, setBox] = useState<{ left: number; width: number; top?: number; bottom?: number; maxH: number } | null>(null)
+
+  useLayoutEffect(() => {
+    if (!open) return
+    const place = () => {
+      const r = anchorRef.current?.getBoundingClientRect()
+      if (!r) return
+      const below = window.innerHeight - r.bottom - 8
+      const above = r.top - 8
+      const flip = below < 160 && above > below
+      setBox(
+        flip
+          ? { left: r.left, width: r.width, bottom: window.innerHeight - r.top, maxH: Math.min(208, above) }
+          : { left: r.left, width: r.width, top: r.bottom + 1, maxH: Math.min(208, Math.max(below, 96)) },
+      )
+    }
+    place()
+    window.addEventListener('resize', place)
+    window.addEventListener('scroll', place, true)
+    return () => {
+      window.removeEventListener('resize', place)
+      window.removeEventListener('scroll', place, true)
+    }
+  }, [open])
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(q.trim()), 250)
@@ -135,7 +162,7 @@ export function SearchPicker<T>({
   }
 
   return (
-    <div className={cn('relative', className)}>
+    <div ref={anchorRef} className={cn('relative', className)}>
       <FormField
         ref={inputRef}
         label={label}
@@ -162,14 +189,15 @@ export function SearchPicker<T>({
         onBlur={() => setOpen(false)}
         onKeyDown={onKeyDown}
       />
-      {open && (
+      {open && box && createPortal(
         <ul
           id={listId}
           role="listbox"
           aria-label={label}
           // mousedown (no click): se elige antes de que el blur cierre la lista
           onMouseDown={e => e.preventDefault()}
-          className="absolute z-20 mt-px max-h-52 w-full overflow-y-auto border border-tc-border-mid bg-white shadow-lg"
+          style={{ left: box.left, width: box.width, top: box.top, bottom: box.bottom, maxHeight: box.maxH }}
+          className="fixed z-[70] overflow-y-auto border border-tc-border-mid bg-white shadow-lg"
         >
           {isFetching && items.length === 0 && <li className="px-3 py-2 text-sm text-tc-text-muted">Buscando…</li>}
           {!isFetching && items.length === 0 && <li className="px-3 py-2 text-sm text-tc-text-muted">Sin resultados</li>}
@@ -187,7 +215,8 @@ export function SearchPicker<T>({
               {getHint?.(item) && <span className="ml-2 text-xs text-tc-text-muted">{getHint(item)}</span>}
             </li>
           ))}
-        </ul>
+        </ul>,
+        document.body,
       )}
     </div>
   )

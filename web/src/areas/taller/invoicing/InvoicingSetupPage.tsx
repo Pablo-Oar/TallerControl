@@ -1,4 +1,5 @@
 import { formatDate } from '../../../lib/dates'
+import { spanishInvalid } from '../../../lib/formValidity'
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -335,7 +336,7 @@ function CertificatesSection({
 
       {showForm && (
         <Modal title="Nuevo certificado ARCA" onClose={() => setShowForm(false)} className="max-w-md">
-          <form onSubmit={handleCreate} className="space-y-3">
+          <form onSubmit={handleCreate} onInvalidCapture={spanishInvalid(setError)} className="space-y-3">
             <FormField
               label="CUIT (sin guiones)"
               value={cuit}
@@ -395,7 +396,7 @@ function CertificatesSection({
 
       {uploadId && (
         <Modal title="Subir certificado PEM" onClose={() => setUploadId(null)} className="max-w-lg">
-          <form onSubmit={handleUpload} className="space-y-3">
+          <form onSubmit={handleUpload} onInvalidCapture={spanishInvalid(setUploadError)} className="space-y-3">
             <FormTextarea
               label="Certificado PEM (obtenido de ARCA)"
               rows={6}
@@ -560,7 +561,7 @@ function PointsOfSaleSection({
 
       {editPos && (
         <Modal title={`Punto de venta ${String(editPos.number).padStart(5, '0')}`} onClose={() => setEditPos(null)} className="max-w-md">
-          <form onSubmit={handleEdit} className="space-y-3">
+          <form onSubmit={handleEdit} onInvalidCapture={spanishInvalid(setError)} className="space-y-3">
             <FormField label="Nombre" value={editName} onChange={e => setEditName(e.target.value)} required />
             <label className="flex items-center gap-2 text-sm text-tc-text-secondary">
               <input type="checkbox" checked={editActive} onChange={e => setEditActive(e.target.checked)} className="accent-tc-purple" />
@@ -577,7 +578,7 @@ function PointsOfSaleSection({
 
       {showForm && (
         <Modal title="Nuevo punto de venta" onClose={() => setShowForm(false)} className="max-w-md">
-          <form onSubmit={handleCreate} className="space-y-3">
+          <form onSubmit={handleCreate} onInvalidCapture={spanishInvalid(setError)} className="space-y-3">
             <FormSelect label="Certificado" value={certId} onChange={e => setCertId(e.target.value)} required>
               <option value="">Seleccionar certificado...</option>
               {certs.map(c => (

@@ -69,7 +69,7 @@ export function InvoiceSection({ sourceType, sourceId, eligible, ineligibleReaso
       action = (
         <p className="text-sm text-tc-text-secondary">
           Para facturar primero hay que configurar ARCA (certificado y punto de venta).{' '}
-          {can('invoicing.manage') ? <Link to="/app/invoicing/setup" className="font-semibold text-tc-purple underline">Configurar ARCA</Link> : <span>Pedíselo al dueño del taller.</span>}
+          {can('invoicing.write') ? <Link to="/app/invoicing/setup" className="font-semibold text-tc-purple underline">Configurar ARCA</Link> : <span>Pedíselo al dueño del taller.</span>}
         </p>
       )
     } else {

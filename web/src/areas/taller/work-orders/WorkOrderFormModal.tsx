@@ -25,8 +25,8 @@ const itemSchema = z.object({
 })
 
 const schema = z.object({
-  customerId: z.string().min(1, 'Seleccione un cliente'),
-  vehicleId: z.string().min(1, 'Seleccione un vehículo'),
+  customerId: z.string().min(1, 'Seleccioná un cliente'),
+  vehicleId: z.string().min(1, 'Seleccioná un vehículo'),
   odometerKm: z.number().int().min(0),
   fuelLevel: z.number().int().min(0).max(100).nullable(),
   reportedIssue: z.string().trim().max(1000).nullable(),
@@ -209,7 +209,7 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
               {vehicles.length === 0 ? (
                 <>
                   <span className={labelCls}>Vehículo *</span>
-                  <p className="text-sm text-tc-text-muted">El cliente no tiene vehículos registrados.</p>
+                  <p className="text-sm text-tc-text-muted">{customerDetail ? 'El cliente no tiene vehículos registrados.' : 'Cargando vehículos…'}</p>
                 </>
               ) : (
                 <FormSelect

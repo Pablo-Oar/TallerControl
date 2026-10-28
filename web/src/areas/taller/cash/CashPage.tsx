@@ -1,4 +1,5 @@
 import { formatDateTime } from '../../../lib/dates'
+import { spanishInvalid } from '../../../lib/formValidity'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -188,7 +189,7 @@ function AccountFormModal({ account, onDone, onClose }: { account?: CashAccountD
 
   return (
     <Modal title={account ? 'Editar cuenta de caja' : 'Nueva cuenta de caja'} onClose={onClose} className="max-w-sm">
-      <form onSubmit={e => { e.preventDefault(); setError(null); save.mutate() }} className="space-y-4">
+      <form onSubmit={e => { e.preventDefault(); setError(null); save.mutate() }} onInvalidCapture={spanishInvalid(setError)} className="space-y-4">
         <ErrorBox message={error} />
         <FormField label="Nombre" requiredMark value={name} onChange={e => setName(e.target.value)} placeholder="Nombre de la cuenta" maxLength={100} required />
         <FormSelect label="Tipo" value={kind} onChange={e => setKind(e.target.value as CashAccountKind)}>
@@ -333,6 +334,7 @@ function MovementsModal({
         {canAdjust && account.isActive && (
           <form
             onSubmit={e => { e.preventDefault(); setError(null); add.mutate() }}
+            onInvalidCapture={spanishInvalid(setError)}
             className="space-y-3 rounded-xl border border-tc-border p-3"
           >
             <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ajuste manual</p>

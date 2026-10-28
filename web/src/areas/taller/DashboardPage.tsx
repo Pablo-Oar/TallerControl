@@ -105,7 +105,7 @@ export function DashboardPage() {
       {/* KPI row — coupon stubs */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <KpiStub label="Por cobrar" value={totalFormatted} />
-        <KpiStub label="OTs abiertas" value={data!.openWorkOrders} to="/app/work-orders" />
+        <KpiStub label="Órdenes abiertas" value={data!.openWorkOrders} to="/app/work-orders" />
         <KpiStub label="Presupuestos pendientes" value={data!.pendingQuotes} to="/app/quotes" />
         <KpiStub
           label="Stock bajo"

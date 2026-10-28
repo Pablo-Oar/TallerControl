@@ -193,9 +193,9 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = fal
                   }}
                   disabled={remove.isPending}
                   aria-label={`Quitar foto ${i + 1}`}
-                  className="absolute right-1 top-1 flex h-10 w-10 items-center justify-center bg-tc-navy/80 text-lg font-bold text-white hover:bg-tc-stamp-red"
+                  className="group absolute right-0 top-0 flex h-11 w-11 items-center justify-center text-lg font-bold text-white"
                 >
-                  ×
+                  <span aria-hidden className="flex h-6 w-6 items-center justify-center bg-tc-navy/80 leading-none group-hover:bg-tc-stamp-red">×</span>
                 </button>
               )}
             </li>
@@ -220,7 +220,7 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = fal
                   <button
                     type="button"
                     onClick={() => retry(p)}
-                    className="min-h-[28px] bg-tc-purple px-2 text-[11px] font-bold text-white hover:opacity-90"
+                    className="min-h-[36px] bg-tc-purple px-2 text-[11px] font-bold text-white hover:opacity-90"
                   >
                     Reintentar
                   </button>
@@ -228,9 +228,9 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = fal
                     type="button"
                     onClick={() => discard(p.key)}
                     aria-label="Descartar foto"
-                    className="flex h-10 w-10 items-center justify-center bg-tc-navy/80 text-lg font-bold text-white hover:bg-tc-stamp-red"
+                    className="group flex h-11 w-11 items-center justify-center text-lg font-bold text-white"
                   >
-                    ×
+                    <span aria-hidden className="flex h-6 w-6 items-center justify-center bg-tc-navy/80 leading-none group-hover:bg-tc-stamp-red">×</span>
                   </button>
                 </div>
               )}
