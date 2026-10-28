@@ -141,25 +141,29 @@ export function QrCardsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Tarjetas QR</h1>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" size="sm" onClick={() => setShowScannerModal(true)}>
-            Escanear código
-          </Button>
-          <Button variant="secondary" size="sm" onClick={() => setShowAssignByCodeModal(true)}>
-            Asignar por código
-          </Button>
-          <a
-            href="/api/v1/qr/cards/print-sheet"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider text-tc-text-secondary transition-colors hover:bg-tc-surface max-md:min-h-11"
-          >
-            Imprimir libres
-          </a>
-          <Button size="sm" onClick={() => setShowBatchModal(true)}>Generar lote</Button>
-        </div>
+        <Button size="sm" onClick={() => setShowBatchModal(true)} className="md:order-last">Generar lote</Button>
+      </div>
+
+      {/* Herramientas: una sola fila de tres en el celular, a la derecha del título en escritorio */}
+      <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap">
+        <Button variant="secondary" size="sm" onClick={() => setShowScannerModal(true)}>
+          Escanear
+        </Button>
+        <Button variant="secondary" size="sm" onClick={() => setShowAssignByCodeModal(true)}>
+          <span className="md:hidden">Asignar</span>
+          <span className="hidden md:inline">Asignar por código</span>
+        </Button>
+        <a
+          href="/api/v1/qr/cards/print-sheet"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center justify-center border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider text-tc-text-secondary transition-colors hover:bg-tc-surface max-md:min-h-11"
+        >
+          <span className="md:hidden">Imprimir</span>
+          <span className="hidden md:inline">Imprimir libres</span>
+        </a>
       </div>
 
       {error && (
@@ -169,19 +173,19 @@ export function QrCardsPage() {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex gap-2">
         <input
-          className={inputCls}
+          className={`${inputCls} min-w-0 flex-1 md:max-w-xs md:flex-none`}
           placeholder="Buscar código…"
           value={q}
           onChange={(e) => { setQ(e.target.value); setPage(1) }}
         />
         <select
-          className={inputCls}
+          className={`${inputCls} w-36 shrink-0 md:w-auto`}
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value as QrCardStatus | ''); setPage(1) }}
         >
-          <option value="">Todos los estados</option>
+          <option value="">Estados</option>
           <option value="free">Libre</option>
           <option value="assigned">Asignada</option>
           <option value="lost">Perdida</option>
@@ -225,13 +229,23 @@ export function QrCardsPage() {
             )}
           </>
         )}
+        cardActionsClassName="-mx-3 -mb-3 mt-3 flex divide-x divide-tc-border border-t border-tc-border bg-tc-stub-bg [&>*]:min-h-11 [&>*]:flex-1 [&>*]:justify-center [&>*]:rounded-none [&>*]:bg-transparent [&>*]:text-center"
         renderCard={c => (
           <>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <span className="font-mono text-sm font-bold tracking-widest text-tc-text">{c.code}</span>
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-mono text-[15px] font-bold tracking-[0.14em] text-tc-text">{c.code}</span>
               <StatusBadge status={c.status} label={STATUS_LABELS[c.status]} />
             </div>
-            {c.vehiclePlate && <p className="mt-0.5 font-mono text-xs tracking-widest text-tc-text-secondary">{c.vehiclePlate}</p>}
+            <p className="mt-1 flex items-center gap-2 text-xs text-tc-text-secondary">
+              {c.vehiclePlate ? (
+                <>
+                  <span className="font-mono tracking-widest text-tc-text">{c.vehiclePlate}</span>
+                  {c.assignedAt && <span className="text-tc-text-muted">· desde {formatDate(c.assignedAt)}</span>}
+                </>
+              ) : (
+                <span className="text-tc-text-muted">Sin vehículo asignado</span>
+              )}
+            </p>
           </>
         )}
         loading={isLoading}
