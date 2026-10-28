@@ -59,7 +59,7 @@ function KpiStub({ label, value, to, alert }: KpiStubProps) {
 
 function Panel({ title, to, children }: { title: string; to: string; children: React.ReactNode }) {
   return (
-    <section className="border border-tc-border bg-white">
+    <section className="min-w-0 border border-tc-border bg-white">
       <div className="flex items-center justify-between border-b border-tc-border bg-tc-stub-bg px-4 py-3">
         <h2 className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-secondary">{title}</h2>
         <Link to={to} className="text-[11px] font-bold tracking-wider uppercase text-tc-purple hover:underline">Ver todas</Link>
@@ -190,7 +190,7 @@ export function DashboardPage() {
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <RecentOrders />
         {can('appointments.read') && <UpcomingAppointments />}
       </div>

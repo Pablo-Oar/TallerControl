@@ -1,4 +1,5 @@
 import { formatDateTime } from '../../../lib/dates'
+import { RowMenu } from '../../../components/ui/RowMenu'
 import { spanishInvalid } from '../../../lib/formValidity'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -134,19 +135,17 @@ export function CashPage() {
                   </div>
                 </div>
 
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="-mx-4 -mb-4 mt-4 grid grid-flow-col auto-cols-fr divide-x divide-tc-border overflow-hidden rounded-b-2xl border-t border-tc-border bg-tc-stub-bg">
                   {account.isActive && !open && can('cash.open') && (
-                    <Button size="sm" onClick={() => setDialog({ kind: 'open', account })}>Abrir sesión</Button>
+                    <BarButton primary onClick={() => setDialog({ kind: 'open', account })}><span className="sm:hidden">Abrir</span><span className="hidden sm:inline">Abrir sesión</span></BarButton>
                   )}
                   {open && can('cash.close') && (
-                    <Button size="sm" onClick={() => setDialog({ kind: 'close', account })}>Cerrar caja</Button>
+                    <BarButton primary onClick={() => setDialog({ kind: 'close', account })}><span className="sm:hidden">Cerrar</span><span className="hidden sm:inline">Cerrar caja</span></BarButton>
                   )}
-                  <Button size="sm" variant="secondary" onClick={() => setDialog({ kind: 'movements', account })}>Movimientos</Button>
+                  <BarButton onClick={() => setDialog({ kind: 'movements', account })}>Movimientos</BarButton>
+                  {can('cash.open') && <BarButton onClick={() => setDialog({ kind: 'edit', account })}>Editar</BarButton>}
                   {can('cash.open') && (
-                    <>
-                      <Button size="sm" variant="secondary" onClick={() => setDialog({ kind: 'edit', account })}>Editar</Button>
-                      <Button size="sm" variant="ghost" onClick={() => handleDelete(account)}>Dar de baja</Button>
-                    </>
+                    <RowMenu items={[{ label: 'Dar de baja', tone: 'danger', onSelect: () => handleDelete(account) }]} />
                   )}
                 </div>
               </li>
@@ -163,6 +162,16 @@ export function CashPage() {
         <MovementsModal account={dialog.account} canAdjust={can('cash.adjust')} onChanged={refresh} onClose={() => setDialog(null)} />
       )}
     </div>
+  )
+}
+
+function BarButton({ primary, ...rest }: { primary?: boolean } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      type="button"
+      className={`min-h-11 min-w-0 px-1 text-[11px] font-bold tracking-wider uppercase transition-colors hover:bg-white ${primary ? 'text-tc-purple' : 'text-tc-text-secondary'}`}
+      {...rest}
+    />
   )
 }
 

@@ -87,14 +87,14 @@ export function ReportsPage() {
 
       <TabPanel idPrefix="reports" tabId={tab} active>
       {isDateRange && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <div className="flex items-center gap-2">
+        <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
             <span className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Desde</span>
-            <input type="date" value={from} onChange={e => setFrom(e.target.value)} className={inputCls} />
+            <input type="date" value={from} onChange={e => setFrom(e.target.value)} className={`${inputCls} w-full`} />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
             <span className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Hasta</span>
-            <input type="date" value={to} onChange={e => setTo(e.target.value)} className={inputCls} />
+            <input type="date" value={to} onChange={e => setTo(e.target.value)} className={`${inputCls} w-full`} />
           </div>
         </div>
       )}
@@ -265,15 +265,15 @@ function ReportSection({
 }) {
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         {summary && (
-          <p className="text-sm font-bold text-tc-text-secondary">{summary}</p>
+          <p className="min-w-0 text-sm font-bold text-tc-text-secondary max-sm:basis-full">{summary}</p>
         )}
         <Button
           variant="secondary"
           size="sm"
           onClick={() => downloadExcel(exportUrl, exportName)}
-          className="ml-auto"
+          className="ml-auto max-sm:w-full"
         >
           Exportar Excel
         </Button>

@@ -229,7 +229,6 @@ export function QrCardsPage() {
             )}
           </>
         )}
-        cardActionsClassName="-mx-3 -mb-3 mt-3 flex divide-x divide-tc-border border-t border-tc-border bg-tc-stub-bg [&>*]:min-h-11 [&>*]:flex-1 [&>*]:justify-center [&>*]:rounded-none [&>*]:bg-transparent [&>*]:text-center"
         renderCard={c => (
           <>
             <div className="flex items-center justify-between gap-3">
