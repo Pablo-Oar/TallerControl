@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { Pricing3, type PricingPlan } from '../../../components/ui/Pricing3'
 import { FeatureShowcase } from './FeatureShowcase'
+import { PublicNav } from '../../../components/ui/PublicNav'
 import { SignalPulse } from '../../../components/ui/SignalPulse'
 
 const plans: PricingPlan[] = [
@@ -23,7 +24,7 @@ const plans: PricingPlan[] = [
   {
     id: 'pro',
     name: 'Empezá ahora',
-    price: '$50.000',
+    price: '$53.850',
     period: 'por mes',
     description: 'Todo lo que necesita tu taller para trabajar sin papeles ni planillas.',
     features: [
@@ -43,25 +44,7 @@ const plans: PricingPlan[] = [
 export function LandingPage() {
   return (
     <div className="min-h-screen bg-white text-tc-text">
-      {/* Nav */}
-      <nav className="border-b border-tc-border bg-tc-navy px-4 py-3 sm:px-6">
-       <div className="mx-auto flex max-w-6xl items-center justify-between">
-        <span className="text-xs font-bold tracking-[0.15em] uppercase text-white sm:text-sm sm:tracking-[0.2em]">
-          Taller<span className="text-tc-purple">Control</span>
-        </span>
-        <div className="flex items-center gap-1 sm:gap-2">
-          <Link to="/login" className="inline-flex items-center justify-center min-h-[44px] px-3 sm:px-4 text-xs font-bold tracking-wider uppercase text-slate-300 hover:text-white transition-colors">
-            Ingresar
-          </Link>
-          <Link
-            to="/registro"
-            className="inline-flex items-center justify-center whitespace-nowrap min-h-[44px] border border-white px-3 text-xs sm:px-4 font-bold tracking-wider uppercase text-white hover:bg-white hover:text-tc-navy transition-colors"
-          >
-            Crear cuenta
-          </Link>
-        </div>
-       </div>
-      </nav>
+      <PublicNav />
 
       {/* Hero */}
       <section className="relative isolate overflow-hidden bg-tc-navy px-6 py-20 text-center lg:py-24 lg:text-left">
@@ -96,11 +79,11 @@ export function LandingPage() {
             <p className="mb-4 text-xs font-bold tracking-[0.2em] uppercase text-slate-300">Qué incluye</p>
             <ul className="space-y-4">
               {[
-                ['Órdenes de trabajo', 'Con estados, fotos y historial por vehículo.'],
-                ['Presupuestos', 'El cliente los aprueba desde un enlace, sin instalar nada.'],
-                ['Portal del mecánico', 'Un panel simple para el celular, sin precios a la vista.'],
-                ['Tarjeta QR', 'El dueño consulta el historial de su vehículo con verificación.'],
-                ['Cobros y facturación', 'Caja, compras y facturación electrónica ARCA.'],
+                ['Órdenes de trabajo', 'Con estados, imágenes y notas del trabajo realizado, además del historial por vehículo.'],
+                ['Presupuestos', 'El cliente los verifica y aprueba desde un enlace, firmando digitalmente.'],
+                ['Portal del mecánico', 'Un panel simple para el celular, donde ve sus órdenes de trabajo y las va completando.'],
+                ['Tarjeta QR', 'El dueño consulta el historial y el estado de su vehículo en todo momento.'],
+                ['Cobros y facturación', 'Caja, compras, proveedores y facturación electrónica ARCA para quien la necesite.'],
               ].map(([title, text]) => (
                 <li key={title} className="border-l-2 border-tc-purple pl-4">
                   <p className="text-sm font-bold text-white">{title}</p>

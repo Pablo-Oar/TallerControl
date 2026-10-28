@@ -35,7 +35,14 @@ function CheckCircle() {
 /** Sección de planes (idea de `pricing-3` de Watermelon; código propio, sin dependencias de íconos). */
 export function Pricing3({ badgeText, title, subtitle, plans, footerText }: Pricing3Props) {
   return (
-    <section className="bg-tc-navy px-6 py-16 md:py-24">
+    <section
+      className="bg-tc-navy px-6 py-16 md:py-24"
+      style={{
+        backgroundImage:
+          'linear-gradient(rgba(148,163,184,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.08) 1px, transparent 1px)',
+        backgroundSize: '44px 44px',
+      }}
+    >
       <div className="mx-auto max-w-5xl">
         <div className="mb-14 flex flex-col items-start gap-5">
           {badgeText && (
@@ -62,7 +69,7 @@ export function Pricing3({ badgeText, title, subtitle, plans, footerText }: Pric
                 </span>
               )}
 
-              <div className="flex flex-1 flex-col items-start border-b border-white/10 pb-8 sm:border-r sm:border-b-0 sm:pr-8 sm:pb-0">
+              <div className="flex flex-1 flex-col items-start border-b border-white/10 pb-8 sm:border-b-0 sm:pr-8 sm:pb-0">
                 <span className="mb-4 rounded-full border border-white/15 bg-white/5 px-3 py-0.5 text-xs font-medium text-white">
                   {plan.name}
                 </span>

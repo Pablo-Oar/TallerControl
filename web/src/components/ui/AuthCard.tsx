@@ -1,5 +1,6 @@
 import { forwardRef, useId, useState, type InputHTMLAttributes, type ReactNode } from 'react'
 import { cn } from '@/lib/utils'
+import { PublicNav } from './PublicNav'
 import { EyeIcon, EyeOffIcon } from './icons'
 
 /**
@@ -22,7 +23,9 @@ export function AuthCard({
   className?: string
 }) {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-tc-navy px-4 py-10">
+    <div className="flex min-h-dvh flex-col bg-tc-navy">
+     <PublicNav />
+     <div className="flex flex-1 items-center justify-center px-4 py-10">
       <div className={cn('w-full max-w-sm rounded-[28px] border border-tc-navy-mid bg-tc-stub-bg p-2', className)}>
         <div className="rounded-[22px] border border-tc-border bg-white px-5 py-7 shadow-sm sm:px-7">
           <div className="mb-6 text-center">
@@ -34,6 +37,7 @@ export function AuthCard({
         </div>
         {footer && <div className="px-2 pt-4 pb-2 text-center text-sm text-tc-text-secondary">{footer}</div>}
       </div>
+     </div>
     </div>
   )
 }
