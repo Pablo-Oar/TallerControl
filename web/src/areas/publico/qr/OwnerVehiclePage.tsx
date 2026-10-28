@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getOwnerVehicle, type OwnerWorkOrderDto } from '../../../lib/api/qrCards'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { Timeline, type TimelineItem } from '../../../components/ui/Timeline'
+import { QUOTE_STATUS_LABELS } from '../../../lib/api/quotes'
 import { formatDate, formatDateOnly } from '../../../lib/dates'
 
 const WO_STATUS_LABELS: Record<string, string> = {
@@ -117,7 +118,7 @@ export function OwnerVehiclePage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <span className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Presupuesto #{q.number}</span>
-                      <p className="mt-0.5 text-sm text-tc-text-secondary">{q.status.replace(/_/g, ' ')}</p>
+                      <div className="mt-1"><StatusBadge status={q.status} label={(QUOTE_STATUS_LABELS as Record<string, string>)[q.status] ?? q.status.replace(/_/g, ' ')} /></div>
                     </div>
                     {q.validUntil && (
                       <span className="text-xs text-tc-text-muted shrink-0">

@@ -47,6 +47,7 @@ internal static class CatalogEndpoints
                 async (Guid id, GetCatalogItemHandler handler, IAuthorizationService authz, HttpContext ctx, CancellationToken ct) =>
                 {
                     var dto = await handler.HandleAsync(id, ct);
+                    if (!await CanSeePricesAsync(authz, ctx)) dto = dto with { NetPrice = null, VatRate = null };
                     return await CanSeeCostsAsync(authz, ctx) ? dto : dto with { Cost = null };
                 })
             .RequirePermission(Permission.CatalogRead);
@@ -88,6 +89,9 @@ internal static class CatalogEndpoints
     }
 
     /// <summary>El costo solo lo ve (y edita) quien tiene <c>costs.view</c>: para el resto no viaja en el JSON.</summary>
+    private static async Task<bool> CanSeePricesAsync(IAuthorizationService authz, HttpContext ctx) =>
+        (await authz.AuthorizeAsync(ctx.User, null, $"perm:{Permission.PricesView}")).Succeeded;
+
     private static async Task<bool> CanSeeCostsAsync(IAuthorizationService authz, HttpContext ctx) =>
         (await authz.AuthorizeAsync(ctx.User, null, $"perm:{Permission.CostsView}")).Succeeded;
 
@@ -97,8 +101,18 @@ internal static class CatalogEndpoints
         CancellationToken ct)
     {
         var result = await handler.HandleAsync(q, kind, activeOnly, deleted, page, pageSize, sort, ct);
-        if (await CanSeeCostsAsync(authz, ctx)) return Results.Ok(result);
-        return Results.Ok(result with { Items = result.Items.Select(i => i with { Cost = null }).ToList() });
+        var canCost = await CanSeeCostsAsync(authz, ctx);
+        var canPrice = await CanSeePricesAsync(authz, ctx);
+        if (canCost && canPrice) return Results.Ok(result);
+        return Results.Ok(result with
+        {
+            Items = result.Items.Select(i => i with
+            {
+                Cost = canCost ? i.Cost : null,
+                NetPrice = canPrice ? i.NetPrice : null,
+                VatRate = canPrice ? i.VatRate : null,
+            }).ToList(),
+        });
     }
 
     private static async Task<IResult> CreateAsync(

@@ -89,8 +89,8 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
     }
     setValue(`items.${index}.catalogItemId`, item.id)
     setValue(`items.${index}.description`, item.name)
-    setValue(`items.${index}.unitNetPrice`, item.netPrice)
-    setValue(`items.${index}.vatRate`, item.vatRate)
+    setValue(`items.${index}.unitNetPrice`, item.netPrice ?? 0)
+    setValue(`items.${index}.vatRate`, item.vatRate ?? 0)
     setValue(`items.${index}.kind`, item.kind as 'service' | 'product')
   }
 
@@ -282,7 +282,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
           </p>
         )}
 
-        <div className="sticky bottom-0 -mx-5 -mb-5 mt-2 flex justify-end gap-3 border-t border-tc-border bg-white px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-6px_8px_-6px_rgb(0_0_0/0.12)]">
+        <div className="sticky -bottom-5 -mx-5 -mb-5 mt-2 flex justify-end gap-3 border-t border-tc-border bg-white px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-6px_8px_-6px_rgb(0_0_0/0.12)]">
           <Button type="button" variant="secondary" size="sm" onClick={onClose} disabled={isSubmitting}>
             Cancelar
           </Button>
