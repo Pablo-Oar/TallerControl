@@ -52,6 +52,7 @@ const COLUMNS: DataTableColumn<AppointmentListDto>[] = [
   { key: 'customer', header: 'Cliente', sortable: true, sortValue: a => a.customerName, cell: a => <span className="text-tc-text-secondary">{a.customerName}</span> },
   { key: 'plate', header: 'Vehículo', widthClass: 'w-32', cell: a => <span className="font-mono tracking-widest text-tc-text-secondary">{a.vehiclePlate}</span> },
   { key: 'mechanic', header: 'Mecánico', widthClass: 'w-40', cell: a => <span className="text-tc-text-secondary">{a.mechanicName ?? <span className="text-tc-text-muted">—</span>}</span> },
+  { key: 'notes', header: 'Notas', cell: a => <span className="line-clamp-1 text-xs text-tc-text-secondary">{a.notes ?? <span className="text-tc-text-muted">—</span>}</span> },
   { key: 'duration', header: 'Duración', widthClass: 'w-28', cell: a => <span className="tabular-nums text-tc-text-secondary">{a.totalDurationMinutes} min</span> },
   {
     key: 'status',

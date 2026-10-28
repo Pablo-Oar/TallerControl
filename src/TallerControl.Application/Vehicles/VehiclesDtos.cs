@@ -8,7 +8,9 @@ public sealed record VehicleListDto(
     string? Model,
     int? Year,
     string CustomerName,
-    bool IsDeleted = false);
+    bool IsDeleted = false,
+    string? Color = null,
+    int OdometerKm = 0);
 
 /// <summary>Respuesta de <c>GET /api/v1/vehicles/{id}</c> (doc 05 §2.3, T-VEH-05).</summary>
 public sealed record VehicleDto(

@@ -70,7 +70,9 @@ internal sealed class EfVehicleRepository : IVehicleRepository
                 x.Vehicle.Model,
                 x.Vehicle.Year,
                 x.CustomerName,
-                x.Vehicle.DeletedAt != null))
+                x.Vehicle.DeletedAt != null,
+                x.Vehicle.Color,
+                x.Vehicle.OdometerKm))
             .ToListAsync(ct);
 
         return new Page<VehicleListDto>(items, page, pageSize, total);

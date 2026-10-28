@@ -13,6 +13,8 @@ export interface CatalogItemListDto {
   isActive: boolean
   trackStock: boolean
   stockQty: number
+  stockMin?: number | null
+  cost?: number | null
   isLowStock: boolean
 }
 

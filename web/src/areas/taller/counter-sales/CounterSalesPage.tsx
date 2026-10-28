@@ -41,6 +41,15 @@ const COLUMNS: DataTableColumn<CounterSaleDto>[] = [
     cell: s => <span className="tabular-nums text-tc-text-secondary">{formatDate(s.date)}</span>,
   },
   {
+    key: 'items',
+    header: 'Artículos',
+    cell: s => (
+      <span className="line-clamp-1 text-tc-text-secondary">
+        {s.items.length === 0 ? '—' : s.items.length === 1 ? s.items[0].description : `${s.items[0].description} y ${s.items.length - 1} más`}
+      </span>
+    ),
+  },
+  {
     key: 'total',
     header: 'Total',
     align: 'right',

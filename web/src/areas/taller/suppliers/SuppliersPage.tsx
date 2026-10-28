@@ -25,6 +25,8 @@ const COLUMNS: DataTableColumn<SupplierDto>[] = [
     widthClass: 'w-44',
     cell: s => <span className="whitespace-nowrap font-mono tabular-nums text-tc-text-secondary">{s.cuit ?? '—'}</span>,
   },
+  { key: 'phone', header: 'Teléfono', widthClass: 'w-40', cell: s => <span className="whitespace-nowrap tabular-nums text-tc-text-secondary">{s.phone ?? '—'}</span> },
+  { key: 'email', header: 'Email', cell: s => <span className="truncate text-tc-text-secondary">{s.email ?? '—'}</span> },
   {
     key: 'vat',
     header: 'Condición IVA',
