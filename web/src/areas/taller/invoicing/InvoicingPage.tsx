@@ -99,7 +99,7 @@ export function InvoicingPage() {
           {(expiring.days ?? 0) < 0
             ? `El certificado «${expiring.cert.name}» está vencido: no se puede facturar.`
             : `El certificado «${expiring.cert.name}» vence en ${expiring.days} día${expiring.days === 1 ? '' : 's'}.`}{' '}
-          {can('invoicing.manage') && <NavLink to="/app/invoicing/setup" className="font-semibold underline">Ir a Configuración ARCA</NavLink>}
+          {can('invoicing.write') && <NavLink to="/app/invoicing/setup" className="font-semibold underline">Ir a Configuración ARCA</NavLink>}
         </p>
       )}
 

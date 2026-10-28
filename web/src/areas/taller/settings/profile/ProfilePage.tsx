@@ -62,8 +62,8 @@ export function ProfilePage() {
   }
 
   return (
-    <div className="max-w-xl space-y-10">
-      <header>
+    <div className="grid max-w-5xl content-start gap-x-12 gap-y-8 lg:grid-cols-2">
+      <header className="lg:col-span-2">
         <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Mi perfil</h1>
         <p className="mt-1 text-sm text-tc-text-secondary">
           {user?.user.email} · {user ? (ROLE_LABELS[user.role] ?? user.role) : ''}

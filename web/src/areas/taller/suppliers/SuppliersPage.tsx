@@ -7,6 +7,7 @@ import { Modal } from '../../../components/ui/Modal'
 import { DataTable, RowAction, sortableWhen, type DataTableColumn } from '../../../components/ui/DataTable'
 import { Pagination } from '../../../components/ui/Pagination'
 import { ApiError } from '../../../lib/api/client'
+import { spanishInvalid } from '../../../lib/formValidity'
 import { notify } from '../../../components/ui/dialogs'
 
 const VAT_LABELS: Record<VatCondition, string> = {
@@ -190,7 +191,7 @@ export function SuppliersPage() {
           onClose={() => { setCreating(false); setEditing(null) }}
           className="max-w-md"
         >
-          <form onSubmit={handleSave} className="space-y-4">
+          <form onSubmit={handleSave} onInvalidCapture={spanishInvalid(setFormError)} className="space-y-4">
             {formError && (
               <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{formError}</p>
             )}

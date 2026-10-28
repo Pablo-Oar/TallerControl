@@ -367,7 +367,28 @@ export function WorkOrderDetailPage() {
         )}
 
         {payments && payments.payments.length > 0 && (
-          <div className="mb-3 overflow-x-auto">
+          <ul className="mb-3 divide-y divide-tc-border md:hidden">
+            {payments.payments.map(pay => (
+              <li key={pay.id} className={`space-y-2 py-3 ${pay.status === 'voided' ? 'opacity-60' : ''}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs tabular-nums text-tc-text-muted">
+                    #{String(pay.number).padStart(4, '0')} · {METHOD_LABELS[pay.method]} · {formatDate(pay.paidAt)}
+                  </span>
+                  <StatusBadge status={pay.status} label={PAYMENT_STATUS_LABELS[pay.status]} />
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className={`text-base font-semibold tabular-nums ${pay.status === 'voided' ? 'line-through text-tc-text-muted' : 'text-tc-purple'}`}>
+                    {fmtARS(pay.amount)}
+                  </span>
+                  <PaymentActions orderId={id!} pay={pay} canVoid={can('payments.void')} onShare={shareReceipt} onVoid={setVoidingPaymentId} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {payments && payments.payments.length > 0 && (
+          <div className="mb-3 hidden overflow-x-auto md:block">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-tc-border">
@@ -393,30 +414,7 @@ export function WorkOrderDetailPage() {
                     <StatusBadge status={pay.status} label={PAYMENT_STATUS_LABELS[pay.status]} />
                   </td>
                   <td className="py-2 text-right">
-                    <div className="flex justify-end gap-3">
-                      <a
-                        href={getPaymentPdfUrl(id!, pay.id)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[11px] font-bold tracking-wider uppercase text-tc-navy-text-dim hover:text-tc-purple transition-colors"
-                      >
-                        PDF
-                      </a>
-                      <button
-                        onClick={() => shareReceipt(pay.id, pay.number)}
-                        className="text-[11px] font-bold tracking-wider uppercase text-tc-navy-text-dim hover:text-tc-purple transition-colors"
-                      >
-                        Enlace
-                      </button>
-                      {pay.status === 'valid' && can('payments.void') && (
-                        <button
-                          onClick={() => setVoidingPaymentId(pay.id)}
-                          className="text-[11px] font-bold tracking-wider uppercase text-tc-stamp-red hover:text-red-700 transition-colors"
-                        >
-                          Anular
-                        </button>
-                      )}
-                    </div>
+                    <PaymentActions orderId={id!} pay={pay} canVoid={can('payments.void')} onShare={shareReceipt} onVoid={setVoidingPaymentId} />
                   </td>
                 </tr>
               ))}
@@ -590,5 +588,35 @@ function VoidPaymentDialog({ onConfirm, onClose }: { onConfirm: (r: string) => v
         </div>
       </div>
     </Modal>
+  )
+}
+
+function PaymentActions({ orderId, pay, canVoid, onShare, onVoid }: {
+  orderId: string
+  pay: { id: string; number: number; status: string }
+  canVoid: boolean
+  onShare: (id: string, number: number) => void
+  onVoid: (id: string) => void
+}) {
+  const linkCls = 'inline-flex min-h-11 items-center px-2 text-[11px] font-bold tracking-wider uppercase transition-colors md:pointer-fine:min-h-0 md:pointer-fine:px-1'
+  return (
+    <div className="flex justify-end gap-1">
+      <a
+        href={getPaymentPdfUrl(orderId, pay.id)}
+        target="_blank"
+        rel="noreferrer"
+        className={`${linkCls} text-tc-navy-text-dim hover:text-tc-purple`}
+      >
+        PDF
+      </a>
+      <button onClick={() => onShare(pay.id, pay.number)} className={`${linkCls} text-tc-navy-text-dim hover:text-tc-purple`}>
+        Enlace
+      </button>
+      {pay.status === 'valid' && canVoid && (
+        <button onClick={() => onVoid(pay.id)} className={`${linkCls} text-tc-stamp-red hover:text-red-700`}>
+          Anular
+        </button>
+      )}
+    </div>
   )
 }

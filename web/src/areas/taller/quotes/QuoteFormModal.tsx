@@ -27,8 +27,8 @@ const itemSchema = z.object({
 })
 
 const schema = z.object({
-  customerId: z.string().min(1, 'Seleccione un cliente'),
-  vehicleId: z.string().min(1, 'Seleccione un vehículo'),
+  customerId: z.string().min(1, 'Seleccioná un cliente'),
+  vehicleId: z.string().min(1, 'Seleccioná un vehículo'),
   validUntil: z.string().min(1, 'Requerido'),
   globalDiscountPct: z.number().min(0).max(100),
   customerNotes: z.string().trim().max(1000).nullable(),

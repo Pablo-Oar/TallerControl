@@ -49,7 +49,7 @@ describe('InvoiceSection', () => {
   })
 
   it('invita a configurar ARCA si no hay certificado activo', async () => {
-    auth.value = { user: { permissions: ['invoicing.read', 'invoicing.emit', 'invoicing.manage'] } }
+    auth.value = { user: { permissions: ['invoicing.read', 'invoicing.emit', 'invoicing.write'] } }
     api.listCertificates.mockResolvedValue([])
     renderSection()
     expect(await screen.findByRole('link', { name: 'Configurar ARCA' })).toBeInTheDocument()
