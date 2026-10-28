@@ -262,7 +262,7 @@ export function DataTable<T>({
             <div className="min-w-0 flex-1 px-3 py-3">
               {renderCard(row)}
               {actions && (
-                <div className={cardActionsClassName ?? 'mt-2 flex flex-wrap items-center gap-1.5 [&>*]:min-w-[5.5rem] [&>*]:max-w-[12rem] [&>*]:flex-1 [&>*]:justify-center [&>*]:border [&>*]:border-tc-border [&>*]:bg-white [&>*]:text-center'}>
+                <div className={cardActionsClassName ?? CARD_ACTION_BAR}>
                   {actions(row)}
                 </div>
               )}
@@ -294,6 +294,10 @@ const TONE = {
 } as const
 
 /** Acción de texto de una fila: 44 px de alto táctil en celular, compacta en escritorio. */
+/** Barra de acciones de las tarjetas del celular: una fila de borde a borde con separadores finos. */
+export const CARD_ACTION_BAR =
+  'mt-3 -mx-3 -mb-3 grid grid-flow-col auto-cols-fr divide-x divide-tc-border border-t border-tc-border bg-tc-stub-bg [&>*]:min-h-11 [&>*]:min-w-0 [&>*]:items-center [&>*]:justify-center [&>*]:rounded-none [&>*]:bg-transparent [&>*]:px-1 [&>*]:text-center'
+
 export function RowAction({
   tone = 'default',
   className,

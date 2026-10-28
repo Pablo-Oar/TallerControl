@@ -146,7 +146,7 @@ export function RemindersPage() {
         actions={r => (
           <>
             <RowAction tone="purple" onClick={() => doneMut.mutate({ id: r.id, done: !r.completedAt })}>
-              {r.completedAt ? 'Reabrir' : 'Marcar cumplido'}
+              {r.completedAt ? 'Reabrir' : <><span className="md:hidden">Cumplido</span><span className="hidden md:inline">Marcar cumplido</span></>}
             </RowAction>
             <RowAction tone="purple" onClick={() => { setEditId(r.id); setShowModal(true) }}>Editar</RowAction>
             <RowAction tone="danger" onClick={async () => { if (await confirmDialog('¿Eliminar este recordatorio?', { danger: true })) deleteMut.mutate(r.id) }}>Eliminar</RowAction>
