@@ -44,6 +44,13 @@ const COLUMNS: DataTableColumn<CatalogItemListDto>[] = [
     sortable: true,
     cell: i => <span className="tabular-nums text-tc-purple">{fmtARS(i.netPrice)}</span>,
   },
+  {
+    key: 'cost',
+    header: 'Costo',
+    align: 'right',
+    widthClass: 'w-28',
+    cell: i => <span className="tabular-nums text-tc-text-secondary">{i.cost != null ? fmtARS(i.cost) : <span className="text-tc-text-muted">—</span>}</span>,
+  },
   { key: 'vat', header: 'IVA', align: 'right', widthClass: 'w-20', sortable: true, cell: i => <span className="text-xs text-tc-text-secondary">{i.vatRate}%</span> },
   {
     key: 'stock',
@@ -186,7 +193,7 @@ export function CatalogPage() {
 
       <DataTable<CatalogItemListDto>
         label="Catálogo"
-        columns={COLUMNS}
+        columns={COLUMNS.filter(c => c.key !== 'cost' || can('costs.view'))}
         sort={sort}
         onSortChange={s => { setSort(s); setPage(1) }}
         rows={data?.items ?? []}

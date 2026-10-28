@@ -12,6 +12,8 @@ export interface VehicleListDto {
   year: number | null
   customerName: string
   isDeleted?: boolean
+  color?: string | null
+  odometerKm?: number
 }
 
 export interface VehicleHistoryEntryDto {

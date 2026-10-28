@@ -1,3 +1,4 @@
+import { RowMenu } from '../../../components/ui/RowMenu'
 import { formatDate } from '../../../lib/dates'
 import { confirmDialog } from '../../../components/ui/dialogs'
 import { useState } from 'react'
@@ -195,35 +196,32 @@ export function QrCardsPage() {
         getRowId={c => c.id}
         actions={c => (
           <>
-            {c.status === 'assigned' && (
-              <>
-                <RowAction
-                  tone="warn"
-                  onClick={async () => {
-                    if (await confirmDialog('¿Marcar esta tarjeta como perdida? Deja de servir para ver el vehículo hasta que la desmarques.', { confirmLabel: 'Marcar perdida', danger: true })) markLostMut.mutate({ id: c.id, lost: true })
-                  }}
-                >
-                  Marcar perdida
-                </RowAction>
-                <RowAction
-                  onClick={async () => {
-                    if (await confirmDialog('¿Desasignar esta tarjeta del vehículo? Queda libre para asignarla a otro.', { confirmLabel: 'Desasignar' })) unassignMut.mutate(c.id)
-                  }}
-                >
-                  Desasignar
-                </RowAction>
-                <RowActionLink tone="purple" href={getQrCardPrintUrl(c.id)} target="_blank" rel="noreferrer">PDF</RowActionLink>
-              </>
-            )}
-            {c.status === 'lost' && (
-              <>
-                <RowAction tone="success" onClick={() => markLostMut.mutate({ id: c.id, lost: false })}>Desmarcar perdida</RowAction>
-                <RowAction onClick={() => unassignMut.mutate(c.id)}>Desasignar</RowAction>
-              </>
-            )}
             <RowAction onClick={() => setActivityCard({ id: c.id, code: c.code })}>Actividad</RowAction>
-            {c.status !== 'revoked' && can('qr.revoke') && (
-              <RowAction tone="danger" onClick={() => setRevokeCardId(c.id)}>Revocar</RowAction>
+            {c.status === 'assigned' && <RowActionLink tone="purple" href={getQrCardPrintUrl(c.id)} target="_blank" rel="noreferrer">PDF</RowActionLink>}
+            {(c.status === 'assigned' || c.status === 'lost' || can('qr.revoke')) && (
+              <RowMenu
+                items={[
+                  ...(c.status === 'assigned'
+                    ? [{
+                        label: 'Marcar perdida',
+                        tone: 'warn' as const,
+                        onSelect: async () => {
+                          if (await confirmDialog('¿Marcar esta tarjeta como perdida? Deja de servir para ver el vehículo hasta que la desmarques.', { confirmLabel: 'Marcar perdida', danger: true })) markLostMut.mutate({ id: c.id, lost: true })
+                        },
+                      }]
+                    : []),
+                  ...(c.status === 'lost' ? [{ label: 'Desmarcar perdida', onSelect: () => markLostMut.mutate({ id: c.id, lost: false }) }] : []),
+                  ...(c.status === 'assigned' || c.status === 'lost'
+                    ? [{
+                        label: 'Desasignar',
+                        onSelect: async () => {
+                          if (c.status === 'lost' || (await confirmDialog('¿Desasignar esta tarjeta del vehículo? Queda libre para asignarla a otro.', { confirmLabel: 'Desasignar' }))) unassignMut.mutate(c.id)
+                        },
+                      }]
+                    : []),
+                  ...(can('qr.revoke') ? [{ label: 'Revocar', tone: 'danger' as const, onSelect: () => setRevokeCardId(c.id) }] : []),
+                ]}
+              />
             )}
           </>
         )}

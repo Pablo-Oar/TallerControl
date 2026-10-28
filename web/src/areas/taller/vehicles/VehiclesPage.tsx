@@ -34,6 +34,19 @@ const COLUMNS: DataTableColumn<VehicleListDto>[] = [
     widthClass: 'w-24',
     cell: v => <span className="tabular-nums text-tc-text-secondary">{v.year ?? '—'}</span>,
   },
+  {
+    key: 'color',
+    header: 'Color',
+    widthClass: 'w-32',
+    cell: v => <span className="text-tc-text-secondary">{v.color || <span className="text-tc-text-muted">—</span>}</span>,
+  },
+  {
+    key: 'km',
+    header: 'Kilometraje',
+    align: 'right',
+    widthClass: 'w-32',
+    cell: v => <span className="tabular-nums text-tc-text-secondary">{v.odometerKm ? `${v.odometerKm.toLocaleString('es-AR')} km` : '—'}</span>,
+  },
   { key: 'customer', header: 'Cliente', sortable: true, cell: v => <span className="text-tc-text-secondary">{v.customerName}</span> },
 ]
 
