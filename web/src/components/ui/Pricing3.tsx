@@ -52,7 +52,7 @@ export function Pricing3({ badgeText, title, subtitle, plans, footerText }: Pric
             <div
               key={plan.id}
               className={[
-                'relative flex flex-col gap-8 rounded-[32px] border bg-white/[0.04] p-6 sm:flex-row sm:p-8',
+                'group/plan relative flex flex-col gap-8 rounded-[32px] border bg-white/[0.04] p-6 transition-all duration-300 hover:border-tc-purple hover:bg-white/[0.08] hover:shadow-[0_32px_60px_-14px_rgba(124,58,237,0.5)] sm:flex-row sm:p-8 motion-safe:hover:-translate-y-3 motion-safe:hover:scale-[1.02]',
                 plan.isPopular ? 'border-tc-purple ring-1 ring-tc-purple/30' : 'border-white/10',
               ].join(' ')}
             >
