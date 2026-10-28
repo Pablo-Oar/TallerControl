@@ -259,7 +259,7 @@ export function DataTable<T>({
             <div className="min-w-0 flex-1 px-3 py-3">
               {renderCard(row)}
               {actions && (
-                <div className="mt-2 flex flex-wrap items-center gap-1.5 [&>*]:min-w-[7rem] [&>*]:max-w-[12rem] [&>*]:flex-1 [&>*]:justify-center [&>*]:border [&>*]:border-tc-border [&>*]:bg-white [&>*]:text-center">
+                <div className="mt-2 flex flex-wrap items-center gap-1.5 [&>*]:min-w-[5.5rem] [&>*]:max-w-[12rem] [&>*]:flex-1 [&>*]:justify-center [&>*]:border [&>*]:border-tc-border [&>*]:bg-white [&>*]:text-center">
                   {actions(row)}
                 </div>
               )}
