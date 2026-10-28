@@ -42,7 +42,7 @@ const COLUMNS: DataTableColumn<CatalogItemListDto>[] = [
     align: 'right',
     widthClass: 'w-32',
     sortable: true,
-    cell: i => <span className="tabular-nums text-tc-purple">{fmtARS(i.netPrice)}</span>,
+    cell: i => <span className="tabular-nums text-tc-purple">{i.netPrice != null ? fmtARS(i.netPrice) : '—'}</span>,
   },
   {
     key: 'cost',
@@ -220,7 +220,7 @@ export function CatalogPage() {
             <p className="truncate text-sm font-medium text-tc-text">{i.name}</p>
             {!i.isActive && <span className="text-[11px] font-bold tracking-wider text-tc-text-muted uppercase">Inactivo</span>}
             <p className="mt-0.5 text-xs text-tc-text-secondary">
-              {KIND_LABELS[i.kind]} · <span className="tabular-nums text-tc-purple">{fmtARS(i.netPrice)}</span>
+              {KIND_LABELS[i.kind]} · <span className="tabular-nums text-tc-purple">{i.netPrice != null ? fmtARS(i.netPrice) : '—'}</span>
               {i.trackStock && (
                 <span className={i.isLowStock ? 'font-semibold text-amber-600' : ''}>
                   {' '}· Stock {i.stockQty}{i.isLowStock ? ' ▼' : ''}

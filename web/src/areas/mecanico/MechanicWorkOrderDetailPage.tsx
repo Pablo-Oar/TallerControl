@@ -145,7 +145,7 @@ export function MechanicWorkOrderDetailPage() {
   const vehicleLabel = [order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ')
 
   return (
-    <div className={`space-y-3 ${transitions.length > 0 ? 'pb-28' : 'pb-6'}`}>
+    <div className={`space-y-3 ${transitions.length > 0 ? (editingNotes ? 'pb-56' : 'pb-28') : 'pb-6'}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="font-mono font-bold text-lg text-tc-text">#{order.number}</span>

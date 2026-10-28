@@ -31,6 +31,12 @@ public sealed class CreateFiscalCertificateHandler
         var tenantId = _tenantContext.TenantId
             ?? throw new InvalidOperationException("No hay taller en la sesión.");
 
+        var digits = new string((request.Cuit ?? string.Empty).Where(char.IsDigit).ToArray());
+        if (digits.Length != 11)
+            throw new BusinessRuleException("El CUIT debe tener 11 dígitos.");
+        if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Trim().Length > FiscalCertificate.NameMaxLength)
+            throw new BusinessRuleException($"El nombre debe tener entre 1 y {FiscalCertificate.NameMaxLength} caracteres.");
+
         var count = await _repo.CountCertificatesAsync(ct);
         if (count >= FiscalCertificate.MaxCuitsPerTenant)
             throw new BusinessRuleException($"Un taller puede tener como máximo {FiscalCertificate.MaxCuitsPerTenant} certificados ARCA.");
@@ -43,9 +49,9 @@ public sealed class CreateFiscalCertificateHandler
         }
 
         var encryptedKey = _encryptor.GenerateAndEncryptPrivateKey();
-        var csrPem = _encryptor.GenerateCsr(encryptedKey, request.Cuit);
+        var csrPem = _encryptor.GenerateCsr(encryptedKey, request.Cuit!);
 
-        var cert = new FiscalCertificate(tenantId, request.Cuit, request.Name, request.IsPrimary, encryptedKey, csrPem, request.Environment);
+        var cert = new FiscalCertificate(tenantId, request.Cuit!, request.Name, request.IsPrimary, encryptedKey, csrPem, request.Environment);
         await _repo.AddCertificateAsync(cert, ct);
         await _repo.SaveChangesAsync(ct);
 

@@ -244,7 +244,7 @@ export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
           <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
         )}
 
-        <div className="sticky bottom-0 -mx-5 -mb-5 mt-2 flex justify-end gap-3 border-t border-tc-border bg-white px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-6px_8px_-6px_rgb(0_0_0/0.12)]">
+        <div className="sticky -bottom-5 -mx-5 -mb-5 mt-2 flex justify-end gap-3 border-t border-tc-border bg-white px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-6px_8px_-6px_rgb(0_0_0/0.12)]">
           <Button type="button" variant="secondary" size="sm" onClick={onClose}>Cancelar</Button>
           <Button type="submit" size="sm" loading={isSubmitting}>{isEdit ? 'Guardar cambios' : 'Guardar como borrador'}</Button>
         </div>

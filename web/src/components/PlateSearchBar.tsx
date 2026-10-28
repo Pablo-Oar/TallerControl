@@ -31,7 +31,7 @@ export function PlateSearchBar({ onNavigate, target = '/app/vehicles' }: PlateSe
         autoComplete="off"
         spellCheck={false}
         enterKeyHint="search"
-        className="w-36 border border-tc-navy-mid bg-tc-navy-surface px-2 py-1 text-sm text-white placeholder:text-tc-navy-text outline-none focus:w-48 focus:border-tc-navy-text transition-all"
+        className="min-h-[44px] w-32 border border-tc-navy-mid bg-tc-navy-surface px-2 py-1 text-sm sm:w-36 text-white placeholder:text-tc-navy-text outline-none sm:focus:w-48 focus:border-tc-navy-text transition-all"
       />
       <button
         type="submit"

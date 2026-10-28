@@ -6,6 +6,7 @@ import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { DataTable, sortableWhen, type DataTableColumn } from '../../../components/ui/DataTable'
 import { Pagination } from '../../../components/ui/Pagination'
 import { NavLink } from 'react-router'
+import { useCan } from '../../../lib/auth/permissions'
 import { InvoicingTabs } from './InvoicingTabs'
 import { INVOICE_STATUS_LABELS } from './invoiceLabels'
 
@@ -71,6 +72,7 @@ const COLUMNS: DataTableColumn<InvoiceListDto>[] = [
 ]
 
 export function InvoicingPage() {
+  const can = useCan()
   const [status, setStatus] = useState<InvoiceStatus | ''>('')
   const [page, setPage] = useState(1)
 
@@ -97,7 +99,7 @@ export function InvoicingPage() {
           {(expiring.days ?? 0) < 0
             ? `El certificado «${expiring.cert.name}» está vencido: no se puede facturar.`
             : `El certificado «${expiring.cert.name}» vence en ${expiring.days} día${expiring.days === 1 ? '' : 's'}.`}{' '}
-          <NavLink to="/app/invoicing/setup" className="font-semibold underline">Ir a Configuración ARCA</NavLink>
+          {can('invoicing.manage') && <NavLink to="/app/invoicing/setup" className="font-semibold underline">Ir a Configuración ARCA</NavLink>}
         </p>
       )}
 

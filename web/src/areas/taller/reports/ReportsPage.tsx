@@ -183,7 +183,7 @@ export function ReportsPage() {
           exportUrl={reportsApi.exportUrl('stock')}
           exportName="stock.xlsx"
           summary={stockQuery.data
-            ? `${stockQuery.data.lowStockCount} ítems con stock bajo`
+            ? `${stockQuery.data.lowStockCount} ${stockQuery.data.lowStockCount === 1 ? 'ítem' : 'ítems'} con stock bajo`
             : undefined}
         >
           {stockQuery.data && (
@@ -197,7 +197,7 @@ export function ReportsPage() {
                 { key: 'kind', header: 'Tipo', widthClass: 'w-28', cell: r => <span className="text-xs text-tc-text-secondary">{r.kind.toLowerCase() === 'service' ? 'Servicio' : r.kind.toLowerCase() === 'product' ? 'Producto' : r.kind}</span> },
                 { key: 'qty', header: 'Stock', align: 'right', widthClass: 'w-24', sortable: true, sortValue: r => r.stockQty, cell: r => <span className="tabular-nums text-tc-text-secondary">{r.stockQty}</span> },
                 { key: 'min', header: 'Mín.', align: 'right', widthClass: 'w-24', cell: r => <span className="tabular-nums text-tc-text-muted">{r.stockMin ?? '—'}</span> },
-                { key: 'cost', header: 'Costo unit.', align: 'right', widthClass: 'w-32', sortable: true, sortValue: r => r.unitCost, cell: r => <span className="font-medium tabular-nums text-tc-purple">{fmtARS(r.unitCost)}</span> },
+                { key: 'cost', header: 'Costo unit.', align: 'right', widthClass: 'w-32', sortable: true, sortValue: r => r.unitCost, cell: r => <span className="font-medium tabular-nums text-tc-purple">{r.unitCost > 0 ? fmtARS(r.unitCost) : '—'}</span> },
                 { key: 'status', header: 'Estado', align: 'center', widthClass: 'w-40', sortable: true, sortValue: r => (r.isLowStock ? 0 : 1), cell: r => <StatusBadge status={r.isLowStock ? 'low_stock' : 'ok'} label={r.isLowStock ? 'Bajo' : 'OK'} /> },
               ]}
               renderCard={r => (

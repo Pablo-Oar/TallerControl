@@ -227,7 +227,7 @@ export function SuppliersPage() {
               <FormField label="Dirección" className="col-span-2" value={formAddress} onChange={e => setFormAddress(e.target.value)} />
               <FormTextarea label="Notas" rows={2} className="col-span-2" value={formNotes} onChange={e => setFormNotes(e.target.value)} />
             </div>
-            <div className="sticky bottom-0 -mx-5 -mb-5 mt-2 flex justify-end gap-2 border-t border-tc-border bg-white px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-6px_8px_-6px_rgb(0_0_0/0.12)]">
+            <div className="sticky -bottom-5 -mx-5 -mb-5 mt-2 flex justify-end gap-2 border-t border-tc-border bg-white px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-6px_8px_-6px_rgb(0_0_0/0.12)]">
               <Button type="button" variant="secondary" size="sm" onClick={() => { setCreating(false); setEditing(null) }}>
                 Cancelar
               </Button>

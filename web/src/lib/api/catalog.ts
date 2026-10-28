@@ -8,8 +8,8 @@ export interface CatalogItemListDto {
   kind: CatalogItemKind
   sku: string | null
   name: string
-  netPrice: number
-  vatRate: number
+  netPrice: number | null
+  vatRate: number | null
   isActive: boolean
   trackStock: boolean
   stockQty: number
@@ -33,8 +33,8 @@ export interface CatalogItemDto {
   sku: string | null
   name: string
   description: string | null
-  netPrice: number
-  vatRate: number
+  netPrice: number | null
+  vatRate: number | null
   isActive: boolean
   trackStock: boolean
   stockQty: number
@@ -54,8 +54,8 @@ export interface CreateCatalogItemRequest {
   sku?: string | null
   name: string
   description?: string | null
-  netPrice: number
-  vatRate: number
+  netPrice: number | null
+  vatRate: number | null
   trackStock: boolean
   cost?: number | null
   stockMin?: number | null
@@ -73,8 +73,8 @@ export interface UpdateCatalogItemRequest {
   /** Sin permiso de costos el servidor ignora este campo y conserva el actual. */
   cost?: number | null
   description?: string | null
-  netPrice: number
-  vatRate: number
+  netPrice: number | null
+  vatRate: number | null
   /** Solo productos: activa o desactiva el control de stock. */
   trackStock?: boolean
   /** Al activar el control de stock: existencias de partida (queda como un movimiento). */

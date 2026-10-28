@@ -7,6 +7,13 @@ import { AuthProvider } from './lib/auth/AuthContext.tsx'
 import { DialogHost } from './components/ui/dialogs.tsx'
 import { MotionProvider } from './components/motion/MotionProvider.tsx'
 import './styles/index.css'
+import { z } from 'zod'
+
+// Mensajes de validación en español (por defecto Zod los emite en inglés).
+z.config({
+  ...z.locales.es(),
+  customError: issue => (issue.code === 'invalid_type' ? 'Completá este campo' : undefined),
+})
 
 // Registrar service worker para la PWA del mecánico (solo en producción).
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {

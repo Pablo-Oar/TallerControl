@@ -83,7 +83,7 @@ export function PublicAppointmentPage() {
           </div>
 
           <div className="space-y-4 px-6 py-5">
-            <p className="text-lg font-bold capitalize text-tc-text">{when} hs</p>
+            <p className="text-lg font-bold text-tc-text first-letter:uppercase">{when} h</p>
 
             <dl className="space-y-3 text-sm">
               {data.vehicleLabel && (

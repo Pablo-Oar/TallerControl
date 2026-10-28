@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { RequireAuth } from '../../lib/auth/RequireAuth'
@@ -42,6 +43,13 @@ function AppHome() {
   return <DashboardPage />
 }
 
+/** Ruta del panel visible solo con los permisos de la sección (la API igual responde 403). */
+function Need({ perms, children }: { perms: string[]; children: ReactNode }) {
+  const { user } = useAuth()
+  if (!hasPermissions(user, ...perms)) return <Navigate to="/app" replace />
+  return <>{children}</>
+}
+
 function PageFallback() {
   return (
     <div className="flex items-center justify-center py-16">
@@ -58,29 +66,29 @@ export function Component() {
         <Suspense fallback={<PageFallback />}>
           <Routes>
             <Route index element={<AppHome />} />
-            <Route path="customers" element={<CustomersPage />} />
-            <Route path="customers/:id" element={<CustomerDetailPage />} />
-            <Route path="vehicles" element={<VehiclesPage />} />
-            <Route path="vehicles/:id" element={<VehicleDetailPage />} />
-            <Route path="catalog" element={<CatalogPage />} />
-            <Route path="quotes" element={<QuotesPage />} />
-            <Route path="quotes/:id" element={<QuoteDetailPage />} />
-            <Route path="work-orders" element={<WorkOrdersPage />} />
-            <Route path="work-orders/:id" element={<WorkOrderDetailPage />} />
-            <Route path="appointments" element={<AppointmentsPage />} />
-            <Route path="appointments/calendar" element={<AppointmentCalendarPage />} />
-            <Route path="appointments/schedule" element={<AvailabilityPage />} />
-            <Route path="reminders" element={<RemindersPage />} />
-            <Route path="qr" element={<QrCardsPage />} />
-            <Route path="cash" element={<CashPage />} />
-            <Route path="suppliers" element={<SuppliersPage />} />
-            <Route path="purchases" element={<PurchasesPage />} />
-            <Route path="counter-sales" element={<CounterSalesPage />} />
-            <Route path="reports" element={<ReportsPage />} />
-            <Route path="invoicing" element={<InvoicingPage />} />
-            <Route path="invoicing/setup" element={<InvoicingSetupPage />} />
-            <Route path="invoicing/invoices/:id" element={<InvoiceDetailPage />} />
-            <Route path="invoicing/iva-book" element={<IvaBookPage />} />
+            <Route path="customers" element={<Need perms={['customers.read']}><CustomersPage /></Need>} />
+            <Route path="customers/:id" element={<Need perms={['customers.read']}><CustomerDetailPage /></Need>} />
+            <Route path="vehicles" element={<Need perms={['vehicles.read']}><VehiclesPage /></Need>} />
+            <Route path="vehicles/:id" element={<Need perms={['vehicles.read']}><VehicleDetailPage /></Need>} />
+            <Route path="catalog" element={<Need perms={['catalog.read']}><CatalogPage /></Need>} />
+            <Route path="quotes" element={<Need perms={['quotes.read']}><QuotesPage /></Need>} />
+            <Route path="quotes/:id" element={<Need perms={['quotes.read']}><QuoteDetailPage /></Need>} />
+            <Route path="work-orders" element={<Need perms={['workorders.read']}><WorkOrdersPage /></Need>} />
+            <Route path="work-orders/:id" element={<Need perms={['workorders.read']}><WorkOrderDetailPage /></Need>} />
+            <Route path="appointments" element={<Need perms={['appointments.read']}><AppointmentsPage /></Need>} />
+            <Route path="appointments/calendar" element={<Need perms={['appointments.read']}><AppointmentCalendarPage /></Need>} />
+            <Route path="appointments/schedule" element={<Need perms={['appointments.read']}><AvailabilityPage /></Need>} />
+            <Route path="reminders" element={<Need perms={['reminders.manage']}><RemindersPage /></Need>} />
+            <Route path="qr" element={<Need perms={['qr.manage']}><QrCardsPage /></Need>} />
+            <Route path="cash" element={<Need perms={['cash.read']}><CashPage /></Need>} />
+            <Route path="suppliers" element={<Need perms={['suppliers.read']}><SuppliersPage /></Need>} />
+            <Route path="purchases" element={<Need perms={['purchases.read']}><PurchasesPage /></Need>} />
+            <Route path="counter-sales" element={<Need perms={['counter_sales.read']}><CounterSalesPage /></Need>} />
+            <Route path="reports" element={<Need perms={['workorders.read', 'payments.read']}><ReportsPage /></Need>} />
+            <Route path="invoicing" element={<Need perms={['invoicing.read']}><InvoicingPage /></Need>} />
+            <Route path="invoicing/setup" element={<Need perms={['invoicing.read']}><InvoicingSetupPage /></Need>} />
+            <Route path="invoicing/invoices/:id" element={<Need perms={['invoicing.read']}><InvoiceDetailPage /></Need>} />
+            <Route path="invoicing/iva-book" element={<Need perms={['invoicing.read']}><IvaBookPage /></Need>} />
             <Route
               path="settings/general"
               element={
@@ -90,6 +98,7 @@ export function Component() {
               }
             />
             <Route path="settings/profile" element={<ProfilePage />} />
+            <Route path="*" element={<Navigate to="/app" replace />} />
             <Route
               path="settings/users"
               element={
