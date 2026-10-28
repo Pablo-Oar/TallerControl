@@ -119,7 +119,7 @@ export function ReportsPage() {
             </ul>
           )}
           {revenueQuery.data && (
-            <div className="max-w-3xl"><DataTable
+            <DataTable
               label="Ingresos por día"
               rows={revenueQuery.data.rows}
               getRowId={r => r.date}
@@ -135,7 +135,7 @@ export function ReportsPage() {
                 </div>
               )}
               emptyMessage="Sin cobros en el período."
-            /></div>
+            />
           )}
         </ReportSection>
       )}
