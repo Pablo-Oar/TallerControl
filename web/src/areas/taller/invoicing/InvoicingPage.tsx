@@ -24,6 +24,7 @@ const COLUMNS: DataTableColumn<InvoiceListDto>[] = [
   {
     key: 'number',
     header: 'Nº',
+    sortLabel: 'Número',
     widthClass: 'w-48',
     sortable: true,
     sortValue: i => i.number ?? '',

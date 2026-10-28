@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useId, useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { cn } from '@/lib/utils'
 import { Button } from './Button'
@@ -28,6 +28,8 @@ export interface DataTableColumn<T> {
   /** Clase de ancho del `th` (p. ej. `w-36`). Las columnas sin ancho se reparten el resto. */
   widthClass?: string
   sortable?: boolean
+  /** Nombre del criterio en el selector «Ordenar por» del celular (por defecto, el encabezado). */
+  sortLabel?: string
   /** Valor para ordenar en el navegador (modo cliente). */
   sortValue?: (row: T) => string | number
 }
@@ -97,6 +99,13 @@ export function DataTable<T>({
   const [localSort, setLocalSort] = useState<SortState | null>(null)
   const sort = serverSort ? (sortProp ?? null) : localSort
 
+  function applySort(next: SortState | null) {
+    if (serverSort) onSortChange?.(next)
+    else setLocalSort(next)
+  }
+
+  const sortableCols = columns.filter(c => c.sortable)
+
   function toggle(key: string) {
     // Ciclo: sin orden → ascendente → descendente → sin orden.
     const next: SortState | null =
@@ -118,6 +127,7 @@ export function DataTable<T>({
     })
   }, [rows, columns, sort, serverSort])
 
+  const sortId = useId()
   const frame = cn('rounded-2xl border border-tc-border bg-white p-1.5', className)
 
   if (error) {
@@ -250,6 +260,35 @@ export function DataTable<T>({
         </tbody>
       </table>
 
+      {/* Celular: orden (en escritorio se ordena desde los encabezados) */}
+      {sortableCols.length > 0 && (
+        <div className="mb-1.5 flex items-center gap-2 md:hidden">
+          <label htmlFor={`${sortId}-by`} className="shrink-0 text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
+            Ordenar
+          </label>
+          <select
+            id={`${sortId}-by`}
+            value={sort?.key ?? ''}
+            onChange={e => applySort(e.target.value ? { key: e.target.value, dir: sort?.dir ?? 'asc' } : null)}
+            className="min-h-11 min-w-0 flex-1 rounded-lg border border-tc-border bg-white px-3 text-sm text-tc-text outline-none focus:border-tc-border-mid"
+          >
+            <option value="">Orden original</option>
+            {sortableCols.map(c => (
+              <option key={c.key} value={c.key}>{c.sortLabel ?? c.header}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            disabled={!sort}
+            onClick={() => sort && applySort({ key: sort.key, dir: sort.dir === 'asc' ? 'desc' : 'asc' })}
+            aria-label={sort?.dir === 'desc' ? 'Orden descendente: cambiar a ascendente' : 'Orden ascendente: cambiar a descendente'}
+            className="flex min-h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-tc-border bg-white text-tc-text-secondary transition-colors enabled:hover:text-tc-purple disabled:opacity-40"
+          >
+            <Chevron dir={sort?.dir ?? null} />
+          </button>
+        </div>
+      )}
+
       {/* Celular: tarjetas */}
       <ul aria-label={label} className="space-y-1.5 md:hidden">
         {shown.map(row => (
@@ -264,10 +303,17 @@ export function DataTable<T>({
               {actions && (
                 <div className={cardActionsClassName ?? CARD_ACTION_BAR}>
                   {actions(row)}
+                  {rowHref && rowHref(row) && (
+                    <Link to={rowHref(row)!} aria-label={rowLabel?.(row) ?? 'Abrir'} className="flex text-tc-navy-text-dim hover:text-tc-purple">
+                      <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </Link>
+                  )}
                 </div>
               )}
             </div>
-            {rowHref && rowHref(row) && (
+            {!actions && rowHref && rowHref(row) && (
               <Link
                 to={rowHref(row)!}
                 aria-label={rowLabel?.(row) ?? 'Abrir'}

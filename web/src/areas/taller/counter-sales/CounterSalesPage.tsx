@@ -27,6 +27,7 @@ const COLUMNS: DataTableColumn<CounterSaleDto>[] = [
   {
     key: 'number',
     header: 'Nº',
+    sortLabel: 'Número',
     widthClass: 'w-24',
     sortable: true,
     sortValue: s => s.documentNumber,
