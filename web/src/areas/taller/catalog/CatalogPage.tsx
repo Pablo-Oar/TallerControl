@@ -155,12 +155,12 @@ export function CatalogPage() {
           value={q}
           onChange={e => setQ(e.target.value)}
           placeholder="Buscar por nombre o SKU…"
-          className="min-w-0 basis-full border border-tc-border bg-white px-3 py-2 text-sm text-tc-text-secondary outline-none focus:border-tc-border-mid sm:basis-0 sm:flex-1"
+          className="max-md:min-h-11 min-w-0 basis-full border border-tc-border bg-white px-3 py-2 text-sm text-tc-text-secondary outline-none focus:border-tc-border-mid sm:basis-0 sm:flex-1"
         />
         <select
           value={kindFilter}
           onChange={e => { setKindFilter(e.target.value as CatalogItemKind | ''); setPage(1) }}
-          className="border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-border-mid"
+          className="max-md:min-h-11 border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-border-mid"
         >
           <option value="">Todos los tipos</option>
           <option value="service">Servicios</option>

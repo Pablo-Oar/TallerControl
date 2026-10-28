@@ -234,7 +234,7 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
                   }
                 }}
               >
-                Eliminar definitivamente
+                Dar de baja
               </Button>
               <Button type="button" variant="secondary" size="sm" onClick={() => setDeleting(false)}>Cancelar</Button>
             </div>

@@ -77,7 +77,7 @@ export function EditDialog({
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-3 pt-2">
+        <div className="sticky -bottom-5 -mx-5 -mb-5 mt-2 flex items-center justify-between gap-3 border-t border-tc-border bg-white px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-6px_8px_-6px_rgb(0_0_0/0.12)]">
           <div>{footerStart}</div>
           <div className="flex gap-3">
             <Button type="button" variant="secondary" size="sm" onClick={requestClose} disabled={saving}>

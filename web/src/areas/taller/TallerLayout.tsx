@@ -110,7 +110,7 @@ export function TallerLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex h-dvh flex-col bg-tc-navy overflow-hidden">
       {/* ── Carrier bar ────────────────────────────────────── */}
-      <header className="flex h-[52px] flex-none items-center gap-4 border-b border-tc-navy-mid px-4">
+      <header className="flex h-[52px] flex-none items-center gap-2 border-b border-tc-navy-mid px-3 sm:gap-4 sm:px-4">
         {/* Hamburger — mobile only */}
         <button
           className="-ml-2 flex h-11 w-11 shrink-0 items-center justify-center text-tc-navy-text hover:text-white transition-colors lg:hidden"

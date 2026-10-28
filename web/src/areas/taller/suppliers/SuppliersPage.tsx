@@ -37,7 +37,7 @@ const COLUMNS: DataTableColumn<SupplierDto>[] = [
   },
 ]
 
-const filterInputCls = 'min-w-0 flex-1 basis-48 border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text outline-none focus:border-tc-border-mid transition-colors'
+const filterInputCls = 'max-md:min-h-11 min-w-0 flex-1 basis-48 border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text outline-none focus:border-tc-border-mid transition-colors'
 
 export function SuppliersPage() {
   const queryClient = useQueryClient()

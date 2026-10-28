@@ -36,7 +36,7 @@ export function Pagination({
   const first = (page - 1) * pageSize + 1
   const last = Math.min(page * pageSize, total)
   const btn =
-    'inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-tc-border bg-white px-2 text-xs font-medium tabular-nums text-tc-text-secondary transition-colors hover:bg-tc-surface disabled:opacity-40 md:min-h-[36px] md:min-w-[36px]'
+    'inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-tc-border bg-white px-2 text-xs font-medium tabular-nums text-tc-text-secondary transition-colors hover:bg-tc-surface disabled:opacity-40 md:pointer-fine:min-h-[36px] md:pointer-fine:min-w-[36px]'
   return (
     <nav aria-label="Paginación" className="flex flex-col items-center gap-2 text-sm text-tc-text-secondary sm:flex-row sm:justify-between">
       <span className="tabular-nums">

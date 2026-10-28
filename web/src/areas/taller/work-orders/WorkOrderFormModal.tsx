@@ -209,7 +209,7 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
               {vehicles.length === 0 ? (
                 <>
                   <span className={labelCls}>Vehículo *</span>
-                  <p className="text-sm text-tc-text-muted">El cliente no tiene vehículos registrados.</p>
+                  <p className="text-sm text-tc-text-muted">{customerDetail ? 'El cliente no tiene vehículos registrados.' : 'Cargando vehículos…'}</p>
                 </>
               ) : (
                 <FormSelect

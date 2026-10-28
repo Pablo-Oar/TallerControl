@@ -118,6 +118,23 @@ public sealed class ApiExceptionHandler : IExceptionHandler
                 Detail = "Ya existe un registro con esos datos.",
             },
 
+        // Un enum desconocido o un cuerpo mal formado es un error del cliente, no del servidor.
+        BadHttpRequestException or System.Text.Json.JsonException => new ProblemDetails
+        {
+            Status = StatusCodes.Status400BadRequest,
+            Title = "Solicitud inválida",
+            Detail = "Los datos enviados no tienen el formato esperado.",
+        },
+
+        // Referencia a un registro que no existe (clave foránea).
+        DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation } } =>
+            new ProblemDetails
+            {
+                Status = StatusCodes.Status422UnprocessableEntity,
+                Title = "No se puede completar la operación",
+                Detail = "Uno de los datos referenciados no existe.",
+            },
+
         _ => new ProblemDetails
         {
             Status = StatusCodes.Status500InternalServerError,

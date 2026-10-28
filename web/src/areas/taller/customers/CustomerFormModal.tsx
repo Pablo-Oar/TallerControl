@@ -185,7 +185,7 @@ export function CustomerFormModal({ customer, onSuccess, onClose, onDelete }: Pr
                   }
                 }}
               >
-                Eliminar definitivamente
+                Dar de baja
               </Button>
               <Button type="button" variant="secondary" size="sm" onClick={() => setDeleting(false)}>Cancelar</Button>
             </div>
