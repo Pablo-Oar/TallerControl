@@ -26,6 +26,7 @@ const COLUMNS: DataTableColumn<PurchaseDto>[] = [
   {
     key: 'number',
     header: 'Nº',
+    sortLabel: 'Número',
     widthClass: 'w-24',
     sortable: true,
     sortValue: p => p.documentNumber,

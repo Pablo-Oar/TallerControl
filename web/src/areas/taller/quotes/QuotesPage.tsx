@@ -25,6 +25,7 @@ const COLUMNS: DataTableColumn<QuoteListDto>[] = [
   {
     key: 'number',
     header: '#',
+    sortLabel: 'Número',
     align: 'center',
     widthClass: 'w-20',
     sortable: true,
