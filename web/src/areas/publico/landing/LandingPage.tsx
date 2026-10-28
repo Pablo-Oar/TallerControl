@@ -24,7 +24,7 @@ const plans: PricingPlan[] = [
   {
     id: 'pro',
     name: 'Empezá ahora',
-    price: '$50.000',
+    price: '$53.850',
     period: 'por mes',
     description: 'Todo lo que necesita tu taller para trabajar sin papeles ni planillas.',
     features: [
