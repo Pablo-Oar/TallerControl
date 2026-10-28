@@ -5,6 +5,8 @@ import { remindersApi, getReminderKindLabel, type ReminderListDto, type Reminder
 import { Button } from '../../../components/ui/Button'
 import { DataTable, RowAction, sortableWhen, type DataTableColumn } from '../../../components/ui/DataTable'
 import { Pagination } from '../../../components/ui/Pagination'
+import { RowMenu } from '../../../components/ui/RowMenu'
+import { Tabs } from '../../../components/ui/Tabs'
 import { ReminderFormModal } from './ReminderFormModal'
 import { confirmDialog, notify } from '../../../components/ui/dialogs'
 
@@ -102,18 +104,15 @@ export function RemindersPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Recordatorios</h1>
-        <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            loading={evaluateMut.isPending}
-            onClick={() => evaluateMut.mutate()}
-          >
-            Evaluar vencidos
-          </Button>
+        <div className="flex items-center gap-1">
           <Button size="sm" onClick={() => { setEditId(null); setShowModal(true) }}>
-            Nuevo recordatorio
+            <span className="sm:hidden">Nuevo</span>
+            <span className="hidden sm:inline">Nuevo recordatorio</span>
           </Button>
+          <RowMenu
+            label="Más opciones"
+            items={[{ label: evaluateMut.isPending ? 'Evaluando…' : 'Evaluar vencidos ahora', onSelect: () => evaluateMut.mutate() }]}
+          />
         </div>
       </div>
 
@@ -124,19 +123,13 @@ export function RemindersPage() {
         </div>
       )}
 
-      <div className="flex gap-2" role="group" aria-label="Estado">
-        {([['pending', 'Pendientes'], ['completed', 'Cumplidos']] as const).map(([value, label]) => (
-          <button
-            key={value}
-            type="button"
-            aria-pressed={status === value}
-            onClick={() => { setStatus(value); setPage(1) }}
-            className={`min-h-[44px] rounded-md border px-3 text-xs md:min-h-[36px] font-bold tracking-wider uppercase ${status === value ? 'border-tc-purple bg-tc-purple text-white' : 'border-tc-border text-tc-text-secondary hover:bg-tc-surface'}`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        label="Estado de los recordatorios"
+        idPrefix="reminders"
+        value={status}
+        onChange={v => { setStatus(v); setPage(1) }}
+        items={[{ id: 'pending', label: 'Pendientes' }, { id: 'completed', label: 'Cumplidos' }]}
+      />
 
       <DataTable<ReminderListDto>
         label="Recordatorios"
