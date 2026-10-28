@@ -96,7 +96,7 @@ export function CashPage() {
       )}
 
       {accounts && accounts.length > 0 && (
-        <ul className="space-y-3">
+        <ul className="grid gap-3 lg:grid-cols-2">
           {accounts.map(account => {
             const open = !!account.sessionOpenedAt
             return (
