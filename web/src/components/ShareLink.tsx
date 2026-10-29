@@ -17,17 +17,19 @@ export function ShareLink({ url, whatsappText, label = 'Enlace' }: { url: string
   }
 
   return (
-    <div className="flex flex-wrap items-end gap-2">
-      <FormField label={label} size="sm" readOnly value={url} className="min-w-0 flex-1" />
-      <Button variant="secondary" size="sm" onClick={copy}>{copied ? 'Copiado' : 'Copiar'}</Button>
-      <a
-        href={`https://wa.me/?text=${encodeURIComponent(`${whatsappText} ${url}`)}`}
-        target="_blank"
-        rel="noreferrer"
-        className="inline-flex items-center border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-tc-text-secondary transition-colors hover:bg-tc-surface"
-      >
-        WhatsApp
-      </a>
+    <div className="space-y-2">
+      <FormField label={label} size="sm" readOnly value={url} className="min-w-0" />
+      <div className="grid grid-cols-2 gap-2">
+        <Button variant="secondary" size="sm" onClick={copy} className="min-h-11">{copied ? 'Copiado' : 'Copiar'}</Button>
+        <a
+          href={`https://wa.me/?text=${encodeURIComponent(`${whatsappText} ${url}`)}`}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex min-h-11 items-center justify-center border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-tc-text-secondary transition-colors hover:bg-tc-surface"
+        >
+          WhatsApp
+        </a>
+      </div>
     </div>
   )
 }

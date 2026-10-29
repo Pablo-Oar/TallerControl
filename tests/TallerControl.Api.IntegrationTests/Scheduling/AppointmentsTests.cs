@@ -138,6 +138,30 @@ public sealed class AppointmentsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
     }
 
+    [Fact(DisplayName = "T-APT-02b: convertir turno con servicios crea la OT con los datos del catálogo")]
+    public async Task Convertir_a_ot_copia_los_servicios_del_catalogo()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, AppointmentsWebApplicationFactory.OwnerEmail);
+
+        var (id, _, _) = await CreateAppointmentAsync(client);
+
+        var csrf = await FetchCsrfAsync(client);
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/appointments/{id}/to-work-order")
+        {
+            Content = JsonContent.Create(new { odometerKm = 999999 }),
+        };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+
+        var resp = await client.SendAsync(req);
+        Assert.True(resp.IsSuccessStatusCode, await resp.Content.ReadAsStringAsync());
+
+        var json = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        var items = json.GetProperty("items");
+        Assert.Equal(1, items.GetArrayLength());
+        Assert.False(string.IsNullOrWhiteSpace(items[0].GetProperty("description").GetString()));
+    }
+
     // ── T-APT-03 ──────────────────────────────────────────────────────────────
 
     [Fact(DisplayName = "T-APT-03: link de confirmación usado → 200; segundo uso → 409")]

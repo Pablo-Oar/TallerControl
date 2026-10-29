@@ -1,3 +1,4 @@
+using TallerControl.Application.Catalog;
 using TallerControl.Application.Common;
 using TallerControl.Application.Work;
 
@@ -9,6 +10,7 @@ namespace TallerControl.Application.Scheduling;
 /// </summary>
 public sealed class ConvertAppointmentToWorkOrderHandler(
     ISchedulingRepository schedulingRepo,
+    ICatalogRepository catalogRepo,
     CreateWorkOrderHandler createWorkOrder)
 {
     public async Task<WorkOrderDto> HandleAsync(
@@ -22,14 +24,21 @@ public sealed class ConvertAppointmentToWorkOrderHandler(
         if (request.OdometerKm <= 0)
             throw new BusinessRuleException("El kilometraje es obligatorio para crear la orden desde un turno.");
 
-        // Crear la orden de trabajo usando los datos del turno.
-        var items = appointment.Services.Select(s => new WorkOrderItemRequest(
-            Kind: Domain.Work.WorkOrderItemKind.Service,
-            Description: string.Empty,
-            CatalogItemId: s.CatalogItemId,
-            Quantity: 1,
-            UnitNetPrice: 0,
-            VatRate: 0)).ToList();
+        // Cada servicio del turno se copia a la orden con el nombre, el precio y el IVA vigentes del catálogo.
+        var items = new List<WorkOrderItemRequest>();
+        foreach (var service in appointment.Services)
+        {
+            var catalogItem = await catalogRepo.FindActiveByIdAsync(service.CatalogItemId, ct)
+                ?? throw new BusinessRuleException("Un servicio del turno ya no existe en el catálogo.");
+
+            items.Add(new WorkOrderItemRequest(
+                Kind: Domain.Work.WorkOrderItemKind.Service,
+                Description: catalogItem.Name,
+                CatalogItemId: catalogItem.Id,
+                Quantity: 1,
+                UnitNetPrice: catalogItem.NetPrice,
+                VatRate: catalogItem.VatRate));
+        }
 
         var woRequest = new CreateWorkOrderRequest(
             CustomerId: appointment.CustomerId,
