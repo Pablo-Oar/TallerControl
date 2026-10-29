@@ -3,7 +3,7 @@
 // cache-first para assets con hash. Lectura sin conexión del mecánico (P-02): las órdenes que ya vio
 // (GET /api/v1/work-orders…) y la sesión (/me) se guardan en DATA y se sirven si no hay red; el resto de /api/*
 // no se intercepta. DATA se vacía al cerrar sesión (mensaje 'clear-data'). Subir CACHE en cada release de UI.
-const CACHE = 'tc-sw-v6'
+const CACHE = 'tc-sw-v7'
 const DATA = 'tc-data-v1'
 
 /** Lecturas que se guardan para verlas sin conexión (nunca escrituras ni documentos del taller en general). */
@@ -88,8 +88,8 @@ self.addEventListener('push', event => {
   event.waitUntil(
     self.registration.showNotification(payload.title ?? 'TallerControl', {
       body: payload.body ?? '',
-      icon: '/favicon.svg',
-      badge: '/favicon.svg',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
       // Mismo tag = el aviso reemplaza al anterior en vez de duplicarse.
       tag: payload.tag ?? undefined,
       data: payload.url ? { url: payload.url } : undefined,
