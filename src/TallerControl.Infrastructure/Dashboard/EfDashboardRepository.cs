@@ -29,15 +29,32 @@ internal sealed class EfDashboardRepository : IDashboardRepository
     private const int LowStockLimit = 5;
     private const int RevenueDays = 7;
 
-    private readonly AppDbContext _db;
+    private readonly DbContextOptions<AppDbContext> _options;
     private readonly ITenantContext _tenantContext;
+    private readonly IActorContext _actor;
     private readonly TimeProvider _time;
 
-    public EfDashboardRepository(AppDbContext db, ITenantContext tenantContext, TimeProvider time)
+    public EfDashboardRepository(
+        DbContextOptions<AppDbContext> options,
+        ITenantContext tenantContext,
+        IActorContext actor,
+        TimeProvider time)
     {
-        _db = db;
+        _options = options;
         _tenantContext = tenantContext;
+        _actor = actor;
         _time = time;
+    }
+
+    /// <summary>
+    /// Cada bloque del Inicio corre en su propio <see cref="AppDbContext"/> (y su propia conexión) para poder
+    /// ejecutarse en paralelo: un contexto no admite dos consultas a la vez. Todos comparten el mismo taller
+    /// (<see cref="ITenantContext"/>), así que el filtro por taller sigue aplicándose en cada uno.
+    /// </summary>
+    private async Task<T> InOwnContextAsync<T>(Func<AppDbContext, Task<T>> work)
+    {
+        await using var db = new AppDbContext(_options, _tenantContext, _actor, _time);
+        return await work(db);
     }
 
     private sealed record VehicleInfo(string Plate, string? Label);
@@ -56,14 +73,62 @@ internal sealed class EfDashboardRepository : IDashboardRepository
     public async Task<DashboardDto> GetSummaryAsync(DashboardScope scope, CancellationToken ct)
     {
         var now = _time.GetUtcNow();
-        var (zone, thresholds) = await GetSettingsAsync(ct);
 
-        // ── Órdenes: un solo GROUP BY da el saldo, las abiertas y el conteo por estado ──
-        var orderGroups = await _db.Set<WorkOrder>()
+        // Lo unico que depende de algo previo: la zona horaria y los umbrales del taller.
+        var (zone, thresholds) = await InOwnContextAsync(db => GetSettingsAsync(db, ct));
+
+        // Todos los bloques en paralelo, cada uno con su conexion.
+        // Ordenes: un solo GROUP BY da el saldo, las abiertas y el conteo por estado.
+        var orderGroupsTask = InOwnContextAsync(db => db.Set<WorkOrder>()
             .AsNoTracking()
             .GroupBy(w => w.Status)
             .Select(g => new { Status = g.Key, Count = g.Count(), Balance = g.Sum(w => EF.Property<decimal>(w, "Balance")) })
-            .ToListAsync(ct);
+            .ToListAsync(ct));
+
+        // Presupuestos: un solo GROUP BY (borrador y enviados).
+        var quoteGroupsTask = InOwnContextAsync(db => db.Set<Quote>()
+            .AsNoTracking()
+            .Where(q => q.Status == QuoteStatus.Draft || q.Status == QuoteStatus.Sent)
+            .GroupBy(q => q.Status)
+            .Select(g => new { Status = g.Key, Count = g.Count(), Total = g.Sum(q => q.Total) })
+            .ToListAsync(ct));
+
+        var revenueTask = InOwnContextAsync(db => GetRevenueAsync(db, now, zone, ct));
+        var agedTask = InOwnContextAsync(db => GetAgedReceivableAsync(db, now, thresholds.AgedReceivableDays, ct));
+        var liveTask = InOwnContextAsync(db => GetLiveRowsAsync(db, now, thresholds.StuckOrderDays, ct));
+
+        var hotTask = scope.Quotes
+            ? InOwnContextAsync(db => GetHotRowsAsync(db, now, thresholds.HotQuoteHours, ct))
+            : Task.FromResult<(int Total, List<HotRow> Rows)>((0, []));
+
+        var appointmentsTask = scope.Appointments
+            ? InOwnContextAsync(db => GetTodayRowsAsync(db, now, zone, ct))
+            : Task.FromResult<(int Total, int Unassigned, List<AppointmentRow> Rows)>((0, 0, []));
+
+        var cashTask = scope.Cash
+            ? InOwnContextAsync(db => GetCashRowsAsync(db, ct))
+            : Task.FromResult<((decimal Balance, Guid Id, string Name, CashAccountKind Kind)[] Accounts,
+                List<(Guid AccountId, DateTimeOffset OpenedAt, Guid OpenedBy)> Sessions)>(([], []));
+
+        // Con permiso de catalogo, el conteo sale de la misma consulta que el listado.
+        var lowStockTask = scope.Stock
+            ? InOwnContextAsync(db => GetLowStockAsync(db, ct))
+            : InOwnContextAsync(async db => (await db.Set<CatalogItem>().AsNoTracking().Where(LowStockPredicate).CountAsync(ct),
+                (IReadOnlyList<LowStockItemDto>)[]));
+
+        await Task.WhenAll(
+            orderGroupsTask, quoteGroupsTask, revenueTask, agedTask, liveTask, hotTask, appointmentsTask, cashTask, lowStockTask);
+
+        var orderGroups = orderGroupsTask.Result;
+        var quoteGroups = quoteGroupsTask.Result;
+        var (revenueToday, paymentsToday, revenueDays) = revenueTask.Result;
+        var aged = agedTask.Result;
+        var live = liveTask.Result;
+        var hot = hotTask.Result;
+        var appointments = appointmentsTask.Result;
+        var (cashAccounts, cashSessions) = cashTask.Result;
+        var (lowStockItems, lowStockList) = lowStockTask.Result;
+        IReadOnlyList<LowStockItemDto>? lowStock = scope.Stock ? lowStockList : null;
 
         int CountOf(WorkOrderStatus s) => orderGroups.FirstOrDefault(g => g.Status == s)?.Count ?? 0;
 
@@ -71,66 +136,28 @@ internal sealed class EfDashboardRepository : IDashboardRepository
         var totalReceivable = orderGroups.Sum(g => g.Balance);
         var openWorkOrders = CountOf(WorkOrderStatus.Pending) + CountOf(WorkOrderStatus.InProgress) + CountOf(WorkOrderStatus.WaitingParts);
 
-        // ── Presupuestos: un solo GROUP BY (borrador y enviados) ──
-        var quoteGroups = await _db.Set<Quote>()
-            .AsNoTracking()
-            .Where(q => q.Status == QuoteStatus.Draft || q.Status == QuoteStatus.Sent)
-            .GroupBy(q => q.Status)
-            .Select(g => new { Status = g.Key, Count = g.Count(), Total = g.Sum(q => q.Total) })
-            .ToListAsync(ct);
-
         var sent = quoteGroups.FirstOrDefault(g => g.Status == QuoteStatus.Sent);
         var pendingQuotes = quoteGroups.Sum(g => g.Count);
 
-        // ── Bloques que traen filas crudas; los nombres se resuelven al final, todos juntos ──
-        var (revenueToday, paymentsToday, revenueDays) = await GetRevenueAsync(now, zone, ct);
-        var aged = await GetAgedReceivableAsync(now, thresholds.AgedReceivableDays, ct);
-        var live = await GetLiveRowsAsync(now, thresholds.StuckOrderDays, orderGroups.Sum(g => g.Status is WorkOrderStatus.Delivered or WorkOrderStatus.Cancelled ? 0 : g.Count), ct);
-
-        (int Total, List<HotRow> Rows) hot = (0, []);
-        if (scope.Quotes)
-        {
-            hot = await GetHotRowsAsync(now, thresholds.HotQuoteHours, ct);
-        }
-
-        (int Total, int Unassigned, List<AppointmentRow> Rows) appointments = (0, 0, []);
-        if (scope.Appointments)
-        {
-            appointments = await GetTodayRowsAsync(now, zone, ct);
-        }
-
-        (decimal Balance, Guid Id, string Name, CashAccountKind Kind)[] cashAccounts = [];
-        List<(Guid AccountId, DateTimeOffset OpenedAt, Guid OpenedBy)> cashSessions = [];
-        if (scope.Cash)
-        {
-            (cashAccounts, cashSessions) = await GetCashRowsAsync(ct);
-        }
-
-        IReadOnlyList<LowStockItemDto>? lowStock = null;
-        int lowStockItems;
-        if (scope.Stock)
-        {
-            (lowStockItems, lowStock) = await GetLowStockAsync(ct);
-        }
-        else
-        {
-            lowStockItems = await _db.Set<CatalogItem>().AsNoTracking().Where(LowStockPredicate).CountAsync(ct);
-        }
-
-        // ── Nombres: tres consultas para todos los bloques ──
+        // Nombres: tres consultas en paralelo para todos los bloques.
         var customerIds = live.Rows.Select(r => r.CustomerId)
             .Concat(hot.Rows.Select(r => r.CustomerId))
-            .Concat(appointments.Rows.Select(r => r.CustomerId));
+            .Concat(appointments.Rows.Select(r => r.CustomerId)).ToList();
         var vehicleIds = live.Rows.Select(r => r.VehicleId)
             .Concat(hot.Rows.Select(r => r.VehicleId))
-            .Concat(appointments.Rows.Select(r => r.VehicleId));
+            .Concat(appointments.Rows.Select(r => r.VehicleId)).ToList();
         var membershipIds = live.Rows.Where(r => r.MechanicId.HasValue).Select(r => r.MechanicId!.Value)
             .Concat(appointments.Rows.Where(r => r.MechanicId.HasValue).Select(r => r.MechanicId!.Value))
-            .Concat(cashSessions.Select(s => s.OpenedBy));
+            .Concat(cashSessions.Select(x => x.OpenedBy)).ToList();
 
-        var customers = await CustomersAsync(customerIds, ct);
-        var vehicles = await VehiclesAsync(vehicleIds, ct);
-        var people = await MembershipNamesAsync(membershipIds, ct);
+        var customersTask = InOwnContextAsync(db => CustomersAsync(db, customerIds, ct));
+        var vehiclesTask = InOwnContextAsync(db => VehiclesAsync(db, vehicleIds, ct));
+        var peopleTask = InOwnContextAsync(db => MembershipNamesAsync(db, membershipIds, ct));
+        await Task.WhenAll(customersTask, vehiclesTask, peopleTask);
+
+        var customers = customersTask.Result;
+        var vehicles = vehiclesTask.Result;
+        var people = peopleTask.Result;
 
         string CustomerName(Guid id) => customers.GetValueOrDefault(id)?.Name ?? string.Empty;
         string Plate(Guid id) => vehicles.GetValueOrDefault(id)?.Plate ?? string.Empty;
@@ -169,7 +196,7 @@ internal sealed class EfDashboardRepository : IDashboardRepository
         {
             var items = cashAccounts.Select(a =>
             {
-                var session = cashSessions.FirstOrDefault(s => s.AccountId == a.Id);
+                var session = cashSessions.FirstOrDefault(x => x.AccountId == a.Id);
                 return new CashAccountStatusDto(
                     a.Id, a.Name, a.Kind, a.Balance,
                     session == default ? null : session.OpenedAt,
@@ -200,13 +227,13 @@ internal sealed class EfDashboardRepository : IDashboardRepository
 
     // ── Zona horaria y umbrales del taller: una sola consulta ───────────────────
 
-    private async Task<(TimeZoneInfo Zone, DashboardThresholdsDto Thresholds)> GetSettingsAsync(CancellationToken ct)
+    private async Task<(TimeZoneInfo Zone, DashboardThresholdsDto Thresholds)> GetSettingsAsync(AppDbContext db, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId;
         var row = await (
-                from t in _db.Set<Tenant>().AsNoTracking()
+                from t in db.Set<Tenant>().AsNoTracking()
                 where t.Id == tenantId
-                join s in _db.Set<TenantSettings>().AsNoTracking() on t.Id equals s.TenantId
+                join s in db.Set<TenantSettings>().AsNoTracking() on t.Id equals s.TenantId
                 select new { t.TimeZone, s.HotQuoteHours, s.StuckOrderDays, s.AgedReceivableDays })
             .FirstOrDefaultAsync(ct);
 
@@ -238,7 +265,7 @@ internal sealed class EfDashboardRepository : IDashboardRepository
 
     // ── Ingresos (cobros válidos + ventas de mostrador confirmadas), por día local ──
 
-    private async Task<(decimal Today, int Count, IReadOnlyList<RevenueDayDto> Days)> GetRevenueAsync(
+    private async Task<(decimal Today, int Count, IReadOnlyList<RevenueDayDto> Days)> GetRevenueAsync(AppDbContext db,
         DateTimeOffset now, TimeZoneInfo zone, CancellationToken ct)
     {
         var today = LocalDay(now, zone);
@@ -246,13 +273,13 @@ internal sealed class EfDashboardRepository : IDashboardRepository
         var fromUtc = StartOfLocalDayUtc(first, zone);
         var toUtc = StartOfLocalDayUtc(today.AddDays(1), zone);
 
-        var payments = await _db.Set<Payment>()
+        var payments = await db.Set<Payment>()
             .AsNoTracking()
             .Where(p => p.Status == PaymentStatus.Valid && p.PaidAt >= fromUtc && p.PaidAt < toUtc)
             .Select(p => new { p.PaidAt, p.Amount })
             .ToListAsync(ct);
 
-        var sales = await _db.Set<CounterSale>()
+        var sales = await db.Set<CounterSale>()
             .AsNoTracking()
             .Where(s => s.Status == CounterSaleStatus.Confirmed && s.Date >= fromUtc && s.Date < toUtc)
             .Select(s => new { s.Date, s.Total })
@@ -273,11 +300,11 @@ internal sealed class EfDashboardRepository : IDashboardRepository
 
     // ── Saldo antiguo (D-39): desde la entrega, o desde la creación si no se entregó ──
 
-    private async Task<AgedReceivableDto> GetAgedReceivableAsync(DateTimeOffset now, int days, CancellationToken ct)
+    private async Task<AgedReceivableDto> GetAgedReceivableAsync(AppDbContext db, DateTimeOffset now, int days, CancellationToken ct)
     {
         var cutoff = now.AddDays(-days);
 
-        var row = await _db.Set<WorkOrder>()
+        var row = await db.Set<WorkOrder>()
             .AsNoTracking()
             .Where(w => w.Status != WorkOrderStatus.Cancelled
                      && EF.Property<decimal>(w, "Balance") > 0
@@ -291,15 +318,10 @@ internal sealed class EfDashboardRepository : IDashboardRepository
 
     // ── Órdenes activas para «Taller en vivo»: «desde cuándo» = último cambio de estado ──
 
-    private async Task<(List<LiveRow> Rows, int Stuck)> GetLiveRowsAsync(
-        DateTimeOffset now, int stuckDays, int activeCount, CancellationToken ct)
+    private async Task<(List<LiveRow> Rows, int Stuck)> GetLiveRowsAsync(AppDbContext db,
+        DateTimeOffset now, int stuckDays, CancellationToken ct)
     {
-        if (activeCount == 0)
-        {
-            return ([], 0);
-        }
-
-        var active = await _db.Set<WorkOrder>()
+        var active = await db.Set<WorkOrder>()
             .AsNoTracking()
             .Where(w => w.Status == WorkOrderStatus.Pending
                      || w.Status == WorkOrderStatus.InProgress
@@ -314,7 +336,7 @@ internal sealed class EfDashboardRepository : IDashboardRepository
         }
 
         var ids = active.Select(a => a.Id).ToList();
-        var lastChange = await _db.Set<WorkOrderStatusChange>()
+        var lastChange = await db.Set<WorkOrderStatusChange>()
             .AsNoTracking()
             .Where(c => ids.Contains(c.WorkOrderId))
             .GroupBy(c => c.WorkOrderId)
@@ -335,11 +357,11 @@ internal sealed class EfDashboardRepository : IDashboardRepository
 
     // ── Presupuestos «calientes»: el listado y el total en la misma consulta ────
 
-    private async Task<(int Total, List<HotRow> Rows)> GetHotRowsAsync(DateTimeOffset now, int hours, CancellationToken ct)
+    private async Task<(int Total, List<HotRow> Rows)> GetHotRowsAsync(AppDbContext db, DateTimeOffset now, int hours, CancellationToken ct)
     {
         var cutoff = now.AddHours(-hours);
 
-        var query = _db.Set<Quote>()
+        var query = db.Set<Quote>()
             .AsNoTracking()
             .Where(q => q.Status == QuoteStatus.Sent && q.SentAt != null && q.SentAt <= cutoff);
 
@@ -355,14 +377,14 @@ internal sealed class EfDashboardRepository : IDashboardRepository
 
     // ── Turnos de hoy (día local del taller), pendientes o confirmados ──────────
 
-    private async Task<(int Total, int Unassigned, List<AppointmentRow> Rows)> GetTodayRowsAsync(
+    private async Task<(int Total, int Unassigned, List<AppointmentRow> Rows)> GetTodayRowsAsync(AppDbContext db,
         DateTimeOffset now, TimeZoneInfo zone, CancellationToken ct)
     {
         var today = LocalDay(now, zone);
         var fromUtc = StartOfLocalDayUtc(today, zone);
         var toUtc = StartOfLocalDayUtc(today.AddDays(1), zone);
 
-        var query = _db.Set<Appointment>()
+        var query = db.Set<Appointment>()
             .AsNoTracking()
             .Where(a => a.ScheduledAt >= fromUtc && a.ScheduledAt < toUtc
                      && (a.Status == AppointmentStatus.Pending || a.Status == AppointmentStatus.Confirmed));
@@ -389,9 +411,9 @@ internal sealed class EfDashboardRepository : IDashboardRepository
     // ── Caja: saldo por cuenta activa (en la misma consulta) y sesiones abiertas ──
 
     private async Task<((decimal Balance, Guid Id, string Name, CashAccountKind Kind)[] Accounts,
-        List<(Guid AccountId, DateTimeOffset OpenedAt, Guid OpenedBy)> Sessions)> GetCashRowsAsync(CancellationToken ct)
+        List<(Guid AccountId, DateTimeOffset OpenedAt, Guid OpenedBy)> Sessions)> GetCashRowsAsync(AppDbContext db, CancellationToken ct)
     {
-        var accounts = await _db.Set<CashAccount>()
+        var accounts = await db.Set<CashAccount>()
             .AsNoTracking()
             .Where(a => a.IsActive)
             .OrderBy(a => a.Name)
@@ -400,7 +422,7 @@ internal sealed class EfDashboardRepository : IDashboardRepository
                 a.Id,
                 a.Name,
                 a.Kind,
-                Balance = _db.Set<CashMovement>()
+                Balance = db.Set<CashMovement>()
                     .Where(m => m.AccountId == a.Id)
                     .Sum(m => m.Direction == CashMovementDirection.In ? m.Amount : -m.Amount),
             })
@@ -411,7 +433,7 @@ internal sealed class EfDashboardRepository : IDashboardRepository
             return ([], []);
         }
 
-        var sessions = await _db.Set<CashSession>()
+        var sessions = await db.Set<CashSession>()
             .AsNoTracking()
             .Where(s => s.Status == CashSessionStatus.Open)
             .Select(s => new { s.AccountId, s.OpenedAt, s.OpenedByMembershipId })
@@ -427,9 +449,9 @@ internal sealed class EfDashboardRepository : IDashboardRepository
     private static readonly System.Linq.Expressions.Expression<Func<CatalogItem, bool>> LowStockPredicate =
         c => c.TrackStock && (c.StockQty < 0 || (c.StockMin.HasValue && c.StockQty < c.StockMin.Value));
 
-    private async Task<(int Total, IReadOnlyList<LowStockItemDto> Items)> GetLowStockAsync(CancellationToken ct)
+    private async Task<(int Total, IReadOnlyList<LowStockItemDto> Items)> GetLowStockAsync(AppDbContext db, CancellationToken ct)
     {
-        var query = _db.Set<CatalogItem>().AsNoTracking().Where(LowStockPredicate);
+        var query = db.Set<CatalogItem>().AsNoTracking().Where(LowStockPredicate);
 
         var raw = await query
             .OrderBy(c => c.StockQty - (c.StockMin ?? 0m))
@@ -444,7 +466,7 @@ internal sealed class EfDashboardRepository : IDashboardRepository
 
     // ── Resolución de nombres (los clientes y vehículos dados de baja siguen figurando) ──
 
-    private async Task<Dictionary<Guid, CustomerInfo>> CustomersAsync(IEnumerable<Guid> ids, CancellationToken ct)
+    private async Task<Dictionary<Guid, CustomerInfo>> CustomersAsync(AppDbContext db, IEnumerable<Guid> ids, CancellationToken ct)
     {
         var list = ids.Distinct().ToList();
         if (list.Count == 0)
@@ -452,7 +474,7 @@ internal sealed class EfDashboardRepository : IDashboardRepository
             return [];
         }
 
-        return await _db.Set<Customer>()
+        return await db.Set<Customer>()
             .AsNoTracking()
             .IgnoreQueryFilters()
             .Where(c => list.Contains(c.Id))
@@ -460,7 +482,7 @@ internal sealed class EfDashboardRepository : IDashboardRepository
             .ToDictionaryAsync(c => c.Id, c => new CustomerInfo(c.Name, c.Phone), ct);
     }
 
-    private async Task<Dictionary<Guid, VehicleInfo>> VehiclesAsync(IEnumerable<Guid> ids, CancellationToken ct)
+    private async Task<Dictionary<Guid, VehicleInfo>> VehiclesAsync(AppDbContext db, IEnumerable<Guid> ids, CancellationToken ct)
     {
         var list = ids.Distinct().ToList();
         if (list.Count == 0)
@@ -468,7 +490,7 @@ internal sealed class EfDashboardRepository : IDashboardRepository
             return [];
         }
 
-        var raw = await _db.Set<Vehicle>()
+        var raw = await db.Set<Vehicle>()
             .AsNoTracking()
             .IgnoreQueryFilters()
             .Where(v => list.Contains(v.Id))
@@ -481,7 +503,7 @@ internal sealed class EfDashboardRepository : IDashboardRepository
     }
 
     /// <summary>Nombre visible (del usuario) de cada membresía.</summary>
-    private async Task<Dictionary<Guid, string>> MembershipNamesAsync(IEnumerable<Guid> membershipIds, CancellationToken ct)
+    private async Task<Dictionary<Guid, string>> MembershipNamesAsync(AppDbContext db, IEnumerable<Guid> membershipIds, CancellationToken ct)
     {
         var list = membershipIds.Distinct().ToList();
         if (list.Count == 0)
@@ -489,10 +511,10 @@ internal sealed class EfDashboardRepository : IDashboardRepository
             return [];
         }
 
-        return await _db.Set<Membership>()
+        return await db.Set<Membership>()
             .AsNoTracking()
             .Where(m => list.Contains(m.Id))
-            .Join(_db.Set<User>().AsNoTracking(), m => m.UserId, u => u.Id, (m, u) => new { m.Id, u.DisplayName })
+            .Join(db.Set<User>().AsNoTracking(), m => m.UserId, u => u.Id, (m, u) => new { m.Id, u.DisplayName })
             .ToDictionaryAsync(x => x.Id, x => x.DisplayName, ct);
     }
 }
