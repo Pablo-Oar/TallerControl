@@ -44,6 +44,12 @@ public sealed class UpdateSettingsHandler
                 request.TimeZone);
 
             settings.UpdateSettings(request.DefaultVatRate, request.QuoteValidityDays);
+
+            // Los umbrales del Inicio (D-42) son opcionales en el cuerpo: sin valor se conserva el actual.
+            settings.UpdateDashboardThresholds(
+                request.HotQuoteHours ?? settings.HotQuoteHours,
+                request.StuckOrderDays ?? settings.StuckOrderDays,
+                request.AgedReceivableDays ?? settings.AgedReceivableDays);
         }
         catch (ArgumentException ex)
         {

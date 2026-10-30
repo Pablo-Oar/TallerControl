@@ -2754,12 +2754,24 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
 
+                    b.Property<int>("AgedReceivableDays")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(30)
+                        .HasColumnName("aged_receivable_days");
+
                     b.Property<decimal>("DefaultVat")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(5, 2)
                         .HasColumnType("numeric(5,2)")
                         .HasDefaultValue(21.00m)
                         .HasColumnName("default_vat_rate");
+
+                    b.Property<int>("HotQuoteHours")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(48)
+                        .HasColumnName("hot_quote_hours");
 
                     b.Property<string>("LogoFileKey")
                         .HasColumnType("text")
@@ -2784,6 +2796,12 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasDefaultValue(15)
                         .HasColumnName("quote_validity_days");
 
+                    b.Property<int>("StuckOrderDays")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(3)
+                        .HasColumnName("stuck_order_days");
+
                     b.Property<uint>("Version")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -2795,9 +2813,15 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
 
                     b.ToTable("tenant_settings", null, t =>
                         {
+                            t.HasCheckConstraint("ck_tenant_settings_aged_receivable_days", "aged_receivable_days BETWEEN 1 AND 365");
+
                             t.HasCheckConstraint("ck_tenant_settings_default_vat", "default_vat_rate IN (0, 2.5, 5, 10.5, 21, 27)");
 
+                            t.HasCheckConstraint("ck_tenant_settings_hot_quote_hours", "hot_quote_hours BETWEEN 1 AND 720");
+
                             t.HasCheckConstraint("ck_tenant_settings_quote_validity", "quote_validity_days BETWEEN 1 AND 180");
+
+                            t.HasCheckConstraint("ck_tenant_settings_stuck_order_days", "stuck_order_days BETWEEN 1 AND 60");
                         });
                 });
 

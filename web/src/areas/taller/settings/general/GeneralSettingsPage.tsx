@@ -24,6 +24,9 @@ const schema = z.object({
   timeZone: z.string().trim().min(1, 'La zona horaria es obligatoria'),
   defaultVatRate: z.coerce.number(),
   quoteValidityDays: z.coerce.number().int().min(1, 'Mínimo 1 día').max(180, 'Máximo 180 días'),
+  hotQuoteHours: z.coerce.number().int().min(1, 'Mínimo 1 hora').max(720, 'Máximo 720 horas'),
+  stuckOrderDays: z.coerce.number().int().min(1, 'Mínimo 1 día').max(60, 'Máximo 60 días'),
+  agedReceivableDays: z.coerce.number().int().min(1, 'Mínimo 1 día').max(365, 'Máximo 365 días'),
 })
 
 type FormInput = z.input<typeof schema>
@@ -39,6 +42,9 @@ function toFormData(dto: SettingsDto): FormInput {
     timeZone: dto.timeZone,
     defaultVatRate: dto.defaultVatRate,
     quoteValidityDays: dto.quoteValidityDays,
+    hotQuoteHours: dto.hotQuoteHours,
+    stuckOrderDays: dto.stuckOrderDays,
+    agedReceivableDays: dto.agedReceivableDays,
   }
 }
 
@@ -52,6 +58,9 @@ function toRequest(data: FormData): UpdateSettingsRequest {
     timeZone: data.timeZone,
     defaultVatRate: data.defaultVatRate,
     quoteValidityDays: data.quoteValidityDays,
+    hotQuoteHours: data.hotQuoteHours,
+    stuckOrderDays: data.stuckOrderDays,
+    agedReceivableDays: data.agedReceivableDays,
   }
 }
 
@@ -248,6 +257,50 @@ export function GeneralSettingsPage() {
               inputClassName="tabular-nums"
               error={errors.quoteValidityDays?.message}
               {...register('quoteValidityDays')}
+            />
+          </div>
+        </div>
+
+        <div className="h-px bg-tc-perf" />
+
+        <div className="bg-tc-stub-bg border-b border-tc-border px-5 py-2.5">
+          <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Avisos del Inicio</span>
+        </div>
+
+        <div className="space-y-4 p-5">
+          <p className="text-xs text-tc-text-secondary">
+            Cuándo el Inicio marca algo como atrasado. Se usan en «Presupuestos calientes», «Taller en vivo» y «Por cobrar».
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <FormField
+              label="Presupuesto caliente (horas)"
+              type="number"
+              min={1}
+              max={720}
+              hint="Sin respuesta del cliente después de este tiempo"
+              inputClassName="tabular-nums"
+              error={errors.hotQuoteHours?.message}
+              {...register('hotQuoteHours')}
+            />
+            <FormField
+              label="Orden trabada (días)"
+              type="number"
+              min={1}
+              max={60}
+              hint="Mismo estado durante este tiempo"
+              inputClassName="tabular-nums"
+              error={errors.stuckOrderDays?.message}
+              {...register('stuckOrderDays')}
+            />
+            <FormField
+              label="Saldo antiguo (días)"
+              type="number"
+              min={1}
+              max={365}
+              hint="Saldo pendiente desde hace este tiempo"
+              inputClassName="tabular-nums"
+              error={errors.agedReceivableDays?.message}
+              {...register('agedReceivableDays')}
             />
           </div>
         </div>

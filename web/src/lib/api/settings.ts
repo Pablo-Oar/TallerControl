@@ -17,6 +17,10 @@ export interface SettingsDto {
   quoteValidityDays: number
   logoUrl: string | null
   version: string
+  /** Umbrales del Inicio (D-42). */
+  hotQuoteHours: number
+  stuckOrderDays: number
+  agedReceivableDays: number
 }
 
 export interface UpdateSettingsRequest {
@@ -28,6 +32,9 @@ export interface UpdateSettingsRequest {
   timeZone: string
   defaultVatRate: number
   quoteValidityDays: number
+  hotQuoteHours: number
+  stuckOrderDays: number
+  agedReceivableDays: number
 }
 
 export interface LogoUploadUrlResponse {

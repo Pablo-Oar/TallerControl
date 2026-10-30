@@ -70,4 +70,46 @@ public class TenancyTests
         Assert.False(settings.QrPlateLookupEnabled);
         Assert.Contains(settings.DefaultVat, TenantSettings.AllowedVatRates);
     }
+
+    // ── D-42: umbrales del Inicio ───────────────────────────────────────────────
+    [Fact(DisplayName = "T-SET-04: los umbrales del Inicio arrancan en 48 h, 3 días y 30 días")]
+    public void Los_umbrales_del_inicio_traen_los_valores_por_defecto()
+    {
+        var settings = new TenantSettings(Guid.CreateVersion7());
+
+        Assert.Equal(48, settings.HotQuoteHours);
+        Assert.Equal(3, settings.StuckOrderDays);
+        Assert.Equal(30, settings.AgedReceivableDays);
+    }
+
+    [Fact]
+    public void Los_umbrales_del_inicio_se_actualizan_dentro_de_su_rango()
+    {
+        var settings = new TenantSettings(Guid.CreateVersion7());
+
+        settings.UpdateDashboardThresholds(72, 5, 45);
+
+        Assert.Equal(72, settings.HotQuoteHours);
+        Assert.Equal(5, settings.StuckOrderDays);
+        Assert.Equal(45, settings.AgedReceivableDays);
+    }
+
+    [Theory(DisplayName = "T-SET-05: umbral fuera de rango lanza ArgumentException y no cambia nada")]
+    [InlineData(0, 3, 30)]
+    [InlineData(721, 3, 30)]
+    [InlineData(48, 0, 30)]
+    [InlineData(48, 61, 30)]
+    [InlineData(48, 3, 0)]
+    [InlineData(48, 3, 366)]
+    public void Un_umbral_fuera_de_rango_es_rechazado(int hotQuoteHours, int stuckOrderDays, int agedReceivableDays)
+    {
+        var settings = new TenantSettings(Guid.CreateVersion7());
+
+        Assert.Throws<ArgumentException>(() =>
+            settings.UpdateDashboardThresholds(hotQuoteHours, stuckOrderDays, agedReceivableDays));
+
+        Assert.Equal(48, settings.HotQuoteHours);
+        Assert.Equal(3, settings.StuckOrderDays);
+        Assert.Equal(30, settings.AgedReceivableDays);
+    }
 }

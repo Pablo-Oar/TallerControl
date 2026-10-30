@@ -22,6 +22,9 @@ internal static class SettingsMapper
             settings.DefaultVat,
             settings.QuoteValidityDays,
             logoUrl,
-            SettingsVersion.Format(tenant.Version, settings.Version));
+            SettingsVersion.Format(tenant.Version, settings.Version),
+            settings.HotQuoteHours,
+            settings.StuckOrderDays,
+            settings.AgedReceivableDays);
     }
 }

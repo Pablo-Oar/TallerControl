@@ -16,7 +16,10 @@ public sealed record SettingsDto(
     decimal DefaultVatRate,
     int QuoteValidityDays,
     string? LogoUrl,
-    string Version);
+    string Version,
+    int HotQuoteHours,
+    int StuckOrderDays,
+    int AgedReceivableDays);
 
 /// <summary>Cuerpo de <c>PUT /api/v1/settings</c> (doc 05 §2.2). El logo va por su propio flujo.</summary>
 public sealed record UpdateSettingsRequest(
@@ -27,7 +30,10 @@ public sealed record UpdateSettingsRequest(
     string? Phone,
     string TimeZone,
     decimal DefaultVatRate,
-    int QuoteValidityDays);
+    int QuoteValidityDays,
+    int? HotQuoteHours = null,
+    int? StuckOrderDays = null,
+    int? AgedReceivableDays = null);
 
 /// <summary>Cuerpo de <c>POST /api/v1/settings/logo/upload-url</c> (doc 05 §2.2, T-SET-03).</summary>
 public sealed record LogoUploadUrlRequest(string ContentType, long Size);
