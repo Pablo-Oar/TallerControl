@@ -172,6 +172,8 @@ export function MechanicWorkOrderDetailPage() {
         </Section>
       )}
 
+      <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
+      <div className="space-y-3">
       <Section title="Vehículo">
         <div className="space-y-1">
           <p className="font-mono text-xl font-bold tracking-widest text-tc-text">{order.vehiclePlate}</p>
@@ -214,10 +216,6 @@ export function MechanicWorkOrderDetailPage() {
         </Section>
       )}
 
-      <Section title="Fotos">
-        <WorkOrderPhotos workOrderId={order.id} readOnly={isOthers} canDelete={order.assignedMechanicId != null && !isOthers} />
-      </Section>
-
       <Section title={isOthers ? 'Notas del mecánico' : 'Mis notas'}>
         {editingNotes ? (
           <div className="space-y-2">
@@ -249,6 +247,12 @@ export function MechanicWorkOrderDetailPage() {
             </button>}
           </div>
         )}
+      </Section>
+
+      </div>
+      <div className="space-y-3">
+      <Section title="Fotos">
+        <WorkOrderPhotos workOrderId={order.id} readOnly={isOthers} canDelete={order.assignedMechanicId != null && !isOthers} />
       </Section>
 
       {history && history.length > 0 && (
@@ -289,16 +293,18 @@ export function MechanicWorkOrderDetailPage() {
           />
         </Section>
       )}
+      </div>
+      </div>
 
       {transitions.length > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-tc-border bg-white px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-          <div className="mx-auto flex max-w-lg gap-2" role="group" aria-label="Cambiar estado">
+          <div className="mx-auto flex max-w-[70rem] gap-2 sm:justify-end" role="group" aria-label="Cambiar estado">
             {[...transitions].sort((x, y) => (y === 'completed' ? 1 : 0) - (x === 'completed' ? 1 : 0)).map(toStatus => (
               <Button
                 key={toStatus}
                 variant={toStatus === 'completed' || transitions.length === 1 ? 'primary' : 'secondary'}
                 onClick={() => setChangingStatus(toStatus)}
-                className="min-h-[48px] flex-1 text-base"
+                className="min-h-[48px] flex-1 text-base sm:min-w-[12rem] sm:flex-none"
               >
                 {STATUS_LABELS[toStatus]}
               </Button>
