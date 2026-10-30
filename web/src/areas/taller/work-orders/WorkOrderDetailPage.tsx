@@ -321,7 +321,7 @@ export function WorkOrderDetailPage() {
               </span>
               {(order.balance ?? 0) > 0 && (
                 <span className="font-semibold text-amber-600 tabular-nums">
-                  Saldo {fmtARS(order.balance!)}
+                  Pendiente {fmtARS(order.balance!)}
                 </span>
               )}
             </div>
@@ -362,7 +362,7 @@ export function WorkOrderDetailPage() {
               Cobrado <span className="tabular-nums font-semibold text-tc-done-text">{fmtARS(payments.paid)}</span>
             </span>
             <span className={payments.balance > 0 ? 'text-amber-600' : 'text-tc-done-text'}>
-              Saldo <span className="tabular-nums font-bold">{fmtARS(payments.balance)}</span>
+              Pendiente <span className="tabular-nums font-bold">{fmtARS(payments.balance)}</span>
             </span>
           </div>
         )}
