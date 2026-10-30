@@ -31,14 +31,14 @@ const COLUMNS: DataTableColumn<WorkOrderListDto>[] = [
     header: '#',
     sortLabel: 'Número',
     align: 'center',
-    widthClass: 'w-[6%]',
+    widthClass: 'w-[7%]',
     sortable: true,
     cell: o => <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{o.number}</span>,
   },
   {
     key: 'customer',
     header: 'Cliente / Vehículo',
-    widthClass: 'w-[34%]',
+    widthClass: 'w-[29%]',
     cell: o => (
       <div className="min-w-0">
         <p className="truncate font-medium text-tc-text">{o.customerName}</p>
@@ -54,15 +54,15 @@ const COLUMNS: DataTableColumn<WorkOrderListDto>[] = [
     key: 'status',
     header: 'Estado',
     align: 'center',
-    widthClass: 'w-[15%]',
+    widthClass: 'w-[16%]',
     sortable: true,
     cell: o => <StatusBadge status={o.status} />,
   },
   {
     key: 'total',
     header: 'Total',
-    align: 'right',
-    widthClass: 'w-[13%]',
+    align: 'center',
+    widthClass: 'w-[14%]',
     sortable: true,
     cell: o => (
       <span className="tabular-nums font-medium text-tc-purple">{o.total != null ? fmtARS(o.total) : '—'}</span>
@@ -71,8 +71,8 @@ const COLUMNS: DataTableColumn<WorkOrderListDto>[] = [
   {
     key: 'balance',
     header: 'Pendiente',
-    align: 'right',
-    widthClass: 'w-[13%]',
+    align: 'center',
+    widthClass: 'w-[14%]',
     sortable: true,
     cell: o =>
       o.balance != null ? (
@@ -86,7 +86,8 @@ const COLUMNS: DataTableColumn<WorkOrderListDto>[] = [
   {
     key: 'mechanic',
     header: 'Mecánico',
-    widthClass: 'w-[19%]',
+    align: 'center',
+    widthClass: 'w-[16%]',
     cell: o => <span className="block truncate text-xs text-tc-text-muted">{o.assignedMechanicName ?? '—'}</span>,
   },
 ]
@@ -132,6 +133,7 @@ export function WorkOrdersPage() {
       <DataTable<WorkOrderListDto>
         label="Órdenes de trabajo"
         columns={COLUMNS}
+        fixedLayout
         rows={data?.items ?? []}
         getRowId={o => o.id}
         rowHref={o => `/app/work-orders/${o.id}`}
