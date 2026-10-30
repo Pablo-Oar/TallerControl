@@ -39,22 +39,23 @@ Alternativa propia a Vehix, construida sobre el mismo mercado (talleres pequeño
 - **Tres áreas distintas:** `/app/*` (escritorio, taller), `/m/*` (mobile-first, mecánico), `/*` (público, sin auth).
 - **Multi-empresa:** cada taller es un tenant aislado; el tenant_id sale de la sesión, nunca de la URL.
 - **Stack:** React 19 + Vite + Tailwind 4 (utility-first, sin CSS custom salvo `@import 'tailwindcss'`) + TanStack Query + React Hook Form + Zod.
-- **Componentes compartidos existentes:** solo `Button` y `Input` en `/components/ui/`. Todo lo demás es código inline.
-- **Sin librería de componentes externa** (no shadcn, no MUI, no Radix instalado aún).
-- **Estado visual actual:** funcional pero visualmente mínimo — paleta slate + blue-600, sin identidad diferenciada, sin sistema de iconos consistente, sin tipografía especial, sin tokens de diseño.
+- **Componentes compartidos** en `web/src/components/ui/`: `Button`, `Modal`/`EditDialog`, `FormField`/`FormSelect`/`FormTextarea`, `DataTable`, `Pagination`, `Tabs`, `Timeline`, `StatusBadge`/`EditableStatusBadge`, `SearchPicker`/`EntityPickers`, `RowMenu`, `AuthCard`/`AuthInput`, `PublicNav`, `dialogs`. Pantallas nuevas deben usarlos en vez de código inline.
+- **Sin librería de componentes externa** (ni shadcn, MUI ni Radix; Watermelon se evaluó y no se vendoreó nada). Instalado: `motion`. Gráficos del Inicio: `recharts` en el chunk lazy del dashboard (D-41).
+- **Estado visual actual:** sistema «The Boarding Pass» consolidado (UI-R2 + auditoría de UI de 26–30/10/2026): tokens `tc-*`, navy + carbon purple, sellos de estado, talón perforado, contraste WCAG AA y objetivos táctiles de 44 px. Detalle en `DESIGN.md`.
 - **Idioma:** español rioplatense (Argentina). Moneda ARS.
 - **Accesibilidad:** básica requerida (contraste WCAG AA, navegación por teclado en formularios críticos).
 
 ## Brand Commitments
 
-Ninguno confirmado. Sin restricciones: el rediseño puede proponer wordmark, paleta, tipografía e iconografía desde cero.
+Identidad vigente (D-26): se mantiene la paleta `tc-*`, esquinas rectas en la app (`--radius: 0`) y bordes redondeados solo en las pantallas de acceso y en las tablas (`DataTable`). Wordmark provisorio «TALLERCONTROL» con «CONTROL» en violeta.
 
 ## Evidence on Hand
 
 - Código fuente completo: `web/src/`.
 - La aplicación se levanta con `npm --prefix web run dev` (Vite en localhost:5173).
 - La API corre en localhost:5233 (levantada por separado con `.\scripts\dev.ps1`).
-- Sin logo, sin guía de estilos, sin Figma ni referencia visual externa.
+- Guía de estilos: `DESIGN.md` (generada del código). Sin logo de marca todavía (el ícono es «TC» sobre azul `#0a1628`), sin Figma.
+- Plan vigente del Inicio: `docs/plan-dashboard-inicio.md`.
 
 ## Product Principles
 

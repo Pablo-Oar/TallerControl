@@ -89,7 +89,9 @@ Las convenciones de trabajo del equipo están en [`CLAUDE.md`](CLAUDE.md).
 
 ## Estado
 
-Etapas **E0** (repositorio, esqueleto de la API y de la SPA, entorno local y CI) y **E1** (persistencia, aislamiento por taller, auditoría, outbox, numeración, rol de aplicación, logs y errores) completas. Sigue **E2**: autenticación y multiempresa.
+**MVP completo** (etapas E0–E14, rediseño de UI, plan de correcciones y auditoría de UI por roles), mergeado a la rama `Develop`: gestión de clientes y vehículos con historial, presupuestos con aprobación por enlace y firma, órdenes de trabajo, cobros y caja, compras y proveedores, facturación electrónica ARCA, tarjeta QR para el dueño del vehículo, portal del mecánico (PWA con avisos push), agenda de turnos, recordatorios y reportes.
+
+Pendientes: lanzamiento a producción (ver [`docs/deploy-produccion.md`](docs/deploy-produccion.md)), piloto con un taller real y el rediseño del Inicio ([`docs/plan-dashboard-inicio.md`](docs/plan-dashboard-inicio.md)). El estado detallado por etapa está en [`CLAUDE.md`](CLAUDE.md).
 
 ## Licencia
 

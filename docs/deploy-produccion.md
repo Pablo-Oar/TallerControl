@@ -320,6 +320,13 @@ wrangler secret put Email__Smtp__Password
 # R2 / Storage
 wrangler secret put Storage__AccessKey
 wrangler secret put Storage__SecretKey
+# (Solo si las URLs prefirmadas deben firmarse con otro host que el del API: dominio público del bucket)
+# Storage__PublicUrl=https://<dominio-publico-del-bucket>   (variable, no secreto; en local con túnel: STORAGE_PUBLIC_URL en .env)
+
+# Avisos push al celular del mecánico (claves VAPID; generar con .\scripts\generate-vapid-keys.ps1)
+wrangler secret put Push__PublicKey
+wrangler secret put Push__PrivateKey
+# Push__Subject=mailto:soporte@tallercontrol.com.ar   (variable)
 
 # (Opcional) Connection string de migraciones — solo para aplicar manualmente
 wrangler secret put ConnectionStrings__Migrations
@@ -414,6 +421,8 @@ Permisos mínimos: `Account > Workers Scripts > Edit`, `Account > Cloudflare Con
 - [ ] Generar un QR, escanear y verificar portal del dueño (prueba Turnstile + cookie `tc_qr`)
 - [ ] Crear un presupuesto y enviarlo por email (prueba Gmail SMTP)
 - [ ] Crear un pago y abrir el PDF (prueba QuestPDF en producción)
+- [ ] Entrar a `/m` con un mecánico en un celular (HTTPS), tocar «Activar avisos», asignarle una orden desde el panel y confirmar que llega el aviso (con la sesión iniciada; **cerrar sesión borra la suscripción**, D-38)
+- [ ] La tarea horaria `MaintenanceWorker` está corriendo (presupuestos vencidos y recordatorios; revisar el log una hora después del arranque)
 - [ ] Verificar SSL en [ssllabs.com/ssltest](https://www.ssllabs.com/ssltest/) — debe ser A+
 
 ---
