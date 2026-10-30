@@ -95,7 +95,6 @@ export function RegisterPage() {
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         <AuthInput
           label="Nombre del taller"
-          visibleLabel
           icon={<WrenchIcon />}
           autoComplete="organization"
           placeholder="Ej: Taller Rodríguez"
@@ -104,7 +103,6 @@ export function RegisterPage() {
         />
         <AuthInput
           label="Tu nombre"
-          visibleLabel
           icon={<UserIcon />}
           autoComplete="name"
           placeholder="Ej: Carlos Rodríguez"
@@ -113,7 +111,6 @@ export function RegisterPage() {
         />
         <AuthInput
           label="Email"
-          visibleLabel
           type="email"
           icon={<MailIcon />}
           autoComplete="email"
@@ -123,7 +120,6 @@ export function RegisterPage() {
         />
         <AuthInput
           label="Contraseña"
-          visibleLabel
           type="password"
           icon={<LockIcon />}
           autoComplete="new-password"
@@ -134,7 +130,6 @@ export function RegisterPage() {
         />
         <AuthInput
           label="Confirmar contraseña"
-          visibleLabel
           type="password"
           icon={<LockIcon />}
           autoComplete="new-password"
