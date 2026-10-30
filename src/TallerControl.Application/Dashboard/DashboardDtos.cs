@@ -73,6 +73,7 @@ public sealed record TodayAppointmentDto(
     Guid Id,
     DateTimeOffset ScheduledAt,
     string CustomerName,
+    Guid VehicleId,
     string VehiclePlate,
     string? MechanicName,
     AppointmentStatus Status);

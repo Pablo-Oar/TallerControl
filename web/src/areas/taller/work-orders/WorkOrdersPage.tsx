@@ -13,6 +13,8 @@ import { DataTable, type DataTableColumn, type SortState } from '../../../compon
 import { Pagination } from '../../../components/ui/Pagination'
 import { WorkOrderFormModal } from './WorkOrderFormModal'
 import { pendingTone } from '../../../lib/styles'
+import { useCreateFromQuery } from '../../../lib/useCreateFromQuery'
+import { useSearchParams } from 'react-router'
 
 const STATUS_OPTIONS: WorkOrderStatus[] = [
   'pending', 'in_progress', 'waiting_parts', 'completed', 'delivered', 'cancelled',
@@ -97,12 +99,15 @@ export function WorkOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<WorkOrderStatus | ''>('')
   const [page, setPage] = useState(1)
   const [sort, setSort] = useState<SortState | null>(null)
-  const [creating, setCreating] = useState(false)
+  const [creating, setCreating] = useCreateFromQuery()
+  // `?pendientes=1` (Inicio → «Registrar cobro» / «Por cobrar»): solo las órdenes con saldo.
+  const [searchParams] = useSearchParams()
+  const [withBalance, setWithBalance] = useState(searchParams.get('pendientes') === '1')
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['work-orders', statusFilter, page, sort],
+    queryKey: ['work-orders', statusFilter, withBalance, page, sort],
     queryFn: () =>
-      workOrdersApi.search(statusFilter || null, null, null, null, null, null, page, 10, null, sort),
+      workOrdersApi.search(statusFilter || null, null, null, withBalance || null, null, null, page, 10, null, sort),
   })
 
   function handleSuccess() {
@@ -117,7 +122,7 @@ export function WorkOrdersPage() {
         <Button onClick={() => setCreating(true)} size="sm">Nueva orden</Button>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <select
           value={statusFilter}
           onChange={e => { setStatusFilter(e.target.value as WorkOrderStatus | ''); setPage(1) }}
@@ -128,6 +133,15 @@ export function WorkOrdersPage() {
             <option key={s} value={s}>{STATUS_LABELS[s]}</option>
           ))}
         </select>
+        <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-tc-text-secondary">
+          <input
+            type="checkbox"
+            checked={withBalance}
+            onChange={e => { setWithBalance(e.target.checked); setPage(1) }}
+            className="h-4 w-4 accent-tc-purple"
+          />
+          Solo con saldo pendiente
+        </label>
       </div>
 
       <DataTable<WorkOrderListDto>

@@ -358,6 +358,7 @@ internal sealed class EfDashboardRepository : IDashboardRepository
             r.Id,
             r.ScheduledAt,
             customers.GetValueOrDefault(r.CustomerId, string.Empty),
+            r.VehicleId,
             vehicles.GetValueOrDefault(r.VehicleId)?.Plate ?? string.Empty,
             r.MechanicMembershipId.HasValue ? mechanics.GetValueOrDefault(r.MechanicMembershipId.Value) : null,
             r.Status)).ToList();

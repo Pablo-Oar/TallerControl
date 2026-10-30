@@ -13,6 +13,7 @@ import { InvoiceSection } from '../invoicing/InvoiceSection'
 import { confirmDialog, notify } from '../../../components/ui/dialogs'
 import { ConfirmWithCashModal } from '../../../components/ConfirmWithCashModal'
 import { FormTextarea } from '../../../components/ui/FormField'
+import { useCreateFromQuery } from '../../../lib/useCreateFromQuery'
 
 const STATUS_LABELS: Record<CounterSaleStatus, string> = {
   draft: 'Borrador',
@@ -79,7 +80,7 @@ export function CounterSalesPage() {
   const [returning, setReturning] = useState<CounterSaleDto | null>(null)
   const [returnReason, setReturnReason] = useState('')
   const [returnBusy, setReturnBusy] = useState(false)
-  const [creating, setCreating] = useState(false)
+  const [creating, setCreating] = useCreateFromQuery()
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['counter-sales', search, page],

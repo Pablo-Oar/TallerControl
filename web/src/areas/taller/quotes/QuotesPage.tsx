@@ -12,6 +12,7 @@ import { DataTable, type DataTableColumn, type SortState } from '../../../compon
 import { Pagination } from '../../../components/ui/Pagination'
 import { QuoteFormModal } from './QuoteFormModal'
 import { formatDate, formatDateOnly } from '../../../lib/dates'
+import { useCreateFromQuery } from '../../../lib/useCreateFromQuery'
 
 const STATUS_OPTIONS: QuoteStatus[] = [
   'draft', 'sent', 'approved', 'partially_approved', 'rejected', 'expired', 'converted', 'cancelled',
@@ -78,7 +79,7 @@ export function QuotesPage() {
   const [statusFilter, setStatusFilter] = useState<QuoteStatus | ''>('')
   const [page, setPage] = useState(1)
   const [sort, setSort] = useState<SortState | null>(null)
-  const [creating, setCreating] = useState(false)
+  const [creating, setCreating] = useCreateFromQuery()
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['quotes', statusFilter, page, sort],
