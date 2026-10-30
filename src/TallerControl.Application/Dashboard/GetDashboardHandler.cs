@@ -9,6 +9,6 @@ public sealed class GetDashboardHandler
         _repository = repository;
     }
 
-    public Task<DashboardDto> HandleAsync(CancellationToken ct) =>
-        _repository.GetSummaryAsync(ct);
+    public Task<DashboardDto> HandleAsync(DashboardScope scope, CancellationToken ct) =>
+        _repository.GetSummaryAsync(scope, ct);
 }
