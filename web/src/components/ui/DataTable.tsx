@@ -59,6 +59,8 @@ interface DataTableProps<T> {
   onRetry?: () => void
   emptyMessage?: string
   className?: string
+  /** Anchos de columna firmes (`table-fixed`): las columnas con `widthClass` en % reparten el ancho de forma pareja. */
+  fixedLayout?: boolean
 }
 
 const ALIGN: Record<NonNullable<DataTableColumn<unknown>['align']>, string> = {
@@ -94,6 +96,7 @@ export function DataTable<T>({
   onRetry,
   emptyMessage = 'No hay datos.',
   className,
+  fixedLayout = false,
 }: DataTableProps<T>) {
   const serverSort = !!onSortChange
   const [localSort, setLocalSort] = useState<SortState | null>(null)
@@ -166,7 +169,7 @@ export function DataTable<T>({
   return (
     <div className={frame}>
       {/* Escritorio */}
-      <table className="hidden w-full border-separate border-spacing-0 text-sm md:table">
+      <table className={cn('hidden w-full border-separate border-spacing-0 text-sm md:table', fixedLayout && 'md:table-fixed')}>
         <caption className="sr-only">{label}</caption>
         <thead>
           <tr>
