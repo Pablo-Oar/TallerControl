@@ -36,17 +36,17 @@ describe('shell de la SPA', () => {
   it('/app sin sesión redirige a /login', async () => {
     renderEn('/app')
     // Sin sesión, RequireAuth redirige a /login → aparece la pantalla de ingreso
-    expect(await screen.findByRole('heading', { name: /bienvenido de nuevo/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /^bienvenido$/i })).toBeInTheDocument()
   })
 
   it('/m sin sesión redirige a /login (el portal del mecánico no se muestra)', async () => {
     renderEn('/m')
-    expect(await screen.findByRole('heading', { name: /bienvenido de nuevo/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /^bienvenido$/i })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Mis trabajos' })).toBeNull()
   })
 
   it('/login muestra la página de ingreso', async () => {
     renderEn('/login')
-    expect(await screen.findByRole('heading', { name: /bienvenido de nuevo/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /^bienvenido$/i })).toBeInTheDocument()
   })
 })
