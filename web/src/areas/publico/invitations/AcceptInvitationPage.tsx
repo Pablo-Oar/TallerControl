@@ -53,7 +53,6 @@ export function AcceptInvitationPage() {
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         <AuthInput
           label="Contraseña"
-          visibleLabel
           type="password"
           icon={<LockIcon />}
           autoComplete="new-password"
@@ -63,7 +62,6 @@ export function AcceptInvitationPage() {
         />
         <AuthInput
           label="Confirmar contraseña"
-          visibleLabel
           type="password"
           icon={<LockIcon />}
           autoComplete="new-password"

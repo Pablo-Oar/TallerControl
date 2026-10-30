@@ -119,6 +119,11 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
+/* AuthInput (pantallas de acceso): el foco lo marca solo el borde violeta, sin el contorno global (evita el doble borde) */
+input[data-auth-field]:focus-visible {
+  outline: none;
+}
+
 /* FormField: una sola señal de foco — borde violeta + anillo pegado (sin capa, para ganarle a las utilidades) */
 [data-field]:focus-visible {
   outline-offset: 0;

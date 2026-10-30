@@ -66,7 +66,6 @@ export function LoginPage() {
           label="Email"
           type="email"
           icon={<MailIcon />}
-          placeholder="Email"
           autoComplete="email"
           error={errors.email?.message}
           {...register('email')}
@@ -75,7 +74,6 @@ export function LoginPage() {
           label="Contraseña"
           type="password"
           icon={<LockIcon />}
-          placeholder="Contraseña"
           autoComplete="current-password"
           error={errors.password?.message}
           {...register('password')}

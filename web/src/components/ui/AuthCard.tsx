@@ -55,13 +55,14 @@ interface AuthInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'si
   icon: ReactNode
   error?: string
   hint?: string
-  /** Muestra la etiqueta arriba (registro). Por defecto queda solo para lectores de pantalla y el placeholder la repite. */
-  visibleLabel?: boolean
 }
 
-/** Campo con ícono; con `type="password"` agrega el botón de mostrar/ocultar. Etiqueta siempre asociada. */
+/**
+ * Campo con ícono y etiqueta flotante: la etiqueta vive dentro del campo y, al enfocarlo o escribir, sube y se
+ * apoya sobre el borde (el `placeholder` solo se ve con el foco, y solo si aporta algo distinto de la etiqueta). Con `type="password"` agrega mostrar/ocultar.
+ */
 export const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(function AuthInput(
-  { label, icon, error, hint, visibleLabel = false, type = 'text', className, id: idProp, ...rest },
+  { label, icon, error, hint, type = 'text', className, id: idProp, placeholder, ...rest },
   ref,
 ) {
   const autoId = useId()
@@ -72,25 +73,39 @@ export const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(function A
 
   return (
     <div className={className}>
-      <label htmlFor={id} className={visibleLabel ? 'mb-1.5 block text-sm font-medium text-tc-text' : 'sr-only'}>
-        {label}
-      </label>
       <div className="relative">
         <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-tc-text-muted">{icon}</span>
         <input
           ref={ref}
           id={id}
+          data-auth-field=""
           type={isPassword && shown ? 'text' : type}
+          // El espacio fuerza `:placeholder-shown` (campo vacío) cuando no hay placeholder propio.
+          placeholder={placeholder ?? ' '}
           aria-invalid={error ? true : undefined}
           aria-describedby={error || hint ? descId : undefined}
           className={cn(
-            'block h-11 w-full rounded-xl border bg-tc-surface pl-10 text-sm text-tc-text outline-none transition-colors',
-            'placeholder:text-tc-text-muted focus:border-tc-purple focus:bg-white',
+            'peer block h-12 w-full rounded-xl border bg-white pl-10 text-sm text-tc-text outline-none transition-colors',
+            'placeholder:text-transparent focus:placeholder:text-tc-text-muted',
             isPassword ? 'pr-11' : 'pr-3',
-            error ? 'border-tc-stamp-red' : 'border-tc-border-mid',
+            error
+              ? 'border-tc-stamp-red'
+              : 'border-tc-border-mid hover:border-tc-text-muted focus:border-tc-purple',
           )}
           {...rest}
         />
+        <label
+          htmlFor={id}
+          className={cn(
+            'pointer-events-none absolute left-10 top-1/2 -translate-y-1/2 bg-white px-1 text-sm text-tc-text-muted transition-all duration-300 ease-out',
+            // Al enfocar o escribir, la etiqueta sube lentamente y se apoya sobre el borde superior del campo.
+            'peer-focus:top-0 peer-focus:left-3 peer-focus:text-xs peer-focus:font-semibold',
+            'peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:left-3 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:font-semibold',
+            error ? 'text-tc-stamp-red peer-focus:text-tc-stamp-red' : 'peer-focus:text-tc-purple',
+          )}
+        >
+          {label}
+        </label>
         {isPassword && (
           <button
             type="button"

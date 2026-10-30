@@ -65,7 +65,6 @@ export function ResetPasswordPage() {
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         <AuthInput
           label="Contraseña"
-          visibleLabel
           type="password"
           icon={<LockIcon />}
           autoComplete="new-password"
@@ -75,7 +74,6 @@ export function ResetPasswordPage() {
         />
         <AuthInput
           label="Confirmar contraseña"
-          visibleLabel
           type="password"
           icon={<LockIcon />}
           autoComplete="new-password"

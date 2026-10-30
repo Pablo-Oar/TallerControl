@@ -47,7 +47,6 @@ export function ForgotPasswordPage() {
             label="Email"
             type="email"
             icon={<MailIcon />}
-            placeholder="Email"
             autoComplete="email"
             error={errors.email?.message}
             {...register('email')}
