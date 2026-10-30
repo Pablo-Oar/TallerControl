@@ -1,6 +1,6 @@
 # Plan: rediseño del Inicio (`/app`) como centro de comando
 
-Estado: **plan aprobado el 30/10/2026, sin código todavía.** Decisiones D-39..D-42 abajo. Se implementa en PR chicos, cada uno con CI en verde antes del merge.
+Estado: **implementado el 30/10/2026 (PR #155–#157, en Develop).** El orden real fue umbrales (D-42) → API → pantalla; el detalle y lo que cambió respecto del plan está en CLAUDE.md («Rediseño del Inicio»). Quedan como seguimiento: probarlo con datos reales y, si hace falta, «ocultar la guía al superar 10 órdenes» (requiere que el endpoint informe el total de órdenes). Decisiones D-39..D-42 abajo. Se implementa en PR chicos, cada uno con CI en verde antes del merge.
 
 ## Objetivo
 
