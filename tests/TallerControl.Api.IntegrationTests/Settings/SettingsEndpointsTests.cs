@@ -71,17 +71,25 @@ public sealed class SettingsEndpointsTests : IAsyncLifetime
         return await client.SendAsync(req);
     }
 
-    private static object ValidUpdateBody(decimal defaultVatRate = 21m, int quoteValidityDays = 15) => new
-    {
-        name = "Taller Actualizado",
-        legalName = "Taller Actualizado S.A.",
-        taxId = "30-12345678-9",
-        address = "Av. Siempre Viva 742",
-        phone = "+5491122334455",
-        timeZone = "America/Argentina/Buenos_Aires",
-        defaultVatRate,
-        quoteValidityDays,
-    };
+    private static object ValidUpdateBody(
+        decimal defaultVatRate = 21m,
+        int quoteValidityDays = 15,
+        int? hotQuoteHours = null,
+        int? stuckOrderDays = null,
+        int? agedReceivableDays = null) => new
+        {
+            name = "Taller Actualizado",
+            legalName = "Taller Actualizado S.A.",
+            taxId = "30-12345678-9",
+            address = "Av. Siempre Viva 742",
+            phone = "+5491122334455",
+            timeZone = "America/Argentina/Buenos_Aires",
+            defaultVatRate,
+            quoteValidityDays,
+            hotQuoteHours,
+            stuckOrderDays,
+            agedReceivableDays,
+        };
 
     private static async Task<HttpResponseMessage> PostLogoUploadUrlAsync(HttpClient client, string contentType, long size)
     {
@@ -122,6 +130,9 @@ public sealed class SettingsEndpointsTests : IAsyncLifetime
         Assert.Equal(21m, dto.GetProperty("defaultVatRate").GetDecimal());
         Assert.Equal(15, dto.GetProperty("quoteValidityDays").GetInt32());
         Assert.Equal(JsonValueKind.Null, dto.GetProperty("logoUrl").ValueKind);
+        Assert.Equal(48, dto.GetProperty("hotQuoteHours").GetInt32());
+        Assert.Equal(3, dto.GetProperty("stuckOrderDays").GetInt32());
+        Assert.Equal(30, dto.GetProperty("agedReceivableDays").GetInt32());
 
         // xmin es el id real de la transacción que insertó la fila, no un contador desde cero.
         var version = dto.GetProperty("version").GetString();
@@ -162,6 +173,40 @@ public sealed class SettingsEndpointsTests : IAsyncLifetime
         await LoginAsync(client, SettingsWebApplicationFactory.OwnerEmail, SettingsWebApplicationFactory.OwnerPassword);
 
         var resp = await PutSettingsAsync(client, ValidUpdateBody(defaultVatRate: 22m));
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
+    }
+
+    // ── D-42: umbrales del Inicio ───────────────────────────────────────────────
+    [Fact(DisplayName = "T-SET-04: el Dueño cambia los umbrales del Inicio y quedan guardados")]
+    public async Task Owner_edita_los_umbrales_del_inicio_y_persisten()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, SettingsWebApplicationFactory.OwnerEmail, SettingsWebApplicationFactory.OwnerPassword);
+
+        var putResp = await PutSettingsAsync(client, ValidUpdateBody(hotQuoteHours: 72, stuckOrderDays: 5, agedReceivableDays: 45));
+        Assert.Equal(HttpStatusCode.OK, putResp.StatusCode);
+
+        var dto = await GetSettingsAsync(client);
+        Assert.Equal(72, dto.GetProperty("hotQuoteHours").GetInt32());
+        Assert.Equal(5, dto.GetProperty("stuckOrderDays").GetInt32());
+        Assert.Equal(45, dto.GetProperty("agedReceivableDays").GetInt32());
+
+        // Un PUT sin los umbrales (cliente viejo) no los pisa.
+        var again = await PutSettingsAsync(client, ValidUpdateBody(quoteValidityDays: 20));
+        Assert.Equal(HttpStatusCode.OK, again.StatusCode);
+        var kept = await GetSettingsAsync(client);
+        Assert.Equal(72, kept.GetProperty("hotQuoteHours").GetInt32());
+        Assert.Equal(20, kept.GetProperty("quoteValidityDays").GetInt32());
+    }
+
+    [Fact(DisplayName = "T-SET-05: un umbral fuera de rango se rechaza con 422")]
+    public async Task Umbral_fuera_de_rango_es_rechazado_con_422()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, SettingsWebApplicationFactory.OwnerEmail, SettingsWebApplicationFactory.OwnerPassword);
+
+        var resp = await PutSettingsAsync(client, ValidUpdateBody(stuckOrderDays: 0));
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
     }

@@ -12,6 +12,9 @@ internal sealed class TenantSettingsConfiguration : IEntityTypeConfiguration<Ten
         {
             t.HasCheckConstraint("ck_tenant_settings_default_vat", "default_vat_rate IN (0, 2.5, 5, 10.5, 21, 27)");
             t.HasCheckConstraint("ck_tenant_settings_quote_validity", "quote_validity_days BETWEEN 1 AND 180");
+            t.HasCheckConstraint("ck_tenant_settings_hot_quote_hours", "hot_quote_hours BETWEEN 1 AND 720");
+            t.HasCheckConstraint("ck_tenant_settings_stuck_order_days", "stuck_order_days BETWEEN 1 AND 60");
+            t.HasCheckConstraint("ck_tenant_settings_aged_receivable_days", "aged_receivable_days BETWEEN 1 AND 365");
         });
 
         builder.HasKey(s => s.TenantId);
@@ -23,5 +26,8 @@ internal sealed class TenantSettingsConfiguration : IEntityTypeConfiguration<Ten
         builder.Property(s => s.QuoteValidityDays).HasDefaultValue(TenantSettings.DefaultQuoteValidityDays);
         builder.Property(s => s.PhoneCountryCode).IsRequired().HasDefaultValue(TenantSettings.DefaultPhoneCountryCode);
         builder.Property(s => s.QrPlateLookupEnabled).HasDefaultValue(false);
+        builder.Property(s => s.HotQuoteHours).HasDefaultValue(TenantSettings.DefaultHotQuoteHours);
+        builder.Property(s => s.StuckOrderDays).HasDefaultValue(TenantSettings.DefaultStuckOrderDays);
+        builder.Property(s => s.AgedReceivableDays).HasDefaultValue(TenantSettings.DefaultAgedReceivableDays);
     }
 }
