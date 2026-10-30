@@ -8,7 +8,7 @@ Foco del MVP: **vehículo + historial, ciclo presupuesto → orden → cobro, po
 El plan vive **fuera del repo** (es documentación interna, no se sube): `../documentacion/analisis-vehix/Plan implementaicon/` (la carpeta se llama `implementaicon`, sin "m").
 Antes de implementar algo, leer el documento que corresponde. No inventar reglas: si el plan no lo dice, preguntar.
 
-**Documento a seguir: `PlanImplementacionV4.html`** (V4, 19/10/2026: estado real + track UI-R2). Reemplaza a V3 como referencia principal. Estructura por secciones `<section id="doc-NN">`:
+**Documento a seguir: `PlanImplementacionV4.html`** (V4, 19/10/2026: estado real + track UI-R2; **actualizado en el mismo archivo el 30/10/2026** con el bloque «Actualización» del doc-00, decisiones D-30..D-42, migraciones 25–33 y componentes nuevos; resumen en `Registro-cambios-posteriores-a-V4.md`). Reemplaza a V3 como referencia principal. Estructura por secciones `<section id="doc-NN">`:
 
 | doc | Contiene |
 |---|---|
