@@ -48,7 +48,7 @@ export function HotQuotesWidget({ data, thresholds }: { data: HotQuotes; thresho
         <ul className="divide-y divide-tc-border">
           {data.items.map(q => (
             <li key={q.id} className="flex min-h-11 items-center justify-between gap-3 px-4 py-2.5">
-              <Link to={`/app/quotes/${q.id}`} className="min-w-0 hover:underline">
+              <Link to={`/app/quotes/${q.id}`} className="flex min-h-11 min-w-0 flex-col justify-center hover:underline">
                 <span className="block truncate text-sm font-medium text-tc-text">#{q.number} · {q.customerName}</span>
                 <span className="block truncate text-xs text-tc-text-muted">
                   <span className="font-mono tracking-widest">{q.vehiclePlate}</span> · {fmtARS(q.total)} · {agoLabel(q.hoursSinceSent)}

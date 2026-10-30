@@ -66,7 +66,7 @@ export function WidgetShell({ title, count, linkTo, linkLabel = 'Ver todas', chi
         <h2 className="flex items-center gap-2 text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-secondary">
           {title}
           {count !== undefined && count > 0 && (
-            <span className="bg-tc-purple px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-white">{count}</span>
+            <span className="bg-tc-purple px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-white">{count}</span>
           )}
         </h2>
         {linkTo && (
