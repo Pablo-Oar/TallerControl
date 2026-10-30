@@ -12,6 +12,7 @@ import { PurchaseFormModal } from './PurchaseFormModal'
 import { confirmDialog, notify } from '../../../components/ui/dialogs'
 import { FormTextarea } from '../../../components/ui/FormField'
 import { ConfirmWithCashModal } from '../../../components/ConfirmWithCashModal'
+import { useCreateFromQuery } from '../../../lib/useCreateFromQuery'
 
 const STATUS_LABELS: Record<PurchaseStatus, string> = {
   draft: 'Borrador',
@@ -77,7 +78,7 @@ export function PurchasesPage() {
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<PurchaseDto | null>(null)
   const [confirming, setConfirming] = useState<PurchaseDto | null>(null)
-  const [creating, setCreating] = useState(false)
+  const [creating, setCreating] = useCreateFromQuery()
   const [editing, setEditing] = useState<PurchaseDto | null>(null)
   const [voiding, setVoiding] = useState<PurchaseDto | null>(null)
   const [voidReason, setVoidReason] = useState('')
