@@ -12,6 +12,7 @@ import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { DataTable, type DataTableColumn, type SortState } from '../../../components/ui/DataTable'
 import { Pagination } from '../../../components/ui/Pagination'
 import { WorkOrderFormModal } from './WorkOrderFormModal'
+import { pendingTone } from '../../../lib/styles'
 
 const STATUS_OPTIONS: WorkOrderStatus[] = [
   'pending', 'in_progress', 'waiting_parts', 'completed', 'delivered', 'cancelled',
@@ -30,13 +31,14 @@ const COLUMNS: DataTableColumn<WorkOrderListDto>[] = [
     header: '#',
     sortLabel: 'Número',
     align: 'center',
-    widthClass: 'w-20',
+    widthClass: 'w-[6%]',
     sortable: true,
     cell: o => <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{o.number}</span>,
   },
   {
     key: 'customer',
     header: 'Cliente / Vehículo',
+    widthClass: 'w-[34%]',
     cell: o => (
       <div className="min-w-0">
         <p className="truncate font-medium text-tc-text">{o.customerName}</p>
@@ -52,7 +54,7 @@ const COLUMNS: DataTableColumn<WorkOrderListDto>[] = [
     key: 'status',
     header: 'Estado',
     align: 'center',
-    widthClass: 'w-40',
+    widthClass: 'w-[15%]',
     sortable: true,
     cell: o => <StatusBadge status={o.status} />,
   },
@@ -60,7 +62,7 @@ const COLUMNS: DataTableColumn<WorkOrderListDto>[] = [
     key: 'total',
     header: 'Total',
     align: 'right',
-    widthClass: 'w-32',
+    widthClass: 'w-[13%]',
     sortable: true,
     cell: o => (
       <span className="tabular-nums font-medium text-tc-purple">{o.total != null ? fmtARS(o.total) : '—'}</span>
@@ -70,11 +72,11 @@ const COLUMNS: DataTableColumn<WorkOrderListDto>[] = [
     key: 'balance',
     header: 'Pendiente',
     align: 'right',
-    widthClass: 'w-32',
+    widthClass: 'w-[13%]',
     sortable: true,
     cell: o =>
       o.balance != null ? (
-        <span className={['tabular-nums', o.balance > 0 ? 'font-semibold text-amber-600' : 'text-tc-text-muted'].join(' ')}>
+        <span className={['tabular-nums', pendingTone(o.balance, o.total)].join(' ')}>
           {fmtARS(o.balance)}
         </span>
       ) : (
@@ -84,8 +86,8 @@ const COLUMNS: DataTableColumn<WorkOrderListDto>[] = [
   {
     key: 'mechanic',
     header: 'Mecánico',
-    widthClass: 'w-44',
-    cell: o => <span className="block max-w-[10rem] truncate text-xs text-tc-text-muted">{o.assignedMechanicName ?? '—'}</span>,
+    widthClass: 'w-[19%]',
+    cell: o => <span className="block truncate text-xs text-tc-text-muted">{o.assignedMechanicName ?? '—'}</span>,
   },
 ]
 

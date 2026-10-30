@@ -23,6 +23,7 @@ import { Button } from '../../../components/ui/Button'
 import { WorkOrderFormModal } from './WorkOrderFormModal'
 import { quotesApi } from '../../../lib/api/quotes'
 import { WorkOrderPhotos } from '../../../components/WorkOrderPhotos'
+import { pendingTone } from '../../../lib/styles'
 import { FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { ApiError } from '../../../lib/api/client'
 import { notify } from '../../../components/ui/dialogs'
@@ -320,7 +321,7 @@ export function WorkOrderDetailPage() {
                 Total {fmtARS(order.total)}
               </span>
               {(order.balance ?? 0) > 0 && (
-                <span className="font-semibold text-amber-600 tabular-nums">
+                <span className={`tabular-nums ${pendingTone(order.balance!, order.total)}`}>
                   Pendiente {fmtARS(order.balance!)}
                 </span>
               )}
@@ -361,7 +362,7 @@ export function WorkOrderDetailPage() {
             <span className="text-tc-text-secondary">
               Cobrado <span className="tabular-nums font-semibold text-tc-done-text">{fmtARS(payments.paid)}</span>
             </span>
-            <span className={payments.balance > 0 ? 'text-amber-600' : 'text-tc-done-text'}>
+            <span className={payments.balance > 0 ? (payments.paid <= 0 ? 'text-tc-stamp-red' : 'text-amber-600') : 'text-tc-done-text'}>
               Pendiente <span className="tabular-nums font-bold">{fmtARS(payments.balance)}</span>
             </span>
           </div>
