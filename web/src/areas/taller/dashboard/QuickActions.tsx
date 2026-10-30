@@ -1,11 +1,12 @@
 import { Link } from 'react-router'
 import { useCan } from '../../../lib/auth/permissions'
+import { CardIcon, PlusIcon, StoreIcon } from './icons'
 
 const ACTIONS = [
-  { label: 'Nueva orden', to: '/app/work-orders?nueva=1', perm: 'workorders.write', primary: true },
-  { label: 'Nuevo presupuesto', to: '/app/quotes?nueva=1', perm: 'quotes.write', primary: false },
-  { label: 'Registrar cobro', to: '/app/work-orders?pendientes=1', perm: 'payments.write', primary: false },
-  { label: 'Venta de mostrador', to: '/app/counter-sales?nueva=1', perm: 'counter_sales.write', primary: false },
+  { label: 'Venta de mostrador', to: '/app/counter-sales?nueva=1', perm: 'counter_sales.write', color: 'bg-emerald-700 hover:bg-emerald-800', icon: <StoreIcon /> },
+  { label: 'Registrar cobro', to: '/app/work-orders?pendientes=1', perm: 'payments.write', color: 'bg-blue-700 hover:bg-blue-800', icon: <CardIcon /> },
+  { label: 'Nueva orden', to: '/app/work-orders?nueva=1', perm: 'workorders.write', color: 'bg-tc-purple hover:bg-tc-purple-mid', icon: <PlusIcon /> },
+  { label: 'Nuevo presupuesto', to: '/app/quotes?nueva=1', perm: 'quotes.write', color: 'bg-indigo-800 hover:bg-indigo-900', icon: <PlusIcon /> },
 ] as const
 
 /** Accesos directos a lo que más se hace en el día; cada uno aparece solo si el rol puede hacerlo. */
@@ -21,15 +22,11 @@ export function QuickActions() {
           key={a.to}
           to={a.to}
           className={[
-            'flex min-h-11 items-center justify-center gap-2 border px-2 py-2 text-center text-[13px] font-medium leading-tight tracking-wide transition-colors sm:px-3 sm:text-sm',
-            a.primary
-              ? 'border-tc-purple bg-tc-purple text-white hover:bg-tc-purple-mid'
-              : 'border-tc-border bg-white text-tc-text hover:border-tc-purple hover:text-tc-purple',
+            'flex min-h-12 items-center justify-center gap-2 rounded-2xl px-2 py-2 text-center text-[13px] font-semibold leading-tight tracking-wide text-white shadow-sm transition-colors sm:px-3 sm:text-sm',
+            a.color,
           ].join(' ')}
         >
-          <svg className="hidden h-3.5 w-3.5 flex-none sm:block" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-            <path d="M6 1v10M1 6h10" strokeLinecap="round" />
-          </svg>
+          <span aria-hidden className="hidden flex-none sm:block [&>svg]:h-[18px] [&>svg]:w-[18px]">{a.icon}</span>
           {a.label}
         </Link>
       ))}

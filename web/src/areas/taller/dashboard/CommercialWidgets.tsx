@@ -5,10 +5,11 @@ import { quotesApi } from '../../../lib/api/quotes'
 import type { CashStatus, DashboardThresholds, HotQuote, HotQuotes, LowStockItem } from '../../../lib/api/dashboard'
 import { actionErrorMessage } from '../../../lib/api/errors'
 import { agoLabel, fmtARS, timeLabel, whatsappUrl } from './format'
-import { Pill, WidgetEmpty, WidgetShell } from './Widgets'
+import { BanknoteIcon, BoxIcon, FlameIcon, WhatsappIcon } from './icons'
+import { Pill, StatusStrip, WidgetEmpty, WidgetShell } from './Widgets'
 
 /**
- * «Presupuestos calientes»: enviados hace más de N horas y sin respuesta.
+ * «Presupuestos sin respuesta»: enviados hace más de N horas y sin respuesta.
  * «Reenviar por WhatsApp» (D-40) emite un enlace nuevo —el anterior deja de funcionar— y abre `wa.me` con el mensaje armado.
  */
 export function HotQuotesWidget({ data, thresholds }: { data: HotQuotes; thresholds: DashboardThresholds }) {
@@ -39,7 +40,7 @@ export function HotQuotesWidget({ data, thresholds }: { data: HotQuotes; thresho
   }
 
   return (
-    <WidgetShell title="Presupuestos calientes" count={data.total} linkTo="/app/quotes" linkLabel="Ver todos">
+    <WidgetShell title="Presupuestos sin respuesta" icon={<FlameIcon />} accent="amber" count={data.total} linkTo="/app/quotes" linkLabel="Ver todos">
       {data.items.length === 0 ? (
         <WidgetEmpty>
           Ningún presupuesto enviado lleva más de {thresholds.hotQuoteHours} h sin respuesta.
@@ -59,8 +60,9 @@ export function HotQuotesWidget({ data, thresholds }: { data: HotQuotes; thresho
                   type="button"
                   disabled={busyId === q.id}
                   onClick={() => void resend(q)}
-                  className="min-h-11 flex-none border border-tc-border px-2.5 text-[11px] font-bold tracking-wider uppercase text-tc-text transition-colors hover:border-tc-purple hover:text-tc-purple disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex min-h-11 flex-none items-center gap-1.5 border border-emerald-600 px-2.5 text-[11px] font-bold tracking-wider uppercase text-emerald-700 transition-colors hover:bg-emerald-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
+                  <WhatsappIcon className="h-4 w-4" />
                   {busyId === q.id ? 'Generando…' : 'Reenviar WhatsApp'}
                 </button>
               ) : (
@@ -83,12 +85,24 @@ const KIND_LABELS = { cash: 'Efectivo', bank: 'Banco', digital: 'Billetera' } as
 
 /** Estado de la caja: saldo por cuenta y quién tiene la sesión abierta. */
 export function CashWidget({ data }: { data: CashStatus }) {
+  const openSessions = data.accounts.filter(a => a.sessionOpenedAt)
   return (
-    <WidgetShell title="Caja" linkTo="/app/cash" linkLabel="Ir a Caja">
+    <WidgetShell title="Caja" icon={<BanknoteIcon />} accent="green" linkTo="/app/cash" linkLabel="Ir a Caja">
       {data.accounts.length === 0 ? (
         <WidgetEmpty>Todavía no hay cuentas de caja.</WidgetEmpty>
       ) : (
         <>
+          {openSessions.length > 0 ? (
+            <StatusStrip tone="green" icon={<BanknoteIcon />}>
+              {openSessions.length === 1
+                ? `Caja abierta${openSessions[0].sessionOpenedBy ? ` por ${openSessions[0].sessionOpenedBy}` : ''}`
+                : `${openSessions.length} cajas abiertas`}
+            </StatusStrip>
+          ) : (
+            <StatusStrip tone="amber" icon={<BanknoteIcon />}>
+              No hay ninguna sesión de caja abierta.
+            </StatusStrip>
+          )}
           <div className="px-4 pt-3 pb-1">
             <span className="text-[11px] font-bold tracking-[0.12em] uppercase text-tc-text-secondary">Saldo total</span>
             <p className="tabular-nums text-xl font-bold text-tc-text">{fmtARS(data.totalBalance)}</p>
@@ -122,7 +136,7 @@ export function CashWidget({ data }: { data: CashStatus }) {
 /** Stock bajo: los más urgentes (el stock negativo cuenta; se vende sin stock con alerta, D-07). */
 export function LowStockWidget({ items, total }: { items: LowStockItem[]; total: number }) {
   return (
-    <WidgetShell title="Stock bajo" count={total} linkTo="/app/catalog" linkLabel="Ver catálogo">
+    <WidgetShell title="Stock bajo" icon={<BoxIcon />} accent="red" count={total} linkTo="/app/catalog" linkLabel="Ver catálogo">
       {items.length === 0 ? (
         <WidgetEmpty>Todo el stock está por encima del mínimo.</WidgetEmpty>
       ) : (

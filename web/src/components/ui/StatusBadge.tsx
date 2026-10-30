@@ -27,6 +27,9 @@ const config: Record<string, { label: string; cls: string }> = {
   rejected:          { label: 'RECHAZADO',    cls: 'border border-red-300 bg-red-50 text-red-700' },
   expired:           { label: 'VENCIDO',      cls: 'border border-slate-300 bg-slate-50 text-tc-text-secondary' },
   converted:         { label: 'CONVERTIDO',   cls: 'border border-tc-purple bg-tc-purple-light text-tc-purple-mid' },
+  // Tiempo en el estado (Inicio): mismo tamaño que un sello de estado, para que las dos columnas se alineen
+  time_stuck:        { label: 'ATRASADA',     cls: 'border border-red-300 bg-red-50 text-red-700' },
+  time_ok:           { label: 'AL DÍA',       cls: 'border border-slate-300 bg-slate-50 text-tc-text-secondary' },
   // Facturas ARCA
   authorized:        { label: 'AUTORIZADA',   cls: 'border border-tc-done-border bg-tc-done-bg text-tc-done-text' },
   // Appointments

@@ -195,7 +195,8 @@ export async function readReceivable(page: Page): Promise<number> {
   await page.goto('/app')
   const label = page.getByText('Por cobrar', { exact: true })
   await label.waitFor()
-  const text = (await label.locator('xpath=..').innerText()).replace(/\s+/g, ' ')
+  // La tarjeta es un enlace que contiene la etiqueta, el valor y las cifras del pie.
+  const text = (await label.locator('xpath=ancestor::a[1]').innerText()).replace(/\s+/g, ' ')
   const m = text.match(/\$\s*([\d.]+)(?:,(\d+))?/)
   if (!m) throw new Error(`No se pudo leer "Por cobrar": ${text}`)
   return Number(m[1].replace(/\./g, '') + '.' + (m[2] ?? '0'))
