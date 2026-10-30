@@ -2,5 +2,5 @@ namespace TallerControl.Application.Dashboard;
 
 public interface IDashboardRepository
 {
-    Task<DashboardDto> GetSummaryAsync(CancellationToken ct);
+    Task<DashboardDto> GetSummaryAsync(DashboardScope scope, CancellationToken ct);
 }
