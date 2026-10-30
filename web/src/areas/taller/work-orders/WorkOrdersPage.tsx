@@ -150,6 +150,11 @@ export function WorkOrdersPage() {
             <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
               <StatusBadge status={o.status} />
               {o.total != null && <span className="tabular-nums text-sm font-medium text-tc-purple">{fmtARS(o.total)}</span>}
+              {o.balance != null && o.balance > 0 && (
+                <span className={['tabular-nums text-sm', pendingTone(o.balance, o.total)].join(' ')}>
+                  Pendiente {fmtARS(o.balance)}
+                </span>
+              )}
             </div>
           </>
         )}
