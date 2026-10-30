@@ -68,7 +68,7 @@ const COLUMNS: DataTableColumn<WorkOrderListDto>[] = [
   },
   {
     key: 'balance',
-    header: 'Saldo',
+    header: 'Pendiente',
     align: 'right',
     widthClass: 'w-32',
     sortable: true,
