@@ -49,10 +49,11 @@ export function MechanicWorkOrdersPage() {
 
   return (
     <div className="space-y-4 pb-6">
-      <h1 className="text-lg font-bold tracking-tight text-tc-text">Mis trabajos</h1>
+      <h1 className="text-lg font-bold tracking-tight text-tc-text sm:text-2xl">Mis trabajos</h1>
 
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:border-b sm:border-tc-border">
       {/* Pestañas: órdenes mías / sin asignar (doc 06 /m) */}
-      <div role="tablist" aria-label="Mis trabajos" className="flex border-b border-tc-border">
+      <div role="tablist" aria-label="Mis trabajos" className="flex border-b border-tc-border sm:w-[26rem] sm:border-b-0">
         {TABS.map(t => (
           <button
             key={t.id}
@@ -74,6 +75,7 @@ export function MechanicWorkOrdersPage() {
       <FormSelect
         label="Estado"
         size="sm"
+        className="sm:mb-2 sm:w-56"
         value={statusFilter}
         onChange={e => { setStatusFilter(e.target.value as StatusFilter); setPage(1) }}
       >
@@ -83,6 +85,7 @@ export function MechanicWorkOrdersPage() {
         ))}
         <option value="closed">Cerradas</option>
       </FormSelect>
+      </div>
 
       {isLoading && (
         <div className="space-y-2" role="status" aria-live="polite">
@@ -120,6 +123,7 @@ export function MechanicWorkOrdersPage() {
                   : TABS.find(t => t.id === tab)!.empty}
             </p>
           )}
+          <div className="grid gap-2 sm:grid-cols-2 sm:gap-3 xl:grid-cols-3">
           {visible.map(order => {
             const vehicle = [order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ')
             const mine = order.assignedMechanicId != null && order.assignedMechanicId === user?.membershipId
@@ -127,7 +131,7 @@ export function MechanicWorkOrdersPage() {
               <Link
                 key={order.id}
                 to={`/m/work-orders/${order.id}`}
-                className="flex items-stretch overflow-hidden rounded-xl border border-tc-border bg-white transition-colors hover:bg-tc-surface"
+                className="flex items-stretch overflow-hidden rounded-xl border border-tc-border bg-white transition-colors hover:border-tc-purple hover:shadow-md"
               >
                 {/* Talón: número de orden, igual que en el panel del taller */}
                 <div className="flex w-14 shrink-0 items-center justify-center border-r border-tc-border bg-tc-stub-bg px-1">
@@ -167,6 +171,7 @@ export function MechanicWorkOrdersPage() {
               </Link>
             )
           })}
+          </div>
         </div>
       )}
 
