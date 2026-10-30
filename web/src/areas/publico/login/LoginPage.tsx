@@ -51,8 +51,7 @@ export function LoginPage() {
 
   return (
     <AuthCard
-      title="Bienvenido de nuevo"
-      subtitle="Ingresá para gestionar tu taller."
+      title="Bienvenido"
       footer={
         <>
           ¿No tenés cuenta?{' '}
