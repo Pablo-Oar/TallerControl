@@ -177,6 +177,7 @@ Esquinas rectas (`--radius: 0px`, puente shadcn → `tc-*`). Bordes de 1px; la f
 - Pila de diálogos: Escape cierra solo el superior, el foco queda atrapado y vuelve al disparador, el fondo se marca `inert`. Bajo 640px es una hoja inferior (`max-h-[92dvh]`). `EditDialog` es el marco de edición: Guardar deshabilitado sin cambios y confirmación al descartar.
 
 ### Inputs / Fields
+- **Pantallas de acceso (`AuthInput`):** etiqueta flotante dentro del campo; al enfocar o escribir sube despacio (300 ms) y se apoya sobre el borde superior; un solo borde violeta al enfocar (`data-auth-field` apaga el contorno global); el placeholder solo se ve con el foco y solo si aporta algo distinto de la etiqueta. Esquinas redondeadas (`rounded-xl`) por excepción a D-26.
 - Borde Paper Border, fondo blanco, texto 14px; foco con el anillo global violeta; error con borde rojo y mensaje de 12px. Todos los formularios usan `FormField`/`FormSelect`/`FormTextarea` (etiqueta flotante por CSS, `htmlFor`/`id`, `aria-invalid`/`aria-describedby`). Firma manuscrita: `SignaturePad` (Pointer Events, PNG).
 
 ### Navigation
@@ -187,6 +188,13 @@ Esquinas rectas (`--radius: 0px`, puente shadcn → `tc-*`). Bordes de 1px; la f
 
 ### Timeline
 - Lista `ol` con marcadores cuadrados por tipo (estado, orden, presupuesto, respuesta), fecha en `time`, título enlazable, sello a la derecha y detalle plegable (`aria-expanded`). La usan historial de OT, respuestas del presupuesto, ficha del vehículo y portal del dueño (sin hora).
+
+### Data Table
+- `DataTable`: `<table>` real en escritorio (marco y filas redondeados, encabezados ordenables con `aria-sort`, orden en el servidor en listas paginadas) y tarjetas en celular (talón + cuerpo + barra de acciones a todo el ancho). `fixedLayout` reparte columnas en % (Órdenes); las columnas numéricas y de estado se centran para que el espacio sea parejo. Paginación de 10 con «Mostrando 11–20 de 57».
+- **Importe pendiente:** rojo (`tc-stamp-red`) si no se cobró nada, naranja si hay cobro parcial, apagado si no se debe nada (`pendingTone`).
+
+### Public Nav
+- `PublicNav`: barra navy sticky compartida por landing y pantallas de acceso; la marca vuelve a `/`; «Ingresar» y «Crear cuenta» de 44 px. Fondo de cuadrícula gris tenue (44 px) en planes y acceso.
 
 ### Ticket (signature)
 - Tarjeta de documento con talón de 20% a la izquierda (Stub Blue), línea perforada vertical y sello de estado; la usan OT, presupuestos y cobros.
