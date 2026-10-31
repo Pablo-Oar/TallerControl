@@ -277,6 +277,13 @@ export const quotesApi = {
   createPublicLink: (id: string) =>
     api.post<{ tokenBase64Url: string; expiresAt: string }>(`/api/v1/quotes/${id}/public-link`, undefined, true),
 
+  /**
+   * Reenvía el presupuesto por email al cliente (Inicio → «Presupuestos sin respuesta»): emite un enlace nuevo
+   * (el anterior deja de funcionar) y encola el correo con el nombre del taller como remitente.
+   */
+  sendReminderEmail: (id: string) =>
+    api.post<{ sentTo: string }>(`/api/v1/quotes/${id}/reminder-email`, undefined, true),
+
   getPublicLink: (workOrderId: string) =>
     api.get<{ tokenBase64Url: string; expiresAt: string }>(
       `/api/v1/work-orders/${workOrderId}/public-link`,

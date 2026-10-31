@@ -177,6 +177,7 @@ public static class DependencyInjection
         services.AddScoped<SearchQuotesHandler>();
         services.AddScoped<SendQuoteHandler>();
         services.AddScoped<GetQuotePublicLinkHandler>();
+        services.AddScoped<SendQuoteReminderEmailHandler>();
         services.AddScoped<ReopenQuoteHandler>();
         services.AddScoped<ConvertQuoteHandler>();
         services.AddScoped<CancelQuoteHandler>();
