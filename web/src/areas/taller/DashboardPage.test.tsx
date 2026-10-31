@@ -52,6 +52,8 @@ const baseDashboard: DashboardDto = {
         number: 41,
         customerName: 'Jorge Gómez',
         customerPhone: '+5491122334455',
+        customerEmail: 'jorge@cliente.com',
+        doNotContact: false,
         vehiclePlate: 'AB123CD',
         total: 95000,
         sentAt: '2026-10-27T10:00:00Z',
@@ -108,7 +110,9 @@ describe('DashboardPage', () => {
     renderPage()
 
     expect(await screen.findByText('Presupuestos sin respuesta')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Reenviar WhatsApp' })).toBeInTheDocument()
+    // Con teléfono y email hay dos botones; con uno solo, solo ese.
+    expect(screen.getByRole('button', { name: /por WhatsApp/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /por email/ })).toBeInTheDocument()
   })
 
   it('no muestra las secciones que el servidor no mandó (rol sin permiso)', async () => {

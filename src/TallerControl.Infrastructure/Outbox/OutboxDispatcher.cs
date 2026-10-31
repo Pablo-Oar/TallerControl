@@ -212,6 +212,8 @@ internal sealed class OutboxDispatcher : BackgroundService
                 return await BuildFoundKeysAlertAsync(message.PayloadJson, db, frontendBase, now, ct);
             case "email.appointment":
                 return Single(BuildAppointmentEmail(message.PayloadJson, frontendBase));
+            case "email.quote_reminder":
+                return Single(BuildQuoteReminderEmail(message.PayloadJson, frontendBase));
             case "reminder.due":
                 return Single(BuildReminderEmail(message.PayloadJson));
             default:
@@ -220,6 +222,32 @@ internal sealed class OutboxDispatcher : BackgroundService
 
         static IReadOnlyList<EmailMessage> Single(EmailMessage? email) => email is null ? [] : [email];
     }
+
+    private static EmailMessage? BuildQuoteReminderEmail(string json, string frontendBase)
+    {
+        var payload = JsonSerializer.Deserialize<QuoteReminderPayload>(json, PayloadOptions);
+        if (payload is null || string.IsNullOrWhiteSpace(payload.To)) return null;
+
+        var link = $"{frontendBase}/p/{Uri.EscapeDataString(payload.Token)}";
+        var total = payload.Total.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("es-AR"));
+        var customer = System.Net.WebUtility.HtmlEncode(payload.CustomerName);
+        var shop = System.Net.WebUtility.HtmlEncode(payload.TenantName);
+
+        return new EmailMessage(
+            To: payload.To,
+            Subject: $"Tu presupuesto N° {payload.QuoteNumber} — {payload.TenantName}",
+            HtmlBody: $"""
+                <p>Hola {customer},</p>
+                <p>Te escribimos de <b>{shop}</b> por el presupuesto <b>N° {payload.QuoteNumber}</b> ({total}) que te enviamos.</p>
+                <p><a href="{link}">Ver y aprobar el presupuesto</a></p>
+                <p>Si tenés dudas, respondé este correo y te contestamos.</p>
+                """,
+            FromName: payload.TenantName,
+            ReplyTo: payload.ReplyTo);
+    }
+
+    private sealed record QuoteReminderPayload(
+        string To, string CustomerName, int QuoteNumber, decimal Total, string Token, string TenantName, string? ReplyTo);
 
     private static EmailMessage? BuildAppointmentEmail(string json, string frontendBase)
     {

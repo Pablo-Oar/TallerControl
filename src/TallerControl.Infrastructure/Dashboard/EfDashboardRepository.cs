@@ -59,7 +59,7 @@ internal sealed class EfDashboardRepository : IDashboardRepository
 
     private sealed record VehicleInfo(string Plate, string? Label);
 
-    private sealed record CustomerInfo(string Name, string? Phone);
+    private sealed record CustomerInfo(string Name, string? Phone, string? Email, bool DoNotContact);
 
     private sealed record LiveRow(
         Guid Id, int Number, WorkOrderStatus Status, WorkOrderPriority Priority,
@@ -180,6 +180,7 @@ internal sealed class EfDashboardRepository : IDashboardRepository
                 hot.Total,
                 hot.Rows.Select(r => new HotQuoteDto(
                     r.Id, r.Number, CustomerName(r.CustomerId), customers.GetValueOrDefault(r.CustomerId)?.Phone,
+                    customers.GetValueOrDefault(r.CustomerId)?.Email, customers.GetValueOrDefault(r.CustomerId)?.DoNotContact ?? false,
                     Plate(r.VehicleId), r.Total, r.SentAt, Math.Max(0, (int)Math.Floor((now - r.SentAt).TotalHours)))).ToList())
             : null;
 
@@ -478,8 +479,8 @@ internal sealed class EfDashboardRepository : IDashboardRepository
             .AsNoTracking()
             .IgnoreQueryFilters()
             .Where(c => list.Contains(c.Id))
-            .Select(c => new { c.Id, c.Name, c.Phone })
-            .ToDictionaryAsync(c => c.Id, c => new CustomerInfo(c.Name, c.Phone), ct);
+            .Select(c => new { c.Id, c.Name, c.Phone, c.Email, c.DoNotContact })
+            .ToDictionaryAsync(c => c.Id, c => new CustomerInfo(c.Name, c.Phone, c.Email, c.DoNotContact), ct);
     }
 
     private async Task<Dictionary<Guid, VehicleInfo>> VehiclesAsync(AppDbContext db, IEnumerable<Guid> ids, CancellationToken ct)

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { confirmDialog, notify } from '../../../components/ui/dialogs'
+import { MailIcon } from '../../../components/ui/icons'
 import { quotesApi } from '../../../lib/api/quotes'
 import type { CashStatus, DashboardThresholds, HotQuote, HotQuotes, LowStockItem } from '../../../lib/api/dashboard'
 import { actionErrorMessage } from '../../../lib/api/errors'
@@ -15,6 +16,26 @@ import { Pill, StatusStrip, WidgetEmpty, WidgetShell } from './Widgets'
 export function HotQuotesWidget({ data, thresholds }: { data: HotQuotes; thresholds: DashboardThresholds }) {
   const [busyId, setBusyId] = useState<string | null>(null)
 
+  /** Reenvía por correo desde el sistema (nombre del taller como remitente; las respuestas van a quien lo reenvía). */
+  async function resendEmail(q: HotQuote) {
+    if (!q.customerEmail) return
+    const ok = await confirmDialog(
+      `Se envía un correo a ${q.customerEmail} con un enlace nuevo del presupuesto #${q.number} y el anterior deja de funcionar. ¿Enviarlo?`,
+      { confirmLabel: 'Enviar correo' },
+    )
+    if (!ok) return
+
+    setBusyId(`${q.id}:email`)
+    try {
+      const result = await quotesApi.sendReminderEmail(q.id)
+      notify(`Correo enviado a ${result.sentTo}.`, 'info')
+    } catch (e) {
+      notify(actionErrorMessage(e, 'No se pudo enviar el correo.'))
+    } finally {
+      setBusyId(null)
+    }
+  }
+
   async function resend(q: HotQuote) {
     if (!q.customerPhone) return
     const ok = await confirmDialog(
@@ -23,7 +44,7 @@ export function HotQuotesWidget({ data, thresholds }: { data: HotQuotes; thresho
     )
     if (!ok) return
 
-    setBusyId(q.id)
+    setBusyId(`${q.id}:wa`)
     try {
       const link = await quotesApi.createPublicLink(q.id)
       const url = `${window.location.origin}/p/${link.tokenBase64Url}`
@@ -48,26 +69,47 @@ export function HotQuotesWidget({ data, thresholds }: { data: HotQuotes; thresho
       ) : (
         <ul className="divide-y divide-tc-border">
           {data.items.map(q => (
-            <li key={q.id} className="flex min-h-11 items-center justify-between gap-3 px-4 py-2.5">
-              <Link to={`/app/quotes/${q.id}`} className="flex min-h-11 min-w-0 flex-col justify-center hover:underline">
+            <li key={q.id} className="flex min-h-11 flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-2.5">
+              <Link to={`/app/quotes/${q.id}`} className="flex min-h-11 min-w-0 flex-1 basis-44 flex-col justify-center hover:underline">
                 <span className="block truncate text-sm font-medium text-tc-text">#{q.number} · {q.customerName}</span>
                 <span className="block truncate text-xs text-tc-text-muted">
                   <span className="font-mono tracking-widest">{q.vehiclePlate}</span> · {fmtARS(q.total)} · {agoLabel(q.hoursSinceSent)}
                 </span>
               </Link>
-              {q.customerPhone ? (
-                <button
-                  type="button"
-                  disabled={busyId === q.id}
-                  onClick={() => void resend(q)}
-                  className="inline-flex min-h-11 flex-none items-center gap-1.5 border border-emerald-600 px-2.5 text-[11px] font-bold tracking-wider uppercase text-emerald-700 transition-colors hover:bg-emerald-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <WhatsappIcon className="h-4 w-4" />
-                  {busyId === q.id ? 'Generando…' : 'Reenviar WhatsApp'}
-                </button>
-              ) : (
-                <span className="flex-none text-[11px] text-tc-text-muted">Sin teléfono</span>
-              )}
+              <div className="flex flex-none flex-wrap items-center justify-end gap-1.5">
+                {q.doNotContact ? (
+                  <span className="text-[11px] text-tc-text-muted">No contactar</span>
+                ) : !q.customerPhone && !q.customerEmail ? (
+                  <span className="text-[11px] text-tc-text-muted">Sin contacto</span>
+                ) : (
+                  <>
+                    {q.customerPhone && (
+                      <button
+                        type="button"
+                        disabled={busyId !== null}
+                        onClick={() => void resend(q)}
+                        aria-label={`Reenviar el presupuesto ${q.number} por WhatsApp`}
+                        className="inline-flex min-h-11 items-center gap-1.5 border border-emerald-600 px-2.5 text-[11px] font-bold tracking-wider uppercase text-emerald-700 transition-colors hover:bg-emerald-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <WhatsappIcon className="h-4 w-4" />
+                        {busyId === `${q.id}:wa` ? 'Generando…' : 'WhatsApp'}
+                      </button>
+                    )}
+                    {q.customerEmail && (
+                      <button
+                        type="button"
+                        disabled={busyId !== null}
+                        onClick={() => void resendEmail(q)}
+                        aria-label={`Reenviar el presupuesto ${q.number} por email`}
+                        className="inline-flex min-h-11 items-center gap-1.5 border border-blue-600 px-2.5 text-[11px] font-bold tracking-wider uppercase text-blue-700 transition-colors hover:bg-blue-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <MailIcon className="h-4 w-4" />
+                        {busyId === `${q.id}:email` ? 'Enviando…' : 'Email'}
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
             </li>
           ))}
         </ul>

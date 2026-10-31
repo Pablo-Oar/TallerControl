@@ -62,6 +62,8 @@ public sealed record HotQuoteDto(
     int Number,
     string CustomerName,
     string? CustomerPhone,
+    string? CustomerEmail,
+    bool DoNotContact,
     string VehiclePlate,
     decimal Total,
     DateTimeOffset SentAt,

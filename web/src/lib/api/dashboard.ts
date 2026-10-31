@@ -48,6 +48,9 @@ export interface HotQuote {
   number: number
   customerName: string
   customerPhone: string | null
+  customerEmail: string | null
+  /** El cliente pidió no ser contactado: no se ofrece ningún reenvío. */
+  doNotContact: boolean
   vehiclePlate: string
   total: number
   sentAt: string

@@ -115,7 +115,7 @@ internal sealed class QuotesWebApplicationFactory : WebApplicationFactory<Progra
 
         BranchId = branch.Id;
 
-        var customer = new Customer(tenant.Id, "Cliente Quotes Test");
+        var customer = new Customer(tenant.Id, "Cliente Quotes Test", email: "cliente@quotes-test.com");
         var vehicle = new Vehicle(tenant.Id, customer.Id, "QTEST01");
 
         await using (var db = new AppDbContext(

@@ -93,7 +93,7 @@ export function KpiCard({ label, value, accent = 'slate', icon, bar, stats, sub,
   const total = bar?.reduce((sum, seg) => sum + seg.value, 0) ?? 0
 
   const inner = (
-    <div className="group h-full rounded-[22px] border border-slate-300 bg-slate-200 p-1.5 shadow-[0_18px_36px_-14px_rgba(15,23,42,0.45)] transition-all duration-300 hover:shadow-[0_28px_50px_-14px_rgba(15,23,42,0.55)] motion-safe:hover:-translate-y-1">
+    <div className="group h-full rounded-[22px] border border-slate-400 bg-slate-300 p-1.5 shadow-[0_18px_36px_-14px_rgba(15,23,42,0.45)] transition-all duration-300 hover:shadow-[0_28px_50px_-14px_rgba(15,23,42,0.55)] motion-safe:hover:-translate-y-1">
       <div className="flex h-full flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
         <div className="flex items-start justify-between gap-2">
           <span className="text-[13px] font-medium leading-tight text-tc-text-secondary">{label}</span>

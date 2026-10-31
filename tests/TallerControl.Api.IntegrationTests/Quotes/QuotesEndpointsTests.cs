@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TallerControl.Api.Identity;
 using TallerControl.Api.IntegrationTests.Persistence;
@@ -513,5 +514,85 @@ public sealed class QuotesEndpointsTests : IAsyncLifetime
 
         var resp = await client.GetAsync($"/api/v1/quotes/{Guid.NewGuid()}");
         Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
+    }
+
+    // ── T-QUO-16..18: reenviar por email desde «Presupuestos sin respuesta» (Inicio) ───────────
+
+    private async Task<Guid> CreateSentQuoteAsync(HttpClient client)
+    {
+        var items = new object[]
+        {
+            new { kind = "service", description = "Servicio", catalogItemId = _factory.CatalogItemId, quantity = 1m, unitNetPrice = 1000m, vatRate = 21m, requiredForApproval = true },
+        };
+        var id = (await CreateQuoteAsync(client, items)).GetProperty("id").GetGuid();
+        var csrf = await FetchCsrfAsync(client);
+        var send = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/quotes/{id}/send");
+        send.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        Assert.Equal(HttpStatusCode.OK, (await client.SendAsync(send)).StatusCode);
+        return id;
+    }
+
+    private async Task<HttpResponseMessage> PostReminderEmailAsync(HttpClient client, Guid id)
+    {
+        var csrf = await FetchCsrfAsync(client);
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/quotes/{id}/reminder-email");
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        return await client.SendAsync(req);
+    }
+
+    private async Task<int> CountReminderEmailsAsync()
+    {
+        await using var scope = _factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<TallerControl.Infrastructure.Persistence.AppDbContext>();
+        return await db.Database
+            .SqlQuery<int>($"SELECT count(*)::int AS \"Value\" FROM outbox_messages WHERE type = 'email.quote_reminder'")
+            .SingleAsync();
+    }
+
+    [Fact(DisplayName = "T-QUO-16: POST /quotes/{id}/reminder-email encola el correo con un enlace nuevo")]
+    public async Task Reminder_email_encola_el_correo()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, QuotesWebApplicationFactory.OwnerEmail, QuotesWebApplicationFactory.Password);
+        var id = await CreateSentQuoteAsync(client);
+
+        var resp = await PostReminderEmailAsync(client, id);
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var body = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("cliente@quotes-test.com", body.GetProperty("sentTo").GetString());
+        Assert.Equal(1, await CountReminderEmailsAsync());
+    }
+
+    [Fact(DisplayName = "T-QUO-17: un presupuesto en borrador no se reenvía por email (422)")]
+    public async Task Reminder_email_de_un_borrador_da_422()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, QuotesWebApplicationFactory.OwnerEmail, QuotesWebApplicationFactory.Password);
+        var draft = (await CreateQuoteAsync(client)).GetProperty("id").GetGuid();
+
+        var resp = await PostReminderEmailAsync(client, draft);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
+        Assert.Equal(0, await CountReminderEmailsAsync());
+    }
+
+    [Fact(DisplayName = "T-QUO-18: si el cliente no tiene email no se encola nada (422)")]
+    public async Task Reminder_email_sin_email_del_cliente_da_422()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, QuotesWebApplicationFactory.OwnerEmail, QuotesWebApplicationFactory.Password);
+        var id = await CreateSentQuoteAsync(client);
+
+        await using (var scope = _factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TallerControl.Infrastructure.Persistence.AppDbContext>();
+            await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE customers SET email = NULL WHERE id = {_factory.CustomerId}");
+        }
+
+        var resp = await PostReminderEmailAsync(client, id);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
+        Assert.Equal(0, await CountReminderEmailsAsync());
     }
 }

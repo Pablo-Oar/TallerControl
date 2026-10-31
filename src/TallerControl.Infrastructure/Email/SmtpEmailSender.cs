@@ -41,10 +41,21 @@ public sealed class SmtpEmailSender : IEmailSender
             Credentials = new NetworkCredential(_user, _password),
         };
 
-        using var mail = new MailMessage(_from, message.To, message.Subject, message.HtmlBody)
+        // El remitente técnico es siempre la cuenta configurada (D-04); el nombre visible puede ser el del taller
+        // y las respuestas pueden ir a una persona del taller (Reply-To).
+        using var mail = new MailMessage(
+            string.IsNullOrWhiteSpace(message.FromName) ? new MailAddress(_from) : new MailAddress(_from, message.FromName),
+            new MailAddress(message.To))
         {
+            Subject = message.Subject,
+            Body = message.HtmlBody,
             IsBodyHtml = true,
         };
+
+        if (!string.IsNullOrWhiteSpace(message.ReplyTo))
+        {
+            mail.ReplyToList.Add(new MailAddress(message.ReplyTo));
+        }
 
         await client.SendMailAsync(mail, ct);
 

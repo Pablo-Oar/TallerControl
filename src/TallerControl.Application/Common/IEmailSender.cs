@@ -13,4 +13,6 @@ public interface IEmailSender
 public sealed record EmailMessage(
     string To,
     string Subject,
-    string HtmlBody);
+    string HtmlBody,
+    string? FromName = null,
+    string? ReplyTo = null);
