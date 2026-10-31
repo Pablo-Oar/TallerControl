@@ -1,6 +1,7 @@
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { RevenueDay } from '../../../lib/api/dashboard'
 import { fmtARS, shortDay } from './format'
+import { ChartIcon } from './icons'
 import { WidgetShell } from './Widgets'
 
 const PURPLE = '#7c3aed'
@@ -13,7 +14,7 @@ export default function RevenueChart({ days }: { days: RevenueDay[] }) {
   const total = days.reduce((sum, d) => sum + d.amount, 0)
 
   return (
-    <WidgetShell title="Ingresos de los últimos 7 días" linkTo="/app/reports" linkLabel="Ver reportes">
+    <WidgetShell title="Ingresos de los últimos 7 días" icon={<ChartIcon />} accent="purple" linkTo="/app/reports" linkLabel="Ver reportes">
       <div className="px-4 pt-3">
         <span className="text-[11px] font-bold tracking-[0.12em] uppercase text-tc-text-secondary">Total de la semana</span>
         <p className="tabular-nums text-xl font-bold text-tc-text">{fmtARS(total)}</p>

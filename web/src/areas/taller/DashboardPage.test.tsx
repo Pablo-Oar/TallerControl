@@ -91,7 +91,8 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Por cobrar')).toBeInTheDocument()
     expect(screen.getByText('Órdenes activas')).toBeInTheDocument()
     expect(screen.getByText('Presupuestos pendientes')).toBeInTheDocument()
-    expect(screen.getByText(/15 órdenes con saldo hace más de 30 días/)).toBeInTheDocument()
+    expect(screen.getByText('Atrasado (+30 días)')).toBeInTheDocument()
+    expect(screen.getByText('Órdenes atrasadas')).toBeInTheDocument()
   })
 
   it('«Taller en vivo» avisa cuántas órdenes están trabadas con el umbral del taller', async () => {
@@ -99,13 +100,14 @@ describe('DashboardPage', () => {
 
     expect(await screen.findByText(/5 órdenes llevan más de 3 días en el mismo estado/)).toBeInTheDocument()
     expect(screen.getByText(/Cliente Trabado/)).toBeInTheDocument()
-    expect(screen.getByText('Sin mecánico')).toBeInTheDocument()
+    // Se dibuja dos veces (columna de escritorio y línea de celular; una queda oculta por CSS).
+    expect(screen.getAllByText('Sin mecánico').length).toBeGreaterThan(0)
   })
 
-  it('muestra los presupuestos calientes con el botón de WhatsApp', async () => {
+  it('muestra los presupuestos sin respuesta con el botón de WhatsApp', async () => {
     renderPage()
 
-    expect(await screen.findByText('Presupuestos calientes')).toBeInTheDocument()
+    expect(await screen.findByText('Presupuestos sin respuesta')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Reenviar WhatsApp' })).toBeInTheDocument()
   })
 
@@ -114,7 +116,7 @@ describe('DashboardPage', () => {
     renderPage()
 
     expect(await screen.findByText('Ingresos de hoy')).toBeInTheDocument()
-    expect(screen.queryByText('Presupuestos calientes')).not.toBeInTheDocument()
+    expect(screen.queryByText('Presupuestos sin respuesta')).not.toBeInTheDocument()
     expect(screen.queryByRole('region', { name: 'Caja' })).not.toBeInTheDocument()
     expect(screen.queryByRole('region', { name: 'Stock bajo' })).not.toBeInTheDocument()
     expect(screen.queryByRole('region', { name: 'Turnos de hoy' })).not.toBeInTheDocument()

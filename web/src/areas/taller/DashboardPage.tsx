@@ -10,6 +10,7 @@ import { QuickActions } from './dashboard/QuickActions'
 import { LiveOrders, TodayAppointmentsWidget } from './dashboard/OperationsWidgets'
 import { CashWidget, HotQuotesWidget, LowStockWidget } from './dashboard/CommercialWidgets'
 import { OnboardingCard } from './dashboard/OnboardingCard'
+import { AlertIcon, BanknoteIcon, DocClockIcon, WalletIcon, WrenchIcon } from './dashboard/icons'
 
 // recharts pesa: vive en su propio chunk y solo se baja al entrar al Inicio (D-41).
 const RevenueChart = lazy(() => import('./dashboard/RevenueChart'))
@@ -67,55 +68,67 @@ export function DashboardPage() {
       <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Inicio</h1>
 
       {/* Fila 1: los cuatro indicadores */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label="Ingresos de hoy"
           value={fmtARS(data.revenueToday)}
-          tone={data.revenueToday > 0 ? 'good' : 'default'}
-          sub={data.paymentsToday === 1 ? '1 cobro' : `${data.paymentsToday} cobros`}
+          accent="green"
+          icon={<BanknoteIcon />}
+          stats={[
+            { label: 'Cobros de hoy', value: data.paymentsToday },
+            { label: 'Últimos 7 días', value: fmtARS(data.revenueLast7Days.reduce((sum, d) => sum + d.amount, 0)), tone: 'green' },
+          ]}
         />
         <KpiCard
           label="Por cobrar"
           value={fmtARS(data.totalReceivable)}
           to="/app/work-orders?pendientes=1"
-          tone={aged.count > 0 ? 'danger' : 'default'}
-          sub={
-            aged.count > 0 ? (
-              <span className="font-semibold text-tc-stamp-red">
-                {aged.count === 1 ? '1 orden' : `${aged.count} órdenes`} con saldo hace más de {thresholds.agedReceivableDays} días ({fmtARS(aged.amount)})
-              </span>
-            ) : (
-              'Sin saldos atrasados'
-            )
+          accent={aged.count > 0 ? 'red' : 'slate'}
+          icon={aged.count > 0 ? <AlertIcon /> : <WalletIcon />}
+          bar={
+            data.totalReceivable > 0
+              ? [
+                  { value: aged.amount, tone: 'red', label: 'Saldo atrasado' },
+                  { value: Math.max(0, data.totalReceivable - aged.amount), tone: 'slate', label: 'Al día' },
+                ]
+              : undefined
           }
+          stats={[
+            { label: `Atrasado (+${thresholds.agedReceivableDays} días)`, value: fmtARS(aged.amount), tone: aged.count > 0 ? 'red' : 'slate' },
+            { label: 'Órdenes atrasadas', value: aged.count, tone: aged.count > 0 ? 'red' : 'slate' },
+          ]}
         />
         <KpiCard
           label="Órdenes activas"
           value={activeOrders}
           to="/app/work-orders"
-          sub={
-            <>
-              {byStatus.inProgress} en proceso ·{' '}
-              <span className={byStatus.waitingParts > 0 ? 'font-semibold text-amber-700' : ''}>{byStatus.waitingParts} esperando repuestos</span>{' '}
-              · {byStatus.readyToDeliver} listas
-            </>
-          }
+          accent="blue"
+          icon={<WrenchIcon />}
+          bar={[
+            { value: byStatus.pending, tone: 'slate', label: 'Pendientes' },
+            { value: byStatus.inProgress, tone: 'blue', label: 'En proceso' },
+            { value: byStatus.waitingParts, tone: 'amber', label: 'Esperando repuestos' },
+            { value: byStatus.readyToDeliver, tone: 'green', label: 'Listas' },
+          ]}
+          stats={[
+            { label: byStatus.waitingParts > 0 ? `En proceso · ${byStatus.waitingParts} esperando repuestos` : 'En proceso', value: byStatus.inProgress, tone: 'blue' },
+            { label: 'Listas para entregar', value: byStatus.readyToDeliver, tone: 'green' },
+          ]}
         />
         <KpiCard
           label="Presupuestos pendientes"
           value={data.sentQuotes}
           to="/app/quotes"
-          sub={
-            <>
-              {fmtARS(data.sentQuotesTotal)} en juego
-              {hotCount > 0 && (
-                <>
-                  {' · '}
-                  <span className="font-semibold text-amber-700">{hotCount} sin respuesta hace +{thresholds.hotQuoteHours} h</span>
-                </>
-              )}
-            </>
-          }
+          accent="amber"
+          icon={<DocClockIcon />}
+          bar={[
+            { value: hotCount, tone: 'amber', label: 'Sin respuesta' },
+            { value: Math.max(0, data.sentQuotes - hotCount), tone: 'slate', label: 'Recientes' },
+          ]}
+          stats={[
+            { label: 'En juego', value: fmtARS(data.sentQuotesTotal) },
+            { label: `Sin respuesta +${thresholds.hotQuoteHours} h`, value: hotCount, tone: hotCount > 0 ? 'amber' : 'slate' },
+          ]}
         />
       </div>
 
@@ -127,11 +140,11 @@ export function DashboardPage() {
         <div className="space-y-6 lg:col-span-3">
           <LiveOrders orders={data.liveOrders} stuckCount={byStatus.stuck} thresholds={thresholds} />
           {data.todayAppointments && <TodayAppointmentsWidget data={data.todayAppointments} />}
+          {data.lowStock && <LowStockWidget items={data.lowStock} total={data.lowStockItems} />}
         </div>
         <div className="space-y-6 lg:col-span-2">
           {data.hotQuotes && <HotQuotesWidget data={data.hotQuotes} thresholds={thresholds} />}
           {data.cash && <CashWidget data={data.cash} />}
-          {data.lowStock && <LowStockWidget items={data.lowStock} total={data.lowStockItems} />}
         </div>
       </div>
 

@@ -269,11 +269,11 @@ export function GeneralSettingsPage() {
 
         <div className="space-y-4 p-5">
           <p className="text-xs text-tc-text-secondary">
-            Cuándo el Inicio marca algo como atrasado. Se usan en «Presupuestos calientes», «Taller en vivo» y «Por cobrar».
+            Cuándo el Inicio marca algo como atrasado. Se usan en «Presupuestos sin respuesta», «Taller en vivo» y «Por cobrar».
           </p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <FormField
-              label="Presupuesto caliente (horas)"
+              label="Presupuesto sin respuesta (horas)"
               type="number"
               min={1}
               max={720}
