@@ -67,6 +67,10 @@ export function HotQuotesWidget({ data, thresholds }: { data: HotQuotes; thresho
           Ningún presupuesto enviado lleva más de {thresholds.hotQuoteHours} h sin respuesta.
         </WidgetEmpty>
       ) : (
+        <>
+        <p className="border-b border-tc-border bg-white px-4 py-2 text-xs text-tc-text-secondary">
+          Reenviá el enlace para que el cliente vea y apruebe el presupuesto. Se genera un enlace nuevo y el anterior deja de funcionar.
+        </p>
         <ul className="divide-y divide-tc-border">
           {data.items.map(q => (
             <li key={q.id} className="flex min-h-11 flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-2.5">
@@ -83,12 +87,14 @@ export function HotQuotesWidget({ data, thresholds }: { data: HotQuotes; thresho
                   <span className="text-[11px] text-tc-text-muted">Sin contacto</span>
                 ) : (
                   <>
+                    <span className="hidden text-[11px] text-tc-text-muted sm:inline">Reenviar enlace:</span>
                     {q.customerPhone && (
                       <button
                         type="button"
                         disabled={busyId !== null}
                         onClick={() => void resend(q)}
                         aria-label={`Reenviar el presupuesto ${q.number} por WhatsApp`}
+                        title="Reenviar el enlace del presupuesto por WhatsApp (genera un enlace nuevo)"
                         className="inline-flex min-h-11 items-center gap-1.5 border border-emerald-600 px-2.5 text-[11px] font-bold tracking-wider uppercase text-emerald-700 transition-colors hover:bg-emerald-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         <WhatsappIcon className="h-4 w-4" />
@@ -101,6 +107,7 @@ export function HotQuotesWidget({ data, thresholds }: { data: HotQuotes; thresho
                         disabled={busyId !== null}
                         onClick={() => void resendEmail(q)}
                         aria-label={`Reenviar el presupuesto ${q.number} por email`}
+                        title="Reenviar el enlace del presupuesto por email (genera un enlace nuevo)"
                         className="inline-flex min-h-11 items-center gap-1.5 border border-blue-600 px-2.5 text-[11px] font-bold tracking-wider uppercase text-blue-700 transition-colors hover:bg-blue-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         <MailIcon className="h-4 w-4" />
@@ -113,6 +120,7 @@ export function HotQuotesWidget({ data, thresholds }: { data: HotQuotes; thresho
             </li>
           ))}
         </ul>
+        </>
       )}
       {data.total > data.items.length && (
         <p className="border-t border-tc-border px-4 py-2.5 text-xs text-tc-text-secondary">
