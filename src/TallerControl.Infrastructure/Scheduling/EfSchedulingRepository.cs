@@ -540,5 +540,13 @@ internal sealed class EfSchedulingRepository : ISchedulingRepository
         return new CatalogItemInfo(item.Name, item.DurationMinutes, item.BufferMinutes);
     }
 
+    public async Task<int> GetDefaultServiceMinutesAsync(CancellationToken ct)
+    {
+        var minutes = await _db.Set<TenantSettings>().AsNoTracking()
+            .Select(s => (int?)s.DefaultServiceMinutes)
+            .FirstOrDefaultAsync(ct);
+        return minutes ?? TenantSettings.DefaultServiceMinutesValue;
+    }
+
     public Task SaveChangesAsync(CancellationToken ct) => _db.SaveChangesAsync(ct);
 }

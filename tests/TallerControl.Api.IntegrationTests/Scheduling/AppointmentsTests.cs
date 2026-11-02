@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using TallerControl.Api.Identity;
 using TallerControl.Api.IntegrationTests.Persistence;
 
@@ -409,5 +411,50 @@ public sealed class AppointmentsTests : IAsyncLifetime
         }
 
         Assert.Empty((await owner.GetFromJsonAsync<JsonElement>("/api/v1/availability/rules")).EnumerateArray());
+    }
+
+    // ── T-APT-05: servicio sin duración → se usa la duración por defecto del taller ───────
+
+    private async Task<HttpResponseMessage> PostAppointmentWithServiceAsync(HttpClient client, Guid catalogItemId, int days)
+    {
+        var csrf = await FetchCsrfAsync(client);
+        var body = new
+        {
+            customerId = _factory.CustomerId,
+            vehicleId = _factory.VehicleId,
+            mechanicMembershipId = (Guid?)null,
+            scheduledAt = DateTimeOffset.UtcNow.AddDays(days),
+            notes = (string?)null,
+            force = true,
+            services = new[] { new { catalogItemId } },
+        };
+        var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/appointments") { Content = JsonContent.Create(body) };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        return await client.SendAsync(req);
+    }
+
+    [Fact(DisplayName = "T-APT-05: un servicio sin duración se reserva con la duración por defecto del taller")]
+    public async Task Servicio_sin_duracion_usa_la_duracion_por_defecto_del_taller()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, AppointmentsWebApplicationFactory.OwnerEmail);
+
+        // Por defecto (30 min).
+        var first = await PostAppointmentWithServiceAsync(client, _factory.CatalogItemNoDurationId, days: 1);
+        Assert.Equal(HttpStatusCode.Created, first.StatusCode);
+        var firstJson = await first.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(30, firstJson.GetProperty("appointment").GetProperty("totalDurationMinutes").GetInt32());
+
+        // Si el taller cambia su duración por defecto, el turno nuevo la toma.
+        await using (var scope = _factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TallerControl.Infrastructure.Persistence.AppDbContext>();
+            await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE tenant_settings SET default_service_minutes = 50");
+        }
+
+        var second = await PostAppointmentWithServiceAsync(client, _factory.CatalogItemNoDurationId, days: 2);
+        Assert.Equal(HttpStatusCode.Created, second.StatusCode);
+        var secondJson = await second.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(50, secondJson.GetProperty("appointment").GetProperty("totalDurationMinutes").GetInt32());
     }
 }

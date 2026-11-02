@@ -27,6 +27,7 @@ const schema = z.object({
   hotQuoteHours: z.coerce.number().int().min(1, 'Mínimo 1 hora').max(720, 'Máximo 720 horas'),
   stuckOrderDays: z.coerce.number().int().min(1, 'Mínimo 1 día').max(60, 'Máximo 60 días'),
   agedReceivableDays: z.coerce.number().int().min(1, 'Mínimo 1 día').max(365, 'Máximo 365 días'),
+  defaultServiceMinutes: z.coerce.number().int().min(5, 'Mínimo 5 minutos').max(480, 'Máximo 480 minutos'),
 })
 
 type FormInput = z.input<typeof schema>
@@ -45,6 +46,7 @@ function toFormData(dto: SettingsDto): FormInput {
     hotQuoteHours: dto.hotQuoteHours,
     stuckOrderDays: dto.stuckOrderDays,
     agedReceivableDays: dto.agedReceivableDays,
+    defaultServiceMinutes: dto.defaultServiceMinutes,
   }
 }
 
@@ -61,6 +63,7 @@ function toRequest(data: FormData): UpdateSettingsRequest {
     hotQuoteHours: data.hotQuoteHours,
     stuckOrderDays: data.stuckOrderDays,
     agedReceivableDays: data.agedReceivableDays,
+    defaultServiceMinutes: data.defaultServiceMinutes,
   }
 }
 
@@ -259,6 +262,17 @@ export function GeneralSettingsPage() {
               {...register('quoteValidityDays')}
             />
           </div>
+
+          <FormField
+            label="Duración por defecto de un servicio (minutos)"
+            type="number"
+            min={5}
+            max={480}
+            hint="Se usa al reservar un turno cuando el servicio del catálogo no tiene duración cargada"
+            inputClassName="tabular-nums"
+            error={errors.defaultServiceMinutes?.message}
+            {...register('defaultServiceMinutes')}
+          />
         </div>
 
         <div className="h-px bg-tc-perf" />

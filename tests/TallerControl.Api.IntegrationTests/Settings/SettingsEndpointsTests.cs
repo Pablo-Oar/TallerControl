@@ -76,7 +76,8 @@ public sealed class SettingsEndpointsTests : IAsyncLifetime
         int quoteValidityDays = 15,
         int? hotQuoteHours = null,
         int? stuckOrderDays = null,
-        int? agedReceivableDays = null) => new
+        int? agedReceivableDays = null,
+        int? defaultServiceMinutes = null) => new
         {
             name = "Taller Actualizado",
             legalName = "Taller Actualizado S.A.",
@@ -89,6 +90,7 @@ public sealed class SettingsEndpointsTests : IAsyncLifetime
             hotQuoteHours,
             stuckOrderDays,
             agedReceivableDays,
+            defaultServiceMinutes,
         };
 
     private static async Task<HttpResponseMessage> PostLogoUploadUrlAsync(HttpClient client, string contentType, long size)
@@ -207,6 +209,34 @@ public sealed class SettingsEndpointsTests : IAsyncLifetime
         await LoginAsync(client, SettingsWebApplicationFactory.OwnerEmail, SettingsWebApplicationFactory.OwnerPassword);
 
         var resp = await PutSettingsAsync(client, ValidUpdateBody(stuckOrderDays: 0));
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
+    }
+
+    [Fact(DisplayName = "T-SET-06: el Dueño cambia la duración por defecto de un servicio y queda guardada")]
+    public async Task Owner_edita_la_duracion_por_defecto_de_un_servicio()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, SettingsWebApplicationFactory.OwnerEmail, SettingsWebApplicationFactory.OwnerPassword);
+
+        Assert.Equal(30, (await GetSettingsAsync(client)).GetProperty("defaultServiceMinutes").GetInt32());
+
+        var putResp = await PutSettingsAsync(client, ValidUpdateBody(defaultServiceMinutes: 50));
+        Assert.Equal(HttpStatusCode.OK, putResp.StatusCode);
+        Assert.Equal(50, (await GetSettingsAsync(client)).GetProperty("defaultServiceMinutes").GetInt32());
+
+        // Un PUT sin el campo (cliente viejo) no lo pisa.
+        Assert.Equal(HttpStatusCode.OK, (await PutSettingsAsync(client, ValidUpdateBody(quoteValidityDays: 20))).StatusCode);
+        Assert.Equal(50, (await GetSettingsAsync(client)).GetProperty("defaultServiceMinutes").GetInt32());
+    }
+
+    [Fact(DisplayName = "T-SET-07: una duración por defecto fuera de rango se rechaza con 422")]
+    public async Task Duracion_por_defecto_fuera_de_rango_es_rechazada_con_422()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, SettingsWebApplicationFactory.OwnerEmail, SettingsWebApplicationFactory.OwnerPassword);
+
+        var resp = await PutSettingsAsync(client, ValidUpdateBody(defaultServiceMinutes: 3));
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
     }

@@ -31,6 +31,7 @@ internal sealed class AppointmentsWebApplicationFactory : WebApplicationFactory<
     public Guid CustomerId { get; private set; }
     public Guid VehicleId { get; private set; }
     public Guid CatalogItemId { get; private set; }
+    public Guid CatalogItemNoDurationId { get; private set; }
     public Guid MechanicMembershipId { get; private set; }
     public string ConnectionString { get; }
 
@@ -107,6 +108,10 @@ internal sealed class AppointmentsWebApplicationFactory : WebApplicationFactory<
             tenant.Id, CatalogItemKind.Service, "Servicio Prueba Agenda",
             sku: null, netPrice: 100, vatRate: 21, cost: null, trackStock: false, stockMin: null,
             durationMinutes: 45, bufferMinutes: 15);
+        var noDurationItem = new CatalogItem(
+            tenant.Id, CatalogItemKind.Service, "Servicio sin duración",
+            sku: null, netPrice: 100, vatRate: 21, cost: null, trackStock: false, stockMin: null,
+            durationMinutes: null, bufferMinutes: null);
 
         await using (var db = new AppDbContext(
             BuildOptions(ownerConnectionString), new TestTenantContext(tenant.Id), new TestActorContext(), TimeProvider.System))
@@ -117,6 +122,7 @@ internal sealed class AppointmentsWebApplicationFactory : WebApplicationFactory<
             db.Add(customer);
             db.Add(vehicle);
             db.Add(catalogItem);
+            db.Add(noDurationItem);
             await db.SaveChangesAsync();
         }
 
@@ -124,6 +130,7 @@ internal sealed class AppointmentsWebApplicationFactory : WebApplicationFactory<
         CustomerId = customer.Id;
         VehicleId = vehicle.Id;
         CatalogItemId = catalogItem.Id;
+        CatalogItemNoDurationId = noDurationItem.Id;
     }
 
     private static DbContextOptions<AppDbContext> BuildOptions(string cs)

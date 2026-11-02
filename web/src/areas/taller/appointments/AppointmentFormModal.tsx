@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { appointmentsApi, type AppointmentDto } from '../../../lib/api/appointments'
 import { workOrdersApi } from '../../../lib/api/workOrders'
 import { useCan } from '../../../lib/auth/permissions'
+import { useDefaultServiceMinutes } from '../../../lib/auth/defaults'
 import { toDateTimeLocal } from '../../../lib/dates'
 import { customersApi } from '../../../lib/api/customers'
 import { catalogApi } from '../../../lib/api/catalog'
@@ -69,18 +70,21 @@ export function AppointmentFormModal({ editData, onClose, onCreated }: Props) {
   const { fields, append, remove } = useFieldArray({ control, name: 'services' })
 
   const customerId = watch('customerId')
+  const defaultMinutes = useDefaultServiceMinutes()
 
-  // Duración y margen salen del catálogo (el servidor los copia de ahí); avisamos si un servicio no los tiene.
+  // Duración y margen salen del catálogo (el servidor los copia de ahí). Si un servicio no tiene duración se reserva
+  // con la del taller (Configuración → General) y se avisa.
   const [missingDuration, setMissingDuration] = useState<Record<number, string>>({})
   async function applyCatalogTiming(index: number, catalogItemId: string) {
     if (!catalogItemId) return
     try {
       const dto = await catalogApi.get(catalogItemId)
-      setValue(`services.${index}.durationMinutes`, dto.durationMinutes ?? 0)
+      const hasDuration = !!dto.durationMinutes && dto.durationMinutes > 0
+      setValue(`services.${index}.durationMinutes`, hasDuration ? dto.durationMinutes! : defaultMinutes)
       setValue(`services.${index}.bufferMinutes`, dto.bufferMinutes ?? 0)
       setMissingDuration(m => {
         const next = { ...m }
-        if (dto.durationMinutes && dto.durationMinutes > 0) delete next[index]
+        if (hasDuration) delete next[index]
         else next[index] = dto.name
         return next
       })
@@ -252,8 +256,9 @@ export function AppointmentFormModal({ editData, onClose, onCreated }: Props) {
                       }}
                     />
                     {missingDuration[index] && (
-                      <p role="alert" className="border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs text-amber-900">
-                        «{missingDuration[index]}» no tiene duración en el catálogo. Cargala en Catálogo → Editar para poder reservar el turno.
+                      <p role="status" className="border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs text-amber-900">
+                        «{missingDuration[index]}» no tiene duración en el catálogo: se reserva con la del taller ({defaultMinutes} min).
+                        Podés cambiarla en Configuración → General, o cargarla en el servicio desde Catálogo → Editar.
                       </p>
                     )}
                     <div className="grid grid-cols-2 gap-2">
@@ -262,7 +267,7 @@ export function AppointmentFormModal({ editData, onClose, onCreated }: Props) {
                         size="sm"
                         type="number"
                         readOnly
-                        hint="Del catálogo"
+                        hint={missingDuration[index] ? 'Por defecto del taller' : 'Del catálogo'}
                         inputClassName="tabular-nums"
                         {...register(`services.${index}.durationMinutes`, { valueAsNumber: true })}
                       />

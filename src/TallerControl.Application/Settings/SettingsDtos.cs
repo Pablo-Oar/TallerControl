@@ -19,7 +19,8 @@ public sealed record SettingsDto(
     string Version,
     int HotQuoteHours,
     int StuckOrderDays,
-    int AgedReceivableDays);
+    int AgedReceivableDays,
+    int DefaultServiceMinutes);
 
 /// <summary>Cuerpo de <c>PUT /api/v1/settings</c> (doc 05 §2.2). El logo va por su propio flujo.</summary>
 public sealed record UpdateSettingsRequest(
@@ -33,7 +34,8 @@ public sealed record UpdateSettingsRequest(
     int QuoteValidityDays,
     int? HotQuoteHours = null,
     int? StuckOrderDays = null,
-    int? AgedReceivableDays = null);
+    int? AgedReceivableDays = null,
+    int? DefaultServiceMinutes = null);
 
 /// <summary>Cuerpo de <c>POST /api/v1/settings/logo/upload-url</c> (doc 05 §2.2, T-SET-03).</summary>
 public sealed record LogoUploadUrlRequest(string ContentType, long Size);
