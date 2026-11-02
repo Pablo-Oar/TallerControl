@@ -25,6 +25,7 @@ internal static class SettingsMapper
             SettingsVersion.Format(tenant.Version, settings.Version),
             settings.HotQuoteHours,
             settings.StuckOrderDays,
-            settings.AgedReceivableDays);
+            settings.AgedReceivableDays,
+            settings.DefaultServiceMinutes);
     }
 }

@@ -50,6 +50,7 @@ public sealed class UpdateSettingsHandler
                 request.HotQuoteHours ?? settings.HotQuoteHours,
                 request.StuckOrderDays ?? settings.StuckOrderDays,
                 request.AgedReceivableDays ?? settings.AgedReceivableDays);
+            settings.UpdateDefaultServiceMinutes(request.DefaultServiceMinutes ?? settings.DefaultServiceMinutes);
         }
         catch (ArgumentException ex)
         {

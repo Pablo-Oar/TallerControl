@@ -46,13 +46,14 @@ internal sealed class EfAuthRepository : IAuthRepository
 
         var settings = await _db.Set<TenantSettings>().IgnoreQueryFilters().AsNoTracking()
             .Where(s => s.TenantId == tenant.Id)
-            .Select(s => new { s.DefaultVat, s.QuoteValidityDays })
+            .Select(s => new { s.DefaultVat, s.QuoteValidityDays, s.DefaultServiceMinutes })
             .FirstOrDefaultAsync(ct);
 
         return new MembershipWithTenant(
             membership, tenant,
             settings?.DefaultVat ?? TenantSettings.DefaultVatRate,
-            settings?.QuoteValidityDays ?? TenantSettings.DefaultQuoteValidityDays);
+            settings?.QuoteValidityDays ?? TenantSettings.DefaultQuoteValidityDays,
+            settings?.DefaultServiceMinutes ?? TenantSettings.DefaultServiceMinutesValue);
     }
 
     public Task SaveChangesAsync(CancellationToken ct) => _db.SaveChangesAsync(ct);

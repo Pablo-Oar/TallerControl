@@ -36,17 +36,16 @@ public sealed class CreateAppointmentHandler(
             throw new BusinessRuleException("Solo el Dueño puede agendar un turno fuera de horario o encimado.");
 
         // Servicios del catálogo con su duración (la copia queda en el turno).
+        // Si el servicio del catálogo no tiene duración propia se usa la del taller (Configuración general).
+        var defaultMinutes = await repo.GetDefaultServiceMinutesAsync(ct);
         var services = new List<(Guid CatalogItemId, int Duration, int Buffer)>();
         foreach (var svcReq in request.Services)
         {
             var info = await repo.GetCatalogItemInfoAsync(svcReq.CatalogItemId, ct)
                 ?? throw new NotFoundException($"El servicio {svcReq.CatalogItemId} no existe.");
 
-            if (!info.DurationMinutes.HasValue || info.DurationMinutes.Value <= 0)
-                throw new BusinessRuleException(
-                    $"El servicio '{info.Name}' no tiene una duración configurada.");
-
-            services.Add((svcReq.CatalogItemId, info.DurationMinutes.Value, info.BufferMinutes ?? 0));
+            var duration = info.DurationMinutes is > 0 ? info.DurationMinutes.Value : defaultMinutes;
+            services.Add((svcReq.CatalogItemId, duration, info.BufferMinutes ?? 0));
         }
 
         var minutes = services.Sum(s => s.Duration + s.Buffer);

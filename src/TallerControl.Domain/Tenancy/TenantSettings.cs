@@ -17,6 +17,11 @@ public sealed class TenantSettings : ITenantOwned, IVersioned, IAudited
     public const int MaxStuckOrderDays = 60;
     public const int MaxAgedReceivableDays = 365;
 
+    // Duración con la que se reserva un turno cuando el servicio del catálogo no tiene una propia.
+    public const int DefaultServiceMinutesValue = 30;
+    public const int MinServiceMinutes = 5;
+    public const int MaxServiceMinutes = 480;
+
     public static readonly IReadOnlyList<decimal> AllowedVatRates = [0m, 2.5m, 5m, 10.5m, 21m, 27m];
 
     private TenantSettings()
@@ -37,6 +42,7 @@ public sealed class TenantSettings : ITenantOwned, IVersioned, IAudited
         HotQuoteHours = DefaultHotQuoteHours;
         StuckOrderDays = DefaultStuckOrderDays;
         AgedReceivableDays = DefaultAgedReceivableDays;
+        DefaultServiceMinutes = DefaultServiceMinutesValue;
     }
 
     public Guid TenantId { get; private set; }
@@ -56,6 +62,9 @@ public sealed class TenantSettings : ITenantOwned, IVersioned, IAudited
 
     /// <summary>Días en el mismo estado para que una orden figure como «trabada» en el Inicio (D-42).</summary>
     public int StuckOrderDays { get; private set; } = DefaultStuckOrderDays;
+
+    /// <summary>Minutos que dura un servicio al reservar un turno si el catálogo no le cargó duración.</summary>
+    public int DefaultServiceMinutes { get; private set; } = DefaultServiceMinutesValue;
 
     /// <summary>Días con saldo pendiente para marcar una orden como «saldo antiguo» en el Inicio (D-39, D-42).</summary>
     public int AgedReceivableDays { get; private set; } = DefaultAgedReceivableDays;
@@ -110,6 +119,19 @@ public sealed class TenantSettings : ITenantOwned, IVersioned, IAudited
         HotQuoteHours = hotQuoteHours;
         StuckOrderDays = stuckOrderDays;
         AgedReceivableDays = agedReceivableDays;
+    }
+
+    /// <summary>Actualiza la duración por defecto de un servicio (turnos). Debe estar entre 5 y 480 minutos.</summary>
+    public void UpdateDefaultServiceMinutes(int minutes)
+    {
+        if (minutes is < MinServiceMinutes or > MaxServiceMinutes)
+        {
+            throw new ArgumentException(
+                $"La duración por defecto de un servicio debe estar entre {MinServiceMinutes} y {MaxServiceMinutes} minutos.",
+                nameof(minutes));
+        }
+
+        DefaultServiceMinutes = minutes;
     }
 
     /// <summary>Fija la clave del logo ya subido a R2/RustFS (doc 05 §2.2, T-SET-03).</summary>

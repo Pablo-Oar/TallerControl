@@ -112,4 +112,36 @@ public class TenancyTests
         Assert.Equal(3, settings.StuckOrderDays);
         Assert.Equal(30, settings.AgedReceivableDays);
     }
+
+    // ── Duración por defecto de un servicio (turnos) ────────────────────────────
+    [Fact(DisplayName = "T-SET-06: la duración por defecto de un servicio arranca en 30 minutos")]
+    public void La_duracion_por_defecto_de_un_servicio_arranca_en_30_minutos()
+    {
+        var settings = new TenantSettings(Guid.CreateVersion7());
+
+        Assert.Equal(30, settings.DefaultServiceMinutes);
+    }
+
+    [Theory(DisplayName = "T-SET-07: la duración por defecto solo admite entre 5 y 480 minutos")]
+    [InlineData(0)]
+    [InlineData(4)]
+    [InlineData(481)]
+    public void La_duracion_por_defecto_fuera_de_rango_es_rechazada(int minutes)
+    {
+        var settings = new TenantSettings(Guid.CreateVersion7());
+
+        Assert.Throws<ArgumentException>(() => settings.UpdateDefaultServiceMinutes(minutes));
+
+        Assert.Equal(30, settings.DefaultServiceMinutes);
+    }
+
+    [Fact]
+    public void La_duracion_por_defecto_se_actualiza_dentro_de_su_rango()
+    {
+        var settings = new TenantSettings(Guid.CreateVersion7());
+
+        settings.UpdateDefaultServiceMinutes(60);
+
+        Assert.Equal(60, settings.DefaultServiceMinutes);
+    }
 }

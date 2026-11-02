@@ -2760,6 +2760,12 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                         .HasDefaultValue(30)
                         .HasColumnName("aged_receivable_days");
 
+                    b.Property<int>("DefaultServiceMinutes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(30)
+                        .HasColumnName("default_service_minutes");
+
                     b.Property<decimal>("DefaultVat")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(5, 2)
@@ -2814,6 +2820,8 @@ namespace TallerControl.Infrastructure.Persistence.Migrations
                     b.ToTable("tenant_settings", null, t =>
                         {
                             t.HasCheckConstraint("ck_tenant_settings_aged_receivable_days", "aged_receivable_days BETWEEN 1 AND 365");
+
+                            t.HasCheckConstraint("ck_tenant_settings_default_service_minutes", "default_service_minutes BETWEEN 5 AND 480");
 
                             t.HasCheckConstraint("ck_tenant_settings_default_vat", "default_vat_rate IN (0, 2.5, 5, 10.5, 21, 27)");
 

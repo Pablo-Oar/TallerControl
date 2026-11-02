@@ -94,6 +94,9 @@ public interface ISchedulingRepository
     /// <summary>Devuelve el nombre + DurationMinutes + BufferMinutes del ítem del catálogo.</summary>
     Task<CatalogItemInfo?> GetCatalogItemInfoAsync(Guid catalogItemId, CancellationToken ct);
 
+    /// <summary>Duración (minutos) con la que se reserva un servicio del catálogo que no tiene una propia.</summary>
+    Task<int> GetDefaultServiceMinutesAsync(CancellationToken ct);
+
     Task SaveChangesAsync(CancellationToken ct);
 }
 

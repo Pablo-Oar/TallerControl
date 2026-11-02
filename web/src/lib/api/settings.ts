@@ -21,6 +21,8 @@ export interface SettingsDto {
   hotQuoteHours: number
   stuckOrderDays: number
   agedReceivableDays: number
+  /** Duración con la que se reserva un turno si el servicio del catálogo no tiene una propia. */
+  defaultServiceMinutes: number
 }
 
 export interface UpdateSettingsRequest {
@@ -35,6 +37,7 @@ export interface UpdateSettingsRequest {
   hotQuoteHours: number
   stuckOrderDays: number
   agedReceivableDays: number
+  defaultServiceMinutes: number
 }
 
 export interface LogoUploadUrlResponse {
