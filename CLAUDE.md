@@ -414,8 +414,7 @@ docker compose up -d        # PostgreSQL 18 + RustFS/S3 en 127.0.0.1 (requiere D
 
 ## Decisiones aún abiertas (no asumir)
 
-D-02 host, D-03 proveedor PostgreSQL, D-05 librería PDF, D-07 stock negativo (**decidida en E4: se permite con alerta, `IsLowStock` en `CatalogItem`**).
-Nuevas en V2: D-17 límites por plan, D-18 Google en el panel, D-20 ventas de mostrador, D-21 kits.
+Hoy **no hay decisiones bloqueantes abiertas**; la única provisoria es D-04 (email por Gmail, ver abajo). Decididas aunque esta lista las mostraba abiertas: D-02 (host: Cloudflare Containers), D-03 (PostgreSQL: Neon + Hyperdrive), D-05 (PDF: QuestPDF Community), D-07 (stock negativo: se permite con alerta), D-17 (límites por plan: solo `PlanCode`, sin cobrar en el MVP; planes reales P1), D-18 (Google en el panel: P2), D-20 (ventas de mostrador: P1, hecha en E11), D-21 (kits: P2).
 
 **Decididas:** D-38 (cerrar sesión borra la suscripción push del navegador), D-39..D-42 (dashboard del Inicio: «saldo antiguo» en vez de facturas vencidas, WhatsApp por `wa.me`, `recharts` lazy, umbrales por taller; ver `docs/plan-dashboard-inicio.md`), D-30 (sesión de caja opcional con aviso), D-31 (contraasiento al anular un cobro), D-32 (CITI oficial), D-33 (ambiente ARCA por certificado), D-34 (PDF de la orden sin precios para el mecánico), D-36 (tarea horaria que vence presupuestos), D-37 («Administrativo» en toda la UI). D-15 (12/10/2026): clientes y catálogo compartidos dentro del taller; caja, stock y numeración por sucursal.
 **D-04 (provisoria, 12/10/2026):** el email sale por **Gmail** (SMTP con contraseña de aplicación) detrás de una interfaz `IEmailSender` y siempre desde el outbox, para poder cambiar de proveedor sin tocar el negocio. Revisar antes de E8/E9: el límite de Gmail (≈500 envíos/día) y la entregabilidad del OTP del QR (el plan pide probar 20 envíos reales).
