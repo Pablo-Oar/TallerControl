@@ -63,7 +63,7 @@ public sealed class CustomersEndpointsTests : IAsyncLifetime
         var csrf = await FetchCsrfAsync(client);
         var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/customers")
         {
-            Content = JsonContent.Create(new { name, phone, email }),
+            Content = JsonContent.Create(new { name, phone = phone ?? (email is null ? "1155550000" : null), email }),
         };
         req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
         return await client.SendAsync(req);
@@ -83,11 +83,40 @@ public sealed class CustomersEndpointsTests : IAsyncLifetime
         var csrf = await FetchCsrfAsync(client);
         var req = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/customers/{id}")
         {
-            Content = JsonContent.Create(body),
+            Content = JsonContent.Create(WithContact(body)),
         };
         req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
         req.Headers.TryAddWithoutValidation("If-Match", $"\"{version}\"");
         return await client.SendAsync(req);
+    }
+
+    /// <summary>Desde el 5/11/2026 un cliente necesita teléfono o email: los tests que no hablan de contacto reciben uno.</summary>
+    private static System.Text.Json.Nodes.JsonObject WithContact(object body)
+    {
+        var node = JsonSerializer.SerializeToNode(body)!.AsObject();
+        if (node["phone"] is null && node["email"] is null) node["phone"] = "1155550000";
+        return node;
+    }
+
+    [Fact(DisplayName = "T-CUS-13: un cliente necesita al menos teléfono o email; con uno solo alcanza")]
+    public async Task Cliente_necesita_al_menos_un_dato_de_contacto()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CustomersVehiclesWebApplicationFactory.OwnerEmail,
+            CustomersVehiclesWebApplicationFactory.OwnerPassword);
+
+        async Task<HttpResponseMessage> Raw(object body)
+        {
+            var csrf = await FetchCsrfAsync(client);
+            var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/customers") { Content = JsonContent.Create(body) };
+            req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+            return await client.SendAsync(req);
+        }
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await Raw(new { name = "Sin contacto T-CUS-13" })).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await Raw(new { name = "Vacíos T-CUS-13", phone = "  ", email = "" })).StatusCode);
+        Assert.Equal(HttpStatusCode.Created, (await Raw(new { name = "Solo mail T-CUS-13", email = "a@b.com" })).StatusCode);
+        Assert.Equal(HttpStatusCode.Created, (await Raw(new { name = "Solo tel T-CUS-13", phone = "1155551234" })).StatusCode);
     }
 
     private static async Task<HttpResponseMessage> DeleteCustomerAsync(

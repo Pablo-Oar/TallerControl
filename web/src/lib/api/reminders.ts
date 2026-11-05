@@ -23,6 +23,9 @@ export interface ReminderListDto {
   dueKm: number | null
   lastNotifiedAt: string | null
   completedAt: string | null
+  vehicleBrand?: string | null
+  vehicleModel?: string | null
+  customerName?: string | null
 }
 
 export interface ReminderDto extends ReminderListDto {

@@ -88,6 +88,7 @@ export function HotQuotesWidget({ data, thresholds }: { data: HotQuotes; thresho
                 ) : (
                   <>
                     <span className="hidden text-[11px] text-tc-text-muted sm:inline">Reenviar enlace:</span>
+                    {!q.customerPhone && q.customerEmail && <span className="hidden h-11 w-11 sm:block" aria-hidden="true" />}
                     {q.customerPhone && (
                       <button
                         type="button"
@@ -95,10 +96,9 @@ export function HotQuotesWidget({ data, thresholds }: { data: HotQuotes; thresho
                         onClick={() => void resend(q)}
                         aria-label={`Reenviar el presupuesto ${q.number} por WhatsApp`}
                         title="Reenviar el enlace del presupuesto por WhatsApp (genera un enlace nuevo)"
-                        className="inline-flex min-h-11 items-center gap-1.5 border border-emerald-600 px-2.5 text-[11px] font-bold tracking-wider uppercase text-emerald-700 transition-colors hover:bg-emerald-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-emerald-600 text-emerald-700 transition-colors hover:bg-emerald-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                       >
-                        <WhatsappIcon className="h-4 w-4" />
-                        {busyId === `${q.id}:wa` ? 'Generando…' : 'WhatsApp'}
+                        {busyId === `${q.id}:wa` ? <span className="text-[11px] font-bold">…</span> : <WhatsappIcon className="h-5 w-5" />}
                       </button>
                     )}
                     {q.customerEmail && (
@@ -108,10 +108,9 @@ export function HotQuotesWidget({ data, thresholds }: { data: HotQuotes; thresho
                         onClick={() => void resendEmail(q)}
                         aria-label={`Reenviar el presupuesto ${q.number} por email`}
                         title="Reenviar el enlace del presupuesto por email (genera un enlace nuevo)"
-                        className="inline-flex min-h-11 items-center gap-1.5 border border-blue-600 px-2.5 text-[11px] font-bold tracking-wider uppercase text-blue-700 transition-colors hover:bg-blue-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-blue-600 text-blue-700 transition-colors hover:bg-blue-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                       >
-                        <MailIcon className="h-4 w-4" />
-                        {busyId === `${q.id}:email` ? 'Enviando…' : 'Email'}
+                        {busyId === `${q.id}:email` ? <span className="text-[11px] font-bold">…</span> : <MailIcon className="h-5 w-5" />}
                       </button>
                     )}
                   </>

@@ -58,6 +58,8 @@ export interface QuoteListDto {
   customerName: string
   vehicleId: string
   vehiclePlate: string
+  vehicleBrand?: string | null
+  vehicleModel?: string | null
   total: number
   globalDiscountPct: number
   validUntil: string

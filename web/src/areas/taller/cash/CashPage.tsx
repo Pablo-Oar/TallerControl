@@ -74,6 +74,13 @@ export function CashPage() {
         {can('cash.open') && <Button size="sm" onClick={() => setDialog({ kind: 'create' })}>Nueva cuenta</Button>}
       </div>
 
+      <p className="rounded-2xl border border-tc-border bg-tc-surface px-4 py-3 text-xs leading-relaxed text-tc-text-secondary">
+        Cada <b className="text-tc-text">cuenta</b> es un lugar donde el taller guarda plata: la caja del mostrador, el banco, una billetera virtual.
+        Al cobrar o pagar elegís la cuenta y el saldo se actualiza solo. <b className="text-tc-text">Abrir sesión</b> es empezar el turno
+        anotando cuánto efectivo hay; <b className="text-tc-text">Cerrar caja</b> es contar al final y ver la diferencia.
+        Una cuenta <b className="text-tc-text">inactiva</b> deja de ofrecerse al cobrar, pero conserva su historial.
+      </p>
+
       {accounts && accounts.length > 0 && (
         <div className="flex items-center justify-between rounded-2xl border border-tc-border bg-white px-4 py-3">
           <span className="text-xs font-bold tracking-wider uppercase text-tc-text-muted">Total en cuentas activas</span>

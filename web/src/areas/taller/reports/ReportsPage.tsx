@@ -4,6 +4,7 @@ import { reportsApi } from '../../../lib/api/reports'
 import { Button } from '../../../components/ui/Button'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { DataTable } from '../../../components/ui/DataTable'
+import { VehicleLabel } from '../../../components/ui/VehicleLabel'
 import { Tabs, TabPanel } from '../../../components/ui/Tabs'
 import { inputCls } from '../../../lib/styles'
 import { formatDate, formatDateOnly, localDateISO } from '../../../lib/dates'
@@ -18,6 +19,10 @@ const TAB_LABELS: Record<Tab, string> = {
 }
 
 const todayStr = () => localDateISO()
+
+const WEEKDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+/** Día de la semana de una fecha «solo día» (yyyy-mm-dd), sin pasar por la zona horaria. */
+const weekdayLabel = (date: string) => WEEKDAYS[new Date(`${date.slice(0, 10)}T12:00:00`).getDay()]
 const monthAgoStr = () => localDateISO(0, -1)
 
 const fmtARS = (n: number) =>
@@ -124,13 +129,34 @@ export function ReportsPage() {
               rows={revenueQuery.data.rows}
               getRowId={r => r.date}
               columns={[
-                { key: 'date', header: 'Fecha', sortable: true, sortValue: r => r.date, cell: r => <span className="tabular-nums text-tc-text-secondary">{formatDateOnly(r.date)}</span> },
-                { key: 'count', header: 'Cobros', align: 'right', sortable: true, sortValue: r => r.paymentCount, cell: r => <span className="tabular-nums text-tc-text-secondary">{r.paymentCount}</span> },
-                { key: 'amount', header: 'Monto', align: 'right', sortable: true, sortValue: r => r.amount, cell: r => <span className="font-bold tabular-nums text-tc-purple">{fmtARS(r.amount)}</span> },
+                { key: 'date', header: 'Fecha', widthClass: 'w-32', sortable: true, sortValue: r => r.date, cell: r => <span className="tabular-nums text-tc-text-secondary">{formatDateOnly(r.date)}</span> },
+                { key: 'weekday', header: 'Día', widthClass: 'w-28', cell: r => <span className="text-tc-text-secondary">{weekdayLabel(r.date)}</span> },
+                { key: 'count', header: 'Cobros', align: 'center', widthClass: 'w-24', sortable: true, sortValue: r => r.paymentCount, cell: r => <span className="tabular-nums text-tc-text-secondary">{r.paymentCount}</span> },
+                { key: 'main', header: 'Medio principal', widthClass: 'w-44', cell: r => <span className="text-tc-text-secondary">{r.mainSource ? (REVENUE_SOURCE_LABEL[r.mainSource] ?? r.mainSource) : '—'}</span> },
+                { key: 'avg', header: 'Ticket promedio', align: 'right', widthClass: 'w-40', sortable: true, sortValue: r => r.amount / Math.max(r.paymentCount, 1), cell: r => <span className="tabular-nums text-tc-text-secondary">{fmtARS(r.amount / Math.max(r.paymentCount, 1))}</span> },
+                {
+                  key: 'share',
+                  header: '% del total',
+                  widthClass: 'w-44',
+                  sortable: true,
+                  sortValue: r => r.amount,
+                  cell: r => {
+                    const pct = revenueQuery.data!.total > 0 ? (r.amount / revenueQuery.data!.total) * 100 : 0
+                    return (
+                      <span className="flex items-center gap-2">
+                        <span className="h-1.5 w-20 overflow-hidden rounded-full bg-tc-border" aria-hidden="true">
+                          <span className="block h-full rounded-full bg-tc-purple" style={{ width: `${Math.min(pct, 100)}%` }} />
+                        </span>
+                        <span className="w-12 text-xs tabular-nums text-tc-text-secondary">{pct.toFixed(1).replace('.', ',')}%</span>
+                      </span>
+                    )
+                  },
+                },
+                { key: 'amount', header: 'Monto', align: 'right', widthClass: 'w-40', sortable: true, sortValue: r => r.amount, cell: r => <span className="font-bold tabular-nums text-tc-purple">{fmtARS(r.amount)}</span> },
               ]}
               renderCard={r => (
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="tabular-nums text-sm text-tc-text-secondary">{formatDateOnly(r.date)} · {r.paymentCount} cobro{r.paymentCount !== 1 ? 's' : ''}</span>
+                  <span className="tabular-nums text-sm text-tc-text-secondary">{weekdayLabel(r.date)} {formatDateOnly(r.date)} · {r.paymentCount} cobro{r.paymentCount !== 1 ? 's' : ''}</span>
                   <span className="font-bold tabular-nums text-tc-purple">{fmtARS(r.amount)}</span>
                 </div>
               )}
@@ -156,17 +182,17 @@ export function ReportsPage() {
               rows={receivablesQuery.data.rows}
               getRowId={r => r.workOrderId}
               columns={[
-                { key: 'number', header: 'N° OT', widthClass: 'w-24', sortable: true, sortValue: r => r.workOrderNumber, cell: r => <span className="font-mono font-bold tabular-nums text-tc-text">#{r.workOrderNumber}</span> },
-                { key: 'customer', header: 'Cliente', sortable: true, sortValue: r => r.customerName, cell: r => <span className="text-tc-text-secondary">{r.customerName}</span> },
-                { key: 'plate', header: 'Vehículo', widthClass: 'w-32', cell: r => <span className="font-mono tracking-widest text-tc-text-secondary">{r.vehiclePlate}</span> },
-                { key: 'balance', header: 'Saldo', align: 'right', widthClass: 'w-36', sortable: true, sortValue: r => r.balance, cell: r => <span className="font-bold tabular-nums text-tc-stamp-red">{fmtARS(r.balance)}</span> },
-                { key: 'date', header: 'Fecha', widthClass: 'w-32', sortable: true, sortValue: r => r.createdAt, cell: r => <span className="tabular-nums text-tc-text-secondary">{formatDate(r.createdAt)}</span> },
+                { key: 'number', header: 'N° OT', widthClass: 'w-28', sortable: true, sortValue: r => r.workOrderNumber, cell: r => <span className="font-mono font-bold tabular-nums text-tc-text">#{r.workOrderNumber}</span> },
+                { key: 'customer', header: 'Cliente', widthClass: 'w-64', sortable: true, sortValue: r => r.customerName, cell: r => <span className="text-tc-text-secondary">{r.customerName}</span> },
+                { key: 'plate', header: 'Vehículo', cell: r => <VehicleLabel plate={r.vehiclePlate} brand={r.vehicleBrand} model={r.vehicleModel} /> },
+                { key: 'balance', header: 'Saldo', align: 'right', widthClass: 'w-40', sortable: true, sortValue: r => r.balance, cell: r => <span className="font-bold tabular-nums text-tc-stamp-red">{fmtARS(r.balance)}</span> },
+                { key: 'date', header: 'Fecha', align: 'center', widthClass: 'w-36', sortable: true, sortValue: r => r.createdAt, cell: r => <span className="tabular-nums text-tc-text-secondary">{formatDate(r.createdAt)}</span> },
               ]}
               cardStub={r => <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{r.workOrderNumber}</span>}
               renderCard={r => (
                 <>
                   <p className="truncate text-sm text-tc-text">{r.customerName}</p>
-                  <p className="font-mono text-xs tracking-widest text-tc-text-muted">{r.vehiclePlate} · {formatDate(r.createdAt)}</p>
+                  <p className="text-xs text-tc-text-muted"><VehicleLabel plate={r.vehiclePlate} brand={r.vehicleBrand} model={r.vehicleModel} inline /> · {formatDate(r.createdAt)}</p>
                   <p className="mt-1 font-bold tabular-nums text-tc-stamp-red">{fmtARS(r.balance)}</p>
                 </>
               )}

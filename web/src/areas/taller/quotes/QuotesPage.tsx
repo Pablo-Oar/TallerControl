@@ -8,6 +8,7 @@ import {
 } from '../../../lib/api/quotes'
 import { Button } from '../../../components/ui/Button'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { VehicleLabel } from '../../../components/ui/VehicleLabel'
 import { DataTable, type DataTableColumn, type SortState } from '../../../components/ui/DataTable'
 import { Pagination } from '../../../components/ui/Pagination'
 import { QuoteFormModal } from './QuoteFormModal'
@@ -38,7 +39,7 @@ const COLUMNS: DataTableColumn<QuoteListDto>[] = [
     cell: q => (
       <div className="min-w-0">
         <p className="truncate font-medium text-tc-text">{q.customerName}</p>
-        <p className="mt-0.5 font-mono text-[11px] font-bold tracking-widest text-tc-text-muted">{q.vehiclePlate}</p>
+        <VehicleLabel plate={q.vehiclePlate} brand={q.vehicleBrand} model={q.vehicleModel} inline className="mt-0.5 block truncate text-xs" />
       </div>
     ),
   },
@@ -122,7 +123,7 @@ export function QuotesPage() {
         renderCard={q => (
           <>
             <p className="truncate text-sm font-medium text-tc-text">{q.customerName}</p>
-            <p className="mt-0.5 font-mono text-[11px] font-bold tracking-widest text-tc-text-muted">{q.vehiclePlate}</p>
+            <VehicleLabel plate={q.vehiclePlate} brand={q.vehicleBrand} model={q.vehicleModel} inline className="mt-0.5 block text-xs" />
             <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
               <StatusBadge status={q.status} />
               <span className="tabular-nums text-sm font-medium text-tc-purple">{fmtARS(q.total)}</span>

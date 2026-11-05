@@ -1,4 +1,5 @@
 using TallerControl.Application.Common;
+using TallerControl.Domain.Common;
 using TallerControl.Domain.Customers;
 
 namespace TallerControl.Application.Customers;
@@ -25,6 +26,7 @@ public sealed class CreateCustomerHandler
         Customer customer;
         try
         {
+            ContactInfo.EnsureAny(request.Email, request.Phone);
             customer = new Customer(
                 tenantId,
                 request.Name,

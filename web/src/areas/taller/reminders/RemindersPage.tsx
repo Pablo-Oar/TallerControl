@@ -7,6 +7,7 @@ import { DataTable, RowAction, sortableWhen, type DataTableColumn } from '../../
 import { Pagination } from '../../../components/ui/Pagination'
 import { RowMenu } from '../../../components/ui/RowMenu'
 import { Tabs } from '../../../components/ui/Tabs'
+import { VehicleLabel } from '../../../components/ui/VehicleLabel'
 import { ReminderFormModal } from './ReminderFormModal'
 import { confirmDialog, notify } from '../../../components/ui/dialogs'
 
@@ -19,24 +20,32 @@ const COLUMNS: DataTableColumn<ReminderListDto>[] = [
   {
     key: 'plate',
     header: 'Vehículo',
-    widthClass: 'w-32',
+    widthClass: 'w-44',
     sortable: true,
     sortValue: r => r.vehiclePlate,
-    cell: r => <span className="font-mono tracking-widest text-tc-text">{r.vehiclePlate}</span>,
+    cell: r => <VehicleLabel plate={r.vehiclePlate} brand={r.vehicleBrand} model={r.vehicleModel} />,
   },
-  { key: 'kind', header: 'Tipo', widthClass: 'w-40', cell: r => <span className="text-xs text-tc-text-secondary">{getReminderKindLabel(r.kind)}</span> },
+  {
+    key: 'customer',
+    header: 'Cliente',
+    widthClass: 'w-40',
+    cell: r => <span className="truncate text-tc-text-secondary">{r.customerName || dash}</span>,
+  },
   {
     key: 'title',
     header: 'Título',
     cell: r => (
-      <>
-        {dueSoon(r) && (
-          <span className="mr-1.5 inline-block rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-amber-700">
-            Próximo
-          </span>
-        )}
-        <span className="text-tc-text">{r.title}</span>
-      </>
+      <div className="min-w-0">
+        <p className="text-tc-text">
+          {dueSoon(r) && (
+            <span className="mr-1.5 inline-block rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-amber-700">
+              Próximo
+            </span>
+          )}
+          {r.title}
+        </p>
+        <p className="mt-0.5 text-xs text-tc-text-muted">{getReminderKindLabel(r.kind)}</p>
+      </div>
     ),
   },
   {
@@ -139,16 +148,25 @@ export function RemindersPage() {
         actions={r => (
           <>
             <RowAction tone="purple" onClick={() => doneMut.mutate({ id: r.id, done: !r.completedAt })}>
-              {r.completedAt ? 'Reabrir' : <><span className="md:hidden">Cumplido</span><span className="hidden md:inline">Marcar cumplido</span></>}
+              {r.completedAt ? 'Reabrir' : 'Cumplido'}
             </RowAction>
-            <RowAction tone="purple" onClick={() => { setEditId(r.id); setShowModal(true) }}>Editar</RowAction>
-            <RowAction tone="danger" onClick={async () => { if (await confirmDialog('¿Eliminar este recordatorio?', { danger: true })) deleteMut.mutate(r.id) }}>Eliminar</RowAction>
+            <RowMenu
+              label={`Más acciones de ${r.title}`}
+              items={[
+                { label: 'Editar', onSelect: () => { setEditId(r.id); setShowModal(true) } },
+                {
+                  label: 'Eliminar',
+                  tone: 'danger',
+                  onSelect: async () => { if (await confirmDialog('¿Eliminar este recordatorio?', { danger: true })) deleteMut.mutate(r.id) },
+                },
+              ]}
+            />
           </>
         )}
         renderCard={r => (
           <>
             <div className="flex flex-wrap items-center gap-x-2">
-              <span className="font-mono text-sm tracking-widest text-tc-text">{r.vehiclePlate}</span>
+              <VehicleLabel plate={r.vehiclePlate} brand={r.vehicleBrand} model={r.vehicleModel} inline className="text-sm" />
               {dueSoon(r) && (
                 <span className="rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-amber-700">Próximo</span>
               )}

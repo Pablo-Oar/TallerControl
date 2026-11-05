@@ -14,7 +14,9 @@ public sealed record QuoteListDto(
     decimal Total,
     decimal GlobalDiscountPct,
     DateOnly ValidUntil,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    string? VehicleBrand = null,
+    string? VehicleModel = null);
 
 /// <summary>Renglón de presupuesto (doc 05 §2.6).</summary>
 public sealed record QuoteItemDto(

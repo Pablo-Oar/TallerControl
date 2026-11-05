@@ -272,11 +272,11 @@ export function AppointmentFormModal({ editData, onClose, onCreated }: Props) {
                         {...register(`services.${index}.durationMinutes`, { valueAsNumber: true })}
                       />
                       <FormField
-                        label="Buffer (minutos)"
+                        label="Margen (minutos)"
                         size="sm"
                         type="number"
                         readOnly
-                        hint="Del catálogo"
+                        hint="Tiempo extra que queda reservado después del servicio (limpieza, imprevistos). Del catálogo"
                         inputClassName="tabular-nums"
                         {...register(`services.${index}.bufferMinutes`, { valueAsNumber: true })}
                       />

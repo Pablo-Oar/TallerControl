@@ -9,7 +9,10 @@ public record QrCardListDto(
     Guid? VehicleId,
     string? VehiclePlate,
     DateTimeOffset? AssignedAt,
-    DateTimeOffset? RevokedAt);
+    DateTimeOffset? RevokedAt,
+    string? VehicleBrand = null,
+    string? VehicleModel = null,
+    string? CustomerName = null);
 
 public record QrCardDto(
     Guid Id,

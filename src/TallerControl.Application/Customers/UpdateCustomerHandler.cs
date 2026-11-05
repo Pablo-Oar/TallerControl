@@ -1,4 +1,5 @@
 using TallerControl.Application.Common;
+using TallerControl.Domain.Common;
 using TallerControl.Domain.Customers;
 
 namespace TallerControl.Application.Customers;
@@ -22,6 +23,7 @@ public sealed class UpdateCustomerHandler
 
         try
         {
+            ContactInfo.EnsureAny(request.Email, request.Phone);
             customer.Update(
                 request.Name,
                 request.Email,

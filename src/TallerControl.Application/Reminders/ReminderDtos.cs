@@ -12,7 +12,10 @@ public sealed record ReminderListDto(
     DateTimeOffset? DueDate,
     int? DueKm,
     DateTimeOffset? LastNotifiedAt,
-    DateTimeOffset? CompletedAt);
+    DateTimeOffset? CompletedAt,
+    string? VehicleBrand = null,
+    string? VehicleModel = null,
+    string? CustomerName = null);
 
 /// <summary>Detalle completo de un recordatorio.</summary>
 public sealed record ReminderDto(

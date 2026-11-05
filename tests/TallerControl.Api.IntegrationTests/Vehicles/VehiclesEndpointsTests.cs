@@ -61,7 +61,7 @@ public sealed class VehiclesEndpointsTests : IAsyncLifetime
         var csrf = await FetchCsrfAsync(client);
         var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/customers")
         {
-            Content = JsonContent.Create(new { name = $"Cliente Soporte {nameSuffix}" }),
+            Content = JsonContent.Create(new { name = $"Cliente Soporte {nameSuffix}", phone = "1155550000" }),
         };
         req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
         var resp = await client.SendAsync(req);
