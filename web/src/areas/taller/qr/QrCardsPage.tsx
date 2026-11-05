@@ -19,6 +19,7 @@ import { FormField, FormTextarea } from '../../../components/ui/FormField'
 import { VehiclePicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { VehicleLabel } from '../../../components/ui/VehicleLabel'
 import { DataTable, RowAction, RowActionLink, type DataTableColumn } from '../../../components/ui/DataTable'
 import { Pagination } from '../../../components/ui/Pagination'
 import { QrScannerModal } from './QrScannerModal'
@@ -48,13 +49,19 @@ const COLUMNS: DataTableColumn<QrCardListDto>[] = [
     cell: c => <StatusBadge status={c.status} label={STATUS_LABELS[c.status]} />,
   },
   {
+    key: 'customer',
+    header: 'Cliente',
+    cell: c => <span className="truncate text-tc-text-secondary">{c.customerName || <span className="text-tc-text-muted">—</span>}</span>,
+  },
+  {
     key: 'plate',
     header: 'Vehículo',
-    cell: c => (
-      <span className="font-mono tracking-widest text-tc-text-secondary">
-        {c.vehiclePlate ?? <span className="font-sans tracking-normal text-tc-text-muted">—</span>}
-      </span>
-    ),
+    cell: c =>
+      c.vehiclePlate ? (
+        <VehicleLabel plate={c.vehiclePlate} brand={c.vehicleBrand} model={c.vehicleModel} />
+      ) : (
+        <span className="text-tc-text-muted">—</span>
+      ),
   },
   {
     key: 'assigned',
@@ -238,8 +245,8 @@ export function QrCardsPage() {
             <p className="mt-1 flex items-center gap-2 text-xs text-tc-text-secondary">
               {c.vehiclePlate ? (
                 <>
-                  <span className="font-mono tracking-widest text-tc-text">{c.vehiclePlate}</span>
-                  {c.assignedAt && <span className="text-tc-text-muted">· desde {formatDate(c.assignedAt)}</span>}
+                  <VehicleLabel plate={c.vehiclePlate} brand={c.vehicleBrand} model={c.vehicleModel} inline />
+                  {c.customerName && <span className="truncate text-tc-text-muted">· {c.customerName}</span>}
                 </>
               ) : (
                 <span className="text-tc-text-muted">Sin vehículo asignado</span>

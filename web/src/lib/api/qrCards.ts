@@ -11,6 +11,9 @@ export interface QrCardListDto {
   vehiclePlate: string | null
   assignedAt: string | null
   revokedAt: string | null
+  vehicleBrand?: string | null
+  vehicleModel?: string | null
+  customerName?: string | null
 }
 
 export interface QrCardDto {

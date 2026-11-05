@@ -73,13 +73,16 @@ internal sealed class EfReportsRepository : IReportsRepository
 
         DateOnly LocalDay(DateTimeOffset at) => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(at, zone).DateTime);
 
-        var entries = payments.Select(p => (Day: LocalDay(p.PaidAt), p.Amount))
-            .Concat(sales.Select(s => (Day: LocalDay(s.Date), Amount: s.Total)))
+        var entries = payments.Select(p => (Day: LocalDay(p.PaidAt), p.Amount, Source: ToSnake(p.Method.ToString())))
+            .Concat(sales.Select(s => (Day: LocalDay(s.Date), Amount: s.Total, Source: "counter_sale")))
             .ToList();
 
         var rows = entries
             .GroupBy(e => e.Day)
-            .Select(g => new RevenueReportRow(g.Key, g.Sum(e => e.Amount), g.Count()))
+            .Select(g => new RevenueReportRow(
+                g.Key, g.Sum(e => e.Amount), g.Count(),
+                // El medio que más aportó ese día (para leer de un vistazo cómo se cobró).
+                g.GroupBy(e => e.Source).OrderByDescending(s => s.Sum(e => e.Amount)).First().Key))
             .OrderBy(r => r.Date)
             .ToList();
 
@@ -133,16 +136,22 @@ internal sealed class EfReportsRepository : IReportsRepository
             .AsNoTracking()
             .IgnoreQueryFilters()
             .Where(v => vehicleIds.Contains(v.Id))
-            .Select(v => new { v.Id, v.Plate })
-            .ToDictionaryAsync(v => v.Id, v => v.Plate, ct);
+            .Select(v => new { v.Id, v.Plate, v.Brand, v.Model })
+            .ToDictionaryAsync(v => v.Id, ct);
 
-        var rows = raw.Select(r => new ReceivablesReportRow(
-            r.Id,
-            r.Number,
-            customers.TryGetValue(r.CustomerId, out var cn) ? cn : string.Empty,
-            vehicles.TryGetValue(r.VehicleId, out var plate) ? plate : string.Empty,
-            r.Balance,
-            r.CreatedAt)).ToList();
+        var rows = raw.Select(r =>
+        {
+            vehicles.TryGetValue(r.VehicleId, out var vehicle);
+            return new ReceivablesReportRow(
+                r.Id,
+                r.Number,
+                customers.TryGetValue(r.CustomerId, out var cn) ? cn : string.Empty,
+                vehicle?.Plate ?? string.Empty,
+                r.Balance,
+                r.CreatedAt,
+                vehicle?.Brand,
+                vehicle?.Model);
+        }).ToList();
 
         return new ReceivablesReportDto(rows, rows.Sum(r => r.Balance));
     }

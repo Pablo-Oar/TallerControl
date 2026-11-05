@@ -4,6 +4,8 @@ export interface RevenueReportRow {
   date: string
   amount: number
   paymentCount: number
+  /** Medio que más aportó ese día. */
+  mainSource?: string | null
 }
 export interface RevenueBreakdownRow {
   /** Método de pago de las órdenes (`cash`, `transfer`…) o `counter_sale`. */
@@ -26,6 +28,8 @@ export interface ReceivablesReportRow {
   vehiclePlate: string
   balance: number
   createdAt: string
+  vehicleBrand?: string | null
+  vehicleModel?: string | null
 }
 export interface ReceivablesReportDto {
   rows: ReceivablesReportRow[]

@@ -85,7 +85,7 @@ internal sealed class EfQuoteRepository : IQuoteRepository
         var vehicles = await _db.Set<Vehicle>().AsNoTracking()
             .IgnoreQueryFilters()
             .Where(v => vehicleIds.Contains(v.Id))
-            .Select(v => new { v.Id, v.Plate })
+            .Select(v => new { v.Id, v.Plate, v.Brand, v.Model })
             .ToDictionaryAsync(v => v.Id, ct);
 
         var items = raw.Select(r =>
@@ -97,7 +97,8 @@ internal sealed class EfQuoteRepository : IQuoteRepository
                 r.Id, r.Number, r.Status,
                 r.CustomerId, customerName ?? string.Empty,
                 r.VehicleId, vehicle?.Plate ?? string.Empty,
-                r.Total, r.GlobalDiscountPct, r.ValidUntil, r.CreatedAt);
+                r.Total, r.GlobalDiscountPct, r.ValidUntil, r.CreatedAt,
+                vehicle?.Brand, vehicle?.Model);
         }).ToList();
 
         return new Page<QuoteListDto>(items, page, pageSize, total);

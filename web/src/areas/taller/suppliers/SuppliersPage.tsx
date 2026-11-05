@@ -101,8 +101,12 @@ export function SuppliersPage() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    setSaving(true)
     setFormError(null)
+    if (!formPhone.trim() && !formEmail.trim()) {
+      setFormError('Cargá al menos un dato de contacto: teléfono o email.')
+      return
+    }
+    setSaving(true)
     try {
       const body = {
         name: formName.trim(),

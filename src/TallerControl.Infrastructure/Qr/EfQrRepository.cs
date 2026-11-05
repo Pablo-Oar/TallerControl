@@ -96,17 +96,31 @@ internal sealed class EfQrRepository : IQrRepository
             .Distinct()
             .ToList();
 
-        var plates = vehicleIds.Count > 0
+        var vehicles = vehicleIds.Count > 0
             ? await _db.Set<Vehicle>().AsNoTracking().IgnoreQueryFilters()
                 .Where(v => vehicleIds.Contains(v.Id))
-                .Select(v => new { v.Id, v.Plate })
-                .ToDictionaryAsync(v => v.Id, v => v.Plate, ct)
-            : new Dictionary<Guid, string>();
+                .Select(v => new { v.Id, v.Plate, v.Brand, v.Model, v.CustomerId })
+                .ToDictionaryAsync(v => v.Id, ct)
+            : [];
 
-        var dtos = cards.Select(c => new QrCardListDto(
-            c.Id, c.Code, c.Status, c.VehicleId,
-            c.VehicleId.HasValue ? plates.GetValueOrDefault(c.VehicleId.Value) : null,
-            c.AssignedAt, c.RevokedAt)).ToList();
+        var customerIds = vehicles.Values.Select(v => v.CustomerId).Distinct().ToList();
+        var customerNames = customerIds.Count > 0
+            ? await _db.Set<Customer>().AsNoTracking().IgnoreQueryFilters()
+                .Where(c => customerIds.Contains(c.Id))
+                .Select(c => new { c.Id, c.Name })
+                .ToDictionaryAsync(c => c.Id, c => c.Name, ct)
+            : [];
+
+        var dtos = cards.Select(c =>
+        {
+            var vehicle = c.VehicleId.HasValue && vehicles.TryGetValue(c.VehicleId.Value, out var v) ? v : null;
+            return new QrCardListDto(
+                c.Id, c.Code, c.Status, c.VehicleId,
+                vehicle?.Plate,
+                c.AssignedAt, c.RevokedAt,
+                vehicle?.Brand, vehicle?.Model,
+                vehicle is not null ? customerNames.GetValueOrDefault(vehicle.CustomerId) : null);
+        }).ToList();
 
         return new Page<QrCardListDto>(dtos, page, pageSize, total);
     }

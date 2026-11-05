@@ -65,6 +65,7 @@ public sealed class SuppliersEndpointsTests : IAsyncLifetime
                 name,
                 cuit,
                 vatCondition = "responsable_inscripto",
+                phone = "011 4444-0000",
             }),
         };
         req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
@@ -82,6 +83,7 @@ public sealed class SuppliersEndpointsTests : IAsyncLifetime
                 name,
                 cuit = (string?)null,
                 vatCondition = "responsable_inscripto",
+                phone = "011 4444-0000",
             }),
         };
         req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
@@ -228,6 +230,26 @@ public sealed class SuppliersEndpointsTests : IAsyncLifetime
     }
 
     // ── K-02: datos de contacto, ver dados de baja ────────────────────────────
+
+    [Fact(DisplayName = "T-SUP-05: un proveedor necesita al menos teléfono o email")]
+    public async Task Proveedor_necesita_al_menos_un_dato_de_contacto()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, SuppliersWebApplicationFactory.OwnerEmail, SuppliersWebApplicationFactory.OwnerPassword);
+
+        async Task<HttpResponseMessage> Raw(object body)
+        {
+            var csrf = await FetchCsrfAsync(client);
+            var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/suppliers") { Content = JsonContent.Create(body) };
+            req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+            return await client.SendAsync(req);
+        }
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity,
+            (await Raw(new { name = $"Sin contacto {Guid.NewGuid():N}", vatCondition = "responsable_inscripto" })).StatusCode);
+        Assert.Equal(HttpStatusCode.Created,
+            (await Raw(new { name = $"Con mail {Guid.NewGuid():N}", vatCondition = "responsable_inscripto", email = "p@x.com" })).StatusCode);
+    }
 
     [Fact(DisplayName = "T-SUP-04: Los datos de contacto se guardan y «dados de baja» lista solo las bajas, que se restauran")]
     public async Task Contacto_bajas_y_restauracion()

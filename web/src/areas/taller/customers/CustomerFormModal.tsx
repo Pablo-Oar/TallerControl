@@ -36,6 +36,13 @@ const schema = z.object({
   address: z.string().trim().max(200).optional(),
   doNotContact: z.boolean(),
   notes: z.string().trim().max(1000).optional(),
+}).superRefine((v, ctx) => {
+  // Hace falta al menos una forma de avisarle al cliente: teléfono o email.
+  if (!v.email && !v.phone) {
+    const message = 'Cargá teléfono o email'
+    ctx.addIssue({ code: 'custom', path: ['phone'], message })
+    ctx.addIssue({ code: 'custom', path: ['email'], message })
+  }
 })
 
 type FormData = z.infer<typeof schema>
@@ -125,9 +132,10 @@ export function CustomerFormModal({ customer, onSuccess, onClose, onDelete }: Pr
         />
 
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="Email" type="email" placeholder="email@ejemplo.com" {...register('email')} />
-          <FormField label="Teléfono" placeholder="011 15-0000-0000" {...register('phone')} />
+          <FormField label="Email" type="email" placeholder="email@ejemplo.com" error={errors.email?.message} {...register('email')} />
+          <FormField label="Teléfono" placeholder="011 15-0000-0000" error={errors.phone?.message} {...register('phone')} />
         </div>
+        <p className="-mt-2 text-xs text-tc-text-muted">Alcanza con uno de los dos: sirve para avisarle del presupuesto y del vehículo.</p>
 
         <div className="grid grid-cols-2 gap-4">
           <FormSelect label="Tipo de documento" {...register('docType')}>

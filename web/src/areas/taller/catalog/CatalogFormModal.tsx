@@ -147,7 +147,7 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
           {...register('name')}
         />
 
-        {!isEdit && <FormField label="SKU" placeholder="Ej. FIL-001" {...register('sku')} />}
+        {!isEdit && <FormField label="SKU" placeholder="Ej. FIL-001" hint="Código interno o del proveedor para reconocer el producto. Opcional." {...register('sku')} />}
 
         <FormTextarea label="Descripción" rows={2} placeholder="Descripción opcional…" {...register('description')} />
 
@@ -195,6 +195,7 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
               step="5"
               inputMode="numeric"
               placeholder="15"
+              hint="Tiempo extra reservado después del servicio."
               inputClassName="tabular-nums"
               {...register('bufferMinutes')}
             />

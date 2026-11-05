@@ -1,4 +1,5 @@
 using TallerControl.Application.Common;
+using TallerControl.Domain.Common;
 using TallerControl.Domain.Suppliers;
 
 namespace TallerControl.Application.Suppliers;
@@ -22,6 +23,7 @@ public sealed class CreateSupplierHandler
         Supplier supplier;
         try
         {
+            ContactInfo.EnsureAny(request.Email, request.Phone);
             supplier = new Supplier(
                 tenantId, request.Name, request.Cuit, request.VatCondition,
                 request.Address, request.Phone, request.Email, request.Notes);

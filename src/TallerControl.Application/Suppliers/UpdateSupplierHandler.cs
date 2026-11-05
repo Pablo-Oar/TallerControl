@@ -1,4 +1,5 @@
 using TallerControl.Application.Common;
+using TallerControl.Domain.Common;
 
 namespace TallerControl.Application.Suppliers;
 
@@ -25,6 +26,7 @@ public sealed class UpdateSupplierHandler
 
         try
         {
+            ContactInfo.EnsureAny(request.Email, request.Phone);
             supplier.Update(request.Name, request.Cuit, request.VatCondition,
                 request.Address, request.Phone, request.Email, request.Notes);
         }

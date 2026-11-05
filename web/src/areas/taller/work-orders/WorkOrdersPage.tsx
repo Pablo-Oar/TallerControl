@@ -142,6 +142,11 @@ export function WorkOrdersPage() {
           />
           Solo con saldo pendiente
         </label>
+        {data && (
+          <span className="text-xs tabular-nums text-tc-text-muted" aria-live="polite">
+            {data.total} {withBalance ? 'con saldo pendiente' : data.total === 1 ? 'orden' : 'órdenes en total'}
+          </span>
+        )}
       </div>
 
       <DataTable<WorkOrderListDto>

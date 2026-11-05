@@ -23,7 +23,7 @@ internal sealed class EfReminderRepository : IReminderRepository
             .Join(_db.Set<Vehicle>().AsNoTracking(),
                 r => r.VehicleId,
                 v => v.Id,
-                (r, v) => new { Reminder = r, v.Plate });
+                (r, v) => new { Reminder = r, v.Plate, v.Brand, v.Model, v.CustomerId });
 
         if (vehicleId.HasValue)
             query = query.Where(x => x.Reminder.VehicleId == vehicleId.Value);
@@ -49,7 +49,11 @@ internal sealed class EfReminderRepository : IReminderRepository
                 x.Reminder.DueDate,
                 x.Reminder.DueKm,
                 x.Reminder.LastNotifiedAt,
-                x.Reminder.CompletedAt))
+                x.Reminder.CompletedAt,
+                x.Brand,
+                x.Model,
+                _db.Set<Customer>().IgnoreQueryFilters()
+                    .Where(c => c.Id == x.CustomerId).Select(c => c.Name).FirstOrDefault()))
             .ToListAsync(ct);
 
         return new Page<ReminderListDto>(items, page, pageSize, total);
