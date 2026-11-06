@@ -130,51 +130,12 @@ export function ReportsPage() {
               rows={revenueQuery.data.rows}
               getRowId={r => r.date}
               columns={[
-                { key: 'date', header: 'Fecha', widthClass: 'w-[13%]', sortable: true, sortValue: r => r.date, cell: r => <span className="tabular-nums text-tc-text-secondary">{formatDateOnly(r.date)}</span> },
-                { key: 'weekday', header: 'Día', widthClass: 'w-[11%]', cell: r => <span className="text-tc-text-secondary">{weekdayLabel(r.date)}</span> },
-                { key: 'count', header: 'Cobros', widthClass: 'w-[9%]', sortable: true, sortValue: r => r.paymentCount, cell: r => <span className="tabular-nums text-tc-text-secondary">{r.paymentCount}</span> },
-                { key: 'main', header: 'Medio principal', widthClass: 'w-[16%]', cell: r => <span className="text-tc-text-secondary">{r.mainSource ? (REVENUE_SOURCE_LABEL[r.mainSource] ?? r.mainSource) : '—'}</span> },
-                { key: 'avg', header: 'Ticket promedio', hint: 'Cuánto se cobró en promedio por cada cobro o venta de ese día: el monto del día dividido por la cantidad de cobros.', widthClass: 'w-[18%]', sortable: true, sortValue: r => r.amount / Math.max(r.paymentCount, 1), cell: r => <span className="tabular-nums text-tc-text-secondary">{fmtARS(r.amount / Math.max(r.paymentCount, 1))}</span> },
-                {
-                  key: 'share',
-                  header: '% del total',
-                  hint: 'Qué parte del total del período elegido (Desde–Hasta) se cobró ese día. Si cambiás las fechas, el total cambia y los porcentajes se recalculan: con un solo día en el período, ese día es siempre el 100 %. Rojo: menos del 30 %. Naranja: 30 % o más. Verde: el 100 %, o sea que todo entró ese día.',
-                  widthClass: 'w-[19%]',
-                  sortable: true,
-                  sortValue: r => r.amount,
-                  cell: r => {
-                    const pct = revenueQuery.data!.total > 0 ? (r.amount / revenueQuery.data!.total) * 100 : 0
-                    const full = pct >= 99.95
-                    // Menos del 30 %: rojo; de 30 % a menos de 100 %: naranja; 100 %: verde.
-                    const tone = full
-                      ? { bar: 'from-emerald-400 to-emerald-600', ring: 'border-emerald-600', text: 'text-emerald-700' }
-                      : pct < 30
-                        ? { bar: 'from-red-400 to-red-600', ring: 'border-red-600', text: 'text-red-700' }
-                        : { bar: 'from-amber-400 to-orange-500', ring: 'border-orange-500', text: 'text-orange-700' }
-                    // Deslizador: pista con marcas, relleno en degradé y perilla blanca al final del tramo.
-                    const fill = Math.min(Math.max(pct, 14), 100)
-                    return (
-                      <span className="flex items-center gap-3">
-                        <span className="relative block h-5 w-28 shrink-0" aria-hidden="true">
-                          <span className="absolute inset-x-0 top-1/2 h-3.5 -translate-y-1/2 rounded-full bg-slate-200 shadow-inner" />
-                          {[20, 40, 60, 80].map(d => (
-                            <span key={d} className="absolute top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-400/70" style={{ left: `${d}%` }} />
-                          ))}
-                          <span
-                            className={`absolute top-1/2 left-0 h-3.5 -translate-y-1/2 rounded-full bg-gradient-to-r ${tone.bar}`}
-                            style={{ width: `${fill}%` }}
-                          />
-                          <span
-                            className={`absolute top-1/2 h-5 w-5 -translate-y-1/2 rounded-full border-[3px] bg-white shadow-md ${tone.ring}`}
-                            style={{ left: `calc(${fill}% - 20px)` }}
-                          />
-                        </span>
-                        <span className={`text-xs font-semibold tabular-nums ${tone.text}`}>{pct.toFixed(1).replace('.', ',')}%</span>
-                      </span>
-                    )
-                  },
-                },
-                { key: 'amount', header: 'Monto', widthClass: 'w-[14%]', sortable: true, sortValue: r => r.amount, cell: r => <span className="font-bold tabular-nums text-tc-purple">{fmtARS(r.amount)}</span> },
+                { key: 'date', header: 'Fecha', widthClass: 'w-[16%]', sortable: true, sortValue: r => r.date, cell: r => <span className="tabular-nums text-tc-text-secondary">{formatDateOnly(r.date)}</span> },
+                { key: 'weekday', header: 'Día', widthClass: 'w-[14%]', cell: r => <span className="text-tc-text-secondary">{weekdayLabel(r.date)}</span> },
+                { key: 'count', header: 'Cobros', widthClass: 'w-[12%]', sortable: true, sortValue: r => r.paymentCount, cell: r => <span className="tabular-nums text-tc-text-secondary">{r.paymentCount}</span> },
+                { key: 'main', header: 'Medio principal', widthClass: 'w-[20%]', cell: r => <span className="text-tc-text-secondary">{r.mainSource ? (REVENUE_SOURCE_LABEL[r.mainSource] ?? r.mainSource) : '—'}</span> },
+                { key: 'avg', header: 'Ticket promedio', hint: 'Cuánto se cobró en promedio por cada cobro o venta de ese día: el monto del día dividido por la cantidad de cobros.', widthClass: 'w-[20%]', sortable: true, sortValue: r => r.amount / Math.max(r.paymentCount, 1), cell: r => <span className="tabular-nums text-tc-text-secondary">{fmtARS(r.amount / Math.max(r.paymentCount, 1))}</span> },
+                { key: 'amount', header: 'Monto', widthClass: 'w-[18%]', sortable: true, sortValue: r => r.amount, cell: r => <span className="font-bold tabular-nums text-tc-purple">{fmtARS(r.amount)}</span> },
               ]}
               renderCard={r => (
                 <div className="flex items-baseline justify-between gap-3">
