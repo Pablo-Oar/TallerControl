@@ -42,8 +42,9 @@ internal sealed class ClosedXmlExporter : IReportExporter
         ws.Cell(1, 1).Value = "N° OT";
         ws.Cell(1, 2).Value = "Cliente";
         ws.Cell(1, 3).Value = "Vehículo";
-        ws.Cell(1, 4).Value = "Saldo ($)";
-        ws.Cell(1, 5).Value = "Fecha";
+        ws.Cell(1, 4).Value = "Detalle";
+        ws.Cell(1, 5).Value = "Saldo ($)";
+        ws.Cell(1, 6).Value = "Fecha";
         StyleHeader(ws.Row(1));
 
         int row = 2;
@@ -52,15 +53,16 @@ internal sealed class ClosedXmlExporter : IReportExporter
             ws.Cell(row, 1).Value = r.WorkOrderNumber;
             ws.Cell(row, 2).Value = r.CustomerName;
             ws.Cell(row, 3).Value = r.VehiclePlate;
-            ws.Cell(row, 4).Value = (double)r.Balance;
-            ws.Cell(row, 4).Style.NumberFormat.Format = "#,##0.00";
-            ws.Cell(row, 5).Value = r.CreatedAt.LocalDateTime.ToString("dd/MM/yyyy");
+            ws.Cell(row, 4).Value = r.Concept ?? string.Empty;
+            ws.Cell(row, 5).Value = (double)r.Balance;
+            ws.Cell(row, 5).Style.NumberFormat.Format = "#,##0.00";
+            ws.Cell(row, 6).Value = r.CreatedAt.LocalDateTime.ToString("dd/MM/yyyy");
             row++;
         }
 
-        ws.Cell(row, 3).Value = "TOTAL";
-        ws.Cell(row, 4).Value = (double)report.Total;
-        ws.Cell(row, 4).Style.NumberFormat.Format = "#,##0.00";
+        ws.Cell(row, 4).Value = "TOTAL";
+        ws.Cell(row, 5).Value = (double)report.Total;
+        ws.Cell(row, 5).Style.NumberFormat.Format = "#,##0.00";
         ws.Row(row).Style.Font.Bold = true;
 
         ws.Columns().AdjustToContents();

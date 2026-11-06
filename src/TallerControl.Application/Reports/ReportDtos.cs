@@ -15,7 +15,8 @@ public sealed record RevenueReportDto(
 public sealed record ReceivablesReportRow(
     string WorkOrderId, int WorkOrderNumber, string CustomerName,
     string VehiclePlate, decimal Balance, DateTimeOffset CreatedAt,
-    string? VehicleBrand = null, string? VehicleModel = null);
+    string? VehicleBrand = null, string? VehicleModel = null,
+    string? Concept = null, decimal Total = 0, decimal Paid = 0);
 public sealed record ReceivablesReportDto(IReadOnlyList<ReceivablesReportRow> Rows, decimal Total);
 
 public sealed record StockReportRow(
