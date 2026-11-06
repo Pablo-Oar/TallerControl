@@ -138,20 +138,37 @@ export function ReportsPage() {
                 {
                   key: 'share',
                   header: '% del total',
-                  widthClass: 'w-[17%]',
+                  widthClass: 'w-[19%]',
                   sortable: true,
                   sortValue: r => r.amount,
                   cell: r => {
                     const pct = revenueQuery.data!.total > 0 ? (r.amount / revenueQuery.data!.total) * 100 : 0
+                    const full = pct >= 99.95
+                    // Menos del 30 %: rojo; de 30 % a menos de 100 %: naranja; 100 %: verde.
+                    const tone = full
+                      ? { bar: 'from-emerald-400 to-emerald-600', ring: 'border-emerald-600', text: 'text-emerald-700' }
+                      : pct < 30
+                        ? { bar: 'from-red-400 to-red-600', ring: 'border-red-600', text: 'text-red-700' }
+                        : { bar: 'from-amber-400 to-orange-500', ring: 'border-orange-500', text: 'text-orange-700' }
+                    // Deslizador: pista con marcas, relleno en degradé y perilla blanca al final del tramo.
+                    const fill = Math.min(Math.max(pct, 14), 100)
                     return (
-                      <span className="flex items-center gap-2.5">
-                        <span className="h-2.5 w-24 overflow-hidden rounded-full bg-slate-200 shadow-inner" aria-hidden="true">
+                      <span className="flex items-center gap-3">
+                        <span className="relative block h-5 w-28 shrink-0" aria-hidden="true">
+                          <span className="absolute inset-x-0 top-1/2 h-3.5 -translate-y-1/2 rounded-full bg-slate-200 shadow-inner" />
+                          {[20, 40, 60, 80].map(d => (
+                            <span key={d} className="absolute top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-400/70" style={{ left: `${d}%` }} />
+                          ))}
                           <span
-                            className={`block h-full rounded-full transition-all ${pct >= 99.95 ? 'bg-emerald-500' : 'bg-amber-500'}`}
-                            style={{ width: `${Math.max(Math.min(pct, 100), pct > 0 ? 4 : 0)}%` }}
+                            className={`absolute top-1/2 left-0 h-3.5 -translate-y-1/2 rounded-full bg-gradient-to-r ${tone.bar}`}
+                            style={{ width: `${fill}%` }}
+                          />
+                          <span
+                            className={`absolute top-1/2 h-5 w-5 -translate-y-1/2 rounded-full border-[3px] bg-white shadow-md ${tone.ring}`}
+                            style={{ left: `calc(${fill}% - 20px)` }}
                           />
                         </span>
-                        <span className={`text-xs font-semibold tabular-nums ${pct >= 99.95 ? 'text-emerald-700' : 'text-amber-700'}`}>{pct.toFixed(1).replace('.', ',')}%</span>
+                        <span className={`text-xs font-semibold tabular-nums ${tone.text}`}>{pct.toFixed(1).replace('.', ',')}%</span>
                       </span>
                     )
                   },
