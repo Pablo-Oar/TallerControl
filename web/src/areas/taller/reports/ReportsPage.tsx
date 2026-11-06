@@ -5,6 +5,7 @@ import { Button } from '../../../components/ui/Button'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { DataTable } from '../../../components/ui/DataTable'
 import { VehicleLabel } from '../../../components/ui/VehicleLabel'
+import { ExcelIcon } from '../../../components/ui/icons'
 import { Tabs, TabPanel } from '../../../components/ui/Tabs'
 import { inputCls } from '../../../lib/styles'
 import { formatDate, formatDateOnly, localDateISO } from '../../../lib/dates'
@@ -289,11 +290,12 @@ function ReportSection({
           <p className="min-w-0 text-sm font-bold text-tc-text-secondary max-sm:basis-full">{summary}</p>
         )}
         <Button
-          variant="secondary"
+          variant="excel"
           size="sm"
           onClick={() => downloadExcel(exportUrl, exportName)}
           className="ml-auto max-sm:w-full"
         >
+          <ExcelIcon className="h-5 w-5" />
           Exportar Excel
         </Button>
       </div>

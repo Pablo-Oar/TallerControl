@@ -4,7 +4,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean
   /** ConfirmaciÃ³n breve tras una acciÃ³n exitosa: reemplaza el spinner por un check (mismo tamaÃ±o, sin salto de layout). */
   success?: boolean
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'excel'
   size?: 'sm' | 'md'
 }
 
@@ -15,6 +15,8 @@ const variants = {
     'bg-white text-tc-text-secondary border border-tc-border hover:bg-tc-surface focus-visible:ring-tc-navy-text',
   danger:
     'bg-tc-stamp-red text-white hover:bg-red-700 focus-visible:ring-tc-stamp-red border border-tc-stamp-red',
+  excel:
+    'bg-[#1d6f42] text-white hover:bg-[#185c37] focus-visible:ring-[#1d6f42] border border-[#1d6f42]',
   ghost:
     'bg-transparent text-tc-navy-text border border-tc-navy-mid hover:bg-tc-navy-surface hover:text-white focus-visible:ring-tc-navy-text',
 }
