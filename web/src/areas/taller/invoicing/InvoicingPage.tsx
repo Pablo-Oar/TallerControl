@@ -8,7 +8,7 @@ import { Pagination } from '../../../components/ui/Pagination'
 import { NavLink } from 'react-router'
 import { useCan } from '../../../lib/auth/permissions'
 import { InvoicingTabs } from './InvoicingTabs'
-import { INVOICE_STATUS_LABELS } from './invoiceLabels'
+import { INVOICE_STATUS_HINTS, INVOICE_STATUS_LABELS } from './invoiceLabels'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -48,7 +48,7 @@ const COLUMNS: DataTableColumn<InvoiceListDto>[] = [
     sortValue: i => i.status,
     cell: i => (
       <>
-        <StatusBadge status={i.status} label={STATUS_LABELS[i.status]} />
+        <StatusBadge status={i.status} hint={INVOICE_STATUS_HINTS[i.status]} label={STATUS_LABELS[i.status]} />
         {i.isHomologation && <span className="ml-2 border border-amber-300 px-1 text-[11px] font-bold tracking-wider uppercase text-amber-700" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
       </>
     ),
@@ -153,7 +153,7 @@ export function InvoicingPage() {
                 </p>
                 <p className="text-xs tabular-nums text-tc-text-muted">{formatDate(i.issuedAt)}</p>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <StatusBadge status={i.status} label={STATUS_LABELS[i.status]} />
+                  <StatusBadge status={i.status} hint={INVOICE_STATUS_HINTS[i.status]} label={STATUS_LABELS[i.status]} />
                   <span className="text-sm font-bold tabular-nums text-tc-purple">{fmtARS(i.totalAmount)}</span>
                 </div>
               </>

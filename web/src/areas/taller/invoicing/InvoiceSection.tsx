@@ -16,7 +16,7 @@ import { Modal } from '../../../components/ui/Modal'
 import { FormSelect } from '../../../components/ui/FormField'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { useCan } from '../../../lib/auth/permissions'
-import { INVOICE_STATUS_LABELS } from './invoiceLabels'
+import { INVOICE_STATUS_HINTS, INVOICE_STATUS_LABELS } from './invoiceLabels'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -92,7 +92,7 @@ export function InvoiceSection({ sourceType, sourceId, eligible, ineligibleReaso
                   {i.isCredit && <span className="ml-2 text-[11px] font-bold text-amber-700">NC</span>}
                   {i.isHomologation && <span className="ml-2 border border-amber-300 px-1 text-[11px] font-bold tracking-wider uppercase text-amber-700" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
                 </span>
-                <StatusBadge status={i.status} label={INVOICE_STATUS_LABELS[i.status]} />
+                <StatusBadge status={i.status} hint={INVOICE_STATUS_HINTS[i.status]} label={INVOICE_STATUS_LABELS[i.status]} />
                 <span className="ml-auto tabular-nums font-semibold text-tc-purple">{fmtARS(i.totalAmount)}</span>
               </Link>
             </li>
