@@ -20,7 +20,7 @@ const config: Record<string, { label: string; cls: string }> = {
   waiting_parts:     { label: 'ESPERANDO',    cls: 'border border-amber-300 bg-amber-50 text-amber-700' },
   completed:         { label: 'COMPLETADA',   cls: 'border border-tc-done-border bg-tc-done-bg text-tc-done-text' },
   delivered:         { label: 'ENTREGADA',    cls: 'border border-teal-300 bg-teal-50 text-teal-700' },
-  cancelled:         { label: 'ANULADA',      cls: 'border border-tc-void-border bg-white text-tc-void-text line-through' },
+  cancelled:         { label: 'ANULADA',      cls: 'border border-tc-void-border bg-white text-tc-void-text' },
   // Quotes
   draft:             { label: 'BORRADOR',     cls: 'border border-slate-300 bg-slate-50 text-tc-text-secondary' },
   sent:              { label: 'ENVIADO',      cls: 'border border-tc-inprog-border bg-tc-inprog-bg text-tc-inprog-text' },
@@ -75,15 +75,17 @@ export function StatusBadge({ status, label, hint, className = '' }: StatusBadge
   const cls = found?.cls ?? 'border border-slate-300 bg-slate-50 text-tc-text-secondary'
 
   const tip = hint ?? HINTS[status]
+  // Se muestra en minúsculas con la inicial en mayúscula (las etiquetas vienen en mayúsculas).
+  const shown = text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
 
   return (
     <span className="group/st relative inline-flex shrink-0 align-middle">
       <span
-        // Ancho fijo y texto centrado: los sellos de una columna "Estado" se alinean aunque el texto cambie.
-        // El espaciado entre letras deja un hueco al final: se compensa a la izquierda para que se vea centrado.
-        className={`inline-flex w-28 shrink-0 items-center justify-center whitespace-nowrap py-0.5 pr-2 pl-[calc(0.5rem+0.1em)] text-center text-[11px] font-bold tracking-widest leading-none ${cls} ${className}`}
+        // Píldora con borde, ícono y texto centrados; ancho mínimo parejo para que una columna "Estado" se alinee.
+        className={`inline-flex min-w-[8.5rem] shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-center text-xs font-bold leading-none ${cls} ${className}`}
       >
-        {text}
+        <StatusIcon kind={ICON[status] ?? 'dot'} />
+        {shown}
       </span>
       {tip && (
         <span
@@ -94,5 +96,35 @@ export function StatusBadge({ status, label, hint, className = '' }: StatusBadge
         </span>
       )}
     </span>
+  )
+}
+
+type IconKind = 'check' | 'alert' | 'ban' | 'clock' | 'dot'
+
+const ICON: Record<string, IconKind> = {
+  completed: 'check', delivered: 'check', approved: 'check', converted: 'check', confirmed: 'check',
+  authorized: 'check', valid: 'check', active: 'check', ok: 'check', assigned: 'check',
+  cancelled: 'ban', rejected: 'ban', revoked: 'ban', voided: 'ban', disabled: 'ban',
+  pending: 'alert', sent: 'alert', waiting_parts: 'alert', partially_approved: 'alert', low_stock: 'alert',
+  time_stuck: 'alert', lost: 'alert',
+  in_progress: 'clock', expired: 'clock', time_ok: 'clock',
+}
+
+/** Círculo relleno con el color del texto y un símbolo claro adentro (SVG propio, sin biblioteca de íconos). */
+function StatusIcon({ kind }: { kind: IconKind }) {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden="true" className="h-3.5 w-3.5 shrink-0">
+      <circle cx="8" cy="8" r="8" fill="currentColor" />
+      {kind === 'check' && <path d="m4.6 8.4 2.2 2.2 4.6-4.8" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />}
+      {kind === 'alert' && (
+        <>
+          <path d="M8 4.2v4.4" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
+          <circle cx="8" cy="11.3" r="1" fill="#fff" />
+        </>
+      )}
+      {kind === 'ban' && <path d="m4.8 11.2 6.4-6.4" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />}
+      {kind === 'clock' && <path d="M8 4.3V8l2.4 1.5" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />}
+      {kind === 'dot' && <circle cx="8" cy="8" r="2.4" fill="#fff" />}
+    </svg>
   )
 }
