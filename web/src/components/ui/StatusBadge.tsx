@@ -1,3 +1,6 @@
+import { useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+
 /** Status stamp vocabulary for TallerControl (Jet-Age Ticket Wallet world). */
 
 type WorkOrderStatus = 'pending' | 'in_progress' | 'waiting_parts' | 'completed' | 'delivered' | 'cancelled'
@@ -55,7 +58,7 @@ const HINTS: Record<string, string> = {
   converted: 'Aprobado por el cliente y transformado en Orden de Trabajo',
   confirmed: 'Confirmado',
   authorized: 'Autorizada por ARCA',
-  time_stuck: 'Hace más días en este estado de lo que indica el aviso del Inicio',
+  time_stuck: 'Lleva más días en este estado de lo normal',
   time_ok: 'Dentro del plazo normal',
   free: 'Tarjeta sin asignar a un vehículo',
   assigned: 'Tarjeta asignada a un vehículo',
@@ -78,8 +81,21 @@ export function StatusBadge({ status, label, hint, className = '' }: StatusBadge
   // Se muestra en minúsculas con la inicial en mayúscula (las etiquetas vienen en mayúsculas).
   const shown = text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
 
+  // El tooltip se dibuja en una capa fija (portal) para que ningún recuadro con overflow lo recorte,
+  // y se corre hacia adentro si el sello está pegado al borde de la pantalla.
+  const ref = useRef<HTMLSpanElement>(null)
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
+
+  function show() {
+    const r = ref.current?.getBoundingClientRect()
+    if (!r) return
+    const half = 112 // mitad del ancho máximo del tooltip (14rem)
+    const x = Math.min(Math.max(r.left + r.width / 2, half + 8), window.innerWidth - half - 8)
+    setPos({ x, y: r.bottom + 6 })
+  }
+
   return (
-    <span className="group/st relative inline-flex shrink-0 align-middle">
+    <span ref={ref} className="inline-flex shrink-0 align-middle" onMouseEnter={show} onMouseLeave={() => setPos(null)}>
       <span
         // Píldora con borde, ícono y texto centrados; ancho mínimo parejo para que una columna "Estado" se alinee.
         className={`inline-flex min-w-[8.5rem] shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-center text-xs font-bold leading-none ${cls} ${className}`}
@@ -87,14 +103,17 @@ export function StatusBadge({ status, label, hint, className = '' }: StatusBadge
         <StatusIcon kind={ICON[status] ?? 'dot'} />
         {shown}
       </span>
-      {tip && (
-        <span
-          role="tooltip"
-          className="pointer-events-none invisible absolute top-full left-1/2 z-30 mt-1.5 w-max max-w-56 -translate-x-1/2 border border-tc-border bg-white px-2.5 py-1.5 text-center text-xs font-normal normal-case tracking-normal leading-snug text-tc-text-secondary opacity-0 shadow-lg transition-opacity group-hover/st:visible group-hover/st:opacity-100"
-        >
-          {tip}
-        </span>
-      )}
+      {tip && pos &&
+        createPortal(
+          <span
+            role="tooltip"
+            style={{ left: pos.x, top: pos.y }}
+            className="pointer-events-none fixed z-[200] w-max max-w-56 -translate-x-1/2 border border-tc-border bg-white px-2.5 py-1.5 text-center text-xs font-normal leading-snug text-tc-text-secondary shadow-lg"
+          >
+            {tip}
+          </span>,
+          document.body,
+        )}
     </span>
   )
 }
