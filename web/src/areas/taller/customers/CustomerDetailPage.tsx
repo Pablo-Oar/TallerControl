@@ -35,6 +35,21 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
+const FUEL_LABELS: Record<string, string> = {
+  gasoline: 'Nafta',
+  diesel: 'Diésel',
+  gas: 'GNC',
+  hybrid: 'Híbrido',
+  electric: 'Eléctrico',
+  other: 'Otro',
+}
+
+const USAGE_LABELS: Record<string, string> = {
+  regular: 'Regular',
+  low_usage: 'Uso reducido',
+  commercial: 'Comercial / Alta carga',
+}
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
@@ -119,11 +134,23 @@ export function CustomerDetailPage() {
         ) : (
           <ul className="divide-y divide-tc-border">
             {customer.vehicles.map(v => (
-              <li key={v.id} className="flex items-center justify-between py-2 text-sm">
-                <Link to={`/app/vehicles/${v.id}`} className="font-mono font-bold tracking-widest text-tc-purple hover:underline">
-                  {v.plate}
-                </Link>
-                <span className="text-tc-text-secondary">{[v.brand, v.model].filter(Boolean).join(' ') || '—'}</span>
+              <li key={v.id} className="py-4 first:pt-0 last:pb-0">
+                <div className="mb-3 flex items-center justify-between gap-3 text-sm">
+                  <Link to={`/app/vehicles/${v.id}`} className="font-mono font-bold tracking-widest text-tc-purple hover:underline">
+                    {v.plate}
+                  </Link>
+                  <span className="font-medium text-tc-text">{[v.brand, v.model].filter(Boolean).join(' ') || '—'}</span>
+                </div>
+                <dl className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
+                  <Field label="Versión">{v.versionName || '—'}</Field>
+                  <Field label="Color">{v.color || '—'}</Field>
+                  <Field label="Año">{v.year ?? '—'}</Field>
+                  <Field label="Kilometraje">{v.odometerKm != null ? `${v.odometerKm.toLocaleString('es-AR')} km` : '—'}</Field>
+                  <Field label="Combustible">{(v.fuel && FUEL_LABELS[v.fuel]) || '—'}</Field>
+                  <Field label="Uso">{(v.usageProfile && USAGE_LABELS[v.usageProfile]) || '—'}</Field>
+                  <Field label="Nº de motor">{v.engineNumber || '—'}</Field>
+                  <Field label="VIN / chasis"><span className="break-all font-mono text-xs">{v.vin || '—'}</span></Field>
+                </dl>
               </li>
             ))}
           </ul>

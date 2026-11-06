@@ -1,4 +1,5 @@
 using TallerControl.Domain.Customers;
+using TallerControl.Domain.Vehicles;
 
 namespace TallerControl.Application.Customers;
 
@@ -29,7 +30,19 @@ public sealed record CustomerDto(
     uint Version);
 
 /// <summary>Resumen de vehículo embebido en <see cref="CustomerDto"/>.</summary>
-public sealed record VehicleBasicDto(Guid Id, string Plate, string? Brand, string? Model);
+public sealed record VehicleBasicDto(
+    Guid Id,
+    string Plate,
+    string? Brand,
+    string? Model,
+    string? VersionName = null,
+    string? Color = null,
+    int? Year = null,
+    string? Vin = null,
+    string? Fuel = null,
+    int OdometerKm = 0,
+    VehicleUsageProfile? UsageProfile = null,
+    string? EngineNumber = null);
 
 /// <summary>Cuerpo de <c>POST /api/v1/customers</c> y <c>PUT /api/v1/customers/{id}</c>.</summary>
 public sealed record CustomerUpsertRequest(
