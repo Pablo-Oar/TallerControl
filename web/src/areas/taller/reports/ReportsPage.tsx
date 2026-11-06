@@ -183,9 +183,18 @@ export function ReportsPage() {
               getRowId={r => r.workOrderId}
               columns={[
                 { key: 'number', header: 'N° OT', widthClass: 'w-28', sortable: true, sortValue: r => r.workOrderNumber, cell: r => <span className="font-mono font-bold tabular-nums text-tc-text">#{r.workOrderNumber}</span> },
-                { key: 'customer', header: 'Cliente', widthClass: 'w-64', sortable: true, sortValue: r => r.customerName, cell: r => <span className="text-tc-text-secondary">{r.customerName}</span> },
-                { key: 'plate', header: 'Vehículo', cell: r => <VehicleLabel plate={r.vehiclePlate} brand={r.vehicleBrand} model={r.vehicleModel} /> },
-                { key: 'balance', header: 'Saldo', align: 'right', widthClass: 'w-40', sortable: true, sortValue: r => r.balance, cell: r => <span className="font-bold tabular-nums text-tc-stamp-red">{fmtARS(r.balance)}</span> },
+                { key: 'customer', header: 'Cliente', widthClass: 'w-[22rem]', sortable: true, sortValue: r => r.customerName, cell: r => <span className="text-tc-text-secondary">{r.customerName}</span> },
+                { key: 'plate', header: 'Vehículo', widthClass: 'w-56', cell: r => <VehicleLabel plate={r.vehiclePlate} brand={r.vehicleBrand} model={r.vehicleModel} /> },
+                { key: 'concept', header: 'Qué se cobra', cell: r => <span className="line-clamp-2 text-tc-text-secondary" title={r.concept ?? undefined}>{r.concept || '—'}</span> },
+                {
+                  key: 'balance', header: 'Saldo', align: 'right', widthClass: 'w-44', sortable: true, sortValue: r => r.balance,
+                  cell: r => (
+                    <div>
+                      <span className="font-bold tabular-nums text-tc-stamp-red">{fmtARS(r.balance)}</span>
+                      {!!r.total && r.total !== r.balance && <p className="text-xs tabular-nums text-tc-text-muted">de {fmtARS(r.total)}</p>}
+                    </div>
+                  ),
+                },
                 { key: 'date', header: 'Fecha', align: 'center', widthClass: 'w-36', sortable: true, sortValue: r => r.createdAt, cell: r => <span className="tabular-nums text-tc-text-secondary">{formatDate(r.createdAt)}</span> },
               ]}
               cardStub={r => <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{r.workOrderNumber}</span>}
@@ -193,6 +202,7 @@ export function ReportsPage() {
                 <>
                   <p className="truncate text-sm text-tc-text">{r.customerName}</p>
                   <p className="text-xs text-tc-text-muted"><VehicleLabel plate={r.vehiclePlate} brand={r.vehicleBrand} model={r.vehicleModel} inline /> · {formatDate(r.createdAt)}</p>
+                  {r.concept && <p className="mt-0.5 line-clamp-2 text-xs text-tc-text-secondary">{r.concept}</p>}
                   <p className="mt-1 font-bold tabular-nums text-tc-stamp-red">{fmtARS(r.balance)}</p>
                 </>
               )}

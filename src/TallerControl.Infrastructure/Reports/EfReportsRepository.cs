@@ -114,6 +114,8 @@ internal sealed class EfReportsRepository : IReportsRepository
                 w.CustomerId,
                 w.VehicleId,
                 Balance = EF.Property<decimal>(w, "Balance"),
+                w.Total,
+                w.PaidAmount,
                 w.CreatedAt,
             })
             .OrderByDescending(r => r.Balance)
@@ -121,6 +123,24 @@ internal sealed class EfReportsRepository : IReportsRepository
 
         if (raw.Count == 0)
             return new ReceivablesReportDto([], 0);
+
+        // Qué se le cobra: los trabajos y repuestos de cada orden, en el orden en que se cargaron.
+        var orderIds = raw.Select(r => Guid.Parse(r.Id)).ToList();
+        var itemRows = await _db.Set<WorkOrderItem>()
+            .AsNoTracking()
+            .Where(i => orderIds.Contains(i.WorkOrderId))
+            .OrderBy(i => i.Position)
+            .Select(i => new { i.WorkOrderId, i.Description })
+            .ToListAsync(ct);
+        var concepts = itemRows
+            .GroupBy(i => i.WorkOrderId)
+            .ToDictionary(g => g.Key.ToString(), g =>
+            {
+                var names = g.Select(i => i.Description).ToList();
+                return names.Count <= 3
+                    ? string.Join(", ", names)
+                    : $"{string.Join(", ", names.Take(3))} y {names.Count - 3} más";
+            });
 
         var customerIds = raw.Select(r => r.CustomerId).Distinct().ToList();
         var vehicleIds = raw.Select(r => r.VehicleId).Distinct().ToList();
@@ -150,7 +170,10 @@ internal sealed class EfReportsRepository : IReportsRepository
                 r.Balance,
                 r.CreatedAt,
                 vehicle?.Brand,
-                vehicle?.Model);
+                vehicle?.Model,
+                concepts.GetValueOrDefault(r.Id),
+                r.Total,
+                r.PaidAmount);
         }).ToList();
 
         return new ReceivablesReportDto(rows, rows.Sum(r => r.Balance));

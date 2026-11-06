@@ -22,6 +22,9 @@ export interface RevenueReportDto {
 }
 
 export interface ReceivablesReportRow {
+  concept?: string | null
+  total?: number
+  paid?: number
   workOrderId: string
   workOrderNumber: number
   customerName: string
