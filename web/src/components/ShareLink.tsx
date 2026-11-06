@@ -34,7 +34,7 @@ export function ShareLink({ url, whatsappText, label = 'Enlace' }: { url: string
           onClick={copy}
           aria-label={copied ? 'Copiado' : `Copiar ${label.toLowerCase()}`}
           title={copied ? 'Copiado' : 'Copiar'}
-          className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-1 max-md:h-11 max-md:w-11 ${
+          className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-1 max-md:h-11 max-md:w-11 ${
             copied ? 'bg-emerald-600 hover:bg-emerald-700 focus-visible:ring-emerald-600' : 'bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-600'
           }`}
         >
