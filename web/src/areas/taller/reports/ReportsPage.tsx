@@ -131,13 +131,14 @@ export function ReportsPage() {
               getRowId={r => r.date}
               columns={[
                 { key: 'date', header: 'Fecha', widthClass: 'w-[13%]', sortable: true, sortValue: r => r.date, cell: r => <span className="tabular-nums text-tc-text-secondary">{formatDateOnly(r.date)}</span> },
-                { key: 'weekday', header: 'Día', widthClass: 'w-[12%]', cell: r => <span className="text-tc-text-secondary">{weekdayLabel(r.date)}</span> },
-                { key: 'count', header: 'Cobros', widthClass: 'w-[10%]', sortable: true, sortValue: r => r.paymentCount, cell: r => <span className="tabular-nums text-tc-text-secondary">{r.paymentCount}</span> },
-                { key: 'main', header: 'Medio principal', widthClass: 'w-[18%]', cell: r => <span className="text-tc-text-secondary">{r.mainSource ? (REVENUE_SOURCE_LABEL[r.mainSource] ?? r.mainSource) : '—'}</span> },
-                { key: 'avg', header: 'Ticket promedio', widthClass: 'w-[16%]', sortable: true, sortValue: r => r.amount / Math.max(r.paymentCount, 1), cell: r => <span className="tabular-nums text-tc-text-secondary">{fmtARS(r.amount / Math.max(r.paymentCount, 1))}</span> },
+                { key: 'weekday', header: 'Día', widthClass: 'w-[11%]', cell: r => <span className="text-tc-text-secondary">{weekdayLabel(r.date)}</span> },
+                { key: 'count', header: 'Cobros', widthClass: 'w-[9%]', sortable: true, sortValue: r => r.paymentCount, cell: r => <span className="tabular-nums text-tc-text-secondary">{r.paymentCount}</span> },
+                { key: 'main', header: 'Medio principal', widthClass: 'w-[16%]', cell: r => <span className="text-tc-text-secondary">{r.mainSource ? (REVENUE_SOURCE_LABEL[r.mainSource] ?? r.mainSource) : '—'}</span> },
+                { key: 'avg', header: 'Ticket promedio', hint: 'Cuánto se cobró en promedio por cada cobro o venta de ese día: el monto del día dividido por la cantidad de cobros.', widthClass: 'w-[18%]', sortable: true, sortValue: r => r.amount / Math.max(r.paymentCount, 1), cell: r => <span className="tabular-nums text-tc-text-secondary">{fmtARS(r.amount / Math.max(r.paymentCount, 1))}</span> },
                 {
                   key: 'share',
                   header: '% del total',
+                  hint: 'Qué parte de los ingresos del período elegido se cobró ese día. Rojo: menos del 30 %. Naranja: 30 % o más. Verde: el 100 %, o sea que todo entró ese día.',
                   widthClass: 'w-[19%]',
                   sortable: true,
                   sortValue: r => r.amount,
