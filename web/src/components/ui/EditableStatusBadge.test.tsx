@@ -19,7 +19,7 @@ describe('EditableStatusBadge (T-UI-07)', () => {
   it('sin opciones es un sello común, sin botón', () => {
     setup(vi.fn(), [])
     expect(screen.queryByRole('button')).toBeNull()
-    expect(screen.getByText('PENDIENTE')).toBeInTheDocument()
+    expect(screen.getByText('Pendiente')).toBeInTheDocument()
   })
 
   it('abre un menú con SOLO las opciones declaradas y llama a onSelect con el valor', async () => {
@@ -39,7 +39,7 @@ describe('EditableStatusBadge (T-UI-07)', () => {
     await userEvent.click(screen.getByRole('button', { name: /opciones de estado/i }))
     await userEvent.click(screen.getByRole('menuitem', { name: 'Cancelada' }))
     expect(await screen.findByRole('alert')).toHaveTextContent(/reintegrá los pagos/i)
-    expect(screen.getByText('PENDIENTE')).toBeInTheDocument()
+    expect(screen.getByText('Pendiente')).toBeInTheDocument()
   })
 
   it('teclado: abre, navega con flechas, Enter elige, Escape cierra y devuelve el foco', async () => {

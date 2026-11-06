@@ -13,6 +13,7 @@ import { DataTable, type DataTableColumn, type SortState } from '../../../compon
 import { Pagination } from '../../../components/ui/Pagination'
 import { WorkOrderFormModal } from './WorkOrderFormModal'
 import { pendingTone } from '../../../lib/styles'
+import { formatDate } from '../../../lib/dates'
 import { useCreateFromQuery } from '../../../lib/useCreateFromQuery'
 import { useSearchParams } from 'react-router'
 
@@ -26,21 +27,21 @@ const fmtARS = (n: number) =>
 const vehicleLabel = (o: WorkOrderListDto) =>
   [o.vehicleBrand, o.vehicleModel].filter(Boolean).join(' ') || o.vehiclePlate
 
-/** Columnas de la lista; el orden es del servidor (`number|status|total|balance`). */
+/** Columnas de la lista; el orden es del servidor (`number|status|total|balance|createdat`). */
 const COLUMNS: DataTableColumn<WorkOrderListDto>[] = [
   {
     key: 'number',
     header: '#',
     sortLabel: 'Número',
     align: 'center',
-    widthClass: 'w-[7%]',
+    widthClass: 'w-[6%]',
     sortable: true,
     cell: o => <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{o.number}</span>,
   },
   {
     key: 'customer',
     header: 'Cliente / Vehículo',
-    widthClass: 'w-[29%]',
+    widthClass: 'w-[26%]',
     cell: o => (
       <div className="min-w-0">
         <p className="truncate font-medium text-tc-text">{o.customerName}</p>
@@ -56,7 +57,7 @@ const COLUMNS: DataTableColumn<WorkOrderListDto>[] = [
     key: 'status',
     header: 'Estado',
     align: 'center',
-    widthClass: 'w-[16%]',
+    widthClass: 'w-[15%]',
     sortable: true,
     cell: o => <StatusBadge status={o.status} />,
   },
@@ -64,7 +65,7 @@ const COLUMNS: DataTableColumn<WorkOrderListDto>[] = [
     key: 'total',
     header: 'Total',
     align: 'center',
-    widthClass: 'w-[14%]',
+    widthClass: 'w-[12%]',
     sortable: true,
     cell: o => (
       <span className="tabular-nums font-medium text-tc-purple">{o.total != null ? fmtARS(o.total) : '—'}</span>
@@ -74,7 +75,7 @@ const COLUMNS: DataTableColumn<WorkOrderListDto>[] = [
     key: 'balance',
     header: 'Pendiente',
     align: 'center',
-    widthClass: 'w-[14%]',
+    widthClass: 'w-[12%]',
     sortable: true,
     cell: o =>
       o.balance != null ? (
@@ -89,8 +90,17 @@ const COLUMNS: DataTableColumn<WorkOrderListDto>[] = [
     key: 'mechanic',
     header: 'Mecánico',
     align: 'center',
-    widthClass: 'w-[16%]',
+    widthClass: 'w-[14%]',
     cell: o => <span className="block truncate text-xs text-tc-text-muted">{o.assignedMechanicName ?? '—'}</span>,
+  },
+  {
+    key: 'createdat',
+    header: 'Fecha creación',
+    sortLabel: 'Fecha de creación',
+    align: 'center',
+    widthClass: 'w-[11%]',
+    sortable: true,
+    cell: o => <span className="text-xs tabular-nums text-tc-text-secondary">{formatDate(o.createdAt)}</span>,
   },
 ]
 

@@ -8,7 +8,7 @@ import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { LoadError } from '../../../components/LoadError'
 import { confirmDialog, notify } from '../../../components/ui/dialogs'
 import { useCan } from '../../../lib/auth/permissions'
-import { INVOICE_STATUS_LABELS } from './invoiceLabels'
+import { INVOICE_STATUS_HINTS, INVOICE_STATUS_LABELS } from './invoiceLabels'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -64,7 +64,7 @@ export function InvoiceDetailPage() {
         <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">
           {invoice.isCredit ? 'Nota de crédito' : 'Factura'} {invoice.invoiceType.toUpperCase()}
         </h1>
-        <StatusBadge status={invoice.status} label={INVOICE_STATUS_LABELS[invoice.status]} />
+        <StatusBadge status={invoice.status} hint={INVOICE_STATUS_HINTS[invoice.status]} label={INVOICE_STATUS_LABELS[invoice.status]} />
         {invoice.isHomologation && <span className="ml-2 border border-amber-300 px-1 text-[11px] font-bold tracking-wider uppercase text-amber-700" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
       </div>
 

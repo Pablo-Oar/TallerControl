@@ -11,7 +11,7 @@ import { CalendarIcon, ClockIcon, WrenchIcon } from './icons'
 import { StatusStrip, WidgetEmpty, WidgetShell } from './Widgets'
 
 /** Columnas de «Taller en vivo» en escritorio; en celular cada orden es una tarjeta. */
-const LIVE_GRID = 'md:grid md:grid-cols-[3.5rem_minmax(0,1.5fr)_minmax(0,1fr)_7rem_7rem] md:items-center md:gap-3'
+const LIVE_GRID = 'md:grid md:grid-cols-[3.5rem_minmax(0,1.5fr)_minmax(0,1fr)_8.75rem_8.75rem] md:items-center md:gap-3'
 
 /** «hace 9 días» / «hoy»: el tiempo que lleva la orden en su estado, con el mismo sello que el estado. */
 function TimeInStatus({ order }: { order: LiveOrder }) {
