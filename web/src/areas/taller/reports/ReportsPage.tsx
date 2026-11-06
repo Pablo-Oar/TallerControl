@@ -126,33 +126,37 @@ export function ReportsPage() {
           {revenueQuery.data && (
             <DataTable
               label="Ingresos por día"
+              fixedLayout
               rows={revenueQuery.data.rows}
               getRowId={r => r.date}
               columns={[
-                { key: 'date', header: 'Fecha', widthClass: 'w-32', sortable: true, sortValue: r => r.date, cell: r => <span className="tabular-nums text-tc-text-secondary">{formatDateOnly(r.date)}</span> },
-                { key: 'weekday', header: 'Día', widthClass: 'w-28', cell: r => <span className="text-tc-text-secondary">{weekdayLabel(r.date)}</span> },
-                { key: 'count', header: 'Cobros', align: 'center', widthClass: 'w-24', sortable: true, sortValue: r => r.paymentCount, cell: r => <span className="tabular-nums text-tc-text-secondary">{r.paymentCount}</span> },
-                { key: 'main', header: 'Medio principal', widthClass: 'w-44', cell: r => <span className="text-tc-text-secondary">{r.mainSource ? (REVENUE_SOURCE_LABEL[r.mainSource] ?? r.mainSource) : '—'}</span> },
-                { key: 'avg', header: 'Ticket promedio', align: 'right', widthClass: 'w-40', sortable: true, sortValue: r => r.amount / Math.max(r.paymentCount, 1), cell: r => <span className="tabular-nums text-tc-text-secondary">{fmtARS(r.amount / Math.max(r.paymentCount, 1))}</span> },
+                { key: 'date', header: 'Fecha', widthClass: 'w-[13%]', sortable: true, sortValue: r => r.date, cell: r => <span className="tabular-nums text-tc-text-secondary">{formatDateOnly(r.date)}</span> },
+                { key: 'weekday', header: 'Día', widthClass: 'w-[12%]', cell: r => <span className="text-tc-text-secondary">{weekdayLabel(r.date)}</span> },
+                { key: 'count', header: 'Cobros', widthClass: 'w-[10%]', sortable: true, sortValue: r => r.paymentCount, cell: r => <span className="tabular-nums text-tc-text-secondary">{r.paymentCount}</span> },
+                { key: 'main', header: 'Medio principal', widthClass: 'w-[18%]', cell: r => <span className="text-tc-text-secondary">{r.mainSource ? (REVENUE_SOURCE_LABEL[r.mainSource] ?? r.mainSource) : '—'}</span> },
+                { key: 'avg', header: 'Ticket promedio', widthClass: 'w-[16%]', sortable: true, sortValue: r => r.amount / Math.max(r.paymentCount, 1), cell: r => <span className="tabular-nums text-tc-text-secondary">{fmtARS(r.amount / Math.max(r.paymentCount, 1))}</span> },
                 {
                   key: 'share',
                   header: '% del total',
-                  widthClass: 'w-44',
+                  widthClass: 'w-[17%]',
                   sortable: true,
                   sortValue: r => r.amount,
                   cell: r => {
                     const pct = revenueQuery.data!.total > 0 ? (r.amount / revenueQuery.data!.total) * 100 : 0
                     return (
-                      <span className="flex items-center gap-2">
-                        <span className="h-1.5 w-20 overflow-hidden rounded-full bg-tc-border" aria-hidden="true">
-                          <span className="block h-full rounded-full bg-tc-purple" style={{ width: `${Math.min(pct, 100)}%` }} />
+                      <span className="flex items-center gap-2.5">
+                        <span className="h-2.5 w-24 overflow-hidden rounded-full bg-slate-200 shadow-inner" aria-hidden="true">
+                          <span
+                            className={`block h-full rounded-full transition-all ${pct >= 99.95 ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                            style={{ width: `${Math.max(Math.min(pct, 100), pct > 0 ? 4 : 0)}%` }}
+                          />
                         </span>
-                        <span className="w-12 text-xs tabular-nums text-tc-text-secondary">{pct.toFixed(1).replace('.', ',')}%</span>
+                        <span className={`text-xs font-semibold tabular-nums ${pct >= 99.95 ? 'text-emerald-700' : 'text-amber-700'}`}>{pct.toFixed(1).replace('.', ',')}%</span>
                       </span>
                     )
                   },
                 },
-                { key: 'amount', header: 'Monto', align: 'right', widthClass: 'w-40', sortable: true, sortValue: r => r.amount, cell: r => <span className="font-bold tabular-nums text-tc-purple">{fmtARS(r.amount)}</span> },
+                { key: 'amount', header: 'Monto', widthClass: 'w-[14%]', sortable: true, sortValue: r => r.amount, cell: r => <span className="font-bold tabular-nums text-tc-purple">{fmtARS(r.amount)}</span> },
               ]}
               renderCard={r => (
                 <div className="flex items-baseline justify-between gap-3">
