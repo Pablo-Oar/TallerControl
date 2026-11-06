@@ -291,12 +291,14 @@ function ReportSection({
         )}
         <Button
           variant="excel"
-          size="sm"
+          size="md"
           onClick={() => downloadExcel(exportUrl, exportName)}
-          className="ml-auto max-sm:w-full"
+          className="ml-auto rounded-md shadow-sm hover:shadow-md max-sm:w-full"
         >
-          <ExcelIcon className="h-5 w-5" />
-          Exportar Excel
+          <span className="inline-flex items-center gap-2 whitespace-nowrap">
+            <ExcelIcon className="h-5 w-5" />
+            Exportar Excel
+          </span>
         </Button>
       </div>
       {error ? (
