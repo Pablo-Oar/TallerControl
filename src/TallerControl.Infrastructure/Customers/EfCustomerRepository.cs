@@ -86,7 +86,7 @@ internal sealed class EfCustomerRepository : ICustomerRepository
         var vehicles = await _db.Set<Vehicle>()
             .AsNoTracking()
             .Where(v => v.CustomerId == id)
-            .Select(v => new VehicleBasicDto(v.Id, v.Plate, v.Brand, v.Model, v.VersionName, v.Color, v.Year, v.Vin, v.Fuel, v.OdometerKm, v.UsageProfile, v.EngineNumber))
+            .Select(v => new VehicleBasicDto(v.Id, v.Plate, v.Brand, v.Model, v.VersionName, v.Color, v.Year, v.Vin, v.Fuel, v.OdometerKm, v.UsageProfile, v.EngineNumber, v.Transmission))
             .ToListAsync(ct);
 
         var balance = await GetPendingBalanceAsync(id, ct);

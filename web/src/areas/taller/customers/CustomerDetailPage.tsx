@@ -4,12 +4,14 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { customersApi } from '../../../lib/api/customers'
+import { TRANSMISSION_LABELS } from '../../../lib/api/vehicles'
 import { workOrdersApi, STATUS_LABELS as ORDER_STATUS_LABELS } from '../../../lib/api/workOrders'
 import { quotesApi, QUOTE_STATUS_LABELS } from '../../../lib/api/quotes'
 import { Button } from '../../../components/ui/Button'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { useCan } from '../../../lib/auth/permissions'
 import { CustomerFormModal } from './CustomerFormModal'
+import { OwnerAccessCode } from './OwnerAccessCode'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -128,6 +130,12 @@ export function CustomerDetailPage() {
         {customer.notes && <p className="mt-4 whitespace-pre-line text-sm text-tc-text-secondary">{customer.notes}</p>}
       </Section>
 
+      {can('customers.write') && (
+        <Section title="Código de acceso al portal QR">
+          <OwnerAccessCode customerId={customer.id} customerName={customer.name} />
+        </Section>
+      )}
+
       <Section title={`Vehículos (${customer.vehicles.length})`}>
         {customer.vehicles.length === 0 ? (
           <p className="text-sm text-tc-text-muted">Todavía no tiene vehículos cargados.</p>
@@ -146,6 +154,7 @@ export function CustomerDetailPage() {
                   <Field label="Color">{v.color || '—'}</Field>
                   <Field label="Año">{v.year ?? '—'}</Field>
                   <Field label="Kilometraje">{v.odometerKm != null ? `${v.odometerKm.toLocaleString('es-AR')} km` : '—'}</Field>
+                  <Field label="Transmisión">{(v.transmission && TRANSMISSION_LABELS[v.transmission]) || '—'}</Field>
                   <Field label="Combustible">{(v.fuel && FUEL_LABELS[v.fuel]) || '—'}</Field>
                   <Field label="Uso">{(v.usageProfile && USAGE_LABELS[v.usageProfile]) || '—'}</Field>
                   <Field label="Nº de motor">{v.engineNumber || '—'}</Field>

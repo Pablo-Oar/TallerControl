@@ -29,7 +29,8 @@ public sealed record VehicleDto(
     string? UsageProfile,
     string? EngineNumber,
     QrCardBasicDto? ActiveQrCard,
-    uint Version);
+    uint Version,
+    string? Transmission = null);
 
 /// <summary>
 /// Resumen de tarjeta QR activa. <c>null</c> hasta que se implemente QR (E8).
@@ -59,7 +60,8 @@ public sealed record VehicleUpsertRequest(
     string? Fuel = null,
     int OdometerKm = 0,
     TallerControl.Domain.Vehicles.VehicleUsageProfile? UsageProfile = null,
-    string? EngineNumber = null);
+    string? EngineNumber = null,
+    string? Transmission = null);
 
 /// <summary>Cuerpo de <c>DELETE /api/v1/vehicles/{id}</c>.</summary>
 public sealed record DeleteVehicleRequest(string Reason);

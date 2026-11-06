@@ -42,7 +42,8 @@ public sealed record VehicleBasicDto(
     string? Fuel = null,
     int OdometerKm = 0,
     VehicleUsageProfile? UsageProfile = null,
-    string? EngineNumber = null);
+    string? EngineNumber = null,
+    string? Transmission = null);
 
 /// <summary>Cuerpo de <c>POST /api/v1/customers</c> y <c>PUT /api/v1/customers/{id}</c>.</summary>
 public sealed record CustomerUpsertRequest(

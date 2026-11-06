@@ -32,6 +32,7 @@ internal sealed class VehicleConfiguration : IEntityTypeConfiguration<Vehicle>
         builder.Property(v => v.OdometerKm).IsRequired().HasDefaultValue(0);
         builder.Property(v => v.Year).HasColumnType("smallint");
         builder.Property(v => v.EngineNumber).HasColumnName("engine_number");
+        builder.Property(v => v.Transmission).HasColumnName("transmission").HasMaxLength(20);
 
         // IAuditable
         builder.Property(v => v.CreatedAt).IsRequired();

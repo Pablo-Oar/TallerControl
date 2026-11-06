@@ -8,7 +8,6 @@ import { FormField, FormSelect, FormTextarea } from '../../../components/ui/Form
 import { EditDialog } from '../../../components/ui/EditDialog'
 import { ApiError } from '../../../lib/api/client'
 import { useCan } from '../../../lib/auth/permissions'
-import { OwnerAccessCode } from './OwnerAccessCode'
 
 const VAT_OPTIONS: { value: VatCondition; label: string }[] = [
   { value: 'consumidor_final', label: 'Consumidor Final' },
@@ -157,10 +156,6 @@ export function CustomerFormModal({ customer, onSuccess, onClose, onDelete }: Pr
           <input type="checkbox" {...register('doNotContact')} className="h-4 w-4" />
           No contactar
         </label>
-
-        {isEdit && customer && can('customers.write') && (
-          <OwnerAccessCode customerId={customer.id} customerName={customer.name} />
-        )}
 
 
         {deleting && (

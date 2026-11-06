@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { PageSkeleton } from '@/components/ui/Loading'
 import { Link, useParams } from 'react-router'
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query'
-import { vehiclesApi, type VehicleHistoryEntryDto } from '../../../lib/api/vehicles'
+import { vehiclesApi, TRANSMISSION_LABELS, type VehicleHistoryEntryDto } from '../../../lib/api/vehicles'
 import { STATUS_LABELS as ORDER_STATUS_LABELS, type WorkOrderStatus } from '../../../lib/api/workOrders'
 import { QUOTE_STATUS_LABELS, type QuoteStatus } from '../../../lib/api/quotes'
 import { Button } from '../../../components/ui/Button'
@@ -106,6 +106,10 @@ export function VehicleDetailPage() {
           <div>
             <dt className="mb-1 text-[11px] font-bold uppercase tracking-wider text-tc-text-muted">Color</dt>
             <dd className="text-tc-text">{vehicle.color ?? '—'}</dd>
+          </div>
+          <div>
+            <dt className="mb-1 text-[11px] font-bold uppercase tracking-wider text-tc-text-muted">Transmisión</dt>
+            <dd className="text-tc-text">{(vehicle.transmission && TRANSMISSION_LABELS[vehicle.transmission]) || '—'}</dd>
           </div>
         </dl>
       </section>

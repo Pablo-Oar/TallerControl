@@ -27,7 +27,8 @@ public sealed class Vehicle : Entity, ITenantOwned, IVersioned, IAudited, IAudit
         string? fuel = null,
         int odometerKm = 0,
         VehicleUsageProfile? usageProfile = null,
-        string? engineNumber = null)
+        string? engineNumber = null,
+        string? transmission = null)
     {
         TenantId = tenantId;
         CustomerId = customerId;
@@ -43,6 +44,7 @@ public sealed class Vehicle : Entity, ITenantOwned, IVersioned, IAudited, IAudit
             : throw new ArgumentOutOfRangeException(nameof(odometerKm), "El km no puede ser negativo.");
         UsageProfile = usageProfile;
         EngineNumber = engineNumber?.Trim().ToUpperInvariant();
+        Transmission = string.IsNullOrWhiteSpace(transmission) ? null : transmission.Trim();
     }
 
     public Guid TenantId { get; private set; }
@@ -58,6 +60,8 @@ public sealed class Vehicle : Entity, ITenantOwned, IVersioned, IAudited, IAudit
     public int OdometerKm { get; private set; }
     public VehicleUsageProfile? UsageProfile { get; private set; }
     public string? EngineNumber { get; private set; }
+    /// <summary>Caja de cambios: <c>manual</c>, <c>automatic</c>, <c>cvt</c> o <c>robotized</c> (texto libre validado por la interfaz, como el combustible).</summary>
+    public string? Transmission { get; private set; }
     public uint Version { get; private set; }
 
     // IAuditable
@@ -83,7 +87,8 @@ public sealed class Vehicle : Entity, ITenantOwned, IVersioned, IAudited, IAudit
         string? vin,
         string? fuel,
         VehicleUsageProfile? usageProfile = null,
-        string? engineNumber = null)
+        string? engineNumber = null,
+        string? transmission = null)
     {
         Brand = brand?.Trim();
         Model = model?.Trim();
@@ -94,6 +99,7 @@ public sealed class Vehicle : Entity, ITenantOwned, IVersioned, IAudited, IAudit
         Fuel = fuel?.Trim();
         UsageProfile = usageProfile;
         EngineNumber = engineNumber?.Trim().ToUpperInvariant();
+        Transmission = string.IsNullOrWhiteSpace(transmission) ? null : transmission.Trim();
     }
 
     /// <summary>
