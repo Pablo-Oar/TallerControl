@@ -111,7 +111,7 @@ export function ReportsPage() {
           exportUrl={reportsApi.exportUrl('revenue', from, to)}
           exportName={`ingresos_${from}_${to}.xlsx`}
           summary={revenueQuery.data
-            ? `Total: ${fmtARS(revenueQuery.data.total)} (${revenueQuery.data.count} cobros y ventas)`
+            ? `Total: ${fmtARS(revenueQuery.data.total)} (${revenueQuery.data.count} ${revenueQuery.data.count === 1 ? 'cobro o venta' : 'cobros y ventas'}) · del ${formatDateOnly(from)} al ${formatDateOnly(to)}`
             : undefined}
         >
           {revenueQuery.data && (revenueQuery.data.breakdown?.length ?? 0) > 0 && (
@@ -138,7 +138,7 @@ export function ReportsPage() {
                 {
                   key: 'share',
                   header: '% del total',
-                  hint: 'Qué parte de los ingresos del período elegido se cobró ese día. Rojo: menos del 30 %. Naranja: 30 % o más. Verde: el 100 %, o sea que todo entró ese día.',
+                  hint: 'Qué parte del total del período elegido (Desde–Hasta) se cobró ese día. Si cambiás las fechas, el total cambia y los porcentajes se recalculan: con un solo día en el período, ese día es siempre el 100 %. Rojo: menos del 30 %. Naranja: 30 % o más. Verde: el 100 %, o sea que todo entró ese día.',
                   widthClass: 'w-[19%]',
                   sortable: true,
                   sortValue: r => r.amount,
