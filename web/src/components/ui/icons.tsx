@@ -60,3 +60,12 @@ export const ArrowRightIcon = (p: SVGProps<SVGSVGElement>) => (
     <path d="M5 12h14M13 6l6 6-6 6" />
   </Icon>
 )
+
+/** Logotipo de Excel: hoja con la X (relleno blanco, para usar sobre el verde de Excel). */
+export const ExcelIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4" {...p}>
+    <path fill="currentColor" fillOpacity="0.35" d="M13 3h7a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-7z" />
+    <path fill="currentColor" d="M2 4.5 13 3v18L2 19.5z" />
+    <path fill="#1d6f42" d="m5.6 8.6 1.7-.1 1.2 2.4 1.2-2.6 1.7-.1-2 3.5 2 3.6-1.8-.1-1.2-2.6-1.2 2.5-1.7-.1 2-3.4z" />
+  </svg>
+)
