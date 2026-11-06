@@ -47,7 +47,7 @@ public sealed class ConvertAppointmentToWorkOrderHandler(
             FuelLevel: null,
             ReportedIssue: null,
             Priority: Domain.Work.WorkOrderPriority.Normal,
-            AssignedMechanicId: appointment.MechanicMembershipId,
+            AssignedMechanicId: request.AssignedMechanicId ?? appointment.MechanicMembershipId,
             Items: items);
 
         var workOrder = await createWorkOrder.HandleAsync(woRequest, ct);

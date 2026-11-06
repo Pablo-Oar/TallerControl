@@ -48,7 +48,7 @@ public sealed class UpdateWorkOrderHandler
         var now = _clock.GetUtcNow();
         var actorId = _actorContext.ActorId;
 
-        await MechanicAssignment.EnsureAssignableAsync(_memberships, request.AssignedMechanicId, ct);
+        await MechanicAssignment.EnsureRequiredAsync(_memberships, request.AssignedMechanicId, ct);
 
         try
         {

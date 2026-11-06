@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { vehiclesApi } from '../../../lib/api/vehicles'
+import { workOrdersApi } from '../../../lib/api/workOrders'
 import { Button } from '../../../components/ui/Button'
-import { FormField } from '../../../components/ui/FormField'
+import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 
 interface Props {
@@ -10,25 +11,30 @@ interface Props {
   vehiclePlate: string
   busy: boolean
   error: string | null
-  onConfirm: (odometerKm: number) => void
+  /** Mecánico ya asignado al turno (si lo tiene). */
+  initialMechanicId?: string | null
+  onConfirm: (odometerKm: number, assignedMechanicId: string) => void
   onClose: () => void
 }
 
 /** Crear la orden de un turno: el kilometraje es obligatorio (se precarga con el del vehículo). */
-export function ConvertAppointmentModal({ vehicleId, vehiclePlate, busy, error, onConfirm, onClose }: Props) {
+export function ConvertAppointmentModal({ vehicleId, vehiclePlate, busy, error, initialMechanicId, onConfirm, onClose }: Props) {
+  const { data: mechanics } = useQuery({ queryKey: ['work-order-mechanics'], queryFn: () => workOrdersApi.listMechanics(), staleTime: 60_000 })
+  const [pickedMechanic, setPickedMechanic] = useState<string | null>(null)
+  const mechanicId = pickedMechanic ?? initialMechanicId ?? (mechanics?.length === 1 ? mechanics[0].membershipId : '')
   const { data: vehicle } = useQuery({ queryKey: ['vehicle', vehicleId], queryFn: () => vehiclesApi.get(vehicleId) })
   const [typed, setTyped] = useState<string | null>(null)
 
   const shown = typed ?? (vehicle && vehicle.odometerKm > 0 ? String(vehicle.odometerKm) : '')
   const km = Number(shown)
-  const invalid = shown.trim() === '' || Number.isNaN(km) || km <= 0
+  const invalid = shown.trim() === '' || Number.isNaN(km) || km <= 0 || !mechanicId
 
   return (
     <Modal title="Crear la orden de trabajo" onClose={onClose} className="max-w-md">
       <form
         onSubmit={e => {
           e.preventDefault()
-          if (!invalid) onConfirm(Math.round(km))
+          if (!invalid) onConfirm(Math.round(km), mechanicId)
         }}
         className="space-y-4"
       >
@@ -47,6 +53,12 @@ export function ConvertAppointmentModal({ vehicleId, vehiclePlate, busy, error, 
           onChange={e => setTyped(e.target.value)}
           hint={vehicle ? `Kilometraje registrado del vehículo: ${vehicle.odometerKm.toLocaleString('es-AR')} km.` : undefined}
         />
+        <FormSelect label="Mecánico" requiredMark value={mechanicId} onChange={e => setPickedMechanic(e.target.value)}>
+          <option value="">Elegí un mecánico…</option>
+          {(mechanics ?? []).map(m => (
+            <option key={m.membershipId} value={m.membershipId}>{m.displayName}</option>
+          ))}
+        </FormSelect>
         <div className="flex justify-end gap-2">
           <Button type="button" variant="secondary" size="sm" onClick={onClose}>Volver</Button>
           <Button type="submit" size="sm" loading={busy} disabled={invalid}>Crear orden</Button>

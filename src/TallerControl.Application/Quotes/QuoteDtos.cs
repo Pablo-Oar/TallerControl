@@ -122,7 +122,8 @@ public sealed record ReopenQuoteRequest(string? Reason = null);
 public sealed record ConvertQuoteRequest(
     int OdometerKm,
     int? FuelLevel = null,
-    string? ReportedIssue = null);
+    string? ReportedIssue = null,
+    Guid? AssignedMechanicId = null);
 
 /// <summary>Cuerpo de DELETE /api/v1/quotes/{id}.</summary>
 public sealed record DeleteQuoteRequest(string? Reason = null);

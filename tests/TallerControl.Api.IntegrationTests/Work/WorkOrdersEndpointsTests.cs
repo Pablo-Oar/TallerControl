@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using TallerControl.Api.Identity;
 using TallerControl.Api.IntegrationTests.Persistence;
 
@@ -74,7 +75,8 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
             fuelLevel = (int?)null,
             reportedIssue = (string?)null,
             priority = "normal",
-            assignedMechanicId,
+            // La API exige mecánico: las órdenes «libres» de estos tests se crean con uno y se liberan por SQL.
+            assignedMechanicId = assignedMechanicId ?? _factory.MechanicMembershipId,
             items = items ?? Array.Empty<object>(),
         };
 
@@ -87,7 +89,18 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         var resp = await client.SendAsync(req);
         Assert.Equal(HttpStatusCode.Created, resp.StatusCode);
 
-        return await resp.Content.ReadFromJsonAsync<JsonElement>();
+        var created = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        if (assignedMechanicId is not null) return created;
+
+        var id = created.GetProperty("id").GetGuid();
+        await using (var connection = new NpgsqlConnection(_factory.ConnectionString))
+        {
+            await connection.OpenAsync();
+            await using var command = new NpgsqlCommand("UPDATE work_orders SET assigned_mechanic_id = NULL WHERE id = @id", connection);
+            command.Parameters.AddWithValue("id", id);
+            Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        }
+        return await client.GetFromJsonAsync<JsonElement>($"/api/v1/work-orders/{id}");
     }
 
     /// <summary>
@@ -218,7 +231,7 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
                 fuelLevel = (int?)null,
                 reportedIssue = (string?)null,
                 priority = "normal",
-                assignedMechanicId = (Guid?)null,
+                assignedMechanicId = (Guid?)_factory.MechanicMembershipId,
                 items,
             }),
         };
@@ -260,7 +273,7 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
                 fuelLevel = (int?)null,
                 reportedIssue = (string?)null,
                 priority = "normal",
-                assignedMechanicId = (Guid?)null,
+                assignedMechanicId = (Guid?)_factory.MechanicMembershipId,
                 items = Array.Empty<object>(),
             }),
         };
@@ -299,7 +312,7 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
                 reportedIssue = "Sin If-Match",
                 internalNotes = (string?)null,
                 priority = "normal",
-                assignedMechanicId = (Guid?)null,
+                assignedMechanicId = (Guid?)_factory.MechanicMembershipId,
                 items = Array.Empty<object>(),
             }),
         };
@@ -330,7 +343,7 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
                 reportedIssue = "Revisión completa T-WO-04",
                 internalNotes = (string?)null,
                 priority = "high",
-                assignedMechanicId = (Guid?)null,
+                assignedMechanicId = (Guid?)_factory.MechanicMembershipId,
                 items = Array.Empty<object>(),
             }),
         };
@@ -381,7 +394,7 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
                     reportedIssue = (string?)null,
                     internalNotes = (string?)null,
                     priority = "normal",
-                    assignedMechanicId = (Guid?)null,
+                    assignedMechanicId = (Guid?)_factory.MechanicMembershipId,
                     items = new object[] { new { kind = "service", description = "Trabajo chico", quantity = 1m, unitNetPrice = price, vatRate = 21m } },
                 }),
             };
@@ -715,7 +728,8 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
     {
         using var ownerClient = CreateClient();
         await LoginAsync(ownerClient, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
-        var id = (await CreateOrderAsync(ownerClient)).GetProperty("id").GetGuid();
+        // Nace con otro mecánico (su aviso de creación no cuenta); después se reasigna al mecánico de la prueba.
+        var id = (await CreateOrderAsync(ownerClient, assignedMechanicId: _factory.OtherMechanicMembershipId)).GetProperty("id").GetGuid();
 
         Assert.Equal(HttpStatusCode.NoContent,
             (await AssignAsync(ownerClient, id, new { mechanicId = _factory.MechanicMembershipId })).StatusCode);
@@ -730,13 +744,13 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
                 .IgnoreQueryFilters()
                 .Where(m => m.Type == "push.work_order_assigned")
                 .ToListAsync())
-            .Single(m => m.PayloadJson.Contains(id.ToString()));
+            .Where(m => m.PayloadJson.Contains(id.ToString()))
+            .ToList();
 
-        Assert.NotNull(message.ProcessedAt);
+        Assert.All(message, m => Assert.NotNull(m.ProcessedAt));
 
         // El aviso se le mandó al usuario del mecánico asignado (antes se descartaba sin error por leer mal el mensaje).
-        var sent = Assert.Single(_factory.Push.Sent, s => s.Message.Url!.Contains(id.ToString()));
-        Assert.Equal(_factory.MechanicUserId, sent.UserId);
+        var sent = Assert.Single(_factory.Push.Sent, s => s.Message.Url!.Contains(id.ToString()) && s.UserId == _factory.MechanicUserId);
         Assert.Contains("orden", sent.Message.Body);
     }
 
@@ -937,6 +951,44 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
 
         var other = await ownerClient.GetFromJsonAsync<JsonElement>($"/api/v1/work-orders?customerId={Guid.NewGuid()}");
         Assert.Equal(0, other.GetProperty("total").GetInt32());
+    }
+
+    [Fact(DisplayName = "T-WO-23: crear o editar una orden sin mecánico devuelve 422 (el mecánico es obligatorio)")]
+    public async Task Crear_o_editar_sin_mecanico_devuelve_422()
+    {
+        using var owner = CreateClient();
+        await LoginAsync(owner, WorkOrdersWebApplicationFactory.OwnerEmail, WorkOrdersWebApplicationFactory.Password);
+
+        var create = new HttpRequestMessage(HttpMethod.Post, "/api/v1/work-orders")
+        {
+            Content = JsonContent.Create(new
+            {
+                customerId = _factory.CustomerId,
+                vehicleId = _factory.VehicleId,
+                odometerKm = 0,
+                priority = "normal",
+                assignedMechanicId = (Guid?)null,
+                items = Array.Empty<object>(),
+            }),
+        };
+        create.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(owner));
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await owner.SendAsync(create)).StatusCode);
+
+        var order = await CreateOrderAsync(owner);
+        var id = order.GetProperty("id").GetGuid();
+        var edit = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/work-orders/{id}")
+        {
+            Content = JsonContent.Create(new
+            {
+                odometerKm = 0,
+                priority = "normal",
+                assignedMechanicId = (Guid?)null,
+                items = Array.Empty<object>(),
+            }),
+        };
+        edit.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(owner));
+        edit.Headers.TryAddWithoutValidation("If-Match", $"\"{order.GetProperty("version").GetUInt32()}\"");
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await owner.SendAsync(edit)).StatusCode);
     }
 
     [Fact(DisplayName = "T-WO-19: El mecánico no recibe importes de los renglones ni las notas internas, y no opera sobre órdenes ajenas")]

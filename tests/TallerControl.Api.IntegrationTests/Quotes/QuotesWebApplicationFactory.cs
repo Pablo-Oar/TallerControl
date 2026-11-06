@@ -32,6 +32,7 @@ internal sealed class QuotesWebApplicationFactory : WebApplicationFactory<Progra
     public Guid VehicleId { get; private set; }
     public Guid CatalogItemId { get; private set; }
     public Guid BranchId { get; private set; }
+    public Guid MechanicMembershipId { get; private set; }
 
     public string ConnectionString { get; }
 
@@ -88,20 +89,24 @@ internal sealed class QuotesWebApplicationFactory : WebApplicationFactory<Progra
 
         var owner = new User(OwnerEmail, "Dueño Quotes Test");
         var admin = new User(AdminEmail, "Administrativo Quotes");
+        var mechanic = new User("mechanic@quotes-test.com", "Mecánico Quotes");
 
         owner.Activate(hasher.Hash(Password));
         admin.Activate(hasher.Hash(Password));
+        mechanic.Activate(hasher.Hash(Password));
 
         await using (var db = new AppDbContext(
             BuildOptions(ownerConnectionString), new TestTenantContext(), new TestActorContext(), TimeProvider.System))
         {
             db.Add(owner);
             db.Add(admin);
+            db.Add(mechanic);
             await db.SaveChangesAsync();
         }
 
         var ownerMembership = new Membership(tenant.Id, owner.Id, TenantRole.Owner);
         var adminMembership = new Membership(tenant.Id, admin.Id, TenantRole.AdminStaff);
+        var mechanicMembership = new Membership(tenant.Id, mechanic.Id, TenantRole.Mechanic);
         var branch = Branch.CreateMain(tenant.Id);
 
         await using (var db = new AppDbContext(
@@ -109,11 +114,13 @@ internal sealed class QuotesWebApplicationFactory : WebApplicationFactory<Progra
         {
             db.Add(ownerMembership);
             db.Add(adminMembership);
+            db.Add(mechanicMembership);
             db.Add(branch);
             await db.SaveChangesAsync();
         }
 
         BranchId = branch.Id;
+        MechanicMembershipId = mechanicMembership.Id;
 
         var customer = new Customer(tenant.Id, "Cliente Quotes Test", email: "cliente@quotes-test.com");
         var vehicle = new Vehicle(tenant.Id, customer.Id, "QTEST01");

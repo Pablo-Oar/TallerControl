@@ -92,6 +92,7 @@ test.describe('E2E-03: Presupuesto → aprobación → OT', () => {
     await expect(page.getByText(/parcial/i).first()).toBeVisible()
     await page.getByRole('button', { name: /convertir a ot/i }).click()
     // Datos de ingreso: el kilometraje viene precargado con el del vehículo.
+    await page.getByRole('dialog').getByLabel(/^mec[aá]nico/i).selectOption({ index: 1 })
     await page.getByRole('dialog').getByRole('button', { name: /^crear orden$/i }).click()
     await page.waitForURL(/\/app\/work-orders\/[0-9a-f-]{36}/)
     await expect(page.getByText('Cambio de aceite')).toBeVisible()

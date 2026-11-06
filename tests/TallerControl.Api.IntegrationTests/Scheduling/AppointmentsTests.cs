@@ -151,7 +151,7 @@ public sealed class AppointmentsTests : IAsyncLifetime
         var csrf = await FetchCsrfAsync(client);
         var req = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/appointments/{id}/to-work-order")
         {
-            Content = JsonContent.Create(new { odometerKm = 999999 }),
+            Content = JsonContent.Create(new { odometerKm = 999999, assignedMechanicId = _factory.MechanicMembershipId }),
         };
         req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
 

@@ -148,6 +148,7 @@ export interface ConvertQuoteRequest {
   odometerKm: number
   fuelLevel?: number | null
   reportedIssue?: string | null
+  assignedMechanicId: string
 }
 
 // ── Público ──────────────────────────────────────────────────────────────────

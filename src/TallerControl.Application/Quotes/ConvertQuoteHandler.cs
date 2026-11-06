@@ -1,6 +1,7 @@
 using TallerControl.Application.Catalog;
 using TallerControl.Application.Common;
 using TallerControl.Application.Tenancy;
+using TallerControl.Application.Users;
 using TallerControl.Application.Vehicles;
 using TallerControl.Application.Work;
 using TallerControl.Domain.Catalog;
@@ -25,6 +26,8 @@ public sealed class ConvertQuoteHandler
     private readonly IActorContext _actorContext;
     private readonly IDocumentNumberGenerator _numbers;
     private readonly TimeProvider _clock;
+    private readonly IOutbox _outbox;
+    private readonly IMembershipRepository _memberships;
 
     public ConvertQuoteHandler(
         IQuoteRepository quoteRepo,
@@ -35,7 +38,9 @@ public sealed class ConvertQuoteHandler
         IBranchContext branchContext,
         IActorContext actorContext,
         IDocumentNumberGenerator numbers,
-        TimeProvider clock)
+        TimeProvider clock,
+        IOutbox outbox,
+        IMembershipRepository memberships)
     {
         _quoteRepo = quoteRepo;
         _woRepo = woRepo;
@@ -46,6 +51,8 @@ public sealed class ConvertQuoteHandler
         _actorContext = actorContext;
         _numbers = numbers;
         _clock = clock;
+        _outbox = outbox;
+        _memberships = memberships;
     }
 
     public async Task<WorkOrderDto> HandleAsync(Guid quoteId, ConvertQuoteRequest request, CancellationToken ct)
@@ -66,6 +73,8 @@ public sealed class ConvertQuoteHandler
         if (quote.Status is not (QuoteStatus.Approved or QuoteStatus.PartiallyApproved))
             throw new BusinessRuleException(
                 $"Solo se pueden convertir presupuestos aprobados (estado actual: {quote.Status}).");
+
+        await MechanicAssignment.EnsureRequiredAsync(_memberships, request.AssignedMechanicId, ct);
 
         var branchId = _branchContext.BranchId
             ?? await _woRepo.GetMainBranchIdAsync(tenantId, ct)
@@ -91,7 +100,7 @@ public sealed class ConvertQuoteHandler
             request.OdometerKm, request.FuelLevel,
             request.ReportedIssue,
             WorkOrderPriority.Normal,
-            assignedMechanicId: null,
+            assignedMechanicId: request.AssignedMechanicId,
             sourceQuoteId: quote.Id,
             createdBy: actorId,
             createdAt: now);
@@ -152,6 +161,13 @@ public sealed class ConvertQuoteHandler
         await _woRepo.AddAsync(order, ct);
         foreach (var (movement, _) in stockMovements)
             await _catalogRepo.AddMovementAsync(movement, ct);
+
+        _outbox.Enqueue("push.work_order_assigned", new
+        {
+            membershipId = request.AssignedMechanicId,
+            orderNumber = order.Number,
+            workOrderId = order.Id,
+        });
 
         await _quoteRepo.SaveChangesAsync(ct);
         await _woRepo.SaveChangesAsync(ct);

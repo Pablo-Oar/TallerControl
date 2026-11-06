@@ -89,14 +89,15 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
 
   const selectedCustomerId = watch('customerId')
 
-  // Solo al crear: el mecánico se puede elegir desde el inicio (después se reasigna desde el detalle).
-  const [mechanicId, setMechanicId] = useState('')
+  // Toda orden lleva un mecánico (obligatorio). Si el taller tiene uno solo, se preselecciona.
+  const [pickedMechanic, setPickedMechanic] = useState<string | null>(null)
+  const [mechanicError, setMechanicError] = useState<string | null>(null)
   const { data: mechanics } = useQuery({
     queryKey: ['work-order-mechanics'],
     queryFn: () => workOrdersApi.listMechanics(),
     staleTime: 60_000,
-    enabled: !isEdit,
   })
+  const mechanicId = pickedMechanic ?? order?.assignedMechanicId ?? (mechanics?.length === 1 ? mechanics[0].membershipId : '')
 
   const { data: customerDetail } = useQuery({
     queryKey: ['customer', selectedCustomerId],
@@ -129,6 +130,10 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
 
   async function onSubmit(data: FormData) {
     setServerError(null)
+    if (!mechanicId) {
+      setMechanicError('Elegí el mecánico que hará el trabajo.')
+      return
+    }
     try {
       if (order) {
         await workOrdersApi.update(
@@ -139,7 +144,7 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
             reportedIssue: data.reportedIssue,
             internalNotes: data.internalNotes,
             priority: data.priority as WorkOrderPriority,
-            assignedMechanicId: order.assignedMechanicId,
+            assignedMechanicId: mechanicId,
             items: data.items.map(item => ({
               kind: item.kind,
               description: item.description,
@@ -161,7 +166,7 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
         fuelLevel: data.fuelLevel,
         reportedIssue: data.reportedIssue,
         priority: data.priority as WorkOrderPriority,
-        assignedMechanicId: mechanicId || null,
+        assignedMechanicId: mechanicId,
         items: data.items.map(item => ({
           kind: item.kind,
           description: item.description,
@@ -262,10 +267,23 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
             <option value="high">Alta</option>
           </FormSelect>
 
-          {!isEdit && (mechanics?.length ?? 0) > 0 && (
-            <FormSelect label="Mecánico" value={mechanicId} onChange={e => setMechanicId(e.target.value)}>
-              <option value="">Sin asignar (lo toma un mecánico)</option>
-              {mechanics!.map(m => (
+          {mechanics && mechanics.length === 0 ? (
+            <p role="alert" className="border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              Todavía no hay mecánicos en el taller. Invitá uno desde Configuración → Usuarios para poder crear órdenes.
+            </p>
+          ) : (
+            <FormSelect
+              label="Mecánico"
+              requiredMark
+              value={mechanicId}
+              error={mechanicError ?? undefined}
+              onChange={e => {
+                setPickedMechanic(e.target.value)
+                setMechanicError(null)
+              }}
+            >
+              <option value="">Elegí un mecánico…</option>
+              {(mechanics ?? []).map(m => (
                 <option key={m.membershipId} value={m.membershipId}>{m.displayName}</option>
               ))}
             </FormSelect>

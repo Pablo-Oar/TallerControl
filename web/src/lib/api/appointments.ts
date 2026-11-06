@@ -60,6 +60,7 @@ export interface UpdateAppointmentRequest {
 
 export interface ConvertToWorkOrderRequest {
   odometerKm: number
+  assignedMechanicId: string
 }
 
 export interface AppointmentsPage {
