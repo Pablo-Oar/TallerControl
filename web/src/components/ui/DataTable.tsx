@@ -20,9 +20,32 @@ export interface SortState {
   dir: SortDir
 }
 
+/** Ícono ⓘ con un globo explicativo (hover y foco de teclado). */
+function HeaderHint({ text, label }: { text: string; label: string }) {
+  return (
+    <span className="group/hint relative inline-flex normal-case">
+      <button
+        type="button"
+        aria-label={`Qué significa ${label}`}
+        className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-tc-text-muted text-[10px] leading-none font-bold text-tc-text-muted hover:border-tc-purple hover:text-tc-purple focus-visible:border-tc-purple focus-visible:text-tc-purple"
+      >
+        i
+      </button>
+      <span
+        role="tooltip"
+        className="pointer-events-none invisible absolute top-full whitespace-normal left-1/2 z-30 mt-2 w-60 -translate-x-1/2 rounded-lg border border-tc-border bg-white p-3 text-left text-xs font-normal tracking-normal text-tc-text-secondary opacity-0 shadow-lg transition-opacity group-focus-within/hint:visible group-focus-within/hint:opacity-100 group-hover/hint:visible group-hover/hint:opacity-100"
+      >
+        {text}
+      </span>
+    </span>
+  )
+}
+
 export interface DataTableColumn<T> {
   key: string
   header: string
+  /** Explicación breve del encabezado: se muestra en un globo al pasar el mouse o enfocar el ⓘ. */
+  hint?: string
   cell: (row: T) => ReactNode
   align?: 'left' | 'center' | 'right'
   /** Clase de ancho del `th` (p. ej. `w-36`). Las columnas sin ancho se reparten el resto. */
@@ -186,6 +209,7 @@ export function DataTable<T>({
                     col.widthClass,
                   )}
                 >
+                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                   {col.sortable ? (
                     <button
                       type="button"
@@ -203,6 +227,8 @@ export function DataTable<T>({
                   ) : (
                     col.header
                   )}
+                  {col.hint && <HeaderHint text={col.hint} label={col.header} />}
+                  </span>
                 </th>
               )
             })}

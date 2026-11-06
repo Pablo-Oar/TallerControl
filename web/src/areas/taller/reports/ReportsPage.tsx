@@ -111,7 +111,7 @@ export function ReportsPage() {
           exportUrl={reportsApi.exportUrl('revenue', from, to)}
           exportName={`ingresos_${from}_${to}.xlsx`}
           summary={revenueQuery.data
-            ? `Total: ${fmtARS(revenueQuery.data.total)} (${revenueQuery.data.count} cobros y ventas)`
+            ? `Total: ${fmtARS(revenueQuery.data.total)} (${revenueQuery.data.count} ${revenueQuery.data.count === 1 ? 'cobro o venta' : 'cobros y ventas'}) · del ${formatDateOnly(from)} al ${formatDateOnly(to)}`
             : undefined}
         >
           {revenueQuery.data && (revenueQuery.data.breakdown?.length ?? 0) > 0 && (
@@ -131,13 +131,14 @@ export function ReportsPage() {
               getRowId={r => r.date}
               columns={[
                 { key: 'date', header: 'Fecha', widthClass: 'w-[13%]', sortable: true, sortValue: r => r.date, cell: r => <span className="tabular-nums text-tc-text-secondary">{formatDateOnly(r.date)}</span> },
-                { key: 'weekday', header: 'Día', widthClass: 'w-[12%]', cell: r => <span className="text-tc-text-secondary">{weekdayLabel(r.date)}</span> },
-                { key: 'count', header: 'Cobros', widthClass: 'w-[10%]', sortable: true, sortValue: r => r.paymentCount, cell: r => <span className="tabular-nums text-tc-text-secondary">{r.paymentCount}</span> },
-                { key: 'main', header: 'Medio principal', widthClass: 'w-[18%]', cell: r => <span className="text-tc-text-secondary">{r.mainSource ? (REVENUE_SOURCE_LABEL[r.mainSource] ?? r.mainSource) : '—'}</span> },
-                { key: 'avg', header: 'Ticket promedio', widthClass: 'w-[16%]', sortable: true, sortValue: r => r.amount / Math.max(r.paymentCount, 1), cell: r => <span className="tabular-nums text-tc-text-secondary">{fmtARS(r.amount / Math.max(r.paymentCount, 1))}</span> },
+                { key: 'weekday', header: 'Día', widthClass: 'w-[11%]', cell: r => <span className="text-tc-text-secondary">{weekdayLabel(r.date)}</span> },
+                { key: 'count', header: 'Cobros', widthClass: 'w-[9%]', sortable: true, sortValue: r => r.paymentCount, cell: r => <span className="tabular-nums text-tc-text-secondary">{r.paymentCount}</span> },
+                { key: 'main', header: 'Medio principal', widthClass: 'w-[16%]', cell: r => <span className="text-tc-text-secondary">{r.mainSource ? (REVENUE_SOURCE_LABEL[r.mainSource] ?? r.mainSource) : '—'}</span> },
+                { key: 'avg', header: 'Ticket promedio', hint: 'Cuánto se cobró en promedio por cada cobro o venta de ese día: el monto del día dividido por la cantidad de cobros.', widthClass: 'w-[18%]', sortable: true, sortValue: r => r.amount / Math.max(r.paymentCount, 1), cell: r => <span className="tabular-nums text-tc-text-secondary">{fmtARS(r.amount / Math.max(r.paymentCount, 1))}</span> },
                 {
                   key: 'share',
                   header: '% del total',
+                  hint: 'Qué parte del total del período elegido (Desde–Hasta) se cobró ese día. Si cambiás las fechas, el total cambia y los porcentajes se recalculan: con un solo día en el período, ese día es siempre el 100 %. Rojo: menos del 30 %. Naranja: 30 % o más. Verde: el 100 %, o sea que todo entró ese día.',
                   widthClass: 'w-[19%]',
                   sortable: true,
                   sortValue: r => r.amount,
