@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { CheckIcon, CopyIcon } from './ui/icons'
+import { CheckIcon, CopyIcon, LinkIcon, WhatsappIcon } from './ui/icons'
 
 /**
- * Enlace para compartir con el cliente: campo de solo lectura con el texto truncado y un botón azul, solo con
- * ícono, pegado al campo para copiar. Debajo, el atajo a WhatsApp.
+ * Enlace para compartir con el cliente: campo de solo lectura con el texto cortado y un botón azul, solo con
+ * ícono, pegado al campo para copiar. Debajo, el botón verde de WhatsApp.
  */
 export function ShareLink({ url, whatsappText, label = 'Enlace' }: { url: string; whatsappText: string; label?: string }) {
   const [copied, setCopied] = useState(false)
@@ -19,9 +19,9 @@ export function ShareLink({ url, whatsappText, label = 'Enlace' }: { url: string
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2 rounded-xl border border-tc-border bg-white p-1.5 pl-3">
-        <span className="sr-only">{label}</span>
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 rounded-xl border border-slate-300 bg-slate-50 p-1.5 pl-3 shadow-inner focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
+        <LinkIcon className="h-4 w-4 shrink-0 text-tc-text-muted" />
         <input
           readOnly
           value={url}
@@ -34,7 +34,9 @@ export function ShareLink({ url, whatsappText, label = 'Enlace' }: { url: string
           onClick={copy}
           aria-label={copied ? 'Copiado' : `Copiar ${label.toLowerCase()}`}
           title={copied ? 'Copiado' : 'Copiar'}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white transition-colors hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1 max-md:h-11 max-md:w-11"
+          className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-1 max-md:h-11 max-md:w-11 ${
+            copied ? 'bg-emerald-600 hover:bg-emerald-700 focus-visible:ring-emerald-600' : 'bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-600'
+          }`}
         >
           {copied ? <CheckIcon className="h-5 w-5" /> : <CopyIcon className="h-5 w-5" />}
         </button>
@@ -43,8 +45,9 @@ export function ShareLink({ url, whatsappText, label = 'Enlace' }: { url: string
         href={`https://wa.me/?text=${encodeURIComponent(`${whatsappText} ${url}`)}`}
         target="_blank"
         rel="noreferrer"
-        className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-tc-border bg-white px-3 py-1.5 text-xs font-bold tracking-wider uppercase text-tc-text-secondary transition-colors hover:bg-tc-surface"
+        className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#1fa855] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#188f48] focus-visible:ring-2 focus-visible:ring-[#1fa855] focus-visible:ring-offset-1 focus-visible:outline-none"
       >
+        <WhatsappIcon className="h-5 w-5" />
         Enviar por WhatsApp
       </a>
     </div>

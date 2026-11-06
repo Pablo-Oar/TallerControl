@@ -81,3 +81,16 @@ export const CheckIcon = (p: SVGProps<SVGSVGElement>) => (
     <path d="m5 12.5 4.5 4.5L19 7.5" />
   </Icon>
 )
+
+export const WhatsappIcon = (p: SVGProps<SVGSVGElement>) => (
+  <Icon {...p}>
+    <path d="M4 20l1.2-4.1A8 8 0 1 1 8.3 18.9L4 20Z" />
+    <path d="M9 9.2c.3 2.2 2.6 4.5 4.8 4.8l1.2-1.2-1.8-1-.8.7c-.9-.4-1.7-1.2-2.1-2.1l.7-.8-1-1.8L9 9.2Z" />
+  </Icon>
+)
+export const LinkIcon = (p: SVGProps<SVGSVGElement>) => (
+  <Icon {...p}>
+    <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
+    <path d="M14 10a4 4 0 0 0-5.7 0l-3 3A4 4 0 0 0 11 18.7l1-1" />
+  </Icon>
+)
