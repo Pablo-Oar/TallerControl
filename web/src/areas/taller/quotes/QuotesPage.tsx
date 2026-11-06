@@ -29,13 +29,14 @@ const COLUMNS: DataTableColumn<QuoteListDto>[] = [
     header: '#',
     sortLabel: 'Número',
     align: 'center',
-    widthClass: 'w-20',
+    widthClass: 'w-[7%]',
     sortable: true,
     cell: q => <span className="text-xs font-bold tabular-nums text-tc-text-secondary">#{q.number}</span>,
   },
   {
     key: 'customer',
     header: 'Cliente / Vehículo',
+    widthClass: 'w-[33%]',
     cell: q => (
       <div className="min-w-0">
         <p className="truncate font-medium text-tc-text">{q.customerName}</p>
@@ -47,29 +48,31 @@ const COLUMNS: DataTableColumn<QuoteListDto>[] = [
     key: 'status',
     header: 'Estado',
     align: 'center',
-    widthClass: 'w-40',
+    widthClass: 'w-[17%]',
     sortable: true,
     cell: q => <StatusBadge status={q.status} />,
   },
   {
     key: 'total',
     header: 'Total',
-    align: 'right',
-    widthClass: 'w-32',
+    align: 'center',
+    widthClass: 'w-[14%]',
     sortable: true,
     cell: q => <span className="tabular-nums font-medium text-tc-purple">{fmtARS(q.total)}</span>,
   },
   {
     key: 'validuntil',
     header: 'Válido hasta',
-    widthClass: 'w-36',
+    align: 'center',
+    widthClass: 'w-[14%]',
     sortable: true,
     cell: q => <span className="text-xs text-tc-text-secondary">{formatDateOnly(q.validUntil)}</span>,
   },
   {
     key: 'createdat',
     header: 'Creado',
-    widthClass: 'w-36',
+    align: 'center',
+    widthClass: 'w-[12%]',
     sortable: true,
     cell: q => <span className="text-xs text-tc-text-muted">{formatDate(q.createdAt)}</span>,
   },
@@ -115,6 +118,7 @@ export function QuotesPage() {
       <DataTable<QuoteListDto>
         label="Presupuestos"
         columns={COLUMNS}
+        fixedLayout
         rows={data?.items ?? []}
         getRowId={q => q.id}
         rowHref={q => `/app/quotes/${q.id}`}
