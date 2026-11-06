@@ -234,6 +234,32 @@ public sealed class VehiclesEndpointsTests : IAsyncLifetime
         Assert.Equal(JsonValueKind.Null, dto.GetProperty("activeQrCard").ValueKind);
     }
 
+    // ── T-VEH-11: la transmisión se guarda y se devuelve ─────────────────────
+
+    [Fact(DisplayName = "T-VEH-11: POST /vehicles guarda la transmisión y GET la devuelve (también en la ficha del cliente)")]
+    public async Task Transmision_se_guarda_y_se_devuelve()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, CustomersVehiclesWebApplicationFactory.OwnerEmail,
+            CustomersVehiclesWebApplicationFactory.OwnerPassword);
+
+        var customerId = await CreateSupportCustomerAsync(client, "T-VEH-11");
+        var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/vehicles")
+        {
+            Content = JsonContent.Create(new { plate = "TVH011", customerId, odometerKm = 0, transmission = "automatic" }),
+        };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(client));
+        var created = await (await client.SendAsync(req)).Content.ReadFromJsonAsync<JsonElement>();
+        var id = created.GetProperty("id").GetGuid();
+
+        var dto = await (await GetVehicleAsync(client, id)).Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("automatic", dto.GetProperty("transmission").GetString());
+
+        var customer = await client.GetFromJsonAsync<JsonElement>($"/api/v1/customers/{customerId}");
+        Assert.Contains(customer.GetProperty("vehicles").EnumerateArray(),
+            v => v.GetProperty("transmission").GetString() == "automatic");
+    }
+
     // ── T-VEH-06: PUT con km < actual, sin vehicles.odometer.correct → 422 ───
 
     [Fact(DisplayName = "T-VEH-06: PUT con km menor al actual, rol sin odometer.correct → 422")]

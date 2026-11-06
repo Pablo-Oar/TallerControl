@@ -52,7 +52,8 @@ public sealed class CreateVehicleHandler
                 request.Fuel,
                 request.OdometerKm,
                 request.UsageProfile,
-                request.EngineNumber);
+                request.EngineNumber,
+                request.Transmission);
         }
         catch (ArgumentException ex)
         {

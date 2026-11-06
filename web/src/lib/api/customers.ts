@@ -33,6 +33,7 @@ export interface VehicleBasicDto {
   odometerKm?: number
   usageProfile?: string | null
   engineNumber?: string | null
+  transmission?: string | null
 }
 
 export interface CustomerDto {

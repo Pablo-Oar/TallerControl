@@ -108,7 +108,8 @@ internal sealed class EfVehicleRepository : IVehicleRepository
             v.UsageProfile?.ToString(),
             v.EngineNumber,
             ActiveQrCard: null, // E8
-            v.Version);
+            v.Version,
+            v.Transmission);
     }
 
     public async Task<Page<HistoryEntryDto>> GetHistoryAsync(
