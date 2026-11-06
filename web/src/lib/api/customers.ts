@@ -25,6 +25,14 @@ export interface VehicleBasicDto {
   plate: string
   brand: string | null
   model: string | null
+  versionName?: string | null
+  color?: string | null
+  year?: number | null
+  vin?: string | null
+  fuel?: string | null
+  odometerKm?: number
+  usageProfile?: string | null
+  engineNumber?: string | null
 }
 
 export interface CustomerDto {
