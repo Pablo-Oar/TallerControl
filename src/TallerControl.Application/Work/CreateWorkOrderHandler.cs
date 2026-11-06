@@ -55,7 +55,7 @@ public sealed class CreateWorkOrderHandler
         var tenantId = _tenantContext.TenantId
             ?? throw new InvalidOperationException("No hay taller en la sesión.");
 
-        await MechanicAssignment.EnsureAssignableAsync(_memberships, request.AssignedMechanicId, ct);
+        await MechanicAssignment.EnsureRequiredAsync(_memberships, request.AssignedMechanicId, ct);
 
         // Validar que el vehículo exista y pertenezca al cliente del mismo taller.
         var vehicle = await _vehicleRepo.FindByIdAsync(request.VehicleId, ct)

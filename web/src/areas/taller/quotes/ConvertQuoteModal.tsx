@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { vehiclesApi } from '../../../lib/api/vehicles'
+import { workOrdersApi } from '../../../lib/api/workOrders'
 import type { ConvertQuoteRequest } from '../../../lib/api/quotes'
 import { Button } from '../../../components/ui/Button'
-import { FormField, FormTextarea } from '../../../components/ui/FormField'
+import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 
 interface Props {
@@ -21,11 +22,14 @@ export function ConvertQuoteModal({ vehicleId, vehiclePlate, busy, error, onConf
   const [odometer, setOdometer] = useState<string | null>(null)
   const [fuel, setFuel] = useState('')
   const [issue, setIssue] = useState('')
+  const { data: mechanics } = useQuery({ queryKey: ['work-order-mechanics'], queryFn: () => workOrdersApi.listMechanics(), staleTime: 60_000 })
+  const [pickedMechanic, setPickedMechanic] = useState<string | null>(null)
+  const mechanicId = pickedMechanic ?? (mechanics?.length === 1 ? mechanics[0].membershipId : '')
 
   // Mientras el usuario no escribe, se muestra el kilometraje actual del vehículo.
   const shownOdometer = odometer ?? (vehicle ? String(vehicle.odometerKm) : '')
   const km = Number(shownOdometer)
-  const invalid = shownOdometer.trim() === '' || Number.isNaN(km) || km < 0
+  const invalid = shownOdometer.trim() === '' || Number.isNaN(km) || km < 0 || !mechanicId
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -34,6 +38,7 @@ export function ConvertQuoteModal({ vehicleId, vehiclePlate, busy, error, onConf
       odometerKm: Math.round(km),
       fuelLevel: fuel.trim() === '' ? null : Number(fuel),
       reportedIssue: issue.trim() || null,
+      assignedMechanicId: mechanicId,
     })
   }
 
@@ -65,6 +70,12 @@ export function ConvertQuoteModal({ vehicleId, vehiclePlate, busy, error, onConf
           value={fuel}
           onChange={e => setFuel(e.target.value)}
         />
+        <FormSelect label="Mecánico" requiredMark value={mechanicId} onChange={e => setPickedMechanic(e.target.value)}>
+          <option value="">Elegí un mecánico…</option>
+          {(mechanics ?? []).map(m => (
+            <option key={m.membershipId} value={m.membershipId}>{m.displayName}</option>
+          ))}
+        </FormSelect>
         <FormTextarea
           label="Problema reportado"
           rows={2}

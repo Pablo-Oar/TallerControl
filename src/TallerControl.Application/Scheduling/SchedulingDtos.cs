@@ -116,7 +116,8 @@ public sealed record CancelAppointmentRequest(
 
 /// <summary>Cuerpo de POST /api/v1/appointments/{id}/to-work-order.</summary>
 public sealed record ConvertToWorkOrderRequest(
-    int OdometerKm);
+    int OdometerKm,
+    Guid? AssignedMechanicId = null);
 
 /// <summary>Cuerpo de POST/PUT /api/v1/availability/rules.</summary>
 public sealed record UpsertAvailabilityRuleRequest(

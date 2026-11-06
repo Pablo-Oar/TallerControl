@@ -113,6 +113,8 @@ export async function createWorkOrder(
     if (item.price != null) await d.getByLabel(/^precio neto/i).fill(String(item.price))
     if (item.quantity != null) await d.getByLabel(/^cantidad/i).fill(String(item.quantity))
   }
+  // El mecánico es obligatorio: se elige el primero de la lista.
+  await d.getByLabel(/^mec[aá]nico/i).selectOption({ index: 1 })
   await d.getByRole('button', { name: /crear orden/i }).click()
   await d.waitFor({ state: 'detached' })
 }

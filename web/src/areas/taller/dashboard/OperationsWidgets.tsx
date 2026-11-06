@@ -107,8 +107,8 @@ export function TodayAppointmentsWidget({ data }: { data: TodayAppointments }) {
   const [error, setError] = useState<string | null>(null)
 
   const convertMut = useMutation({
-    mutationFn: ({ id, odometerKm }: { id: string; odometerKm: number }) =>
-      appointmentsApi.convertToWorkOrder(id, { odometerKm }),
+    mutationFn: ({ id, odometerKm, assignedMechanicId }: { id: string; odometerKm: number; assignedMechanicId: string }) =>
+      appointmentsApi.convertToWorkOrder(id, { odometerKm, assignedMechanicId }),
     onSuccess: order => {
       void queryClient.invalidateQueries({ queryKey: ['dashboard'] })
       setConverting(null)
@@ -165,7 +165,7 @@ export function TodayAppointmentsWidget({ data }: { data: TodayAppointments }) {
           vehiclePlate={converting.vehiclePlate}
           busy={convertMut.isPending}
           error={error}
-          onConfirm={odometerKm => convertMut.mutate({ id: converting.id, odometerKm })}
+          onConfirm={(odometerKm, assignedMechanicId) => convertMut.mutate({ id: converting.id, odometerKm, assignedMechanicId })}
           onClose={() => setConverting(null)}
         />
       )}

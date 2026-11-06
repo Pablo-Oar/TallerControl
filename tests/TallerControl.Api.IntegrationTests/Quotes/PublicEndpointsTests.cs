@@ -287,7 +287,7 @@ public sealed class PublicEndpointsTests : IAsyncLifetime
 
         var req = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/quotes/{quoteId}/convert")
         {
-            Content = JsonContent.Create(new { odometerKm = before + 5000, fuelLevel = (int?)null, reportedIssue = (string?)null }),
+            Content = JsonContent.Create(new { odometerKm = before + 5000, fuelLevel = (int?)null, reportedIssue = (string?)null, assignedMechanicId = _factory.MechanicMembershipId }),
         };
         req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, await FetchCsrfAsync(owner));
         Assert.True((await owner.SendAsync(req)).IsSuccessStatusCode);

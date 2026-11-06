@@ -106,8 +106,8 @@ export function AppointmentsPage() {
   })
 
   const convertMut = useMutation({
-    mutationFn: ({ id, odometerKm }: { id: string; odometerKm: number }) =>
-      appointmentsApi.convertToWorkOrder(id, { odometerKm }),
+    mutationFn: ({ id, odometerKm, assignedMechanicId }: { id: string; odometerKm: number; assignedMechanicId: string }) =>
+      appointmentsApi.convertToWorkOrder(id, { odometerKm, assignedMechanicId }),
     onSuccess: order => {
       invalidate()
       setConverting(null)
@@ -231,7 +231,8 @@ export function AppointmentsPage() {
           vehiclePlate={converting.vehiclePlate}
           busy={convertMut.isPending}
           error={convertError}
-          onConfirm={odometerKm => convertMut.mutate({ id: converting.id, odometerKm })}
+          initialMechanicId={converting.mechanicMembershipId}
+          onConfirm={(odometerKm, assignedMechanicId) => convertMut.mutate({ id: converting.id, odometerKm, assignedMechanicId })}
           onClose={() => setConverting(null)}
         />
       )}
