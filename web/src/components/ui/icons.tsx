@@ -69,3 +69,15 @@ export const ExcelIcon = (p: SVGProps<SVGSVGElement>) => (
     <path fill="#1d6f42" d="m5.6 8.6 1.7-.1 1.2 2.4 1.2-2.6 1.7-.1-2 3.5 2 3.6-1.8-.1-1.2-2.6-1.2 2.5-1.7-.1 2-3.4z" />
   </svg>
 )
+
+export const CopyIcon = (p: SVGProps<SVGSVGElement>) => (
+  <Icon {...p}>
+    <rect x="9" y="9" width="11" height="11" rx="2" />
+    <path d="M5 15V6a2 2 0 0 1 2-2h9" />
+  </Icon>
+)
+export const CheckIcon = (p: SVGProps<SVGSVGElement>) => (
+  <Icon {...p}>
+    <path d="m5 12.5 4.5 4.5L19 7.5" />
+  </Icon>
+)

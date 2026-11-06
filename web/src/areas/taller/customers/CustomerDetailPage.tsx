@@ -11,6 +11,7 @@ import { Button } from '../../../components/ui/Button'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { useCan } from '../../../lib/auth/permissions'
 import { CustomerFormModal } from './CustomerFormModal'
+import { OwnerAccessCode } from './OwnerAccessCode'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -128,6 +129,12 @@ export function CustomerDetailPage() {
         </dl>
         {customer.notes && <p className="mt-4 whitespace-pre-line text-sm text-tc-text-secondary">{customer.notes}</p>}
       </Section>
+
+      {can('customers.write') && (
+        <Section title="Código de acceso al portal QR">
+          <OwnerAccessCode customerId={customer.id} customerName={customer.name} />
+        </Section>
+      )}
 
       <Section title={`Vehículos (${customer.vehicles.length})`}>
         {customer.vehicles.length === 0 ? (
