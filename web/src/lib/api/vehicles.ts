@@ -3,6 +3,15 @@ import type { Page } from './customers'
 
 export type FuelType = 'gasoline' | 'diesel' | 'electric' | 'hybrid' | 'gas' | 'other'
 export type VehicleUsageProfile = 'regular' | 'low_usage' | 'commercial'
+export type TransmissionType = 'manual' | 'automatic' | 'cvt' | 'robotized'
+
+export const TRANSMISSION_OPTIONS: { value: TransmissionType; label: string }[] = [
+  { value: 'manual', label: 'Manual' },
+  { value: 'automatic', label: 'Automática' },
+  { value: 'cvt', label: 'CVT (variación continua)' },
+  { value: 'robotized', label: 'Robotizada / doble embrague' },
+]
+export const TRANSMISSION_LABELS: Record<string, string> = Object.fromEntries(TRANSMISSION_OPTIONS.map(o => [o.value, o.label]))
 
 export interface VehicleListDto {
   id: string
@@ -42,6 +51,7 @@ export interface VehicleDto {
   odometerKm: number
   usageProfile: VehicleUsageProfile | null
   engineNumber: string | null
+  transmission?: TransmissionType | null
   activeQrCard: null
   version: number
 }
@@ -59,6 +69,7 @@ export interface VehicleUpsertRequest {
   odometerKm: number
   usageProfile?: VehicleUsageProfile | null
   engineNumber?: string | null
+  transmission?: TransmissionType | null
 }
 
 export const vehiclesApi = {

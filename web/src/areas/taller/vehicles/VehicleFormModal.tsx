@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { vehiclesApi, type FuelType, type VehicleUsageProfile, type VehicleDto, type VehicleUpsertRequest } from '../../../lib/api/vehicles'
+import { vehiclesApi, type FuelType, type TransmissionType, TRANSMISSION_OPTIONS, type VehicleUsageProfile, type VehicleDto, type VehicleUpsertRequest } from '../../../lib/api/vehicles'
 import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { CustomerPicker } from '../../../components/ui/EntityPickers'
@@ -39,6 +39,7 @@ const schema = z.object({
   odometerKm: z.coerce.number().int().min(0, 'El km no puede ser negativo'),
   usageProfile: z.string().optional(),
   engineNumber: z.string().trim().max(30).optional(),
+  transmission: z.string().optional(),
 })
 
 type FormInput = z.input<typeof schema>
@@ -58,6 +59,7 @@ function toFormData(dto: VehicleDto): FormInput {
     odometerKm: dto.odometerKm,
     usageProfile: dto.usageProfile ?? '',
     engineNumber: dto.engineNumber ?? '',
+    transmission: dto.transmission ?? '',
   }
 }
 
@@ -103,6 +105,7 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
         odometerKm: data.odometerKm as number,
         usageProfile: ((data.usageProfile as string) || null) as VehicleUsageProfile | null,
         engineNumber: (data.engineNumber as string) || null,
+        transmission: ((data.transmission as string) || null) as TransmissionType | null,
       }
       const result = isEdit
         ? await vehiclesApi.update(vehicle.id, body, vehicle.version)
@@ -176,6 +179,10 @@ export function VehicleFormModal({ vehicle, onSuccess, onClose, onDelete }: Prop
           <FormSelect label="Combustible" {...register('fuel')}>
             <option value="">Sin especificar</option>
             {FUEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </FormSelect>
+          <FormSelect label="Transmisión" {...register('transmission')}>
+            <option value="">Sin especificar</option>
+            {TRANSMISSION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </FormSelect>
           <FormField
             label="Km actuales"
