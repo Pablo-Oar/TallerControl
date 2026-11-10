@@ -28,7 +28,7 @@ const MECHANIC_TRANSITIONS: Partial<Record<WorkOrderStatus, WorkOrderStatus[]>> 
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="border border-tc-border bg-white overflow-hidden">
+    <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
       <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
         <span className="text-xs font-bold tracking-[0.14em] uppercase text-tc-text-secondary">{title}</span>
       </div>

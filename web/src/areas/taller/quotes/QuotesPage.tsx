@@ -106,7 +106,7 @@ export function QuotesPage() {
         <select
           value={statusFilter}
           onChange={e => { setStatusFilter(e.target.value as QuoteStatus | ''); setPage(1) }}
-          className="border border-tc-border-input bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-purple"
+          className="rounded-lg border border-tc-border-input bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-purple"
         >
           <option value="">Todos los estados</option>
           {STATUS_OPTIONS.map(s => (

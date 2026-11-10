@@ -188,7 +188,7 @@ function CertificatesSection({
 
   return (
     <div className="space-y-4">
-      <div className="border border-tc-border bg-white overflow-hidden">
+      <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
         <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2 flex items-center justify-between">
           <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Certificados ARCA</span>
           {certs.length < 3 && canConfigure && (
@@ -210,7 +210,7 @@ function CertificatesSection({
           ) : (
             <div className="space-y-2">
               {certs.map(cert => (
-                <div key={cert.id} className="border border-tc-border bg-white overflow-hidden">
+                <div key={cert.id} className="rounded-xl border border-tc-border bg-white overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-sm text-tc-text">{cert.name}</span>
@@ -276,7 +276,7 @@ function CertificatesSection({
       </div>
 
       {certs.some(c => c.isActive) && (
-        <div className="border border-tc-border bg-white overflow-hidden">
+        <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
             <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Probar conexión ARCA</span>
           </div>
@@ -318,7 +318,7 @@ function CertificatesSection({
       )}
 
       {csrResult && (
-        <div className="border border-tc-border bg-white overflow-hidden">
+        <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
             <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">CSR generado</span>
           </div>
@@ -504,7 +504,7 @@ function PointsOfSaleSection({
   }
 
   return (
-    <div className="border border-tc-border bg-white overflow-hidden">
+    <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
       <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2 flex items-center justify-between">
         <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Puntos de Venta</span>
         {canConfigure && (

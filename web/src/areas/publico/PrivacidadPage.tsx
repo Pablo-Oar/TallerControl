@@ -14,7 +14,7 @@ export function PrivacidadPage() {
           </Link>
         </div>
 
-        <div className="border border-tc-border bg-white p-6 sm:p-8">
+        <div className="rounded-xl overflow-hidden border border-tc-border bg-white p-6 sm:p-8">
           <h1 className="text-2xl font-bold text-tc-text mb-1">
             Aviso de Privacidad
           </h1>

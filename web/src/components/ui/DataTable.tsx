@@ -34,7 +34,7 @@ function HeaderHint({ text, label }: { text: string; label: string }) {
       </button>
       <span
         role="tooltip"
-        className="pointer-events-none invisible absolute top-full whitespace-normal left-1/2 z-30 mt-2 w-60 -translate-x-1/2 rounded-lg border border-tc-border bg-white p-3 text-left text-xs font-normal tracking-normal text-tc-text-secondary opacity-0 shadow-lg transition-opacity group-focus-within/hint:visible group-focus-within/hint:opacity-100 group-hover/hint:visible group-hover/hint:opacity-100"
+        className="pointer-events-none invisible absolute top-full whitespace-normal left-1/2 z-30 mt-2 w-60 -translate-x-1/2 rounded-lg border border-tc-border bg-white p-3 text-left text-xs font-normal tracking-normal text-tc-text-secondary opacity-0 shadow-floating transition-opacity group-focus-within/hint:visible group-focus-within/hint:opacity-100 group-hover/hint:visible group-hover/hint:opacity-100"
       >
         {text}
       </span>

@@ -9,13 +9,14 @@ colors:
   carrier-navy-text: "#4b6fa5"
   carrier-navy-text-dim: "#2d4f7c"
   paper-white: "#ffffff"
-  paper-surface: "#f8fafc"
-  paper-border: "#e2e8f0"
-  paper-border-mid: "#cbd5e1"
-  stub-blue: "#f0f4fb"
+  paper-surface: "#e6ebf0"
+  paper-border: "#c7ccd6"
+  paper-border-mid: "#b1bdcc"
+  paper-border-input: "#8394ab"
+  stub-blue: "#bdc1c9"
   perforation: "#c7d3e8"
   carbon-purple: "#7c3aed"
-  carbon-purple-light: "#ede9fe"
+  carbon-purple-light: "#cbc5e6"
   carbon-purple-mid: "#5b21b6"
   stamp-red: "#d32f2f"
   stamp-pending-bg: "#fef3c7"
@@ -29,17 +30,17 @@ colors:
   ink-muted: "#94a3b8"
 typography:
   title:
-    fontFamily: "ui-sans-serif, system-ui, Arial, Helvetica, sans-serif"
+    fontFamily: "'Inter Variable', ui-sans-serif, system-ui, Arial, Helvetica, sans-serif"
     fontSize: "1.125rem"
     fontWeight: 700
     lineHeight: 1.3
   body:
-    fontFamily: "ui-sans-serif, system-ui, Arial, Helvetica, sans-serif"
+    fontFamily: "'Inter Variable', ui-sans-serif, system-ui, Arial, Helvetica, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.5
   label:
-    fontFamily: "ui-sans-serif, system-ui, Arial, Helvetica, sans-serif"
+    fontFamily: "'Inter Variable', ui-sans-serif, system-ui, Arial, Helvetica, sans-serif"
     fontSize: "0.625rem"
     fontWeight: 700
     letterSpacing: "0.1em"
@@ -97,8 +98,8 @@ La densidad es alta pero ordenada: pocos colores, una sola voz de acento (el vio
 
 **Key Characteristics:**
 - Shell navy + contenido blanco; el contraste entre ambos es la estructura.
-- Esquinas rectas en todo (`--radius: 0px`); es la palanca única si D-26 cambiara.
-- Plano en reposo: bordes de 1px, sin sombras salvo el modal.
+- Esquinas suaves (D-26 reabierta el 10/11/2026): controles 8 px, tarjetas/tablas/diálogos 14 px, hoja inferior y tarjeta de acceso 22 px, sellos y paginación en píldora.
+- Casi plano en reposo: bordes de 1px; sombras con nombre (`shadow-raised`, `shadow-floating`, `shadow-modal`, `shadow-footer`).
 - Violeta reservado a montos y acción primaria; estados por sellos de color.
 - Sistema tipográfico nativo, sin fuentes web.
 
@@ -107,16 +108,16 @@ La densidad es alta pero ordenada: pocos colores, una sola voz de acento (el vio
 Paleta de cabina y papel: navy profundo, blancos fríos y un único acento violeta, más cuatro sellos semánticos.
 
 ### Primary
-- **Carbon Purple** (#7c3aed): montos, botón primario, foco, selección. Hover **Carbon Purple Deep** (#5b21b6); fondo suave **Carbon Purple Mist** (#ede9fe) para estados "convertido" y acentos tenues.
+- **Carbon Purple** (#7c3aed): montos, botón primario, foco, selección. Hover **Carbon Purple Deep** (#5b21b6); fondo suave **Carbon Purple Mist** (#cbc5e6) para estados "convertido" y acentos tenues.
 
 ### Secondary
 - **Carrier Navy** (#0a1628): header, encabezado de modal, shell. Escalón medio #1e3a5f (bordes del shell), superficie #0d1f38, profundo #05101f (sidebar). Texto sobre navy: #4b6fa5 (normal) y #2d4f7c (atenuado).
 
 ### Neutral
-- **Paper White** (#ffffff) y **Paper Surface** (#f8fafc): fondos de contenido y hover de filas/secundarios.
-- **Paper Border** (#e2e8f0) y **Border Mid** (#cbd5e1): bordes de tarjetas, tablas e inputs.
-- **Stub Blue** (#f0f4fb): columna talón y track de scrollbar. **Perforation** (#c7d3e8): línea punteada del ticket.
-- **Ink** (#0f172a), **Ink Secondary** (#475569), **Ink Muted** (#94a3b8): jerarquía de texto (tokens `tc-text*`, migrados desde `text-slate-*` en F5).
+- **Paper White** (#ffffff) y **Paper Surface** (#e6ebf0): fondos de contenido y hover de filas/secundarios.
+- **Paper Border** (#c7ccd6) y **Border Mid** (#b1bdcc): bordes de tarjetas, tablas e inputs.
+- **Stub Blue** (#bdc1c9): columna talón y track de scrollbar. **Perforation** (#c7d3e8): línea punteada del ticket.
+- **Ink** (#0f172a), **Ink Secondary** (#3d495c), **Ink Muted** (#5b6b82): jerarquía de texto (tokens `tc-text*`, migrados desde `text-slate-*` en F5).
 
 ### Stamps (estado)
 - Pendiente (#fef3c7 / #92400e), En progreso (#dbeafe / #1e40af), Completada (#d1fae5 / #065f46), Anulada (gris sobre blanco, tachado) y **Stamp Red** (#d32f2f) para acciones destructivas y rechazo.
@@ -127,7 +128,7 @@ Paleta de cabina y papel: navy profundo, blancos fríos y un único acento viole
 
 ## Typography
 
-**Display/Body/Label Font:** pila nativa `ui-sans-serif, system-ui, Arial, Helvetica, sans-serif`.
+**Display/Body/Label Font:** Inter Variable autoalojada (`@fontsource-variable/inter`), con pila del sistema de respaldo.
 **Mono (números):** `ui-monospace, 'Courier New', monospace`.
 
 **Character:** utilitaria y legible; la jerarquía sale del peso, el tamaño pequeño y el espaciado, no de fuentes decorativas.
@@ -150,19 +151,19 @@ Shell fijo: header de 52px y sidebar de 220px sobre navy; el contenido ocupa el 
 Plano por defecto. La profundidad se logra con contraste de superficies (navy / blanco / talón azulado) y bordes de 1px, no con sombras.
 
 ### Shadow Vocabulary
-- **Modal** (`shadow-2xl`): única sombra estructural; separa el diálogo del velo `bg-black/60`.
+- **Modal** (`shadow-modal`): separa el diálogo del velo `bg-black/60`. **Flotante** (`shadow-floating`): menús, tooltips y tarjetas KPI. **Apoyada** (`shadow-raised`). **Pie de formulario** (`shadow-footer`).
 
 ### Named Rules
-**The Flat-At-Rest Rule.** Ninguna tarjeta, botón o fila lleva sombra en reposo.
+**The Flat-At-Rest Rule.** Las tarjetas, botones y filas normales no llevan sombra en reposo; solo las KPI del Inicio y las superficies flotantes.
 
 ## Shapes
 
-Esquinas rectas (`--radius: 0px`, puente shadcn → `tc-*`). Bordes de 1px; la forma distintiva es el ticket: línea perforada punteada (1px, 4px/4px) y talón lateral. Excepción puntual: píldoras o círculos solo en spinners y avatares. 
+Esquinas suaves (`--radius: 8px`, escala `rounded-lg/xl/2xl`, puente shadcn → `tc-*`). Bordes de 1px; la forma distintiva es el ticket: línea perforada punteada (1px, 4px/4px) y talón lateral. Excepción puntual: píldoras o círculos solo en spinners y avatares. 
 
 ## Components
 
 ### Buttons
-- **Shape:** recto, borde de 1px, `tracking-wide`, `font-medium`.
+- **Shape:** `rounded-lg`, borde de 1px, `tracking-wide`, `font-medium`.
 - **Primary:** Carbon Purple con texto blanco, `8px 16px`; hover Carbon Purple Deep.
 - **Secondary:** blanco con borde Paper Border; hover Paper Surface. **Danger:** Stamp Red. **Ghost:** transparente con borde navy-mid (solo sobre navy).
 - **Loading/Disabled:** spinner de 16px antes del texto; `opacity-50` al deshabilitar. Tamaños `sm` (12px) y `md` (14px).
@@ -202,14 +203,14 @@ Esquinas rectas (`--radius: 0px`, puente shadcn → `tc-*`). Bordes de 1px; la f
 ## Do's and Don'ts
 
 ### Do:
-- **Do** usar esquinas rectas en todo control y superficie nuevos (`--radius: 0px`).
+- **Do** usar la escala de forma: `rounded-lg` (controles), `rounded-xl` (tarjetas, tablas, diálogos), `rounded-2xl` (hoja móvil, acceso) y `rounded-full` (sellos).
 - **Do** reservar Carbon Purple para dinero y acción primaria, y mostrar el estado con sellos.
 - **Do** mostrar importes en numerales tabulares alineados a la derecha.
 - **Do** conservar el foco visible global de 2px violeta; no anularlo con `outline-none` sin reemplazo.
 - **Do** mantener objetivos táctiles ≥44px en `/m` y en las páginas públicas.
 
 ### Don't:
-- **Don't** agregar sombras en reposo ni radios redondeados a tarjetas y botones.
+- **Don't** agregar sombras literales `shadow-[...]` ni radios arbitrarios: usar los tokens.
 - **Don't** usar el violeta como relleno decorativo ni para estados.
 - **Don't** introducir fuentes web ni iconos de bibliotecas pesadas sin decisión explícita (D-25).
 - **Don't** comunicar estado solo con color de texto.

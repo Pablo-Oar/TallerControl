@@ -161,7 +161,7 @@ export function CounterSalesPage() {
           value={q}
           onChange={e => setQ(e.target.value)}
           placeholder="Nº de venta o producto…"
-          className="min-w-0 flex-1 basis-48 border border-tc-border-input bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-purple transition-colors"
+          className="rounded-lg min-w-0 flex-1 basis-48 border border-tc-border-input bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-purple transition-colors"
         />
         <Button type="submit" variant="secondary" size="sm" className="shrink-0">Buscar</Button>
       </form>
@@ -221,7 +221,7 @@ export function CounterSalesPage() {
             </div>
 
             {detail.items.length > 0 && (
-              <div className="border border-tc-border bg-white overflow-hidden">
+              <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
                 <div className="bg-tc-stub-bg border-b border-tc-border px-3 py-1.5">
                   <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ítems</span>
                 </div>

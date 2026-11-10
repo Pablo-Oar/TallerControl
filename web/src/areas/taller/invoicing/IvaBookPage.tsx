@@ -80,7 +80,7 @@ export function IvaBookPage() {
       {isLoading ? (
         <div className="space-y-4">
           {[...Array(2)].map((_, i) => (
-            <div key={i} className="border border-tc-border bg-white overflow-hidden">
+            <div key={i} className="rounded-xl border border-tc-border bg-white overflow-hidden">
               <div className="h-9 animate-pulse bg-tc-stub-bg border-b border-tc-border" />
               {[...Array(4)].map((_, j) => (
                 <div key={j} className="h-10 animate-pulse border-b border-tc-border bg-tc-surface last:border-0" />
@@ -91,7 +91,7 @@ export function IvaBookPage() {
       ) : data ? (
         <div className="space-y-4">
           {/* Ventas */}
-          <div className="border border-tc-border bg-white overflow-hidden">
+          <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
             <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2 flex items-center gap-4">
               <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ventas</span>
               <span className="text-xs text-tc-text-secondary">
@@ -147,7 +147,7 @@ export function IvaBookPage() {
           </div>
 
           {/* Compras */}
-          <div className="border border-tc-border bg-white overflow-hidden">
+          <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
             <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2 flex items-center gap-4">
               <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Compras</span>
               <span className="text-xs text-tc-text-secondary">

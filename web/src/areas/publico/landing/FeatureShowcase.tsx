@@ -261,7 +261,7 @@ export function FeatureShowcase() {
         </div>
 
         {/* Tarjetas unidas, una sola pieza redondeada (estilo card-15) */}
-        <div className="relative left-1/2 grid w-screen -translate-x-1/2 grid-cols-1 gap-px overflow-hidden border-y border-slate-700 bg-slate-700 shadow-2xl shadow-tc-navy/30 md:grid-cols-2 lg:grid-cols-3">
+        <div className="relative left-1/2 grid w-screen -translate-x-1/2 grid-cols-1 gap-px overflow-hidden border-y border-slate-700 bg-slate-700 shadow-modal shadow-tc-navy/30 md:grid-cols-2 lg:grid-cols-3">
           {features.map(f => (
             <FeatureCard key={f.title} f={f} />
           ))}
@@ -272,7 +272,7 @@ export function FeatureShowcase() {
           <h3 className="mb-8 text-center text-2xl font-bold text-tc-text">Qué cambia cuando ordenás el taller</h3>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {benefits.map((b, i) => (
-              <div key={b.title} className="rounded-2xl border border-tc-border bg-white p-6 shadow-[0_18px_40px_-12px_rgba(10,22,40,0.4)] transition-all duration-300 hover:border-tc-purple hover:shadow-[0_32px_60px_-14px_rgba(124,58,237,0.5)] motion-safe:hover:-translate-y-3 motion-safe:hover:scale-[1.03]">
+              <div key={b.title} className="rounded-2xl border border-tc-border bg-white p-6 shadow-floating transition-all duration-300 hover:border-tc-purple hover:shadow-[0_32px_60px_-14px_rgba(124,58,237,0.5)] motion-safe:hover:-translate-y-3 motion-safe:hover:scale-[1.03]">
                 <span className="mb-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-tc-navy text-xs font-bold text-white">
                   {i + 1}
                 </span>

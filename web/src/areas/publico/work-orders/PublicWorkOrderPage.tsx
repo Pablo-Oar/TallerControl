@@ -36,7 +36,7 @@ export function PublicWorkOrderPage() {
   if (error || !data) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-tc-navy px-4 text-center">
-        <div className="border border-tc-border bg-white p-8 max-w-sm w-full">
+        <div className="rounded-xl overflow-hidden border border-tc-border bg-white p-8 max-w-sm w-full">
           <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted mb-2">Error</p>
           <p className="font-bold text-tc-text">Orden no encontrada</p>
           <p className="mt-2 text-sm text-tc-text-secondary">El enlace puede haber expirado o ser incorrecto.</p>
@@ -50,7 +50,7 @@ export function PublicWorkOrderPage() {
   return (
     <div className="min-h-screen bg-tc-surface">
       <div className="mx-auto max-w-2xl px-4 py-10">
-        <div className="border border-tc-border bg-white overflow-hidden">
+        <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3 flex items-center justify-between">
             <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Orden de trabajo</span>
             <StatusBadge status={data.status} label={statusLabel} />

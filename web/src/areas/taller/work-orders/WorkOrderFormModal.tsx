@@ -340,7 +340,7 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
             <p role="alert" className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">{serverError}</p>
           )}
 
-          <div className="sticky -bottom-5 -mx-5 -mb-5 mt-2 flex justify-end gap-3 border-t border-tc-border bg-white px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-6px_8px_-6px_rgb(0_0_0/0.12)]">
+          <div className="sticky -bottom-5 -mx-5 -mb-5 mt-2 flex justify-end gap-3 border-t border-tc-border bg-white px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-footer">
             <Button type="button" variant="secondary" size="sm" onClick={onClose}>Cancelar</Button>
             <Button type="submit" size="sm" loading={isSubmitting}>{isEdit ? 'Guardar cambios' : 'Crear orden'}</Button>
           </div>

@@ -67,6 +67,18 @@
   --color-tc-neutral-text: #475569;
   --color-tc-neutral-solid: #475569;
 
+  /* Forma (D-26 reabierta, 10/11/2026): esquinas suaves en cuatro escalones */
+  --radius-md: 8px;
+  --radius-lg: 8px; /* controles: botones, campos, selects */
+  --radius-xl: 14px; /* tarjetas, tablas, paneles, diálogos */
+  --radius-2xl: 22px; /* hoja inferior móvil, tarjeta de acceso, KPI */
+
+  /* Sombras con nombre: apoyada, flotante, diálogo y pie fijo de formulario */
+  --shadow-raised: 0 1px 2px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.1);
+  --shadow-floating: 0 12px 28px -8px rgb(10 22 40 / 0.28), 0 4px 10px -4px rgb(10 22 40 / 0.12);
+  --shadow-modal: 0 28px 60px -14px rgb(10 22 40 / 0.45);
+  --shadow-footer: 0 -6px 8px -6px rgb(0 0 0 / 0.12);
+
   /* Typography */
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, Arial, Helvetica, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Mono', 'Courier New', monospace;
@@ -77,7 +89,7 @@
   --color-tc-text-muted: #5b6b82;
 }
 
-/* Puente shadcn → tc-* (UI-R2, D-26 provisoria: esquinas rectas; --radius es la palanca única) */
+/* Puente shadcn → tc-* (UI-R2; D-26 reabierta: esquinas suaves, --radius = radio de control) */
 :root {
   --background: var(--color-tc-white);
   --foreground: var(--color-tc-text);
@@ -97,7 +109,7 @@
   --border: var(--color-tc-border);
   --input: var(--color-tc-border-input);
   --ring: var(--color-tc-purple);
-  --radius: 0px;
+  --radius: 8px;
 }
 
 @theme inline {
@@ -119,9 +131,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-sm: var(--radius);
-  --radius-md: var(--radius);
-  --radius-lg: var(--radius);
+  --radius-sm: 4px;
 }
 
 /* Browser surface theming */

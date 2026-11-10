@@ -87,7 +87,7 @@ export function VehicleDetailPage() {
         </div>
       </div>
 
-      <section className="border border-tc-border bg-white">
+      <section className="rounded-xl overflow-hidden border border-tc-border bg-white">
         <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
           <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Datos</span>
         </div>
@@ -115,7 +115,7 @@ export function VehicleDetailPage() {
         </dl>
       </section>
 
-      <section className="border border-tc-border bg-white">
+      <section className="rounded-xl overflow-hidden border border-tc-border bg-white">
         <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
           <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
             Historial{total > 0 ? ` (${total})` : ''}

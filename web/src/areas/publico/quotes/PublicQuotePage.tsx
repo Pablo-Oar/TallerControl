@@ -70,7 +70,7 @@ export function PublicQuotePage() {
   if (error || !data) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-tc-navy px-4 text-center">
-        <div className="border border-tc-border bg-white p-8 max-w-sm w-full">
+        <div className="rounded-xl overflow-hidden border border-tc-border bg-white p-8 max-w-sm w-full">
           <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted mb-2">Error</p>
           <p className="font-bold text-tc-text">Presupuesto no encontrado</p>
           <p className="mt-2 text-sm text-tc-text-secondary">El enlace puede haber expirado o ser incorrecto.</p>
@@ -85,7 +85,7 @@ export function PublicQuotePage() {
   if (submitted) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-tc-surface px-4">
-        <div className="border border-tc-border bg-white p-10 max-w-sm w-full text-center">
+        <div className="rounded-xl overflow-hidden border border-tc-border bg-white p-10 max-w-sm w-full text-center">
           <div className="bg-tc-stub-bg border border-tc-border w-10 h-10 flex items-center justify-center mx-auto mb-4 text-lg font-bold text-tc-success-text">
             <CheckIcon className="h-5 w-5" />
           </div>
@@ -141,7 +141,7 @@ export function PublicQuotePage() {
       <div className="mx-auto max-w-2xl px-4 py-10 space-y-5">
 
         {/* Encabezado del presupuesto */}
-        <div className="border border-tc-border bg-white overflow-hidden">
+        <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3 flex items-center justify-between">
             <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Presupuesto</span>
             <StatusBadge status={data.status} label={QUOTE_STATUS_LABELS[data.status] ?? data.status} />
@@ -177,7 +177,7 @@ export function PublicQuotePage() {
         </div>
 
         {/* Ítems del presupuesto */}
-        <div className="border border-tc-border bg-white overflow-hidden">
+        <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
             <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ítems</span>
           </div>
@@ -256,7 +256,7 @@ export function PublicQuotePage() {
 
         {/* Formulario de respuesta */}
         {canRespond && !isExpired && (
-          <div className="border border-tc-border bg-white overflow-hidden">
+          <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
             <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3">
               <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Su respuesta</span>
             </div>

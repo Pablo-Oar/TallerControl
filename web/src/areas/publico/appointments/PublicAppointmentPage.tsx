@@ -40,7 +40,7 @@ export function PublicAppointmentPage() {
   if (declined(decline.isSuccess) || error || !data) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-tc-navy px-4 text-center">
-        <div className="w-full max-w-sm border border-tc-border bg-white p-8">
+        <div className="rounded-xl overflow-hidden w-full max-w-sm border border-tc-border bg-white p-8">
           <p className="mb-2 text-xs font-bold tracking-[0.14em] text-tc-text-secondary uppercase">
             {decline.isSuccess ? 'Turno cancelado' : 'Turno'}
           </p>
@@ -72,7 +72,7 @@ export function PublicAppointmentPage() {
   return (
     <div className="min-h-screen bg-tc-surface">
       <div className="mx-auto max-w-md px-4 py-10">
-        <div className="overflow-hidden border border-tc-border bg-white">
+        <div className="rounded-xl overflow-hidden border border-tc-border bg-white">
           <div className="flex items-center justify-between border-b border-tc-border bg-tc-stub-bg px-6 py-3">
             <span className="text-xs font-bold tracking-[0.14em] text-tc-text-secondary uppercase">Tu turno</span>
             {confirmed && (

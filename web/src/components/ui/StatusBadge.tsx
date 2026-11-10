@@ -108,7 +108,7 @@ export function StatusBadge({ status, label, hint, className = '' }: StatusBadge
           <span
             role="tooltip"
             style={{ left: pos.x, top: pos.y }}
-            className="pointer-events-none fixed z-[200] w-max max-w-56 -translate-x-1/2 border border-tc-border bg-white px-2.5 py-1.5 text-center text-xs font-normal leading-snug text-tc-text-secondary shadow-lg"
+            className="pointer-events-none fixed z-[200] w-max max-w-56 -translate-x-1/2 border border-tc-border bg-white px-2.5 py-1.5 text-center text-xs font-normal leading-snug text-tc-text-secondary shadow-floating"
           >
             {tip}
           </span>,

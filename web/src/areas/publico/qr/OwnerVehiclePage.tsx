@@ -59,7 +59,7 @@ export function OwnerVehiclePage() {
   if (isError || !data) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-tc-navy px-4 text-center">
-        <div className="border border-tc-border bg-white p-8 max-w-sm w-full space-y-3">
+        <div className="rounded-xl overflow-hidden border border-tc-border bg-white p-8 max-w-sm w-full space-y-3">
           <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Sesión expirada</p>
           <p className="font-bold text-tc-text">Tu sesión venció</p>
           <p className="text-sm text-tc-text-secondary">
@@ -109,7 +109,7 @@ export function OwnerVehiclePage() {
 
         {/* Presupuestos activos */}
         {data.activeQuotes.length > 0 && (
-          <div className="border border-tc-border bg-white overflow-hidden">
+          <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
             <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
               <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Presupuestos activos</span>
             </div>
@@ -142,7 +142,7 @@ export function OwnerVehiclePage() {
         )}
 
         {/* Historial de OTs */}
-        <div className="border border-tc-border bg-white overflow-hidden">
+        <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
             <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Historial de órdenes de trabajo</span>
           </div>
