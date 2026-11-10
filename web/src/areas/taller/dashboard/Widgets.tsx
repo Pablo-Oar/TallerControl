@@ -78,7 +78,7 @@ interface KpiCardProps {
   icon: ReactNode
   /** Barra de progreso segmentada bajo el valor. */
   bar?: KpiBarSegment[]
-  /** Hasta dos cifras al pie: la primera a la izquierda y la segunda a la derecha. */
+  /** Hasta tres cifras al pie en una fila (rótulos cortos: no se parten): primera a la izquierda, última a la derecha. */
   stats?: KpiStat[]
   /** Línea de detalle bajo el valor cuando no hay barra ni cifras. */
   sub?: ReactNode
@@ -120,9 +120,9 @@ export function KpiCard({ label, value, accent = 'slate', icon, bar, stats, sub,
 
         {stats && stats.length > 0 ? (
           <div className="mt-auto flex items-end justify-between gap-3 text-xs max-sm:hidden">
-            {stats.slice(0, 2).map((st, i) => (
-              <div key={st.label} className={i === 1 ? 'text-right' : ''}>
-                <p className="text-tc-text-muted">{st.label}</p>
+            {stats.slice(0, 3).map((st, i, all) => (
+              <div key={st.label} className={['min-w-0', i === all.length - 1 && i > 0 ? 'text-right' : i > 0 ? 'text-center' : ''].join(' ')}>
+                <p className="whitespace-nowrap text-tc-text-muted">{st.label}</p>
                 <p className={['text-sm font-bold tabular-nums', STAT_TEXT[st.tone ?? 'slate']].join(' ')}>{st.value}</p>
               </div>
             ))}

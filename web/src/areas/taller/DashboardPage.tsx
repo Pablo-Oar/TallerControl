@@ -116,8 +116,9 @@ export function DashboardPage() {
             { value: byStatus.readyToDeliver, tone: 'green', label: 'Listas' },
           ]}
           stats={[
-            { label: byStatus.waitingParts > 0 ? `En proceso · ${byStatus.waitingParts} esperando repuestos` : 'En proceso', value: byStatus.inProgress, tone: 'blue' },
-            { label: 'Listas para entregar', value: byStatus.readyToDeliver, tone: 'green' },
+            { label: 'En proceso', value: byStatus.inProgress, tone: 'blue' },
+            ...(byStatus.waitingParts > 0 ? [{ label: 'Repuestos', value: byStatus.waitingParts, tone: 'amber' as const }] : []),
+            { label: 'Listas', value: byStatus.readyToDeliver, tone: 'green' },
           ]}
         />
         <KpiCard
