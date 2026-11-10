@@ -163,7 +163,7 @@ export function WidgetShell({ title, icon, accent = 'slate', count, linkTo, link
           )}
         </h2>
         {linkTo && (
-          <Link to={linkTo} className="flex min-h-11 flex-none items-center whitespace-nowrap text-[11px] font-bold tracking-wider uppercase text-tc-purple hover:underline">
+          <Link to={linkTo} className="flex min-h-11 flex-none items-center whitespace-nowrap text-[11px] font-bold tracking-wider uppercase text-tc-purple-mid hover:underline">
             {linkLabel}
           </Link>
         )}

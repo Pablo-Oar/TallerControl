@@ -166,7 +166,7 @@ function BarButton({ primary, ...rest }: { primary?: boolean } & React.ButtonHTM
   return (
     <button
       type="button"
-      className={`min-h-11 min-w-0 px-1 text-[11px] font-bold tracking-wider uppercase transition-colors hover:bg-white ${primary ? 'text-tc-purple' : 'text-tc-text-secondary'}`}
+      className={`min-h-11 min-w-0 px-1 text-[11px] font-bold tracking-wider uppercase transition-colors hover:bg-white ${primary ? 'text-tc-purple-mid' : 'text-tc-text-secondary'}`}
       {...rest}
     />
   )

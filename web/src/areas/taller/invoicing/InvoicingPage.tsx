@@ -106,7 +106,7 @@ export function InvoicingPage() {
       )}
 
       <div className="flex gap-2">
-        <FilterSelect
+        <FilterSelect aria-label="Filtrar por estado"
           value={status}
           onChange={e => { setStatus(e.target.value as InvoiceStatus | ''); setPage(1) }}
           className="rounded-lg border border-tc-border-input bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-purple transition-colors"

@@ -96,11 +96,11 @@ export function ReportsPage() {
         <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
             <span className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Desde</span>
-            <input type="date" value={from} onChange={e => setFrom(e.target.value)} className={`${inputCls} w-full`} />
+            <input type="date" aria-label="Desde" value={from} onChange={e => setFrom(e.target.value)} className={`${inputCls} w-full`} />
           </div>
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
             <span className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Hasta</span>
-            <input type="date" value={to} onChange={e => setTo(e.target.value)} className={`${inputCls} w-full`} />
+            <input type="date" aria-label="Hasta" value={to} onChange={e => setTo(e.target.value)} className={`${inputCls} w-full`} />
           </div>
         </div>
       )}

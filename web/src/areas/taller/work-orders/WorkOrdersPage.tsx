@@ -135,7 +135,7 @@ export function WorkOrdersPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <FilterSelect
+        <FilterSelect aria-label="Filtrar por estado"
           value={statusFilter}
           onChange={e => { setStatusFilter(e.target.value as WorkOrderStatus | ''); setPage(1) }}
           className="rounded-lg border border-tc-border-input bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-purple"

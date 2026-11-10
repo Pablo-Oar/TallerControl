@@ -23,6 +23,8 @@
   --color-tc-purple: #7c3aed;
   --color-tc-purple-light: #cbc5e6;
   --color-tc-purple-mid: #5b21b6;
+  /* Violeta para texto sobre fondo navy (4,5:1 o más; el violeta base da 3,18:1) */
+  --color-tc-purple-on-dark: #a78bfa;
 
   /* Status stamps */
   --color-tc-pending-bg: #fef3c7;
@@ -255,5 +257,15 @@ input[data-auth-field]:focus-visible {
   main select,
   [role='dialog'] select {
     min-height: 44px;
+  }
+}
+
+/* Movimiento reducido: sin pulso en los esqueletos y giro lento en los indicadores de carga */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse {
+    animation: none;
+  }
+  .animate-spin {
+    animation-duration: 2.4s;
   }
 }

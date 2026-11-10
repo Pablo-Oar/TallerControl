@@ -13,7 +13,7 @@ vi.mock('../../lib/api/dashboard', () => api)
 
 vi.mock('../../lib/api/onboarding', () => ({ onboardingApi: { get: vi.fn().mockResolvedValue(null) } }))
 
-// recharts necesita medidas reales de layout: en jsdom se reemplaza por un marcador.
+// El gráfico se carga aparte (lazy): en el test se reemplaza por un marcador.
 vi.mock('./dashboard/RevenueChart', () => ({ default: () => <div>grafico de ingresos</div> }))
 
 const baseDashboard: DashboardDto = {

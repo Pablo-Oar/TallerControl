@@ -12,7 +12,7 @@ import { CashWidget, HotQuotesWidget, LowStockWidget } from './dashboard/Commerc
 import { OnboardingCard } from './dashboard/OnboardingCard'
 import { AlertIcon, BanknoteIcon, DocClockIcon, WalletIcon, WrenchIcon } from './dashboard/icons'
 
-// recharts pesa: vive en su propio chunk y solo se baja al entrar al Inicio (D-41).
+// El gráfico vive en su propio chunk y solo se baja al entrar al Inicio.
 const RevenueChart = lazy(() => import('./dashboard/RevenueChart'))
 
 /** El Inicio se refresca solo cada minuto y al volver a la pestaña («tiempo real» sin WebSockets). */
