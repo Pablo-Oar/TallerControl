@@ -43,7 +43,7 @@ export function Button({
     <button
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={`group relative inline-flex items-center justify-center gap-2 overflow-hidden font-medium tracking-wide transition-[color,background-color,border-color,transform,translate] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 enabled:active:translate-y-px motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`group relative inline-flex rounded-lg items-center justify-center gap-2 overflow-hidden font-medium tracking-wide transition-[color,background-color,border-color,transform,translate] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 enabled:active:translate-y-px motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
       {hasSheen(variant) && (

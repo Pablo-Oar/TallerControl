@@ -80,7 +80,7 @@ export function UsersSettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="border border-tc-border bg-white">
+      <div className="rounded-xl overflow-hidden border border-tc-border bg-white">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="h-12 animate-pulse border-b border-tc-border bg-tc-surface last:border-0" />
         ))}
@@ -119,7 +119,7 @@ export function UsersSettingsPage() {
       />
 
       {invitations.length > 0 && (
-        <section aria-label="Invitaciones pendientes" className="overflow-hidden border border-tc-border bg-white">
+        <section aria-label="Invitaciones pendientes" className="rounded-xl overflow-hidden border border-tc-border bg-white">
           <h2 className="border-b border-tc-border bg-tc-stub-bg px-4 py-2 text-[11px] font-bold tracking-[0.14em] text-tc-text-secondary uppercase">
             Invitaciones pendientes
           </h2>

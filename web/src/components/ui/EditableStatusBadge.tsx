@@ -123,7 +123,7 @@ export function EditableStatusBadge({ status, label, statusText, options, onSele
           role="menu"
           aria-label="Cambiar estado a"
           onKeyDown={onMenuKeyDown}
-          className="absolute left-0 top-full z-20 mt-1 min-w-[11rem] border border-tc-border-mid bg-white py-1 shadow-lg"
+          className="absolute left-0 top-full z-20 mt-1 min-w-[11rem] border border-tc-border-mid bg-white py-1 shadow-floating"
         >
           {options.map((o, i) => (
             <button

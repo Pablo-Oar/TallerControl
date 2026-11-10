@@ -143,7 +143,7 @@ export function AvailabilityPage() {
       </p>
 
       {/* ── Horario semanal ───────────────────────────────────────────────── */}
-      <section className="overflow-hidden border border-tc-border bg-white">
+      <section className="rounded-xl overflow-hidden border border-tc-border bg-white">
         <h2 className="border-b border-tc-border bg-tc-stub-bg px-4 py-2 text-[11px] font-bold tracking-[0.14em] text-tc-text-secondary uppercase">
           Horario semanal de cada mecánico
         </h2>
@@ -218,7 +218,7 @@ export function AvailabilityPage() {
       </section>
 
       {/* ── Días bloqueados / horario especial ────────────────────────────── */}
-      <section className="overflow-hidden border border-tc-border bg-white">
+      <section className="rounded-xl overflow-hidden border border-tc-border bg-white">
         <h2 className="border-b border-tc-border bg-tc-stub-bg px-4 py-2 text-[11px] font-bold tracking-[0.14em] text-tc-text-secondary uppercase">
           Feriados, vacaciones y horarios especiales (próximos 12 meses)
         </h2>

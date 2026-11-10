@@ -197,7 +197,7 @@ export function SearchPicker<T>({
           // mousedown (no click): se elige antes de que el blur cierre la lista
           onMouseDown={e => e.preventDefault()}
           style={{ left: box.left, width: box.width, top: box.top, bottom: box.bottom, maxHeight: box.maxH }}
-          className="fixed z-[70] overflow-y-auto border border-tc-border-input bg-white shadow-lg"
+          className="fixed z-[70] overflow-y-auto border border-tc-border-input bg-white shadow-floating"
         >
           {isFetching && items.length === 0 && <li className="px-3 py-2 text-sm text-tc-text-muted">Buscando…</li>}
           {!isFetching && items.length === 0 && <li className="px-3 py-2 text-sm text-tc-text-muted">Sin resultados</li>}

@@ -152,7 +152,7 @@ export function Modal({ title, onClose, children, className = 'max-w-lg' }: Moda
         tabIndex={-1}
         // Un diálogo que no es el superior queda inerte: el foco y los clics solo llegan al de arriba.
         inert={!isTop}
-        className={`tc-modal-panel relative flex max-h-[92dvh] w-full flex-col bg-white shadow-2xl outline-none max-sm:max-w-none sm:max-h-[calc(100dvh-5rem)] ${className}`}
+        className={`tc-modal-panel relative flex max-h-[92dvh] w-full flex-col overflow-hidden bg-white shadow-modal max-sm:rounded-t-2xl sm:rounded-xl outline-none max-sm:max-w-none sm:max-h-[calc(100dvh-5rem)] ${className}`}
       >
         {/* Header */}
         <div className="flex flex-none items-center justify-between bg-tc-navy px-5 py-3">

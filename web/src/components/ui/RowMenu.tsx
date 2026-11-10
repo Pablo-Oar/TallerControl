@@ -74,7 +74,7 @@ export function RowMenu({ items, label = 'Más acciones' }: { items: RowMenuItem
             ref={menu}
             role="menu"
             style={{ top: pos.top, right: pos.right }}
-            className="fixed z-[70] min-w-44 border border-tc-border bg-white py-1 shadow-xl"
+            className="rounded-xl overflow-hidden fixed z-[70] min-w-44 border border-tc-border bg-white py-1 shadow-floating"
           >
             {items.map(it => (
               <button

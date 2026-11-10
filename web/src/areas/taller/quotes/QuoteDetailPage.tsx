@@ -179,7 +179,7 @@ export function QuoteDetailPage() {
       )}
 
       {/* Datos principales */}
-      <div className="border border-tc-border bg-white overflow-hidden">
+      <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
         <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
           <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Datos del presupuesto</span>
         </div>
@@ -224,7 +224,7 @@ export function QuoteDetailPage() {
       </div>
 
       {/* Ítems */}
-      <div className="border border-tc-border bg-white overflow-hidden">
+      <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
         <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
           <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ítems</span>
         </div>
@@ -375,7 +375,7 @@ export function QuoteDetailPage() {
 
       {/* Confirmación de cancelación */}
       {confirmCancel && (
-        <div className="border border-tc-border bg-white overflow-hidden">
+        <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
             <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Cancelar presupuesto</span>
           </div>
@@ -383,7 +383,7 @@ export function QuoteDetailPage() {
             <input
               value={cancelReason}
               onChange={e => setCancelReason(e.target.value)}
-              className="w-full border border-tc-border-input bg-white px-3 py-2 text-sm outline-none focus:border-tc-purple transition-colors"
+              className="rounded-lg w-full border border-tc-border-input bg-white px-3 py-2 text-sm outline-none focus:border-tc-purple transition-colors"
               placeholder="Motivo de cancelación (obligatorio)"
             />
             <div className="flex gap-2">
@@ -406,7 +406,7 @@ export function QuoteDetailPage() {
 
       {/* Respuestas del cliente */}
       {responses && responses.length > 0 && (
-        <div className="border border-tc-border bg-white overflow-hidden">
+        <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
             <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Respuestas del cliente</span>
           </div>
@@ -493,7 +493,7 @@ function ResponseEvidence({ quoteId, responses }: { quoteId: string; responses: 
   }
 
   return (
-    <div className="border border-tc-border bg-white overflow-hidden">
+    <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
       <div className="border-b border-tc-border bg-tc-stub-bg px-4 py-2">
         <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Firma y documento del cliente</span>
       </div>

@@ -94,7 +94,7 @@ export function NotificationBell() {
         <div
           role="dialog"
           aria-label="Avisos"
-          className="absolute right-0 z-40 mt-2 w-80 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-tc-border bg-white shadow-xl"
+          className="absolute right-0 z-40 mt-2 w-80 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-tc-border bg-white shadow-floating"
         >
           <div className="flex items-center justify-between border-b border-tc-border px-4 py-2.5">
             <span className="text-xs font-bold tracking-wider uppercase text-tc-text">Avisos</span>

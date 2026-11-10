@@ -14,7 +14,7 @@ export function OnboardingCard({ onboarding }: { onboarding: OnboardingDto }) {
   const pending = onboarding.steps.filter(step => !step.completed)
 
   return (
-    <section className="overflow-hidden border border-tc-border bg-white" aria-label="Guía de inicio">
+    <section className="rounded-xl overflow-hidden border border-tc-border bg-white" aria-label="Guía de inicio">
       <button
         type="button"
         aria-expanded={open}

@@ -108,7 +108,7 @@ export function InvoicingPage() {
         <select
           value={status}
           onChange={e => { setStatus(e.target.value as InvoiceStatus | ''); setPage(1) }}
-          className="border border-tc-border-input bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-purple transition-colors"
+          className="rounded-lg border border-tc-border-input bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-purple transition-colors"
         >
           <option value="">Todos los estados</option>
           <option value="authorized">Autorizadas</option>
@@ -118,7 +118,7 @@ export function InvoicingPage() {
       </div>
 
       {isLoading ? (
-        <div className="border border-tc-border bg-white">
+        <div className="rounded-xl overflow-hidden border border-tc-border bg-white">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="h-10 animate-pulse border-b border-tc-border bg-tc-surface last:border-0" />
           ))}

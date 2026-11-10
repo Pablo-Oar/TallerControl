@@ -165,7 +165,7 @@ export function GeneralSettingsPage() {
       <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Configuración general</h1>
 
       {/* Logo */}
-      <section className="border border-tc-border bg-white">
+      <section className="rounded-xl overflow-hidden border border-tc-border bg-white">
         <div className="bg-tc-stub-bg border-b border-tc-border px-5 py-2.5">
           <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Logo del taller</span>
         </div>
@@ -212,7 +212,7 @@ export function GeneralSettingsPage() {
       {/* Datos del taller */}
       <form
         onSubmit={handleSubmit((formData) => saveMutation.mutate(formData))}
-        className="border border-tc-border bg-white overflow-hidden"
+        className="rounded-xl border border-tc-border bg-white overflow-hidden"
       >
         <div className="bg-tc-stub-bg border-b border-tc-border px-5 py-2.5">
           <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Datos del taller</span>

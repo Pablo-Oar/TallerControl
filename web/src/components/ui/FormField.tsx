@@ -36,7 +36,7 @@ interface BaseProps {
 const ALWAYS_RAISED = new Set(['date', 'time', 'datetime-local', 'month', 'week', 'file', 'color'])
 
 const controlBase =
-  'peer block w-full border bg-white text-sm text-tc-text outline-none transition-colors ' +
+  'peer block w-full rounded-lg border bg-white text-sm text-tc-text outline-none transition-colors ' +
   'placeholder:text-transparent focus:placeholder:text-tc-text-muted ' +
   'disabled:cursor-not-allowed disabled:bg-tc-surface disabled:text-tc-text-muted'
 

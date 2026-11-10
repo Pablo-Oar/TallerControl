@@ -84,7 +84,7 @@ export function DialogHost() {
             key={n.id}
             role={n.tone === 'error' ? 'alert' : 'status'}
             className={[
-              'pointer-events-auto flex w-full max-w-md items-start gap-3 border px-4 py-3 text-sm shadow-lg',
+              'pointer-events-auto flex w-full max-w-md items-start gap-3 border px-4 py-3 text-sm shadow-floating',
               n.tone === 'error' ? 'border-tc-danger-border bg-tc-danger-bg text-tc-danger-text' : 'border-tc-border bg-white text-tc-text',
             ].join(' ')}
           >

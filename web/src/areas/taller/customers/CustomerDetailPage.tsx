@@ -29,7 +29,7 @@ const VAT_LABELS: Record<string, string> = {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="border border-tc-border bg-white">
+    <section className="rounded-xl overflow-hidden border border-tc-border bg-white">
       <div className="bg-tc-stub-bg border-b border-tc-border px-4 py-2">
         <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">{title}</span>
       </div>
