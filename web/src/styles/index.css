@@ -156,6 +156,39 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
+/*
+ * Todo lo que se puede tocar muestra la manita (Tailwind 4 dejó los botones con la flecha). Va en la capa base para que
+ * una utilidad puntual (p. ej. `disabled:cursor-not-allowed`) siga ganando. Los campos de texto conservan el cursor de texto.
+ */
+@layer base {
+  a[href],
+  button:not(:disabled),
+  summary,
+  select:not(:disabled),
+  label[for],
+  [role='button']:not([aria-disabled='true']),
+  [role='tab'],
+  [role='menuitem'],
+  [role='option'],
+  [role='switch'],
+  input[type='checkbox']:not(:disabled),
+  input[type='radio']:not(:disabled),
+  input[type='file']:not(:disabled),
+  input[type='submit']:not(:disabled),
+  input[type='button']:not(:disabled),
+  input[type='date']:not(:disabled),
+  input[type='month']:not(:disabled),
+  input[type='time']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled,
+  [aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+}
+
 /* AuthInput (pantallas de acceso): el foco lo marca solo el borde violeta, sin el contorno global (evita el doble borde) */
 input[data-auth-field]:focus-visible {
   outline: none;
