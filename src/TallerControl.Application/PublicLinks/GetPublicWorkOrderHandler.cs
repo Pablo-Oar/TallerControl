@@ -13,15 +13,18 @@ public sealed class GetPublicWorkOrderHandler
     private readonly IPublicLinkRepository _linkRepo;
     private readonly IWorkOrderRepository _woRepo;
     private readonly TimeProvider _clock;
+    private readonly IWorkshopBranding _branding;
 
     public GetPublicWorkOrderHandler(
         IPublicLinkRepository linkRepo,
         IWorkOrderRepository woRepo,
-        TimeProvider clock)
+        TimeProvider clock,
+        IWorkshopBranding branding)
     {
         _linkRepo = linkRepo;
         _woRepo = woRepo;
         _clock = clock;
+        _branding = branding;
     }
 
     public async Task<PublicWorkOrderDto> HandleAsync(string tokenBase64Url, CancellationToken ct)
@@ -41,6 +44,8 @@ public sealed class GetPublicWorkOrderHandler
         link.RecordAccess(now);
         await _linkRepo.SaveChangesAsync(ct);
 
+        var shop = await _branding.GetPublicAsync(link.TenantId, ct);
+
         return new PublicWorkOrderDto(
             order.Id,
             order.Number,
@@ -52,6 +57,8 @@ public sealed class GetPublicWorkOrderHandler
             order.AssignedMechanicName,
             order.ReportedIssue,
             order.MechanicNotes,
-            order.CreatedAt);
+            order.CreatedAt,
+            shop.Name,
+            shop.LogoUrl);
     }
 }

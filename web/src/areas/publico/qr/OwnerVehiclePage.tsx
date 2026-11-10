@@ -6,6 +6,7 @@ import { Timeline, type TimelineItem } from '../../../components/ui/Timeline'
 import { QUOTE_STATUS_LABELS } from '../../../lib/api/quotes'
 import { formatDate, formatDateOnly } from '../../../lib/dates'
 import { ArrowRightIcon } from '@/components/ui/icons'
+import { WorkshopBrand } from '@/components/ui/WorkshopBrand'
 
 const WO_STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
@@ -83,6 +84,7 @@ export function OwnerVehiclePage() {
       {/* Header */}
       <div className="bg-tc-navy border-b border-tc-border px-4 py-5">
         <div className="mx-auto max-w-md">
+          <WorkshopBrand name={data.workshopName} logoUrl={data.logoUrl} tone="dark" className="mb-4" />
           <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
             Portal del dueño
           </p>

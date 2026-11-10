@@ -14,10 +14,12 @@ namespace TallerControl.Infrastructure.Qr;
 internal sealed class EfQrRepository : IQrRepository
 {
     private readonly AppDbContext _db;
+    private readonly IWorkshopBranding _branding;
 
-    public EfQrRepository(AppDbContext db)
+    public EfQrRepository(AppDbContext db, IWorkshopBranding branding)
     {
         _db = db;
+        _branding = branding;
     }
 
     public Task<QrCard?> FindByIdAsync(Guid id, CancellationToken ct) =>
@@ -204,14 +206,9 @@ internal sealed class EfQrRepository : IQrRepository
 
         if (card is null) return null;
 
-        var name = await _db.Set<Tenant>()
-            .AsNoTracking()
-            .IgnoreQueryFilters()
-            .Where(t => t.Id == card.TenantId)
-            .Select(t => t.Name)
-            .FirstOrDefaultAsync(ct);
+        var shop = await _branding.GetPublicAsync(card.TenantId, ct);
 
-        return new WorkshopInfoDto(name ?? "Taller", null);
+        return new WorkshopInfoDto(shop.Name, shop.LogoUrl);
     }
 
     public async Task<VehicleOwnerInfo?> GetVehicleOwnerForChallengeAsync(Guid vehicleId, CancellationToken ct)
@@ -284,8 +281,10 @@ internal sealed class EfQrRepository : IQrRepository
                 q.ValidUntil.ToDateTime(TimeOnly.MinValue)))
             .ToListAsync(ct);
 
+        var shop = await _branding.GetPublicAsync(tenantId, ct);
+
         return new OwnerVehicleDto(
             vehicle.Plate, vehicle.Brand, vehicle.Model, vehicle.OdometerKm,
-            orders, quotes, pendingBalance);
+            orders, quotes, pendingBalance, shop.Name, shop.LogoUrl);
     }
 }

@@ -6,12 +6,14 @@ using QRCoder;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using TallerControl.Application.Common;
 using TallerControl.Application.Invoicing;
 using TallerControl.Domain.CounterSales;
 using TallerControl.Domain.Customers;
 using TallerControl.Domain.Invoicing;
 using TallerControl.Domain.Tenancy;
 using TallerControl.Domain.Work;
+using TallerControl.Infrastructure.Branding;
 using TallerControl.Infrastructure.Persistence;
 
 namespace TallerControl.Infrastructure.Invoicing;
@@ -24,8 +26,13 @@ namespace TallerControl.Infrastructure.Invoicing;
 internal sealed class InvoicePdfGenerator : IInvoicePdfGenerator
 {
     private readonly AppDbContext _db;
+    private readonly IWorkshopBranding _branding;
 
-    public InvoicePdfGenerator(AppDbContext db) => _db = db;
+    public InvoicePdfGenerator(AppDbContext db, IWorkshopBranding branding)
+    {
+        _db = db;
+        _branding = branding;
+    }
 
     public async Task<byte[]> GenerateAsync(Guid invoiceId, CancellationToken ct)
     {
@@ -45,7 +52,12 @@ internal sealed class InvoicePdfGenerator : IInvoicePdfGenerator
 
         QuestPDF.Settings.License = LicenseType.Community;
         var model = new InvoiceView(invoice, tenant, data, original);
+        var logo = (await _branding.GetLogoAsync(invoice.TenantId, ct))?.Bytes;
+        return PdfLogo.Generate(l => Build(model, l), logo);
+    }
 
+    private static byte[] Build(InvoiceView model, byte[]? logo)
+    {
         var document = Document.Create(container =>
         {
             container.Page(page =>
@@ -54,7 +66,7 @@ internal sealed class InvoicePdfGenerator : IInvoicePdfGenerator
                 page.Margin(1.5f, Unit.Centimetre);
                 page.DefaultTextStyle(t => t.FontSize(9).FontFamily("Arial"));
 
-                page.Header().Element(c => BuildHeader(c, model));
+                page.Header().Element(c => BuildHeader(c, model, logo));
                 page.Content().Element(c => BuildContent(c, model));
                 page.Footer().Element(c => BuildFooter(c, model));
             });
@@ -99,7 +111,7 @@ internal sealed class InvoicePdfGenerator : IInvoicePdfGenerator
 
     // ── Diseño ───────────────────────────────────────────────────────────────
 
-    private static void BuildHeader(IContainer container, InvoiceView m)
+    private static void BuildHeader(IContainer container, InvoiceView m, byte[]? logo)
     {
         var inv = m.Invoice;
         var letter = inv.InvoiceType.ToString().ToUpperInvariant();
@@ -118,6 +130,9 @@ internal sealed class InvoicePdfGenerator : IInvoicePdfGenerator
 
             col.Item().Border(1).BorderColor(Colors.Grey.Medium).Row(row =>
             {
+                if (logo is { Length: > 0 })
+                    row.ConstantItem(80).Padding(6).AlignMiddle().Image(logo).FitArea();
+
                 row.RelativeItem().Padding(8).Column(c =>
                 {
                     c.Item().Text(m.Tenant.LegalName ?? m.Tenant.Name).Bold().FontSize(14);

@@ -104,4 +104,23 @@ internal sealed class S3ObjectStorage : IObjectStorage
         await stream.CopyToAsync(buffer, ct);
         return buffer.ToArray();
     }
+
+    public async Task<byte[]?> ReadAllAsync(string fileKey, long maxBytes, CancellationToken ct)
+    {
+        try
+        {
+            using var response = await _client.GetObjectAsync(
+                new GetObjectRequest { BucketName = _bucket, Key = fileKey }, ct);
+            if (response.ContentLength > maxBytes) return null;
+
+            using var stream = response.ResponseStream;
+            using var buffer = new MemoryStream();
+            await stream.CopyToAsync(buffer, ct);
+            return buffer.ToArray();
+        }
+        catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+    }
 }

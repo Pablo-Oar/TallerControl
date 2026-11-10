@@ -168,6 +168,8 @@ export interface PublicQuoteItemDto {
 }
 
 export interface PublicQuoteDto {
+  workshopName?: string | null
+  logoUrl?: string | null
   id: string
   number: number
   status: QuoteStatus
@@ -209,6 +211,8 @@ export interface SignatureUploadUrlResponse {
 }
 
 export interface PublicWorkOrderDto {
+  workshopName?: string | null
+  logoUrl?: string | null
   id: string
   number: number
   status: string

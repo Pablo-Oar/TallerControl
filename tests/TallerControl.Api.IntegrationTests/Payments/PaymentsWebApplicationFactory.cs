@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TallerControl.Api.IntegrationTests.Auth;
 using TallerControl.Api.IntegrationTests.Persistence;
+using TallerControl.Api.IntegrationTests.Settings;
 using TallerControl.Application.Auth;
 using TallerControl.Application.Common;
 using TallerControl.Domain.Catalog;
@@ -38,9 +39,25 @@ internal sealed class PaymentsWebApplicationFactory : WebApplicationFactory<Prog
 
     public string ConnectionString { get; }
 
+    /// <summary>Almacenamiento falso: aquí se "sube" el logo del taller para los tests de marca.</summary>
+    public FakeObjectStorage Storage { get; } = new();
+
+    private string _ownerConnectionString = string.Empty;
+
     public PaymentsWebApplicationFactory(string connectionString)
     {
         ConnectionString = connectionString;
+    }
+
+    /// <summary>Guarda <paramref name="bytes"/> como logo del taller de prueba (saltando la API).</summary>
+    public async Task SetLogoAsync(byte[] bytes)
+    {
+        var key = $"tenants/{TenantId}/logo";
+        Storage.Seed(key, "image/png", bytes);
+        await using var db = new AppDbContext(
+            BuildOptions(_ownerConnectionString), new TestTenantContext(TenantId), new TestActorContext(), TimeProvider.System);
+        await db.Database.ExecuteSqlInterpolatedAsync(
+            $"UPDATE tenant_settings SET logo_file_key = {key} WHERE tenant_id = {TenantId}");
     }
 
     public static async Task<PaymentsWebApplicationFactory> CreateAsync(PostgresFixture postgres)
@@ -54,7 +71,7 @@ internal sealed class PaymentsWebApplicationFactory : WebApplicationFactory<Prog
             await migrator.Database.MigrateAsync();
         }
 
-        var factory = new PaymentsWebApplicationFactory(appCs);
+        var factory = new PaymentsWebApplicationFactory(appCs) { _ownerConnectionString = cs };
         await factory.SeedAsync(cs);
         return factory;
     }
@@ -68,6 +85,8 @@ internal sealed class PaymentsWebApplicationFactory : WebApplicationFactory<Prog
         {
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(new FakeEmailSender());
+            services.RemoveAll<IObjectStorage>();
+            services.AddSingleton<IObjectStorage>(Storage);
         });
     }
 

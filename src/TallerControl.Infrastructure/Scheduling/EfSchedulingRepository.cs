@@ -15,12 +15,14 @@ internal sealed class EfSchedulingRepository : ISchedulingRepository
 {
     private readonly AppDbContext _db;
     private readonly ITenantContext _tenantContext;
+    private readonly IWorkshopBranding _branding;
     private TimeZoneInfo? _zone;
 
-    public EfSchedulingRepository(AppDbContext db, ITenantContext tenantContext)
+    public EfSchedulingRepository(AppDbContext db, ITenantContext tenantContext, IWorkshopBranding branding)
     {
         _db = db;
         _tenantContext = tenantContext;
+        _branding = branding;
     }
 
     // ── Zona horaria del taller ───────────────────────────────────────────────
@@ -496,9 +498,10 @@ internal sealed class EfSchedulingRepository : ISchedulingRepository
             .ToListAsync(ct);
 
         var label = vehicle is null ? null : $"{vehicle.Brand} {vehicle.Model}".Trim();
+        var shop = await _branding.GetPublicAsync(appt.TenantId, ct);
         return new PublicAppointmentDto(
             appt.ScheduledAt, zone.Id, appt.TotalDurationMinutes, appt.Status,
-            string.IsNullOrEmpty(label) ? null : label, serviceNames);
+            string.IsNullOrEmpty(label) ? null : label, serviceNames, shop.Name, shop.LogoUrl);
     }
 
     public async Task<IReadOnlyList<AvailabilityExceptionDto>> GetExceptionsRangeAsync(

@@ -58,7 +58,9 @@ public record OwnerVehicleDto(
     int OdometerKm,
     IReadOnlyList<OwnerWorkOrderDto> WorkOrders,
     IReadOnlyList<OwnerQuoteDto> ActiveQuotes,
-    decimal PendingBalance);
+    decimal PendingBalance,
+    string? WorkshopName = null,
+    string? LogoUrl = null);
 
 public record OwnerWorkOrderDto(
     int Number,

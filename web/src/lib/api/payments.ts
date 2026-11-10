@@ -24,6 +24,8 @@ export interface WorkOrderPaymentsDto {
 }
 
 export interface PublicPaymentDto {
+  workshopName?: string | null
+  logoUrl?: string | null
   number: number
   method: PaymentMethod
   amount: number

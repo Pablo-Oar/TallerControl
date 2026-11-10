@@ -206,6 +206,8 @@ export const availabilityApi = {
 // ── Página pública del turno (A-03) ──────────────────────────────────────────
 
 export interface PublicAppointmentDto {
+  workshopName?: string | null
+  logoUrl?: string | null
   scheduledAt: string
   timeZone: string
   totalDurationMinutes: number

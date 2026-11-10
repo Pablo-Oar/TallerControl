@@ -61,6 +61,8 @@ export interface OwnerChallengeResult {
 }
 
 export interface OwnerVehicleDto {
+  workshopName?: string | null
+  logoUrl?: string | null
   plate: string
   brand: string | null
   model: string | null

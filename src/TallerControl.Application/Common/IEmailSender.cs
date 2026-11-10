@@ -15,4 +15,5 @@ public sealed record EmailMessage(
     string Subject,
     string HtmlBody,
     string? FromName = null,
-    string? ReplyTo = null);
+    string? ReplyTo = null,
+    LogoImage? Logo = null);

@@ -367,6 +367,67 @@ public sealed class PaymentsEndpointsTests : IAsyncLifetime
         Assert.Equal("valid", body.GetProperty("status").GetString());
     }
 
+    // ── T-BRAND: logo del taller en comprobantes y páginas públicas ───────────
+
+    // PNG de 1x1 píxel (válido para QuestPDF y con la firma que exige LogoPolicy).
+    private static readonly byte[] TinyPng = Convert.FromBase64String(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
+
+    [Fact(DisplayName = "T-BRAND-01: el comprobante público trae el nombre del taller y, sin logo cargado, logoUrl nulo")]
+    public async Task Comprobante_publico_trae_nombre_del_taller_sin_logo()
+    {
+        using var client = CreateClient();
+        await LoginAsync(client, PaymentsWebApplicationFactory.OwnerEmail, PaymentsWebApplicationFactory.Password);
+        var created = await CreatePaymentAsync(client, amount: 100m);
+        var token = created.GetProperty("payment").GetProperty("publicToken").GetString()!;
+
+        using var anonClient = CreateClient();
+        var body = await anonClient.GetFromJsonAsync<JsonElement>($"/api/public/v1/payments/{token}");
+
+        Assert.False(string.IsNullOrWhiteSpace(body.GetProperty("workshopName").GetString()));
+        Assert.Equal(JsonValueKind.Null, body.GetProperty("logoUrl").ValueKind);
+    }
+
+    [Fact(DisplayName = "T-BRAND-02: con logo cargado, el comprobante público trae un enlace al logo y el PDF sale con él")]
+    public async Task Con_logo_cargado_la_pagina_publica_y_el_pdf_lo_usan()
+    {
+        await _factory.SetLogoAsync(TinyPng);
+
+        using var client = CreateClient();
+        await LoginAsync(client, PaymentsWebApplicationFactory.OwnerEmail, PaymentsWebApplicationFactory.Password);
+        var created = await CreatePaymentAsync(client, amount: 100m);
+        var paymentId = created.GetProperty("payment").GetProperty("id").GetString()!;
+        var token = created.GetProperty("payment").GetProperty("publicToken").GetString()!;
+
+        using var anonClient = CreateClient();
+        var body = await anonClient.GetFromJsonAsync<JsonElement>($"/api/public/v1/payments/{token}");
+        Assert.Contains($"tenants/{_factory.TenantId}/logo", body.GetProperty("logoUrl").GetString());
+
+        var pdf = await client.GetAsync($"/api/v1/work-orders/{_factory.WorkOrderId}/payments/{paymentId}/pdf");
+        Assert.Equal(HttpStatusCode.OK, pdf.StatusCode);
+        var bytes = await pdf.Content.ReadAsByteArrayAsync();
+        Assert.True(bytes.Length > 4 && bytes[0] == '%' && bytes[1] == 'P' && bytes[2] == 'D' && bytes[3] == 'F');
+    }
+
+    [Fact(DisplayName = "T-BRAND-03: un logo ilegible no impide generar el PDF (sale sin logo)")]
+    public async Task Logo_corrupto_no_rompe_el_pdf()
+    {
+        // Firma PNG válida pero contenido que no se puede decodificar como imagen.
+        var broken = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3, 4, 5, 6, 7, 8 };
+        await _factory.SetLogoAsync(broken);
+
+        using var client = CreateClient();
+        await LoginAsync(client, PaymentsWebApplicationFactory.OwnerEmail, PaymentsWebApplicationFactory.Password);
+        var created = await CreatePaymentAsync(client, amount: 100m);
+        var paymentId = created.GetProperty("payment").GetProperty("id").GetString()!;
+
+        var pdf = await client.GetAsync($"/api/v1/work-orders/{_factory.WorkOrderId}/payments/{paymentId}/pdf");
+
+        Assert.Equal(HttpStatusCode.OK, pdf.StatusCode);
+        var bytes = await pdf.Content.ReadAsByteArrayAsync();
+        Assert.True(bytes.Length > 4 && bytes[0] == '%' && bytes[1] == 'P' && bytes[2] == 'D' && bytes[3] == 'F');
+    }
+
     // ── T-PUB-07: token inválido ──────────────────────────────────────────────
 
     [Fact(DisplayName = "T-PUB-07: token inválido devuelve 404")]
