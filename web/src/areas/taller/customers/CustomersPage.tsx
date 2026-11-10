@@ -68,7 +68,7 @@ export function CustomersPage() {
       sortable: true,
       cell: c =>
         c.balance > 0 ? (
-          <span className="tabular-nums font-semibold text-tc-stamp-red">{fmtARS(c.balance)}</span>
+          <span className="tabular-nums font-semibold text-tc-danger-solid">{fmtARS(c.balance)}</span>
         ) : (
           <span className="text-tc-text-muted">—</span>
         ),
@@ -95,7 +95,7 @@ export function CustomersPage() {
         </form>
         <button
           onClick={() => { setShowDeleted(v => !v); setPage(1) }}
-          className={`shrink-0 whitespace-nowrap border px-3 py-2 max-md:min-h-11 text-xs font-bold tracking-wider uppercase transition-colors ${showDeleted ? 'border-red-300 bg-red-50 text-red-700' : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'}`}
+          className={`shrink-0 whitespace-nowrap border px-3 py-2 max-md:min-h-11 text-xs font-bold tracking-wider uppercase transition-colors ${showDeleted ? 'border-tc-danger-border bg-tc-danger-bg text-tc-danger-text' : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'}`}
         >
           {showDeleted ? 'Ocultar eliminados' : 'Ver eliminados'}
         </button>
@@ -121,7 +121,7 @@ export function CustomersPage() {
           <>
             <p className="truncate text-sm font-medium text-tc-text">{c.name}</p>
             <p className="mt-0.5 break-all text-xs text-tc-text-muted">{[c.email, c.phone, c.docNumber].filter(Boolean).join(' · ') || '—'}</p>
-            {c.balance > 0 && <p className="mt-1 text-sm font-semibold tabular-nums text-tc-stamp-red">Saldo {fmtARS(c.balance)}</p>}
+            {c.balance > 0 && <p className="mt-1 text-sm font-semibold tabular-nums text-tc-danger-solid">Saldo {fmtARS(c.balance)}</p>}
           </>
         )}
         loading={isLoading}

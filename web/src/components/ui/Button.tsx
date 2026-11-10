@@ -14,7 +14,7 @@ const variants = {
   secondary:
     'bg-white text-tc-text-secondary border border-tc-border hover:bg-tc-surface focus-visible:ring-tc-navy-text',
   danger:
-    'bg-tc-stamp-red text-white hover:bg-red-700 focus-visible:ring-tc-stamp-red border border-tc-stamp-red',
+    'bg-tc-danger-solid text-white hover:brightness-90 focus-visible:ring-tc-danger-solid border border-tc-danger-solid',
   excel:
     'bg-tc-success-solid text-white hover:brightness-90 focus-visible:ring-tc-success-solid border border-tc-success-solid',
   ghost:

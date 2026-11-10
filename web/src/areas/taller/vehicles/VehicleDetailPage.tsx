@@ -63,7 +63,7 @@ export function VehicleDetailPage() {
     )
   }
   if (error || !vehicle) {
-    return <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">No se pudo cargar el vehículo.</p>
+    return <p className="border border-tc-danger-border bg-tc-danger-bg px-4 py-3 text-sm text-tc-danger-text">No se pudo cargar el vehículo.</p>
   }
 
   const items = history.data?.pages.flatMap(p => p.items).map(toItem) ?? []

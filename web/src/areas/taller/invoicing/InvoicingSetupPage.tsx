@@ -215,22 +215,22 @@ function CertificatesSection({
                       <span className="font-medium text-sm text-tc-text">{cert.name}</span>
                       <span className="font-mono text-xs text-tc-text-secondary">{cert.cuit}</span>
                       {cert.environment === 'homologation' && (
-                        <span className="border border-amber-300 px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-amber-700">
+                        <span className="border border-tc-warning-border px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-tc-warning-text">
                           Homologación (pruebas)
                         </span>
                       )}
                       {cert.isPrimary && (
-                        <span className="border border-blue-300 px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-blue-700">
+                        <span className="border border-tc-info-border px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-tc-info-text">
                           Principal
                         </span>
                       )}
                       <span
                         className={`border px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase ${
                           cert.status === 'active'
-                            ? 'border-green-300 text-green-700'
+                            ? 'border-tc-success-border text-tc-success-text'
                             : cert.status === 'pending'
-                              ? 'border-amber-300 text-amber-700'
-                              : 'border-red-300 text-red-700'
+                              ? 'border-tc-warning-border text-tc-warning-text'
+                              : 'border-tc-danger-border text-tc-danger-text'
                         }`}
                       >
                         {cert.status === 'active' ? 'Activo' : cert.status === 'pending' ? 'Pendiente' : cert.status === 'revoked' ? 'Revocado' : 'Vencido'}
@@ -307,7 +307,7 @@ function CertificatesSection({
               </Button>
             </div>
             {testResult && (
-              <p className={`text-sm ${testResult.startsWith('✓') ? 'text-green-700' : 'text-tc-stamp-red'}`}>
+              <p className={`text-sm ${testResult.startsWith('✓') ? 'text-tc-success-text' : 'text-tc-danger-solid'}`}>
                 {testResult}
               </p>
             )}
@@ -381,7 +381,7 @@ function CertificatesSection({
               />
               Certificado principal
             </label>
-            {error && <p className="text-sm text-tc-stamp-red">{error}</p>}
+            {error && <p className="text-sm text-tc-danger-solid">{error}</p>}
             <div className="flex justify-end gap-2">
               <Button variant="secondary" type="button" onClick={() => setShowForm(false)}>
                 Cancelar
@@ -409,7 +409,7 @@ function CertificatesSection({
             <p className="text-xs text-tc-text-muted">
               El vencimiento se lee del propio certificado, y se verifica que corresponda al CSR que generaste acá.
             </p>
-            {uploadError && <p className="text-sm text-tc-stamp-red">{uploadError}</p>}
+            {uploadError && <p className="text-sm text-tc-danger-solid">{uploadError}</p>}
             <div className="flex justify-end gap-2">
               <Button variant="secondary" type="button" onClick={() => setUploadId(null)}>
                 Cancelar
@@ -433,7 +433,7 @@ function ExpiryLine({ cert }: { cert: FiscalCertificateDto }) {
   const soon = !expired && days <= EXPIRY_WARNING_DAYS
   return (
     <p
-      className={`border-t border-tc-border px-4 py-2 text-xs ${expired ? 'text-tc-stamp-red' : soon ? 'text-amber-700' : 'text-tc-text-muted'}`}
+      className={`border-t border-tc-border px-4 py-2 text-xs ${expired ? 'text-tc-danger-solid' : soon ? 'text-tc-warning-text' : 'text-tc-text-muted'}`}
       role={expired || soon ? 'alert' : undefined}
     >
       {expired
@@ -539,7 +539,7 @@ function PointsOfSaleSection({
                   <td className="py-2.5">
                     <span
                       className={`border px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase ${
-                        pos.isActive ? 'border-green-300 text-green-700' : 'border-tc-border text-tc-text-muted'
+                        pos.isActive ? 'border-tc-success-border text-tc-success-text' : 'border-tc-border text-tc-text-muted'
                       }`}
                     >
                       {pos.isActive ? 'Activo' : 'Inactivo'}
@@ -567,7 +567,7 @@ function PointsOfSaleSection({
               <input type="checkbox" checked={editActive} onChange={e => setEditActive(e.target.checked)} className="accent-tc-purple" />
               Activo (un punto de venta inactivo no se ofrece para facturar)
             </label>
-            {error && <p className="text-sm text-tc-stamp-red">{error}</p>}
+            {error && <p className="text-sm text-tc-danger-solid">{error}</p>}
             <div className="flex justify-end gap-2">
               <Button variant="secondary" type="button" onClick={() => setEditPos(null)}>Cancelar</Button>
               <Button type="submit" loading={saving}>Guardar</Button>
@@ -597,7 +597,7 @@ function PointsOfSaleSection({
               inputClassName="tabular-nums"
             />
             <FormField label="Nombre" value={name} onChange={e => setName(e.target.value)} required />
-            {error && <p className="text-sm text-tc-stamp-red">{error}</p>}
+            {error && <p className="text-sm text-tc-danger-solid">{error}</p>}
             <div className="flex justify-end gap-2">
               <Button variant="secondary" type="button" onClick={() => setShowForm(false)}>
                 Cancelar

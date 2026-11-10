@@ -8,7 +8,7 @@ import { Button } from './ui/Button'
 export function LoadError({ what, onRetry }: { what: string; onRetry: () => void }) {
   const offline = typeof navigator !== 'undefined' && navigator.onLine === false
   return (
-    <div role="alert" className="space-y-3 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+    <div role="alert" className="space-y-3 border border-tc-danger-border bg-tc-danger-bg px-4 py-3 text-sm text-tc-danger-text">
       <p>
         {offline
           ? `Sin conexión. No se pudo cargar ${what}: esto todavía no se abrió en este celular y necesita internet.`

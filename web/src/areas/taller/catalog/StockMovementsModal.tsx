@@ -18,14 +18,14 @@ export function StockMovementsModal({ item, onClose }: { item: CatalogItemListDt
         </p>
 
         {isLoading && <p className="text-sm text-tc-text-muted">Cargando…</p>}
-        {error && <p role="alert" className="text-sm text-tc-stamp-red">No se pudieron cargar los movimientos.</p>}
+        {error && <p role="alert" className="text-sm text-tc-danger-solid">No se pudieron cargar los movimientos.</p>}
         {data && data.length === 0 && <p className="text-sm text-tc-text-muted">Todavía no hay movimientos.</p>}
 
         {data && data.length > 0 && (
           <ul className="max-h-[60vh] divide-y divide-tc-border overflow-auto border border-tc-border">
             {data.map(m => (
               <li key={m.id} className="flex items-start gap-3 px-3 py-2 text-sm">
-                <span className={`w-16 shrink-0 text-right font-bold tabular-nums ${m.quantity < 0 ? 'text-tc-stamp-red' : 'text-green-700'}`}>
+                <span className={`w-16 shrink-0 text-right font-bold tabular-nums ${m.quantity < 0 ? 'text-tc-danger-solid' : 'text-tc-success-text'}`}>
                   {m.quantity > 0 ? '+' : ''}{m.quantity}
                 </span>
                 <span className="min-w-0 flex-1">

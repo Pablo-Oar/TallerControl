@@ -152,7 +152,7 @@ export function SearchPicker<T>({
           <button
             type="button"
             onClick={clear}
-            className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-2 text-xs font-bold uppercase tracking-wider text-tc-text-secondary hover:text-tc-stamp-red"
+            className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-2 text-xs font-bold uppercase tracking-wider text-tc-text-secondary hover:text-tc-danger-solid"
           >
             Cambiar
           </button>

@@ -57,7 +57,7 @@ export function IvaBookPage() {
           )}
         </div>
       </div>
-      <p className="border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+      <p className="border border-tc-warning-border bg-tc-warning-bg px-3 py-2 text-xs text-tc-warning-text">
         El archivo CITI trae los registros de Compras y Ventas en el diseño de ancho fijo de ARCA (cabecera y alícuotas). Importalo en el validador de ARCA y consultá con tu contador antes de presentarlo. Las compras sin punto de venta y número de factura quedan afuera y se listan en el LEEME del zip; las facturas de prueba (homologación) no se incluyen.
       </p>
 
@@ -123,7 +123,7 @@ export function IvaBookPage() {
                         <td className="px-3 py-2 font-mono text-xs tabular-nums">{entry.invoiceNumber ?? '—'}</td>
                         <td className="px-3 py-2 text-xs text-tc-text-secondary">
                           {entry.invoiceType ?? '—'}
-                          {entry.observations && <span className="ml-1 font-bold text-tc-stamp-red">NC</span>}
+                          {entry.observations && <span className="ml-1 font-bold text-tc-danger-solid">NC</span>}
                         </td>
                         <td className="px-3 py-2 font-mono text-xs text-tc-text-secondary">{entry.cae ?? '—'}</td>
                         <td className="px-3 py-2 text-tc-text-secondary">{entry.counterpartyName}</td>
@@ -176,7 +176,7 @@ export function IvaBookPage() {
                         <td className="px-3 py-2 font-mono text-xs tabular-nums">{entry.date.slice(0, 10)}</td>
                         <td className="px-3 py-2 text-tc-text-secondary">{entry.counterpartyName}</td>
                         <td className="px-3 py-2 font-mono text-xs tabular-nums">
-                          {entry.invoiceNumber ?? <span className="text-tc-stamp-red">Sin datos fiscales</span>}
+                          {entry.invoiceNumber ?? <span className="text-tc-danger-solid">Sin datos fiscales</span>}
                         </td>
                         <td className="px-3 py-2 text-right tabular-nums text-tc-text-secondary">{fmtARS(entry.netAmount)}</td>
                         <td className="px-3 py-2 text-right tabular-nums text-tc-text-secondary">{fmtARS(entry.vatAmount)}</td>

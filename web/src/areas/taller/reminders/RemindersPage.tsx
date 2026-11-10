@@ -38,7 +38,7 @@ const COLUMNS: DataTableColumn<ReminderListDto>[] = [
       <div className="min-w-0">
         <p className="text-tc-text">
           {dueSoon(r) && (
-            <span className="mr-1.5 inline-block rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-amber-700">
+            <span className="mr-1.5 inline-block rounded-md border border-tc-warning-border bg-tc-warning-bg px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-tc-warning-text">
               Próximo
             </span>
           )}
@@ -126,7 +126,7 @@ export function RemindersPage() {
       </div>
 
       {error && (
-        <div className="border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 flex items-center justify-between">
+        <div className="border border-tc-danger-border bg-tc-danger-bg px-4 py-2 text-sm text-tc-danger-text flex items-center justify-between">
           <span>{error}</span>
           <button className="text-xs underline" onClick={() => setError(null)}>Cerrar</button>
         </div>
@@ -168,7 +168,7 @@ export function RemindersPage() {
             <div className="flex flex-wrap items-center gap-x-2">
               <VehicleLabel plate={r.vehiclePlate} brand={r.vehicleBrand} model={r.vehicleModel} inline className="text-sm" />
               {dueSoon(r) && (
-                <span className="rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-amber-700">Próximo</span>
+                <span className="rounded-md border border-tc-warning-border bg-tc-warning-bg px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-tc-warning-text">Próximo</span>
               )}
             </div>
             <p className="text-sm text-tc-text">{r.title}</p>

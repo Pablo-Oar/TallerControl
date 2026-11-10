@@ -147,14 +147,14 @@ export function MechanicWorkOrdersPage() {
                   <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                     <StatusBadge status={order.status} label={STATUS_LABELS[order.status]} />
                     {order.priority === 'high' && (
-                      <span className="border border-amber-600 bg-amber-100 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-amber-800">{PRIORITY_LABELS[order.priority]}</span>
+                      <span className="border border-tc-warning-solid bg-tc-warning-bg px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-tc-warning-text">{PRIORITY_LABELS[order.priority]}</span>
                     )}
                   </div>
                   <p className="mt-1.5 truncate text-xs">
                     {order.assignedMechanicName == null ? (
                       order.status === 'delivered' || order.status === 'cancelled'
                         ? null
-                        : <span className="font-semibold text-amber-700">Sin asignar</span>
+                        : <span className="font-semibold text-tc-warning-text">Sin asignar</span>
                     ) : mine ? (
                       <span className="font-semibold text-tc-purple">{order.assignedMechanicName}</span>
                     ) : (

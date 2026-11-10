@@ -115,7 +115,7 @@ export function VehiclesPage() {
         </form>
         <button
           onClick={() => { setShowDeleted(v => !v); setPage(1) }}
-          className={`shrink-0 whitespace-nowrap border px-3 py-2 max-md:min-h-11 text-xs font-bold tracking-wider uppercase transition-colors ${showDeleted ? 'border-red-300 bg-red-50 text-red-700' : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'}`}
+          className={`shrink-0 whitespace-nowrap border px-3 py-2 max-md:min-h-11 text-xs font-bold tracking-wider uppercase transition-colors ${showDeleted ? 'border-tc-danger-border bg-tc-danger-bg text-tc-danger-text' : 'border-tc-border bg-white text-tc-text-secondary hover:bg-tc-surface'}`}
         >
           {showDeleted ? 'Ocultar eliminados' : 'Ver eliminados'}
         </button>

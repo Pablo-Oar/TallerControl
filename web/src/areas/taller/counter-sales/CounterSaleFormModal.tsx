@@ -80,7 +80,7 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
     <Modal title="Nueva venta de mostrador" onClose={onClose} className="max-w-2xl">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {serverError && (
-          <p className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
+          <p className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">{serverError}</p>
         )}
 
         <CustomerPicker
@@ -102,7 +102,7 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
           </div>
 
           {errors.items && typeof errors.items === 'object' && 'message' in errors.items && (
-            <p className="text-xs text-red-600">{errors.items.message as string}</p>
+            <p className="text-xs text-tc-danger-text">{errors.items.message as string}</p>
           )}
 
           {fields.map((field, idx) => (
@@ -110,7 +110,7 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Ítem {idx + 1}</span>
                 {fields.length > 1 && (
-                  <button type="button" onClick={() => remove(idx)} className="text-xs text-tc-stamp-red hover:opacity-70">
+                  <button type="button" onClick={() => remove(idx)} className="text-xs text-tc-danger-solid hover:opacity-70">
                     Quitar
                   </button>
                 )}

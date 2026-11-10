@@ -133,7 +133,7 @@ export function PublicQrPage() {
           </div>
 
           {error && (
-            <div className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <div className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">
               {error}
             </div>
           )}
@@ -210,7 +210,7 @@ export function PublicQrPage() {
           {/* Step: reportar llaves encontradas */}
           {step === 'found-keys' && (
             <form onSubmit={handleFoundKeys} className="space-y-4">
-              <div className="border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              <div className="border border-tc-warning-border bg-tc-warning-bg px-3 py-2 text-sm text-tc-warning-text">
                 Vas a avisar al taller que encontraste estas llaves. Podés dejar tus datos para que
                 puedan contactarte.
               </div>
@@ -230,7 +230,7 @@ export function PublicQrPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full border border-amber-500 bg-amber-500 py-2.5 text-xs font-bold tracking-wider uppercase text-white hover:bg-transparent hover:text-amber-600 transition-colors disabled:opacity-40"
+                className="w-full border border-tc-warning-solid bg-tc-warning-solid py-2.5 text-xs font-bold tracking-wider uppercase text-white hover:bg-transparent hover:text-tc-warning-text transition-colors disabled:opacity-40"
               >
                 {loading ? 'Enviando…' : 'Enviar aviso al taller'}
               </button>
@@ -245,9 +245,9 @@ export function PublicQrPage() {
           )}
 
           {step === 'found-keys-done' && (
-            <div className="border border-green-200 bg-green-50 px-4 py-4 text-center">
-              <p className="font-bold text-green-800">Aviso enviado</p>
-              <p className="mt-1 text-sm text-green-700">
+            <div className="border border-tc-success-border bg-tc-success-bg px-4 py-4 text-center">
+              <p className="font-bold text-tc-success-text">Aviso enviado</p>
+              <p className="mt-1 text-sm text-tc-success-text">
                 El taller fue notificado. Muchas gracias por tu ayuda.
               </p>
             </div>
@@ -258,7 +258,7 @@ export function PublicQrPage() {
             <div className="pt-1 text-center">
               <button
                 type="button"
-                className="text-xs text-tc-text-muted hover:text-amber-600 transition-colors"
+                className="text-xs text-tc-text-muted hover:text-tc-warning-text transition-colors"
                 onClick={() => { setStep('found-keys'); setError(null) }}
               >
                 Encontré estas llaves — no soy el dueño
