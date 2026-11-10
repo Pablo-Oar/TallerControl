@@ -36,8 +36,20 @@ const config: Record<string, { label: string; cls: string }> = {
   time_ok:           { label: 'AL DÍA',       cls: 'border border-slate-300 bg-slate-50 text-tc-text-secondary' },
   // Facturas ARCA
   authorized:        { label: 'AUTORIZADA',   cls: 'border border-tc-done-border bg-tc-done-bg text-tc-done-text' },
+  // Tarjetas QR: libre = neutro (como borrador), asignada = verde (en uso), perdida = ámbar (atención), revocada = anulada
+  free:              { label: 'LIBRE',        cls: 'border border-slate-300 bg-slate-50 text-tc-text-secondary' },
+  assigned:          { label: 'ASIGNADA',     cls: 'border border-tc-done-border bg-tc-done-bg text-tc-done-text' },
+  lost:              { label: 'PERDIDA',      cls: 'border border-tc-warning-border bg-tc-warning-bg text-tc-warning-text' },
+  revoked:           { label: 'REVOCADA',     cls: 'border border-tc-void-border bg-white text-tc-void-text' },
+  // Cobros, usuarios y stock: vigente/activo/suficiente = verde, anulado/inactivo = anulada, stock bajo = ámbar
+  valid:             { label: 'VIGENTE',      cls: 'border border-tc-done-border bg-tc-done-bg text-tc-done-text' },
+  voided:            { label: 'ANULADO',      cls: 'border border-tc-void-border bg-white text-tc-void-text' },
+  active:            { label: 'ACTIVO',       cls: 'border border-tc-done-border bg-tc-done-bg text-tc-done-text' },
+  disabled:          { label: 'INACTIVO',     cls: 'border border-tc-void-border bg-white text-tc-void-text' },
+  low_stock:         { label: 'STOCK BAJO',   cls: 'border border-tc-warning-border bg-tc-warning-bg text-tc-warning-text' },
+  ok:                { label: 'OK',           cls: 'border border-tc-done-border bg-tc-done-bg text-tc-done-text' },
   // Appointments
-  confirmed:         { label: 'CONFIRMADO',   cls: 'border border-tc-done-border bg-tc-done-bg text-tc-done-text' },
+  confirmed:        { label: 'CONFIRMADO',   cls: 'border border-tc-done-border bg-tc-done-bg text-tc-done-text' },
 }
 
 /** Qué significa cada estado (redacción común a órdenes, presupuestos, turnos, compras, ventas y tarjetas). */
