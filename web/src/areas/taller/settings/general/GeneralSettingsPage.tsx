@@ -161,8 +161,8 @@ export function GeneralSettingsPage() {
   const saveError = saveMutation.error instanceof ApiError ? saveMutation.error.detail : null
 
   return (
-    <div className="max-w-4xl space-y-6">
-      <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Configuración general</h1>
+    <div className="max-w-4xl space-y-6 xl:grid xl:max-w-6xl xl:grid-cols-[20rem_minmax(0,1fr)] xl:items-start xl:gap-6 xl:space-y-0">
+      <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase xl:col-span-2">Configuración general</h1>
 
       {/* Logo */}
       <section className="rounded-xl overflow-hidden border border-tc-border bg-white">

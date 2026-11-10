@@ -21,6 +21,8 @@ import { Pagination } from '../../../components/ui/Pagination'
 import { AppointmentFormModal } from './AppointmentFormModal'
 import { inputCls } from '../../../lib/styles'
 import { FilterSelect } from '@/components/ui/FilterControls'
+import { RowMenu } from '../../../components/ui/RowMenu'
+import { cn } from '@/lib/utils'
 
 const STATUS_OPTIONS: { value: AppointmentStatus | ''; label: string }[] = [
   { value: '', label: 'Todos los estados' },
@@ -54,7 +56,7 @@ const COLUMNS: DataTableColumn<AppointmentListDto>[] = [
   { key: 'plate', header: 'Vehículo', widthClass: 'w-32', cell: a => <span className="font-mono tracking-widest text-tc-text-secondary">{a.vehiclePlate}</span> },
   { key: 'mechanic', header: 'Mecánico', widthClass: 'w-40', cell: a => <span className="text-tc-text-secondary">{a.mechanicName ?? <span className="text-tc-text-muted">—</span>}</span> },
   { key: 'notes', header: 'Notas', cell: a => <span className="line-clamp-1 text-xs text-tc-text-secondary">{a.notes ?? <span className="text-tc-text-muted">—</span>}</span> },
-  { key: 'duration', header: 'Duración', widthClass: 'w-28', cell: a => <span className="tabular-nums text-tc-text-secondary">{a.totalDurationMinutes} min</span> },
+  { key: 'duration', header: 'Duración', align: 'center', widthClass: 'w-28', cell: a => <span className="tabular-nums text-tc-text-secondary">{a.totalDurationMinutes} min</span> },
   {
     key: 'status',
     header: 'Estado',
@@ -186,16 +188,25 @@ export function AppointmentsPage() {
         actions={a =>
           isOpen(a) ? (
             <>
+              {/* Celular: todas las acciones como botones; escritorio: las principales y el resto en «⋯». */}
               {can('workorders.write') && (
                 <RowAction tone="purple" className={actionCls} onClick={() => { setConvertError(null); setConverting(a) }}>
                   Crear orden
                 </RowAction>
               )}
               <RowAction tone="purple" className={actionCls} onClick={() => openEdit(a.id)}>Editar</RowAction>
-              <RowAction tone="purple" className={actionCls} onClick={() => openLink(a.id)}>Enlace</RowAction>
-              <RowAction tone="danger" className={actionCls} onClick={() => { setCancellingId(a.id); setCancelReason('') }}>
+              <RowAction tone="purple" className={cn(actionCls, 'md:hidden')} onClick={() => openLink(a.id)}>Enlace</RowAction>
+              <RowAction tone="danger" className={cn(actionCls, 'md:hidden')} onClick={() => { setCancellingId(a.id); setCancelReason('') }}>
                 Cancelar
               </RowAction>
+              <span className="max-md:hidden">
+                <RowMenu
+                  items={[
+                    { label: 'Enlace para el cliente', onSelect: () => openLink(a.id) },
+                    { label: 'Cancelar turno', tone: 'danger', onSelect: () => { setCancellingId(a.id); setCancelReason('') } },
+                  ]}
+                />
+              </span>
             </>
           ) : null
         }

@@ -80,6 +80,8 @@ interface DataTableProps<T> {
   className?: string
   /** Anchos de columna firmes (`table-fixed`): las columnas con `widthClass` en % reparten el ancho de forma pareja. */
   fixedLayout?: boolean
+  /** Ancho de la columna de acciones (con `fixedLayout`, p. ej. `w-[22%]`). */
+  actionsWidthClass?: string
 }
 
 const ALIGN: Record<NonNullable<DataTableColumn<unknown>['align']>, string> = {
@@ -115,6 +117,7 @@ export function DataTable<T>({
   emptyMessage = 'No hay datos.',
   className,
   fixedLayout = false,
+  actionsWidthClass,
 }: DataTableProps<T>) {
   const serverSort = !!onSortChange
   const [localSort, setLocalSort] = useState<SortState | null>(null)
@@ -228,7 +231,7 @@ export function DataTable<T>({
               )
             })}
             {actions && (
-              <th scope="col" className={cn('bg-tc-stub-bg px-3', !rowHref && 'rounded-r-xl')}>
+              <th scope="col" className={cn('bg-tc-stub-bg px-3', actionsWidthClass, !rowHref && 'rounded-r-xl')}>
                 <span className="sr-only">Acciones</span>
               </th>
             )}

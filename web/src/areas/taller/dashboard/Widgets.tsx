@@ -93,8 +93,8 @@ export function KpiCard({ label, value, accent = 'slate', icon, bar, stats, sub,
   const total = bar?.reduce((sum, seg) => sum + seg.value, 0) ?? 0
 
   const inner = (
-    <div className="group h-full rounded-[22px] border border-slate-400 bg-slate-300 p-1.5 shadow-[0_18px_36px_-14px_rgba(15,23,42,0.45)] transition-all duration-300 hover:shadow-floating motion-safe:hover:-translate-y-1">
-      <div className="flex h-full flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+    <div className="group h-full rounded-[22px] border border-slate-400 bg-slate-300 p-1 shadow-raised transition-all duration-300 hover:shadow-floating motion-safe:hover:-translate-y-1 sm:p-1.5">
+      <div className="flex h-full flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-3 shadow-sm sm:gap-3 sm:px-4 sm:py-4">
         <div className="flex items-start justify-between gap-2">
           <span className="text-[13px] font-medium leading-tight text-tc-text-secondary">{label}</span>
           <IconTile accent={accent}>{icon}</IconTile>
@@ -106,7 +106,7 @@ export function KpiCard({ label, value, accent = 'slate', icon, bar, stats, sub,
           <div
             role="img"
             aria-label={bar.map(seg => `${seg.label}: ${seg.value}`).join(', ')}
-            className="flex h-2 w-full gap-0.5 overflow-hidden rounded-full bg-tc-border"
+            className="flex h-2 w-full gap-0.5 overflow-hidden rounded-full bg-tc-border max-sm:hidden"
           >
             {bar.filter(seg => seg.value > 0).map(seg => (
               <span key={seg.label} className={['h-full', BAR[seg.tone]].join(' ')} style={{ width: `${(seg.value / total) * 100}%` }} />
@@ -115,7 +115,7 @@ export function KpiCard({ label, value, accent = 'slate', icon, bar, stats, sub,
         )}
 
         {stats && stats.length > 0 ? (
-          <div className="mt-auto flex items-end justify-between gap-3 text-xs">
+          <div className="mt-auto flex items-end justify-between gap-3 text-xs max-sm:hidden">
             {stats.slice(0, 2).map((st, i) => (
               <div key={st.label} className={i === 1 ? 'text-right' : ''}>
                 <p className="text-tc-text-muted">{st.label}</p>

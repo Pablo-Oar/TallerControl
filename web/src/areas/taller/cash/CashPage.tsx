@@ -19,6 +19,7 @@ import { LoadError } from '../../../components/LoadError'
 import { useCan } from '../../../lib/auth/permissions'
 import { Badge } from '@/components/ui/Badge'
 import { Checkbox } from '@/components/ui/Checkbox'
+import { ChevronDownIcon } from '@/components/ui/icons'
 
 const KIND_LABELS: Record<CashAccountKind, string> = { cash: 'Efectivo', bank: 'Banco', digital: 'Digital' }
 
@@ -76,12 +77,18 @@ export function CashPage() {
         {can('cash.open') && <Button size="sm" onClick={() => setDialog({ kind: 'create' })}>Nueva cuenta</Button>}
       </div>
 
-      <p className="rounded-2xl border border-tc-border bg-tc-surface px-4 py-3 text-xs leading-relaxed text-tc-text-secondary">
+      <details className="group rounded-2xl border border-tc-border bg-tc-surface text-xs leading-relaxed text-tc-text-secondary">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-4 py-2 font-bold text-tc-text [&::-webkit-details-marker]:hidden">
+          ¿Cómo funciona la caja?
+          <ChevronDownIcon className="h-4 w-4 transition-transform group-open:rotate-180" />
+        </summary>
+        <p className="border-t border-tc-border px-4 py-3">
         Cada <b className="text-tc-text">cuenta</b> es un lugar donde el taller guarda plata: la caja del mostrador, el banco, una billetera virtual.
         Al cobrar o pagar elegís la cuenta y el saldo se actualiza solo. <b className="text-tc-text">Abrir sesión</b> es empezar el turno
         anotando cuánto efectivo hay; <b className="text-tc-text">Cerrar caja</b> es contar al final y ver la diferencia.
         Una cuenta <b className="text-tc-text">inactiva</b> deja de ofrecerse al cobrar, pero conserva su historial.
-      </p>
+        </p>
+      </details>
 
       {accounts && accounts.length > 0 && (
         <div className="flex items-center justify-between rounded-2xl border border-tc-border bg-white px-4 py-3">
