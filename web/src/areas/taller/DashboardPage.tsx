@@ -19,18 +19,23 @@ const RevenueChart = lazy(() => import('./dashboard/RevenueChart'))
 const REFRESH_MS = 60_000
 
 function DashboardSkeleton() {
+  const block = 'animate-pulse rounded-xl border border-tc-border bg-tc-surface'
   return (
     <div className="space-y-6" role="status" aria-label="Cargando el Inicio">
-      <div className="h-6 w-32 animate-pulse bg-slate-100" />
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="h-6 w-32 animate-pulse rounded-md bg-tc-surface" />
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
         {[0, 1, 2, 3].map(i => (
-          <div key={i} className="h-28 animate-pulse border border-tc-border bg-slate-50" />
+          <div key={i} className={`h-28 rounded-[22px] sm:h-36 ${block}`} />
         ))}
       </div>
-      <div className="h-11 animate-pulse border border-tc-border bg-slate-50" />
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+        {[0, 1, 2, 3].map(i => (
+          <div key={i} className={`h-11 ${block}`} />
+        ))}
+      </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        <div className="h-64 animate-pulse border border-tc-border bg-slate-50 lg:col-span-3" />
-        <div className="h-64 animate-pulse border border-tc-border bg-slate-50 lg:col-span-2" />
+        <div className={`h-64 lg:col-span-3 ${block}`} />
+        <div className={`h-64 lg:col-span-2 ${block}`} />
       </div>
     </div>
   )
@@ -68,7 +73,7 @@ export function DashboardPage() {
       <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">Inicio</h1>
 
       {/* Fila 1: los cuatro indicadores */}
-      <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
         <KpiCard
           label="Ingresos de hoy"
           value={fmtARS(data.revenueToday)}
