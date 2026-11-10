@@ -163,7 +163,7 @@ export function MechanicWorkOrdersPage() {
                   </p>
                 </div>
 
-                <div className="flex min-h-[44px] w-8 shrink-0 items-center justify-center border-l border-tc-border bg-tc-stub-bg text-tc-navy-text-dim" aria-hidden="true">
+                <div className="flex min-h-[44px] w-8 shrink-0 items-center justify-center border-l border-tc-border bg-tc-stub-bg text-tc-text-secondary" aria-hidden="true">
                   <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>

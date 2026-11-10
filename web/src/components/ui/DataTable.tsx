@@ -204,7 +204,7 @@ export function DataTable<T>({
                   scope="col"
                   aria-sort={col.sortable ? (active === 'asc' ? 'ascending' : active === 'desc' ? 'descending' : 'none') : undefined}
                   className={cn(
-                    'bg-tc-stub-bg px-3 py-2 text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted first:rounded-l-xl last:rounded-r-xl',
+                    'bg-tc-stub-bg px-3 py-2 text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-secondary first:rounded-l-xl last:rounded-r-xl',
                     ALIGN[col.align ?? 'left'],
                     col.widthClass,
                   )}
@@ -299,7 +299,7 @@ export function DataTable<T>({
             id={`${sortId}-by`}
             value={sort?.key ?? ''}
             onChange={e => applySort(e.target.value ? { key: e.target.value, dir: sort?.dir ?? 'asc' } : null)}
-            className="min-h-11 min-w-0 flex-1 rounded-lg border border-tc-border bg-white px-3 text-sm text-tc-text outline-none focus:border-tc-border-mid"
+            className="min-h-11 min-w-0 flex-1 rounded-lg border border-tc-border-input bg-white px-3 text-sm text-tc-text outline-none focus:border-tc-purple"
           >
             <option value="">Orden original</option>
             {sortableCols.map(c => (
@@ -333,7 +333,7 @@ export function DataTable<T>({
                 <Link
                   to={rowHref(row)!}
                   aria-label={rowLabel?.(row) ?? 'Abrir'}
-                  className="flex min-h-[44px] w-11 shrink-0 items-center justify-center border-l border-tc-border bg-tc-stub-bg text-tc-navy-text-dim hover:text-tc-purple"
+                  className="flex min-h-[44px] w-11 shrink-0 items-center justify-center border-l border-tc-border bg-tc-stub-bg text-tc-text-secondary hover:text-tc-purple"
                 >
                   <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                     <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />

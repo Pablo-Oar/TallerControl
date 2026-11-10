@@ -9,17 +9,19 @@
   --color-tc-navy-surface: #0d1f38;
   --color-tc-navy-deep: #05101f;
   --color-tc-navy-text: #6f93c8;
-  --color-tc-navy-text-dim: #5b7fb3;
+  --color-tc-navy-text-dim: #6a8dbf;
 
   /* Content surface */
   --color-tc-white: #ffffff;
-  --color-tc-surface: #f8fafc;
-  --color-tc-border: #e2e8f0;
-  --color-tc-border-mid: #cbd5e1;
+  --color-tc-surface: #e6ebf0;
+  --color-tc-border: #c7ccd6;
+  --color-tc-border-mid: #b1bdcc;
+  /* Borde de campos y controles: 3,09 : 1 sobre blanco (WCAG 1.4.11) */
+  --color-tc-border-input: #8394ab;
 
   /* Monetary amounts — carbon purple */
   --color-tc-purple: #7c3aed;
-  --color-tc-purple-light: #ede9fe;
+  --color-tc-purple-light: #cbc5e6;
   --color-tc-purple-mid: #5b21b6;
 
   /* Status stamps */
@@ -40,16 +42,39 @@
   --color-tc-perf: #c7d3e8;
 
   /* Stub column */
-  --color-tc-stub-bg: #f0f4fb;
+  --color-tc-stub-bg: #bdc1c9;
+
+
+  /* Semánticos: éxito / atención / peligro / información (bg, border, text, solid) */
+  --color-tc-success-bg: #d1fae5;
+  --color-tc-success-border: #6ee7b7;
+  --color-tc-success-text: #065f46;
+  --color-tc-success-solid: #15803d;
+  --color-tc-warning-bg: #fef3c7;
+  --color-tc-warning-border: #fcd34d;
+  --color-tc-warning-text: #92400e;
+  --color-tc-warning-solid: #b45309;
+  --color-tc-danger-bg: #fef2f2;
+  --color-tc-danger-border: #fca5a5;
+  --color-tc-danger-text: #b91c1c;
+  --color-tc-danger-solid: #d32f2f;
+  --color-tc-info-bg: #dbeafe;
+  --color-tc-info-border: #93c5fd;
+  --color-tc-info-text: #1e40af;
+  --color-tc-info-solid: #2563eb;
+  --color-tc-neutral-bg: #f8fafc;
+  --color-tc-neutral-border: #cbd5e1;
+  --color-tc-neutral-text: #475569;
+  --color-tc-neutral-solid: #475569;
 
   /* Typography */
-  --font-family-sans: ui-sans-serif, system-ui, Arial, Helvetica, sans-serif;
-  --font-family-mono: ui-monospace, 'Courier New', monospace;
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, Arial, Helvetica, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'Courier New', monospace;
 
   /* Semantic text tokens */
   --color-tc-text: #0f172a;
-  --color-tc-text-secondary: #475569;
-  --color-tc-text-muted: #64748b;
+  --color-tc-text-secondary: #3d495c;
+  --color-tc-text-muted: #5b6b82;
 }
 
 /* Puente shadcn → tc-* (UI-R2, D-26 provisoria: esquinas rectas; --radius es la palanca única) */
@@ -70,7 +95,7 @@
   --accent-foreground: var(--color-tc-purple-mid);
   --destructive: var(--color-tc-stamp-red);
   --border: var(--color-tc-border);
-  --input: var(--color-tc-border-mid);
+  --input: var(--color-tc-border-input);
   --ring: var(--color-tc-purple);
   --radius: 0px;
 }
@@ -203,7 +228,7 @@ input[data-auth-field]:focus-visible {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f0f4fb;
+  background: #e6ebf0;
 }
 ::-webkit-scrollbar-thumb {
   background: #c7d3e8;

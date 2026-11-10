@@ -90,7 +90,7 @@ export const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(function A
             isPassword ? 'pr-11' : 'pr-3',
             error
               ? 'border-tc-stamp-red'
-              : 'border-tc-border-mid hover:border-tc-text-muted focus:border-tc-purple',
+              : 'border-tc-border-input hover:border-tc-text-muted focus:border-tc-purple',
           )}
           {...rest}
         />

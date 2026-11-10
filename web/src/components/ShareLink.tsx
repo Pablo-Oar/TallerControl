@@ -45,7 +45,7 @@ export function ShareLink({ url, whatsappText, label = 'Enlace' }: { url: string
         href={`https://wa.me/?text=${encodeURIComponent(`${whatsappText} ${url}`)}`}
         target="_blank"
         rel="noreferrer"
-        className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#1fa855] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#188f48] focus-visible:ring-2 focus-visible:ring-[#1fa855] focus-visible:ring-offset-1 focus-visible:outline-none"
+        className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-tc-success-solid px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:brightness-90 focus-visible:ring-2 focus-visible:ring-tc-success-solid focus-visible:ring-offset-1 focus-visible:outline-none"
       >
         <WhatsappIcon className="h-5 w-5" />
         Enviar por WhatsApp

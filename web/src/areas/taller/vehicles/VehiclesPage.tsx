@@ -109,7 +109,7 @@ export function VehiclesPage() {
             value={q}
             onChange={e => setQ(e.target.value)}
             placeholder="Buscar por patente, marca o modelo…"
-            className="min-w-0 flex-1 border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-border-mid"
+            className="min-w-0 flex-1 border border-tc-border-input bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-purple"
           />
           <Button type="submit" variant="secondary" size="sm">Buscar</Button>
         </form>

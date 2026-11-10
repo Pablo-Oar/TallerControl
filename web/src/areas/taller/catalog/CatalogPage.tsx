@@ -156,7 +156,7 @@ export function CatalogPage() {
           value={q}
           onChange={e => setQ(e.target.value)}
           placeholder="Buscar por nombre o SKU…"
-          className="max-md:min-h-11 min-w-0 border border-tc-border bg-white px-3 py-2 text-sm text-tc-text-secondary outline-none focus:border-tc-border-mid flex-1"
+          className="max-md:min-h-11 min-w-0 border border-tc-border-input bg-white px-3 py-2 text-sm text-tc-text-secondary outline-none focus:border-tc-purple flex-1"
         />
         <Button type="submit" variant="secondary" size="sm">Buscar</Button>
         </div>
@@ -164,7 +164,7 @@ export function CatalogPage() {
         <select
           value={kindFilter}
           onChange={e => { setKindFilter(e.target.value as CatalogItemKind | ''); setPage(1) }}
-          className="max-md:min-h-11 border border-tc-border bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-border-mid"
+          className="max-md:min-h-11 border border-tc-border-input bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-purple"
         >
           <option value="">Todos los tipos</option>
           <option value="service">Servicios</option>

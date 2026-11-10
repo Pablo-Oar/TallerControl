@@ -6,6 +6,7 @@ import { router } from './app/router.tsx'
 import { AuthProvider } from './lib/auth/AuthContext.tsx'
 import { DialogHost } from './components/ui/dialogs.tsx'
 import { MotionProvider } from './components/motion/MotionProvider.tsx'
+import '@fontsource-variable/inter'
 import './styles/index.css'
 import { z } from 'zod'
 
