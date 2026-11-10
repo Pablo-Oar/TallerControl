@@ -1,17 +1,14 @@
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { RevenueDay } from '../../../lib/api/dashboard'
+import { Tooltip } from '../../../components/ui/Tooltip'
 import { fmtARS, shortDay } from './format'
 import { ChartIcon } from './icons'
 import { WidgetShell } from './Widgets'
 
-const PURPLE = '#7c3aed'
-const PURPLE_LIGHT = '#c4b5fd'
-
-/** Ingresos de los últimos 7 días (cobros + ventas de mostrador). Se carga aparte: recharts no suma al chunk principal (D-41). */
+/** Ingresos de los últimos 7 días (cobros + ventas de mostrador): gráfico de barras propio, sin biblioteca (D-41 revisada). */
 export default function RevenueChart({ days }: { days: RevenueDay[] }) {
-  // `fill` por barra: hoy en violeta pleno, el resto más claro.
-  const data = days.map((d, i) => ({ label: shortDay(d.date), amount: d.amount, fill: i === days.length - 1 ? PURPLE : PURPLE_LIGHT }))
   const total = days.reduce((sum, d) => sum + d.amount, 0)
+  const max = Math.max(1, ...days.map((d) => d.amount))
+  const summary = days.map((d) => `${shortDay(d.date)} ${fmtARS(d.amount)}`).join(', ')
 
   return (
     <WidgetShell title="Ingresos de los últimos 7 días" icon={<ChartIcon />} accent="purple" linkTo="/app/reports" linkLabel="Ver reportes">
@@ -19,23 +16,34 @@ export default function RevenueChart({ days }: { days: RevenueDay[] }) {
         <span className="text-[11px] font-bold tracking-[0.12em] uppercase text-tc-text-secondary">Total de la semana</span>
         <p className="tabular-nums text-xl font-bold text-tc-text">{fmtARS(total)}</p>
       </div>
-      <div
-        className="h-56 px-2 pb-3"
-        role="img"
-        aria-label={`Ingresos por día: ${data.map(d => `${d.label} ${fmtARS(d.amount)}`).join(', ')}`}
-      >
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 12, right: 8, left: 8, bottom: 0 }}>
-            <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-            <YAxis hide domain={[0, (max: number) => Math.max(max, 1)]} />
-            <Tooltip
-              cursor={{ fill: 'rgba(124,58,237,0.08)' }}
-              formatter={(value) => [fmtARS(Number(value)), 'Ingresos']}
-              contentStyle={{ border: '1px solid #c7ccd6', borderRadius: 0, fontSize: 12 }}
-            />
-            <Bar dataKey="amount" maxBarSize={44} isAnimationActive={false} />
-          </BarChart>
-        </ResponsiveContainer>
+      <div className="px-4 pb-4 pt-3" role="img" aria-label={`Ingresos por día: ${summary}`}>
+        <div className="flex h-44 items-end gap-2 border-b border-tc-border sm:gap-3">
+          {days.map((d, i) => {
+            const today = i === days.length - 1
+            const height = d.amount > 0 ? Math.max(4, (d.amount / max) * 100) : 0
+            return (
+              <div key={d.date} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end">
+                <Tooltip content={`${shortDay(d.date)}: ${fmtARS(d.amount)}`} focusable className="h-full w-full items-end justify-center">
+                  <span
+                    aria-hidden="true"
+                    style={{ height: `${height}%` }}
+                    className={`block w-full max-w-11 rounded-t-md transition-colors ${today ? 'bg-tc-purple' : 'bg-tc-purple/40 hover:bg-tc-purple/70'}`}
+                  />
+                </Tooltip>
+              </div>
+            )
+          })}
+        </div>
+        <div className="mt-1.5 flex gap-2 sm:gap-3" aria-hidden="true">
+          {days.map((d, i) => (
+            <span
+              key={d.date}
+              className={`min-w-0 flex-1 truncate text-center text-[11px] ${i === days.length - 1 ? 'font-bold text-tc-text' : 'text-tc-text-muted'}`}
+            >
+              {shortDay(d.date)}
+            </span>
+          ))}
+        </div>
       </div>
     </WidgetShell>
   )

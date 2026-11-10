@@ -56,7 +56,7 @@ export function LoginPage() {
       footer={
         <>
           ¿No tenés cuenta?{' '}
-          <Link to="/registro" className="font-semibold text-tc-purple hover:underline">
+          <Link to="/registro" className="font-semibold text-tc-purple-mid hover:underline">
             Crear cuenta gratis
           </Link>
         </>

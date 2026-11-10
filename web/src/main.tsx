@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { router } from './app/router.tsx'
 import { AuthProvider } from './lib/auth/AuthContext.tsx'
 import { DialogHost } from './components/ui/dialogs.tsx'
-import { MotionProvider } from './components/motion/MotionProvider.tsx'
 import '@fontsource-variable/inter'
 import './styles/index.css'
 import { z } from 'zod'
@@ -34,12 +33,10 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <MotionProvider>
-        <AuthProvider>
-          <RouterProvider router={router} />
-          <DialogHost />
-        </AuthProvider>
-      </MotionProvider>
+      <AuthProvider>
+        <RouterProvider router={router} />
+        <DialogHost />
+      </AuthProvider>
     </QueryClientProvider>
   </StrictMode>,
 )

@@ -62,7 +62,7 @@ export function RegisterPage() {
         title="Verificá tu email"
         subtitle="Verificación pendiente"
         footer={
-          <Link to="/login" className="font-semibold text-tc-purple hover:underline">
+          <Link to="/login" className="font-semibold text-tc-purple-mid hover:underline">
             Volver al inicio de sesión
           </Link>
         }
@@ -86,7 +86,7 @@ export function RegisterPage() {
       footer={
         <>
           ¿Ya tenés cuenta?{' '}
-          <Link to="/login" className="font-semibold text-tc-purple hover:underline">
+          <Link to="/login" className="font-semibold text-tc-purple-mid hover:underline">
             Iniciá sesión
           </Link>
         </>

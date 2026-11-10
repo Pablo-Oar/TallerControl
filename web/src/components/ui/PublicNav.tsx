@@ -10,7 +10,7 @@ export function PublicNav() {
           aria-label="TallerControl, ir al inicio"
           className="inline-flex min-h-[44px] items-center text-xs font-bold tracking-[0.15em] uppercase text-white sm:text-sm sm:tracking-[0.2em]"
         >
-          Taller<span className="text-tc-purple">Control</span>
+          Taller<span className="text-tc-purple-on-dark">Control</span>
         </Link>
         <div className="flex items-center gap-1 sm:gap-2">
           <Link

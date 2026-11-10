@@ -35,7 +35,7 @@ export function Component() {
       <header className="border-b border-tc-navy-mid bg-tc-navy">
         <div className="mx-auto flex h-[52px] max-w-6xl items-center justify-between gap-3 px-4">
           <span className="select-none text-sm font-bold tracking-widest text-white uppercase">
-            TALLER<span className="text-tc-purple">CONTROL</span>
+            TALLER<span className="text-tc-purple-on-dark">CONTROL</span>
           </span>
           <div className="flex items-center gap-3">
             <PlateSearchBar onNavigate={navigate} target="/m" />

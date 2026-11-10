@@ -104,7 +104,7 @@ export function QuotesPage() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <FilterSelect
+        <FilterSelect aria-label="Filtrar por estado"
           value={statusFilter}
           onChange={e => { setStatusFilter(e.target.value as QuoteStatus | ''); setPage(1) }}
           className="rounded-lg border border-tc-border-input bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-purple"

@@ -63,12 +63,12 @@ export function IvaBookPage() {
       </p>
 
       <div className="flex items-center gap-2 flex-wrap">
-        <FilterSelect value={month} onChange={e => setMonth(Number(e.target.value))} className={selectCls}>
+        <FilterSelect aria-label="Mes" value={month} onChange={e => setMonth(Number(e.target.value))} className={selectCls}>
           {MONTHS.map((m, i) => (
             <option key={i + 1} value={i + 1}>{m}</option>
           ))}
         </FilterSelect>
-        <FilterSelect value={year} onChange={e => setYear(Number(e.target.value))} className={selectCls}>
+        <FilterSelect aria-label="Año" value={year} onChange={e => setYear(Number(e.target.value))} className={selectCls}>
           {Array.from({ length: 5 }, (_, i) => now.getFullYear() - i).map(y => (
             <option key={y} value={y}>{y}</option>
           ))}

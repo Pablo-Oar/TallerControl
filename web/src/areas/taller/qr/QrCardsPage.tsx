@@ -188,7 +188,7 @@ export function QrCardsPage() {
           value={q}
           onChange={(e) => { setQ(e.target.value); setPage(1) }}
         />
-        <FilterSelect
+        <FilterSelect aria-label="Filtrar por estado"
           className={`${inputCls} w-36 shrink-0 md:w-auto`}
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value as QrCardStatus | ''); setPage(1) }}
