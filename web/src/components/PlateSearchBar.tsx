@@ -31,11 +31,11 @@ export function PlateSearchBar({ onNavigate, target = '/app/vehicles' }: PlateSe
         autoComplete="off"
         spellCheck={false}
         enterKeyHint="search"
-        className="min-h-[44px] w-32 border border-tc-navy-mid bg-tc-navy-surface px-2 py-1 text-sm sm:w-36 text-white placeholder:text-tc-navy-text outline-none sm:focus:w-48 focus:border-tc-navy-text transition-all"
+        className="min-h-[44px] w-36 rounded-lg border border-tc-navy-mid bg-tc-navy-surface px-2 py-1 text-sm sm:w-36 text-white placeholder:text-tc-navy-text outline-none sm:focus:w-48 focus:border-tc-navy-text transition-all"
       />
       <button
         type="submit"
-        className="min-h-[44px] min-w-[44px] border border-white/40 bg-white/10 px-3 py-1 text-sm font-bold text-white hover:bg-white/20 hover:border-white/70 transition-colors disabled:opacity-50"
+        className="min-h-[44px] min-w-[44px] rounded-lg border border-white/40 bg-white/10 px-3 py-1 text-sm font-bold text-white hover:bg-white/20 hover:border-white/70 transition-colors disabled:opacity-50"
         disabled={!value.trim()}
       >
         Ir

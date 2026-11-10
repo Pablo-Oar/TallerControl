@@ -235,7 +235,7 @@ export function MechanicWorkOrderDetailPage() {
             </div>
           </div>
         ) : (
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center justify-between gap-3">
             {order.mechanicNotes
               ? <p className="text-sm text-tc-text-secondary">{order.mechanicNotes}</p>
               : <p className="text-sm text-tc-text-secondary">Sin notas</p>

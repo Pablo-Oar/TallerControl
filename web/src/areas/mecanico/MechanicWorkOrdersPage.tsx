@@ -92,7 +92,7 @@ export function MechanicWorkOrdersPage() {
         <div className="space-y-2" role="status" aria-live="polite">
           <p className="text-xs font-bold tracking-wider uppercase text-tc-text-muted">Cargando trabajos…</p>
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-20 animate-pulse border border-tc-border bg-tc-surface" />
+            <div key={i} className="h-20 animate-pulse rounded-xl border border-tc-border bg-tc-surface" />
           ))}
         </div>
       )}
@@ -102,7 +102,7 @@ export function MechanicWorkOrdersPage() {
       {data && (
         <div className="space-y-1.5">
           {q && (
-            <div className="flex items-center justify-between gap-2 border border-tc-border bg-white px-3 py-2 text-sm">
+            <div className="flex items-center justify-between gap-2 rounded-xl border border-tc-border bg-white px-3 py-2 text-sm">
               <span>
                 Patente: <span className="font-mono font-bold tracking-widest">{q}</span>
               </span>
@@ -116,7 +116,7 @@ export function MechanicWorkOrdersPage() {
             </div>
           )}
           {visible.length === 0 && (
-            <p className="border border-dashed border-tc-border px-4 py-8 text-center text-sm text-tc-text-muted">
+            <p className="rounded-xl border border-dashed border-tc-border px-4 py-8 text-center text-sm text-tc-text-muted">
               {q
                 ? `Ninguna orden de esta pestaña tiene la patente ${q}.`
                 : statusFilter === 'closed'
@@ -148,7 +148,7 @@ export function MechanicWorkOrdersPage() {
                   <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                     <StatusBadge status={order.status} label={STATUS_LABELS[order.status]} />
                     {order.priority === 'high' && (
-                      <span className="border border-tc-warning-solid bg-tc-warning-bg px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-tc-warning-text">{PRIORITY_LABELS[order.priority]}</span>
+                      <span className="rounded-md border border-tc-warning-solid bg-tc-warning-bg px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-tc-warning-text">{PRIORITY_LABELS[order.priority]}</span>
                     )}
                   </div>
                   <p className="mt-1.5 truncate text-xs">
