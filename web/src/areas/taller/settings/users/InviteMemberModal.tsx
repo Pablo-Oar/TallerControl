@@ -7,6 +7,7 @@ import { FormField, FormSelect } from '../../../../components/ui/FormField'
 import { Modal } from '../../../../components/ui/Modal'
 import { invitationsApi, MECHANIC_EXTRA_PERMISSIONS, type TenantRole } from '../../../../lib/api/users'
 import { ApiError } from '../../../../lib/api/client'
+import { Checkbox } from '@/components/ui/Checkbox'
 
 const schema = z.object({
   email: z.string().email('Email inválido'),
@@ -66,8 +67,7 @@ export function InviteMemberModal({ onSuccess, onClose }: Props) {
             <legend className="mb-1 text-xs font-bold tracking-wider text-tc-text-muted uppercase">Permisos adicionales</legend>
             {MECHANIC_EXTRA_PERMISSIONS.map(p => (
               <label key={p.value} className="flex items-start gap-2 text-sm text-tc-text-secondary">
-                <input
-                  type="checkbox"
+                <Checkbox
                   className="mt-1 accent-tc-purple"
                   checked={extra.includes(p.value)}
                   onChange={e => setExtra(cur => (e.target.checked ? [...cur, p.value] : cur.filter(x => x !== p.value)))}

@@ -9,6 +9,7 @@ import { NavLink } from 'react-router'
 import { useCan } from '../../../lib/auth/permissions'
 import { InvoicingTabs } from './InvoicingTabs'
 import { INVOICE_STATUS_HINTS, INVOICE_STATUS_LABELS } from './invoiceLabels'
+import { FilterSelect } from '@/components/ui/FilterControls'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -105,7 +106,7 @@ export function InvoicingPage() {
       )}
 
       <div className="flex gap-2">
-        <select
+        <FilterSelect
           value={status}
           onChange={e => { setStatus(e.target.value as InvoiceStatus | ''); setPage(1) }}
           className="rounded-lg border border-tc-border-input bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-purple transition-colors"
@@ -114,7 +115,7 @@ export function InvoicingPage() {
           <option value="authorized">Autorizadas</option>
           <option value="pending">Pendientes</option>
           <option value="rejected">Rechazadas</option>
-        </select>
+        </FilterSelect>
       </div>
 
       {isLoading ? (

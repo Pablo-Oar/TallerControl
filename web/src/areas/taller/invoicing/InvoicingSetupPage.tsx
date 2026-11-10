@@ -26,6 +26,7 @@ import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 import { useCan } from '../../../lib/auth/permissions'
 import { CheckIcon, CloseIcon } from '@/components/ui/icons'
+import { Checkbox, Radio } from '@/components/ui/Checkbox'
 
 
 export function InvoicingSetupPage() {
@@ -360,8 +361,7 @@ function CertificatesSection({
                 ['homologation', 'Homologación (pruebas)', 'Para ensayar sin consecuencias fiscales. Las facturas salen marcadas «Prueba» y no entran al Libro IVA ni al CITI.'],
               ] as const).map(([value, label, hint]) => (
                 <label key={value} className="flex items-start gap-2 text-sm text-tc-text-secondary">
-                  <input
-                    type="radio"
+                  <Radio
                     name="arca-environment"
                     checked={environment === value}
                     onChange={() => setEnvironment(value)}
@@ -375,8 +375,7 @@ function CertificatesSection({
               ))}
             </fieldset>
             <label className="flex items-center gap-2 text-sm text-tc-text-secondary">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={isPrimary}
                 onChange={e => setIsPrimary(e.target.checked)}
                 className="accent-tc-purple"
@@ -566,7 +565,7 @@ function PointsOfSaleSection({
           <form onSubmit={handleEdit} onInvalidCapture={spanishInvalid(setError)} className="space-y-3">
             <FormField label="Nombre" value={editName} onChange={e => setEditName(e.target.value)} required />
             <label className="flex items-center gap-2 text-sm text-tc-text-secondary">
-              <input type="checkbox" checked={editActive} onChange={e => setEditActive(e.target.checked)} className="accent-tc-purple" />
+              <Checkbox checked={editActive} onChange={e => setEditActive(e.target.checked)} />
               Activo (un punto de venta inactivo no se ofrece para facturar)
             </label>
             {error && <p className="text-sm text-tc-danger-solid">{error}</p>}

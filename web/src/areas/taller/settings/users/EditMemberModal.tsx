@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { MECHANIC_EXTRA_PERMISSIONS, type MemberDto, type UpdateMembershipRequest, type TenantRole, type MembershipStatus } from '../../../../lib/api/users'
 import { FormSelect } from '../../../../components/ui/FormField'
 import { EditDialog } from '../../../../components/ui/EditDialog'
+import { Checkbox } from '@/components/ui/Checkbox'
 
 const schema = z.object({
   role: z.enum(['owner', 'admin_staff', 'mechanic', 'accountant']),
@@ -63,8 +64,7 @@ export function EditMemberModal({ member, saving, error, onSave, onClose }: Prop
           <legend className="mb-1 text-xs font-bold tracking-wider text-tc-text-muted uppercase">Permisos adicionales</legend>
           {MECHANIC_EXTRA_PERMISSIONS.map(p => (
             <label key={p.value} className="flex items-start gap-2 text-sm text-tc-text-secondary">
-              <input
-                type="checkbox"
+              <Checkbox
                 className="mt-1 accent-tc-purple"
                 checked={extra.includes(p.value)}
                 onChange={e => setExtra(cur => (e.target.checked ? [...cur, p.value] : cur.filter(x => x !== p.value)))}

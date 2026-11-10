@@ -608,11 +608,11 @@ function PaymentActions({ orderId, pay, canVoid, onShare, onVoid }: {
         href={getPaymentPdfUrl(orderId, pay.id)}
         target="_blank"
         rel="noreferrer"
-        className={`${linkCls} text-tc-navy-text-dim hover:text-tc-purple`}
+        className={`${linkCls} text-tc-navy-mid hover:text-tc-purple`}
       >
         PDF
       </a>
-      <button onClick={() => onShare(pay.id, pay.number)} className={`${linkCls} text-tc-navy-text-dim hover:text-tc-purple`}>
+      <button onClick={() => onShare(pay.id, pay.number)} className={`${linkCls} text-tc-navy-mid hover:text-tc-purple`}>
         Enlace
       </button>
       {pay.status === 'valid' && canVoid && (

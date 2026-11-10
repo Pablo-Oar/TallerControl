@@ -17,6 +17,8 @@ import { ApiError } from '../../../lib/api/client'
 import { confirmDialog, notify } from '../../../components/ui/dialogs'
 import { LoadError } from '../../../components/LoadError'
 import { useCan } from '../../../lib/auth/permissions'
+import { Badge } from '@/components/ui/Badge'
+import { Checkbox } from '@/components/ui/Checkbox'
 
 const KIND_LABELS: Record<CashAccountKind, string> = { cash: 'Efectivo', bank: 'Banco', digital: 'Digital' }
 
@@ -118,20 +120,8 @@ export function CashPage() {
                     <p className="font-semibold text-tc-text">{account.name}</p>
                     <p className="text-xs text-tc-text-secondary">{KIND_LABELS[account.kind]}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <span
-                        className={`rounded-full border px-2 py-0.5 text-[11px] font-bold tracking-wider uppercase ${
-                          account.isActive ? 'border-tc-success-border bg-tc-success-bg text-tc-success-text' : 'border-tc-border bg-tc-surface text-tc-text-secondary'
-                        }`}
-                      >
-                        {account.isActive ? 'Activa' : 'Inactiva'}
-                      </span>
-                      <span
-                        className={`rounded-full border px-2 py-0.5 text-[11px] font-bold tracking-wider uppercase ${
-                          open ? 'border-tc-purple bg-tc-purple-light text-tc-purple-mid' : 'border-tc-border bg-tc-surface text-tc-text-secondary'
-                        }`}
-                      >
-                        {open ? `Sesión abierta · ${fmtWhen(account.sessionOpenedAt!)}` : 'Sesión cerrada'}
-                      </span>
+                      <Badge tone={account.isActive ? 'success' : 'neutral'}>{account.isActive ? 'Activa' : 'Inactiva'}</Badge>
+                      <Badge tone={open ? 'brand' : 'neutral'}>{open ? `Sesión abierta · ${fmtWhen(account.sessionOpenedAt!)}` : 'Sesión cerrada'}</Badge>
                     </div>
                   </div>
                   <div className="text-right">
@@ -215,7 +205,7 @@ function AccountFormModal({ account, onDone, onClose }: { account?: CashAccountD
         </FormSelect>
         {account && (
           <label className="flex items-center gap-2 text-sm text-tc-text-secondary">
-            <input type="checkbox" checked={active} onChange={e => setActive(e.target.checked)} className="h-4 w-4" />
+            <Checkbox checked={active} onChange={e => setActive(e.target.checked)} />
             Cuenta activa (las inactivas no reciben movimientos nuevos)
           </label>
         )}

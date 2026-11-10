@@ -9,6 +9,8 @@ import { Pagination } from '../../../components/ui/Pagination'
 import { ApiError } from '../../../lib/api/client'
 import { spanishInvalid } from '../../../lib/formValidity'
 import { notify } from '../../../components/ui/dialogs'
+import { Checkbox } from '@/components/ui/Checkbox'
+import { SearchInput } from '@/components/ui/FilterControls'
 
 const VAT_LABELS: Record<VatCondition, string> = {
   responsable_inscripto: 'Responsable Inscripto',
@@ -38,7 +40,6 @@ const COLUMNS: DataTableColumn<SupplierDto>[] = [
   },
 ]
 
-const filterInputCls = 'max-md:min-h-11 min-w-0 flex-1 basis-48 border border-tc-border-input bg-white px-3 py-1.5 text-sm text-tc-text outline-none focus:border-tc-purple transition-colors'
 
 export function SuppliersPage() {
   const queryClient = useQueryClient()
@@ -175,16 +176,10 @@ export function SuppliersPage() {
       </div>
 
       <form onSubmit={handleSearch} className="flex flex-wrap items-center gap-2">
-        <input
-          type="search"
-          value={q}
-          onChange={e => setQ(e.target.value)}
-          placeholder="Buscar por nombre o CUIT…"
-          className={filterInputCls}
-        />
+        <SearchInput value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar por nombre o CUIT…" />
         <Button type="submit" variant="secondary" size="sm" className="shrink-0">Buscar</Button>
         <label className="flex items-center gap-1.5 whitespace-nowrap text-sm text-tc-text-secondary">
-          <input type="checkbox" className="h-4 w-4" checked={showDeleted} onChange={e => { setShowDeleted(e.target.checked); setPage(1) }} />
+          <Checkbox checked={showDeleted} onChange={e => { setShowDeleted(e.target.checked); setPage(1) }} />
           Ver dados de baja
         </label>
       </form>

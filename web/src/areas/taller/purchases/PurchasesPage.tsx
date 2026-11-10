@@ -14,6 +14,7 @@ import { FormTextarea } from '../../../components/ui/FormField'
 import { ConfirmWithCashModal } from '../../../components/ConfirmWithCashModal'
 import { useCreateFromQuery } from '../../../lib/useCreateFromQuery'
 import { AlertIcon } from '@/components/ui/icons'
+import { SearchInput } from '@/components/ui/FilterControls'
 
 const STATUS_LABELS: Record<PurchaseStatus, string> = {
   draft: 'Borrador',
@@ -157,13 +158,7 @@ export function PurchasesPage() {
       </div>
 
       <form onSubmit={handleSearch} className="flex flex-wrap items-center gap-2">
-        <input
-          type="search"
-          value={q}
-          onChange={e => setQ(e.target.value)}
-          placeholder="Buscar compras…"
-          className="rounded-lg min-w-0 flex-1 basis-48 border border-tc-border-input bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-purple transition-colors"
-        />
+        <SearchInput value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar compras…" className="min-w-0 flex-1 basis-48" />
         <Button type="submit" variant="secondary" size="sm" className="shrink-0">Buscar</Button>
       </form>
 

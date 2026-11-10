@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getIvaBook, downloadCitiExport } from '../../../lib/api/invoicing'
 import { Button } from '../../../components/ui/Button'
 import { InvoicingTabs } from './InvoicingTabs'
+import { FilterSelect } from '@/components/ui/FilterControls'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -62,16 +63,16 @@ export function IvaBookPage() {
       </p>
 
       <div className="flex items-center gap-2 flex-wrap">
-        <select value={month} onChange={e => setMonth(Number(e.target.value))} className={selectCls}>
+        <FilterSelect value={month} onChange={e => setMonth(Number(e.target.value))} className={selectCls}>
           {MONTHS.map((m, i) => (
             <option key={i + 1} value={i + 1}>{m}</option>
           ))}
-        </select>
-        <select value={year} onChange={e => setYear(Number(e.target.value))} className={selectCls}>
+        </FilterSelect>
+        <FilterSelect value={year} onChange={e => setYear(Number(e.target.value))} className={selectCls}>
           {Array.from({ length: 5 }, (_, i) => now.getFullYear() - i).map(y => (
             <option key={y} value={y}>{y}</option>
           ))}
-        </select>
+        </FilterSelect>
         <Button variant="secondary" size="sm" onClick={() => refetch()}>
           Actualizar
         </Button>

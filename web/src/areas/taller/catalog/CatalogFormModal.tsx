@@ -10,6 +10,7 @@ import { FormField, FormSelect, FormTextarea } from '../../../components/ui/Form
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 import { useCan } from '../../../lib/auth/permissions'
+import { Checkbox } from '@/components/ui/Checkbox'
 
 
 const schema = z.object({
@@ -217,7 +218,7 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
 
         {(kind === 'product' || (isEdit && item.kind === 'product')) && (
           <label className="flex items-center gap-2 text-sm text-tc-text-secondary">
-            <input type="checkbox" {...register('trackStock')} className="h-4 w-4" />
+            <Checkbox {...register('trackStock')} />
             Controlar stock
           </label>
         )}
@@ -243,7 +244,7 @@ export function CatalogFormModal({ item, onSuccess, onClose }: Props) {
 
         {isEdit && (
           <label className="flex items-center gap-2 text-sm text-tc-text-secondary">
-            <input type="checkbox" {...register('isActive')} className="h-4 w-4" />
+            <Checkbox {...register('isActive')} />
             Activo
           </label>
         )}

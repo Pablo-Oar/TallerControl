@@ -26,6 +26,7 @@ import { QrScannerModal } from './QrScannerModal'
 import { QrActivityModal } from './QrActivityModal'
 import { inputCls } from '../../../lib/styles'
 import { useCan } from '../../../lib/auth/permissions'
+import { FilterSelect } from '@/components/ui/FilterControls'
 
 const STATUS_LABELS: Record<QrCardStatus, string> = {
   free: 'Libre',
@@ -187,7 +188,7 @@ export function QrCardsPage() {
           value={q}
           onChange={(e) => { setQ(e.target.value); setPage(1) }}
         />
-        <select
+        <FilterSelect
           className={`${inputCls} w-36 shrink-0 md:w-auto`}
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value as QrCardStatus | ''); setPage(1) }}
@@ -197,7 +198,7 @@ export function QrCardsPage() {
           <option value="assigned">Asignada</option>
           <option value="lost">Perdida</option>
           <option value="revoked">Revocada</option>
-        </select>
+        </FilterSelect>
       </div>
 
       <DataTable<QrCardListDto>

@@ -13,6 +13,7 @@ import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { labelCls } from '../../../lib/styles'
 import { formatDateOnly, localDateISO } from '../../../lib/dates'
 import { CheckIcon } from '@/components/ui/icons'
+import { Checkbox, Radio } from '@/components/ui/Checkbox'
 
 
 const fmtARS = (n: number) =>
@@ -201,8 +202,7 @@ export function PublicQuotePage() {
                           <span className="ml-2 text-[11px] font-bold uppercase tracking-wider text-tc-text-muted">Obligatorio</span>
                         ) : (
                           <label className="mt-1 flex min-h-[44px] cursor-pointer items-center gap-2 text-xs text-tc-text-secondary">
-                            <input
-                              type="checkbox"
+                            <Checkbox
                               className="h-4 w-4 accent-tc-purple"
                               checked={!excluded.has(item.id)}
                               onChange={e =>
@@ -274,11 +274,11 @@ export function PublicQuotePage() {
                   <legend className={labelCls}>Decisión</legend>
                   <div className="flex gap-6 mt-1">
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" value="approved" {...register('decision')} className="accent-tc-purple" />
+                      <Radio value="approved" {...register('decision')} className="accent-tc-purple" />
                       <span className="text-sm font-bold tracking-wide text-tc-success-text">Apruebo</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" value="rejected" {...register('decision')} className="accent-tc-purple" />
+                      <Radio value="rejected" {...register('decision')} className="accent-tc-purple" />
                       <span className="text-sm font-bold tracking-wide text-tc-danger-solid">Rechazo</span>
                     </label>
                   </div>

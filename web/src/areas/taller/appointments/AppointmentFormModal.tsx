@@ -16,6 +16,7 @@ import { CatalogPicker, CustomerPicker } from '../../../components/ui/EntityPick
 import { Modal } from '../../../components/ui/Modal'
 import { labelCls } from '../../../lib/styles'
 import { CloseIcon } from '@/components/ui/icons'
+import { Checkbox } from '@/components/ui/Checkbox'
 
 
 const serviceSchema = z.object({
@@ -211,7 +212,7 @@ export function AppointmentFormModal({ editData, onClose, onCreated }: Props) {
 
         {canForce && (
           <label className="flex items-start gap-2 text-sm text-tc-text-secondary">
-            <input type="checkbox" checked={force} onChange={e => setForce(e.target.checked)} className="mt-1 accent-tc-purple" />
+            <Checkbox checked={force} onChange={e => setForce(e.target.checked)} className="mt-1" />
             <span>
               Agendar igual aunque quede fuera del horario del mecánico o encimado con otro turno
               <span className="block text-xs text-tc-text-muted">Solo el Dueño puede hacerlo.</span>
