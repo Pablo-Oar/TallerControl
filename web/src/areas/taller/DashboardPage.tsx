@@ -131,7 +131,7 @@ export function DashboardPage() {
             { value: Math.max(0, data.sentQuotes - hotCount), tone: 'slate', label: 'Recientes' },
           ]}
           stats={[
-            { label: 'En juego', value: fmtARS(data.sentQuotesTotal) },
+            { label: 'Monto pendiente', value: fmtARS(data.sentQuotesTotal) },
             { label: `Sin respuesta +${thresholds.hotQuoteHours} h`, value: hotCount, tone: hotCount > 0 ? 'amber' : 'slate' },
           ]}
         />
