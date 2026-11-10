@@ -106,10 +106,14 @@ export function KpiCard({ label, value, accent = 'slate', icon, bar, stats, sub,
           <div
             role="img"
             aria-label={bar.map(seg => `${seg.label}: ${seg.value}`).join(', ')}
-            className="flex h-2 w-full gap-0.5 overflow-hidden rounded-full bg-tc-border max-sm:hidden"
+            className="flex h-2.5 w-full gap-1 max-sm:hidden"
           >
             {bar.filter(seg => seg.value > 0).map(seg => (
-              <span key={seg.label} className={['h-full', BAR[seg.tone]].join(' ')} style={{ width: `${(seg.value / total) * 100}%` }} />
+              <span
+                key={seg.label}
+                className={['h-full min-w-2.5 rounded-full shadow-[inset_0_-1px_0_rgb(0_0_0/0.12)]', BAR[seg.tone]].join(' ')}
+                style={{ width: `${(seg.value / total) * 100}%` }}
+              />
             ))}
           </div>
         )}
