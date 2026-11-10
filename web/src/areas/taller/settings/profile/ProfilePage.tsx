@@ -74,7 +74,7 @@ export function ProfilePage() {
         <h2 className="text-sm font-bold uppercase tracking-wider text-tc-text-secondary">Nombre</h2>
         <FormField label="Tu nombre" error={nameForm.formState.errors.displayName?.message} {...nameForm.register('displayName')} />
         {nameMsg && (
-          <p role={nameMsg.ok ? 'status' : 'alert'} className={nameMsg.ok ? 'text-sm text-green-700' : 'text-sm text-red-700'}>
+          <p role={nameMsg.ok ? 'status' : 'alert'} className={nameMsg.ok ? 'text-sm text-tc-success-text' : 'text-sm text-tc-danger-text'}>
             {nameMsg.text}
           </p>
         )}
@@ -90,7 +90,7 @@ export function ProfilePage() {
         <FormField label="Repetí la contraseña nueva" type="password" autoComplete="new-password"
           error={pwdForm.formState.errors.confirm?.message} {...pwdForm.register('confirm')} />
         {pwdMsg && (
-          <p role={pwdMsg.ok ? 'status' : 'alert'} className={pwdMsg.ok ? 'text-sm text-green-700' : 'text-sm text-red-700'}>
+          <p role={pwdMsg.ok ? 'status' : 'alert'} className={pwdMsg.ok ? 'text-sm text-tc-success-text' : 'text-sm text-tc-danger-text'}>
             {pwdMsg.text}
           </p>
         )}

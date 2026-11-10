@@ -96,7 +96,7 @@ export function CustomerDetailPage() {
     )
   }
   if (error || !customer) {
-    return <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">No se pudo cargar el cliente.</p>
+    return <p className="border border-tc-danger-border bg-tc-danger-bg px-4 py-3 text-sm text-tc-danger-text">No se pudo cargar el cliente.</p>
   }
 
   return (
@@ -106,7 +106,7 @@ export function CustomerDetailPage() {
           <h1 className="text-xl font-bold text-tc-text">{customer.name}</h1>
           <p className="mt-1 text-sm text-tc-text-secondary">
             {customer.balance > 0
-              ? <>Saldo por cobrar: <span className="font-bold text-tc-stamp-red tabular-nums">{fmtARS(customer.balance)}</span></>
+              ? <>Saldo por cobrar: <span className="font-bold text-tc-danger-solid tabular-nums">{fmtARS(customer.balance)}</span></>
               : 'Sin saldo pendiente'}
           </p>
         </div>

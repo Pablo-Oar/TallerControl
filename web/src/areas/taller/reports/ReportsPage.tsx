@@ -174,7 +174,7 @@ export function ReportsPage() {
                   key: 'balance', header: 'Saldo', align: 'right', widthClass: 'w-44', sortable: true, sortValue: r => r.balance,
                   cell: r => (
                     <div>
-                      <span className="font-bold tabular-nums text-tc-stamp-red">{fmtARS(r.balance)}</span>
+                      <span className="font-bold tabular-nums text-tc-danger-solid">{fmtARS(r.balance)}</span>
                       {!!r.total && r.total !== r.balance && <p className="text-xs tabular-nums text-tc-text-muted">de {fmtARS(r.total)}</p>}
                     </div>
                   ),
@@ -187,7 +187,7 @@ export function ReportsPage() {
                   <p className="truncate text-sm text-tc-text">{r.customerName}</p>
                   <p className="text-xs text-tc-text-muted"><VehicleLabel plate={r.vehiclePlate} brand={r.vehicleBrand} model={r.vehicleModel} inline /> · {formatDate(r.createdAt)}</p>
                   {r.concept && <p className="mt-0.5 line-clamp-2 text-xs text-tc-text-secondary">{r.concept}</p>}
-                  <p className="mt-1 font-bold tabular-nums text-tc-stamp-red">{fmtARS(r.balance)}</p>
+                  <p className="mt-1 font-bold tabular-nums text-tc-danger-solid">{fmtARS(r.balance)}</p>
                 </>
               )}
               emptyMessage="No hay saldos por cobrar."
@@ -303,7 +303,7 @@ function ReportSection({
       </div>
       {error ? (
         <div className="rounded-2xl border border-tc-border bg-white p-1.5">
-          <p role="alert" className="rounded-xl bg-red-50 px-4 py-6 text-sm text-red-700">
+          <p role="alert" className="rounded-xl bg-tc-danger-bg px-4 py-6 text-sm text-tc-danger-text">
             No se pudo cargar el reporte. Volvé a intentar en un momento.
           </p>
         </div>

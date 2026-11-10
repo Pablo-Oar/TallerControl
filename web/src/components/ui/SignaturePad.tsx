@@ -158,7 +158,7 @@ export const SignaturePad = forwardRef<SignaturePadHandle, SignaturePadProps>(fu
           type="button"
           onClick={clear}
           disabled={!hasSignature || disabled}
-          className="px-2 py-3 text-xs font-bold uppercase tracking-wider text-tc-text-secondary transition-colors hover:text-tc-stamp-red disabled:cursor-not-allowed disabled:opacity-40"
+          className="px-2 py-3 text-xs font-bold uppercase tracking-wider text-tc-text-secondary transition-colors hover:text-tc-danger-solid disabled:cursor-not-allowed disabled:opacity-40"
         >
           {clearLabel}
         </button>

@@ -58,14 +58,14 @@ export function EditDialog({
         {children}
 
         {error && (
-          <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p role="alert" className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">
             {error}
           </p>
         )}
 
         {confirmDiscard && (
-          <div role="alert" className="space-y-2 border border-amber-200 bg-amber-50 p-3">
-            <p className="text-sm font-medium text-amber-900">Hay cambios sin guardar. ¿Descartarlos?</p>
+          <div role="alert" className="space-y-2 border border-tc-warning-border bg-tc-warning-bg p-3">
+            <p className="text-sm font-medium text-tc-warning-text">Hay cambios sin guardar. ¿Descartarlos?</p>
             <div className="flex gap-2">
               <Button type="button" size="sm" variant="secondary" data-autofocus onClick={keepEditing}>
                 Seguir editando

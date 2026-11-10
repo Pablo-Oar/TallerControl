@@ -22,7 +22,7 @@ export function OfflineBanner() {
   const offline = useOffline()
   if (!offline) return null
   return (
-    <div role="status" className="border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-xs text-amber-900">
+    <div role="status" className="border-b border-tc-warning-border bg-tc-warning-bg px-4 py-2 text-center text-xs text-tc-warning-text">
       Sin conexión: ves lo último que cargaste. Para cambiar estados, notas o fotos necesitás internet.
     </div>
   )

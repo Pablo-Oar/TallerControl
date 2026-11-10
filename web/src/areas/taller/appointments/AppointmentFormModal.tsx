@@ -238,7 +238,7 @@ export function AppointmentFormModal({ editData, onClose, onCreated }: Props) {
                       Servicio {index + 1}
                     </span>
                     {fields.length > 1 && (
-                      <button type="button" onClick={() => remove(index)} className="text-xs text-tc-stamp-red hover:opacity-70">
+                      <button type="button" onClick={() => remove(index)} className="text-xs text-tc-danger-solid hover:opacity-70">
                         ×
                       </button>
                     )}
@@ -256,7 +256,7 @@ export function AppointmentFormModal({ editData, onClose, onCreated }: Props) {
                       }}
                     />
                     {missingDuration[index] && (
-                      <p role="status" className="border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs text-amber-900">
+                      <p role="status" className="border border-tc-warning-border bg-tc-warning-bg px-2 py-1.5 text-xs text-tc-warning-text">
                         «{missingDuration[index]}» no tiene duración en el catálogo: se reserva con la del taller ({defaultMinutes} min).
                         Podés cambiarla en Configuración → General, o cargarla en el servicio desde Catálogo → Editar.
                       </p>
@@ -286,7 +286,7 @@ export function AppointmentFormModal({ editData, onClose, onCreated }: Props) {
               ))}
             </div>
             {errors.services && (
-              <p className="mt-1 text-xs text-tc-stamp-red">
+              <p className="mt-1 text-xs text-tc-danger-solid">
                 {errors.services.message ?? errors.services.root?.message}
               </p>
             )}
@@ -294,7 +294,7 @@ export function AppointmentFormModal({ editData, onClose, onCreated }: Props) {
         )}
 
         {mutation.error && (
-          <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p role="alert" className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">
             {(mutation.error as Error).message}
           </p>
         )}

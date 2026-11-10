@@ -76,7 +76,7 @@ export function PublicAppointmentPage() {
           <div className="flex items-center justify-between border-b border-tc-border bg-tc-stub-bg px-6 py-3">
             <span className="text-xs font-bold tracking-[0.14em] text-tc-text-secondary uppercase">Tu turno</span>
             {confirmed && (
-              <span className="border border-green-300 px-1.5 py-0.5 text-[11px] font-bold tracking-wider text-green-700 uppercase">
+              <span className="border border-tc-success-border px-1.5 py-0.5 text-[11px] font-bold tracking-wider text-tc-success-text uppercase">
                 Confirmado
               </span>
             )}
@@ -107,7 +107,7 @@ export function PublicAppointmentPage() {
             </dl>
 
             {failure && (
-              <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <p role="alert" className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">
                 {failure instanceof ApiError && failure.status === 409 ? 'El turno ya estaba confirmado.' : 'No se pudo registrar tu respuesta. Probá de nuevo.'}
               </p>
             )}

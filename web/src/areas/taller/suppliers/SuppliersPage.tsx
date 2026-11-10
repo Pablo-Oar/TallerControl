@@ -197,7 +197,7 @@ export function SuppliersPage() {
         >
           <form onSubmit={handleSave} onInvalidCapture={spanishInvalid(setFormError)} className="space-y-4">
             {formError && (
-              <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{formError}</p>
+              <p role="alert" className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">{formError}</p>
             )}
             <div className="grid grid-cols-2 gap-3">
               <FormField
@@ -280,7 +280,7 @@ export function SuppliersPage() {
               «{deleting.name}» deja de ofrecerse al cargar compras. Las compras que ya tiene no cambian, y lo podés restaurar desde «Ver dados de baja».
             </p>
             {(deleting.purchaseCount ?? 0) > 0 && (
-              <p role="alert" className="border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              <p role="alert" className="border border-tc-warning-border bg-tc-warning-bg px-3 py-2 text-sm text-tc-warning-text">
                 Este proveedor tiene {deleting.purchaseCount} compra{deleting.purchaseCount === 1 ? '' : 's'} vigente{deleting.purchaseCount === 1 ? '' : 's'} (en borrador o confirmada{deleting.purchaseCount === 1 ? '' : 's'}).
               </p>
             )}

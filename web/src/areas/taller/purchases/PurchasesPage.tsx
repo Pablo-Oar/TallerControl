@@ -64,9 +64,9 @@ const COLUMNS: DataTableColumn<PurchaseDto>[] = [
     widthClass: 'w-28',
     cell: p =>
       p.isExcludedFromCiti ? (
-        <span className="text-[11px] font-bold tracking-wider uppercase text-amber-600">Excluida</span>
+        <span className="text-[11px] font-bold tracking-wider uppercase text-tc-warning-text">Excluida</span>
       ) : (
-        <span className="text-[11px] font-bold tracking-wider uppercase text-green-700">Incluida</span>
+        <span className="text-[11px] font-bold tracking-wider uppercase text-tc-success-text">Incluida</span>
       ),
   },
 ]
@@ -254,7 +254,7 @@ export function PurchasesPage() {
             )}
 
             {detail.status !== 'cancelled' && detail.isExcludedFromCiti && (
-              <p className="border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+              <p className="border border-tc-warning-border bg-tc-warning-bg px-3 py-2 text-xs text-tc-warning-text">
                 ⚠ Sin datos fiscales completos — excluida del CITI
               </p>
             )}

@@ -117,7 +117,7 @@ export function ReminderFormModal({ id, onClose, onSaved }: Props) {
       className="max-w-md"
     >
       {errors.root && (
-        <div className="mb-3 border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div className="mb-3 border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">
           {errors.root.message}
         </div>
       )}

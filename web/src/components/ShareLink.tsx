@@ -20,7 +20,7 @@ export function ShareLink({ url, whatsappText, label = 'Enlace' }: { url: string
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2 rounded-xl border border-slate-300 bg-slate-50 p-1.5 pl-3 shadow-inner focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
+      <div className="flex items-center gap-2 rounded-xl border border-slate-300 bg-slate-50 p-1.5 pl-3 shadow-inner focus-within:border-tc-info-solid focus-within:ring-2 focus-within:ring-blue-500/20">
         <LinkIcon className="h-4 w-4 shrink-0 text-tc-text-muted" />
         <input
           readOnly
@@ -35,7 +35,7 @@ export function ShareLink({ url, whatsappText, label = 'Enlace' }: { url: string
           aria-label={copied ? 'Copiado' : `Copiar ${label.toLowerCase()}`}
           title={copied ? 'Copiado' : 'Copiar'}
           className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-1 max-md:h-11 max-md:w-11 ${
-            copied ? 'bg-emerald-600 hover:bg-emerald-700 focus-visible:ring-emerald-600' : 'bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-600'
+            copied ? 'bg-tc-success-solid hover:brightness-90 focus-visible:ring-tc-success-solid' : 'bg-tc-info-solid hover:brightness-90 focus-visible:ring-tc-info-solid'
           }`}
         >
           {copied ? <CheckIcon className="h-5 w-5" /> : <CopyIcon className="h-5 w-5" />}

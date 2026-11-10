@@ -55,7 +55,7 @@ export function PublicPaymentPage() {
           <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3 flex items-center justify-between">
             <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Comprobante de Pago</span>
             {isVoided && (
-              <span className="border border-tc-stamp-red px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-tc-stamp-red">
+              <span className="border border-tc-danger-solid px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase text-tc-danger-solid">
                 Anulado
               </span>
             )}
@@ -67,7 +67,7 @@ export function PublicPaymentPage() {
             </p>
 
             {isVoided && (
-              <div className="mb-4 border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <div className="mb-4 border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">
                 Este comprobante ha sido anulado.
               </div>
             )}

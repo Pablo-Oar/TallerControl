@@ -159,8 +159,8 @@ export function CustomerFormModal({ customer, onSuccess, onClose, onDelete }: Pr
 
 
         {deleting && (
-          <div className="space-y-2 border border-red-200 bg-red-50 p-3">
-            <p className="text-xs font-bold tracking-wider uppercase text-red-700">Confirmar eliminación</p>
+          <div className="space-y-2 border border-tc-danger-border bg-tc-danger-bg p-3">
+            <p className="text-xs font-bold tracking-wider uppercase text-tc-danger-text">Confirmar eliminación</p>
             <FormField
               label="Motivo de eliminación (requerido)"
               value={deleteReason}

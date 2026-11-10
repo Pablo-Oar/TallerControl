@@ -3,8 +3,8 @@ import { useCan } from '../../../lib/auth/permissions'
 import { CardIcon, PlusIcon, StoreIcon } from './icons'
 
 const ACTIONS = [
-  { label: 'Venta de mostrador', to: '/app/counter-sales?nueva=1', perm: 'counter_sales.write', color: 'bg-emerald-700 hover:bg-emerald-800', icon: <StoreIcon /> },
-  { label: 'Registrar cobro', to: '/app/work-orders?pendientes=1', perm: 'payments.write', color: 'bg-blue-700 hover:bg-blue-800', icon: <CardIcon /> },
+  { label: 'Venta de mostrador', to: '/app/counter-sales?nueva=1', perm: 'counter_sales.write', color: 'bg-tc-success-solid hover:brightness-90', icon: <StoreIcon /> },
+  { label: 'Registrar cobro', to: '/app/work-orders?pendientes=1', perm: 'payments.write', color: 'bg-tc-info-solid hover:brightness-90', icon: <CardIcon /> },
   { label: 'Nueva orden', to: '/app/work-orders?nueva=1', perm: 'workorders.write', color: 'bg-tc-purple hover:bg-tc-purple-mid', icon: <PlusIcon /> },
   { label: 'Nuevo presupuesto', to: '/app/quotes?nueva=1', perm: 'quotes.write', color: 'bg-indigo-800 hover:bg-indigo-900', icon: <PlusIcon /> },
 ] as const

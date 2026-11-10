@@ -47,7 +47,7 @@ export function StockAdjustmentModal({ item, onSuccess, onClose }: Props) {
       <div className="mb-4 border border-tc-border bg-tc-surface px-3 py-2 text-sm text-tc-text-secondary">
         Stock actual: <span className="font-semibold tabular-nums text-tc-text">{item.stockQty}</span>
         {item.isLowStock && (
-          <span className="ml-2 bg-amber-100 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-amber-700">
+          <span className="ml-2 bg-tc-warning-bg px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-tc-warning-text">
             Stock bajo
           </span>
         )}
@@ -74,7 +74,7 @@ export function StockAdjustmentModal({ item, onSuccess, onClose }: Props) {
         />
 
         {serverError && (
-          <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
+          <p role="alert" className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">{serverError}</p>
         )}
 
         <div className="sticky -bottom-5 -mx-5 -mb-5 mt-2 flex justify-end gap-3 border-t border-tc-border bg-white px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-6px_8px_-6px_rgb(0_0_0/0.12)]">

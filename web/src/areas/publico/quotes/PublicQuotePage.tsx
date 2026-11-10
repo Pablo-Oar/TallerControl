@@ -160,7 +160,7 @@ export function PublicQuotePage() {
               </div>
               <div>
                 <dt className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted mb-1">Válido hasta</dt>
-                <dd className={isExpired ? 'text-tc-stamp-red font-bold' : 'text-tc-text'}>
+                <dd className={isExpired ? 'text-tc-danger-solid font-bold' : 'text-tc-text'}>
                   {formatDateOnly(data.validUntil)}
                   {isExpired && ' — vencido'}
                 </dd>
@@ -238,7 +238,7 @@ export function PublicQuotePage() {
                 </div>
                 <div className="flex justify-between text-tc-text-secondary">
                   <span className="text-xs font-bold tracking-wider uppercase">Descuento ({data.globalDiscountPct}%)</span>
-                  <span className="tabular-nums text-tc-stamp-red">−{fmtARS(data.discountAmount)}</span>
+                  <span className="tabular-nums text-tc-danger-solid">−{fmtARS(data.discountAmount)}</span>
                 </div>
               </>
             )}
@@ -274,11 +274,11 @@ export function PublicQuotePage() {
                   <div className="flex gap-6 mt-1">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input type="radio" value="approved" {...register('decision')} className="accent-tc-purple" />
-                      <span className="text-sm font-bold tracking-wide text-green-700">Apruebo</span>
+                      <span className="text-sm font-bold tracking-wide text-tc-success-text">Apruebo</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input type="radio" value="rejected" {...register('decision')} className="accent-tc-purple" />
-                      <span className="text-sm font-bold tracking-wide text-tc-stamp-red">Rechazo</span>
+                      <span className="text-sm font-bold tracking-wide text-tc-danger-solid">Rechazo</span>
                     </label>
                   </div>
                 </fieldset>
@@ -309,7 +309,7 @@ export function PublicQuotePage() {
                 />
 
                 {serverError && (
-                  <div className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  <div className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">
                     {serverError}
                   </div>
                 )}
@@ -323,7 +323,7 @@ export function PublicQuotePage() {
         )}
 
         {canRespond && isExpired && (
-          <div className="border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <div className="border border-tc-warning-border bg-tc-warning-bg px-4 py-3 text-sm text-tc-warning-text">
             Este presupuesto venció el {formatDateOnly(data.validUntil)}.
             Contacte al taller para obtener un nuevo presupuesto.
           </div>

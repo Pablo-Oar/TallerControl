@@ -6,16 +6,16 @@ export type Accent = 'green' | 'red' | 'blue' | 'amber' | 'purple' | 'slate'
 
 const TILE: Record<Accent, string> = {
   green: 'bg-tc-done-bg text-tc-done-text',
-  red: 'bg-red-50 text-tc-stamp-red',
+  red: 'bg-tc-danger-bg text-tc-danger-solid',
   blue: 'bg-tc-inprog-bg text-tc-inprog-text',
-  amber: 'bg-amber-50 text-amber-600',
+  amber: 'bg-tc-warning-bg text-tc-warning-text',
   purple: 'bg-tc-purple-light text-tc-purple-mid',
   slate: 'bg-tc-stub-bg text-tc-text-secondary',
 }
 
 const VALUE: Record<Accent, string> = {
   green: 'text-tc-done-text',
-  red: 'text-tc-stamp-red',
+  red: 'text-tc-danger-solid',
   blue: 'text-tc-text',
   amber: 'text-tc-text',
   purple: 'text-tc-text',
@@ -42,9 +42,9 @@ export function IconTile({ accent, children, small = false }: { accent: Accent; 
 export type BarTone = 'green' | 'red' | 'blue' | 'amber' | 'purple' | 'slate'
 
 const BAR: Record<BarTone, string> = {
-  green: 'bg-emerald-500',
-  red: 'bg-tc-stamp-red',
-  blue: 'bg-blue-500',
+  green: 'bg-tc-success-solid',
+  red: 'bg-tc-danger-solid',
+  blue: 'bg-tc-info-solid',
   amber: 'bg-amber-400',
   purple: 'bg-tc-purple',
   slate: 'bg-slate-300',
@@ -52,9 +52,9 @@ const BAR: Record<BarTone, string> = {
 
 const STAT_TEXT: Record<BarTone, string> = {
   green: 'text-tc-done-text',
-  red: 'text-tc-stamp-red',
+  red: 'text-tc-danger-solid',
   blue: 'text-tc-inprog-text',
-  amber: 'text-amber-700',
+  amber: 'text-tc-warning-text',
   purple: 'text-tc-purple-mid',
   slate: 'text-tc-text',
 }
@@ -181,8 +181,8 @@ export function WidgetEmpty({ children }: { children: ReactNode }) {
 export function Pill({ tone, children }: { tone: 'danger' | 'warn'; children: ReactNode }) {
   const cls =
     tone === 'danger'
-      ? 'border-red-300 bg-red-50 text-red-700'
-      : 'border-amber-300 bg-amber-50 text-amber-700'
+      ? 'border-tc-danger-border bg-tc-danger-bg text-tc-danger-text'
+      : 'border-tc-warning-border bg-tc-warning-bg text-tc-warning-text'
   return (
     <span className={['inline-block whitespace-nowrap border px-1.5 py-0.5 text-[11px] font-bold tracking-wider uppercase', cls].join(' ')}>
       {children}
@@ -196,8 +196,8 @@ export function StatusStrip({ tone, icon, children }: { tone: 'green' | 'amber' 
     tone === 'green'
       ? 'bg-tc-done-bg text-tc-done-text'
       : tone === 'amber'
-        ? 'bg-amber-50 text-amber-800'
-        : 'bg-red-50 text-red-700'
+        ? 'bg-tc-warning-bg text-tc-warning-text'
+        : 'bg-tc-danger-bg text-tc-danger-text'
   return (
     <p className={['flex items-center gap-2 px-4 py-2.5 text-xs font-medium', cls].join(' ')}>
       {icon && <span aria-hidden className="flex-none [&>svg]:h-4 [&>svg]:w-4">{icon}</span>}

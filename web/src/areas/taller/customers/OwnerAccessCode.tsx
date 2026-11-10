@@ -37,7 +37,7 @@ export function OwnerAccessCode({ customerId, customerName }: { customerId: stri
         Es el código que {customerName} usa, junto con la patente, para ver el historial de su vehículo al escanear el
         llavero. Entregáselo en persona o por mensaje.
       </p>
-      {error && <p role="alert" className="text-xs text-tc-stamp-red">{error}</p>}
+      {error && <p role="alert" className="text-xs text-tc-danger-solid">{error}</p>}
       {code ? (
         <div className="space-y-2">
           <p className="text-2xl font-bold tracking-[0.3em] text-tc-text tabular-nums" aria-label="Código de acceso">{code}</p>

@@ -145,7 +145,7 @@ export function AppointmentsPage() {
       <AppointmentsTabs />
 
       {error && (
-        <div className="border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 flex items-center justify-between">
+        <div className="border border-tc-danger-border bg-tc-danger-bg px-4 py-2 text-sm text-tc-danger-text flex items-center justify-between">
           <span>{error}</span>
           <button className="text-xs underline" onClick={() => setError(null)}>Cerrar</button>
         </div>
