@@ -32,7 +32,7 @@ const COLUMNS: DataTableColumn<InvoiceListDto>[] = [
       <span className="font-mono text-tc-text">
         {i.number ?? '—'}
         {i.isCredit && (
-          <span className="ml-2 rounded-md border border-amber-300 px-1 py-0.5 text-[11px] font-bold tracking-wider uppercase text-amber-700">NC</span>
+          <span className="ml-2 rounded-md border border-tc-warning-border px-1 py-0.5 text-[11px] font-bold tracking-wider uppercase text-tc-warning-text">NC</span>
         )}
       </span>
     ),
@@ -49,7 +49,7 @@ const COLUMNS: DataTableColumn<InvoiceListDto>[] = [
     cell: i => (
       <>
         <StatusBadge status={i.status} hint={INVOICE_STATUS_HINTS[i.status]} label={STATUS_LABELS[i.status]} />
-        {i.isHomologation && <span className="ml-2 border border-amber-300 px-1 text-[11px] font-bold tracking-wider uppercase text-amber-700" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
+        {i.isHomologation && <span className="ml-2 border border-tc-warning-border px-1 text-[11px] font-bold tracking-wider uppercase text-tc-warning-text" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
       </>
     ),
   },
@@ -96,7 +96,7 @@ export function InvoicingPage() {
       <InvoicingTabs />
 
       {expiring && (
-        <p role="alert" className="border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <p role="alert" className="border border-tc-warning-border bg-tc-warning-bg px-3 py-2 text-sm text-tc-warning-text">
           {(expiring.days ?? 0) < 0
             ? `El certificado «${expiring.cert.name}» está vencido: no se puede facturar.`
             : `El certificado «${expiring.cert.name}» vence en ${expiring.days} día${expiring.days === 1 ? '' : 's'}.`}{' '}
@@ -148,8 +148,8 @@ export function InvoicingPage() {
               <>
                 <p className="text-sm text-tc-text-secondary">
                   Fcta. {i.invoiceType.toUpperCase()} · {SOURCE_LABELS[i.sourceType]}
-                  {i.isCredit && <span className="ml-2 text-[11px] font-bold text-amber-700">NC</span>}
-                  {i.isHomologation && <span className="ml-2 border border-amber-300 px-1 text-[11px] font-bold tracking-wider uppercase text-amber-700" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
+                  {i.isCredit && <span className="ml-2 text-[11px] font-bold text-tc-warning-text">NC</span>}
+                  {i.isHomologation && <span className="ml-2 border border-tc-warning-border px-1 text-[11px] font-bold tracking-wider uppercase text-tc-warning-text" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
                 </p>
                 <p className="text-xs tabular-nums text-tc-text-muted">{formatDate(i.issuedAt)}</p>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">

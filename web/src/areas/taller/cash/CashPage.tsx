@@ -120,7 +120,7 @@ export function CashPage() {
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       <span
                         className={`rounded-full border px-2 py-0.5 text-[11px] font-bold tracking-wider uppercase ${
-                          account.isActive ? 'border-green-300 bg-green-50 text-green-700' : 'border-tc-border bg-tc-surface text-tc-text-secondary'
+                          account.isActive ? 'border-tc-success-border bg-tc-success-bg text-tc-success-text' : 'border-tc-border bg-tc-surface text-tc-text-secondary'
                         }`}
                       >
                         {account.isActive ? 'Activa' : 'Inactiva'}
@@ -136,7 +136,7 @@ export function CashPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-[11px] font-bold tracking-wider uppercase text-tc-text-muted">Saldo</p>
-                    <p className={`text-xl font-bold tabular-nums ${account.balance < 0 ? 'text-tc-stamp-red' : 'text-tc-text'}`}>
+                    <p className={`text-xl font-bold tabular-nums ${account.balance < 0 ? 'text-tc-danger-solid' : 'text-tc-text'}`}>
                       {fmtARS(account.balance)}
                     </p>
                   </div>
@@ -184,7 +184,7 @@ function BarButton({ primary, ...rest }: { primary?: boolean } & React.ButtonHTM
 
 function ErrorBox({ message }: { message: string | null }) {
   return message ? (
-    <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{message}</p>
+    <p role="alert" className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">{message}</p>
   ) : null
 }
 
@@ -399,7 +399,7 @@ function MovementsModal({
                       {REASON_LABELS[m.reason] ?? m.reason}
                       {m.note && <span className="block text-xs text-tc-text-muted">{m.note}</span>}
                     </td>
-                    <td className={`whitespace-nowrap px-3 py-2 text-right font-semibold tabular-nums ${m.direction === 'in' ? 'text-tc-done-text' : 'text-tc-stamp-red'}`}>
+                    <td className={`whitespace-nowrap px-3 py-2 text-right font-semibold tabular-nums ${m.direction === 'in' ? 'text-tc-done-text' : 'text-tc-danger-solid'}`}>
                       {m.direction === 'in' ? '+' : '−'} {fmtARS(m.amount)}
                     </td>
                   </tr>

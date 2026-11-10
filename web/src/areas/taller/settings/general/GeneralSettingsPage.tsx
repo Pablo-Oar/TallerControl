@@ -152,7 +152,7 @@ export function GeneralSettingsPage() {
 
   if (error || !data) {
     return (
-      <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      <p className="border border-tc-danger-border bg-tc-danger-bg px-4 py-3 text-sm text-tc-danger-text">
         No se pudo cargar la configuración del taller.
       </p>
     )
@@ -204,7 +204,7 @@ export function GeneralSettingsPage() {
               ) : 'Cambiar logo'}
             </button>
             <p className="text-xs text-tc-text-muted">PNG, JPG o WebP · máx. 5 MB</p>
-            {logoError && <p role="alert" className="text-xs text-tc-stamp-red">{logoError}</p>}
+            {logoError && <p role="alert" className="text-xs text-tc-danger-solid">{logoError}</p>}
           </div>
         </div>
       </section>
@@ -320,7 +320,7 @@ export function GeneralSettingsPage() {
         </div>
 
         {saveError && (
-          <div className="mx-5 mb-4 border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="mx-5 mb-4 border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">
             {saveError}
           </div>
         )}

@@ -44,7 +44,7 @@ export function ResendVerification({ email: initial }: { email?: string }) {
         </div>
       )}
       {state === 'error' && (
-        <p role="alert" className="text-center text-sm text-red-700">No se pudo reenviar. Probá de nuevo en un rato.</p>
+        <p role="alert" className="text-center text-sm text-tc-danger-text">No se pudo reenviar. Probá de nuevo en un rato.</p>
       )}
       <Button
         type="button"

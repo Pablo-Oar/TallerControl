@@ -10,5 +10,5 @@ export const fieldCls =
 /** Color de lo pendiente de cobro: rojo si no se cobró nada, naranja si hay cobro parcial, apagado si no se debe nada. */
 export function pendingTone(balance: number, total: number | null): string {
   if (balance <= 0) return 'text-tc-text-muted'
-  return total != null && balance >= total ? 'font-semibold text-tc-stamp-red' : 'font-semibold text-tc-warning-solid'
+  return total != null && balance >= total ? 'font-semibold text-tc-danger-solid' : 'font-semibold text-tc-warning-solid'
 }

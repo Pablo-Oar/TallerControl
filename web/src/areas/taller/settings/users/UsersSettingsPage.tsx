@@ -89,7 +89,7 @@ export function UsersSettingsPage() {
   }
 
   if (error) {
-    return <p className="text-sm text-tc-stamp-red">No se pudo cargar la lista de usuarios.</p>
+    return <p className="text-sm text-tc-danger-solid">No se pudo cargar la lista de usuarios.</p>
   }
 
   return (
@@ -131,12 +131,12 @@ export function UsersSettingsPage() {
                   {inv.displayName && <span className="block truncate text-xs text-tc-text-secondary">{inv.email}</span>}
                 </span>
                 <span className="text-xs text-tc-text-secondary">{ROLE_LABEL[inv.role]}</span>
-                <span className={`text-xs font-bold tracking-wider uppercase ${inv.isExpired ? 'text-tc-stamp-red' : 'text-tc-text-muted'}`}>
+                <span className={`text-xs font-bold tracking-wider uppercase ${inv.isExpired ? 'text-tc-danger-solid' : 'text-tc-text-muted'}`}>
                   {inv.isExpired ? 'Vencida' : `Vence ${formatDateTime(inv.expiresAt)}`}
                 </span>
                 <span className="ml-auto flex gap-3">
                   <button type="button" onClick={() => resend(inv)} className="text-xs font-bold tracking-wider text-tc-purple uppercase hover:opacity-70">Reenviar</button>
-                  <button type="button" onClick={() => cancelInvitation(inv)} className="text-xs font-bold tracking-wider text-tc-stamp-red uppercase hover:opacity-70">Cancelar</button>
+                  <button type="button" onClick={() => cancelInvitation(inv)} className="text-xs font-bold tracking-wider text-tc-danger-solid uppercase hover:opacity-70">Cancelar</button>
                 </span>
               </li>
             ))}

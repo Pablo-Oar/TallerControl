@@ -268,7 +268,7 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
           </FormSelect>
 
           {mechanics && mechanics.length === 0 ? (
-            <p role="alert" className="border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            <p role="alert" className="border border-tc-warning-border bg-tc-warning-bg px-3 py-2 text-sm text-tc-warning-text">
               Todavía no hay mecánicos en el taller. Invitá uno desde Configuración → Usuarios para poder crear órdenes.
             </p>
           ) : (
@@ -337,7 +337,7 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
           </div>
 
           {serverError && (
-            <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
+            <p role="alert" className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">{serverError}</p>
           )}
 
           <div className="sticky -bottom-5 -mx-5 -mb-5 mt-2 flex justify-end gap-3 border-t border-tc-border bg-white px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-6px_8px_-6px_rgb(0_0_0/0.12)]">
@@ -365,7 +365,7 @@ function ItemRow({ index, register, errors, onSelectCatalog, onRemove }: {
     <div className="border border-tc-border bg-tc-surface p-3">
       <div className="mb-2 flex items-center justify-between">
         <span className="text-xs font-bold tracking-wider uppercase text-tc-text-muted">Renglón {index + 1}</span>
-        <button type="button" onClick={onRemove} className="text-xs font-bold tracking-wider uppercase text-tc-stamp-red hover:opacity-70 transition-opacity">Quitar</button>
+        <button type="button" onClick={onRemove} className="text-xs font-bold tracking-wider uppercase text-tc-danger-solid hover:opacity-70 transition-opacity">Quitar</button>
       </div>
       <div className="space-y-2">
         <CatalogPicker

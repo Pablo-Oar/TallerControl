@@ -131,7 +131,7 @@ export function AvailabilityPage() {
       <AppointmentsTabs />
 
       {error && (
-        <p role="alert" className="flex items-center justify-between border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+        <p role="alert" className="flex items-center justify-between border border-tc-danger-border bg-tc-danger-bg px-4 py-2 text-sm text-tc-danger-text">
           <span>{error}</span>
           <button className="text-xs underline" onClick={() => setError(null)}>Cerrar</button>
         </p>
@@ -167,7 +167,7 @@ export function AvailabilityPage() {
                         type="button"
                         onClick={() => removeRules(g.rules, who, g.days)}
                         aria-label={`Quitar ${g.days} ${g.range} de ${who}`}
-                        className="ml-1 flex h-11 w-11 items-center justify-center text-lg leading-none text-tc-text-muted transition-colors hover:text-tc-stamp-red"
+                        className="ml-1 flex h-11 w-11 items-center justify-center text-lg leading-none text-tc-text-muted transition-colors hover:text-tc-danger-solid"
                       >
                         ×
                       </button>
@@ -230,11 +230,11 @@ export function AvailabilityPage() {
             <li key={e.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2 text-sm">
               <span className="font-bold tabular-nums text-tc-text">{formatDateOnly(e.date)}</span>
               <span className="text-tc-text-secondary">{e.mechanicMembershipId ? nameOf(e.mechanicMembershipId, e.mechanicName ?? '') : 'Todo el taller'}</span>
-              <span className={e.isBlocked ? 'font-bold text-tc-stamp-red' : 'text-amber-700'}>
+              <span className={e.isBlocked ? 'font-bold text-tc-danger-solid' : 'text-tc-warning-text'}>
                 {e.isBlocked ? 'Bloqueado' : `Horario ${hhmm(e.startTime)}–${hhmm(e.endTime)}`}
               </span>
               {e.reason && <span className="text-tc-text-muted">{e.reason}</span>}
-              <button type="button" onClick={() => removeException(e)} className="ml-auto min-h-11 px-2 text-xs font-bold text-tc-text-muted uppercase transition-colors hover:text-tc-stamp-red">
+              <button type="button" onClick={() => removeException(e)} className="ml-auto min-h-11 px-2 text-xs font-bold text-tc-text-muted uppercase transition-colors hover:text-tc-danger-solid">
                 Quitar
               </button>
             </li>

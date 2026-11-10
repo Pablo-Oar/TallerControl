@@ -157,7 +157,7 @@ export function WorkOrderDetailPage() {
   }
 
   if (error || !order) {
-    return <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">No se pudo cargar la orden.</p>
+    return <p className="border border-tc-danger-border bg-tc-danger-bg px-4 py-3 text-sm text-tc-danger-text">No se pudo cargar la orden.</p>
   }
 
   const vehicleLabel = [order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ')
@@ -362,7 +362,7 @@ export function WorkOrderDetailPage() {
             <span className="text-tc-text-secondary">
               Cobrado <span className="tabular-nums font-semibold text-tc-done-text">{fmtARS(payments.paid)}</span>
             </span>
-            <span className={payments.balance > 0 ? (payments.paid <= 0 ? 'text-tc-stamp-red' : 'text-amber-600') : 'text-tc-done-text'}>
+            <span className={payments.balance > 0 ? (payments.paid <= 0 ? 'text-tc-danger-solid' : 'text-tc-warning-text') : 'text-tc-done-text'}>
               Pendiente <span className="tabular-nums font-bold">{fmtARS(payments.balance)}</span>
             </span>
           </div>
@@ -615,7 +615,7 @@ function PaymentActions({ orderId, pay, canVoid, onShare, onVoid }: {
         Enlace
       </button>
       {pay.status === 'valid' && canVoid && (
-        <button onClick={() => onVoid(pay.id)} className={`${linkCls} text-tc-stamp-red hover:text-red-700`}>
+        <button onClick={() => onVoid(pay.id)} className={`${linkCls} text-tc-danger-solid hover:text-tc-danger-text`}>
           Anular
         </button>
       )}

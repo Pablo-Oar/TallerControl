@@ -89,8 +89,8 @@ export function InvoiceSection({ sourceType, sourceId, eligible, ineligibleReaso
               >
                 <span className="font-mono text-tc-text">
                   Fcta. {i.invoiceType.toUpperCase()} {i.number ?? '—'}
-                  {i.isCredit && <span className="ml-2 text-[11px] font-bold text-amber-700">NC</span>}
-                  {i.isHomologation && <span className="ml-2 border border-amber-300 px-1 text-[11px] font-bold tracking-wider uppercase text-amber-700" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
+                  {i.isCredit && <span className="ml-2 text-[11px] font-bold text-tc-warning-text">NC</span>}
+                  {i.isHomologation && <span className="ml-2 border border-tc-warning-border px-1 text-[11px] font-bold tracking-wider uppercase text-tc-warning-text" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
                 </span>
                 <StatusBadge status={i.status} hint={INVOICE_STATUS_HINTS[i.status]} label={INVOICE_STATUS_LABELS[i.status]} />
                 <span className="ml-auto tabular-nums font-semibold text-tc-purple">{fmtARS(i.totalAmount)}</span>
@@ -167,7 +167,7 @@ function EmitInvoiceModal({
               {result.cae && <p className="text-xs text-tc-text-muted">CAE <span className="font-mono">{result.cae}</span></p>}
             </>
           ) : (
-            <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p role="alert" className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">
               ARCA rechazó el comprobante: {result.rejectionReason ?? 'sin detalle'}. Podés corregir el dato y volver a intentar.
             </p>
           )}
@@ -191,7 +191,7 @@ function EmitInvoiceModal({
         <p className="text-sm text-tc-text-secondary">
           Se emite por el total del documento. El tipo (A o B) se elige solo según la condición de IVA del cliente.
         </p>
-        {error && <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        {error && <p role="alert" className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">{error}</p>}
         <FormSelect label="Punto de venta" requiredMark value={pointId} onChange={e => setPointId(e.target.value)}>
           {points.map(p => (
             <option key={p.id} value={p.id}>{String(p.number).padStart(4, '0')} · {p.name}</option>

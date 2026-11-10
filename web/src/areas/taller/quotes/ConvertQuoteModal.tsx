@@ -49,7 +49,7 @@ export function ConvertQuoteModal({ vehicleId, vehiclePlate, busy, error, onConf
           Se crea la orden de <b className="font-mono tracking-widest">{vehiclePlate}</b> con los renglones aprobados.
           Cargá los datos con los que entra el vehículo.
         </p>
-        {error && <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        {error && <p role="alert" className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">{error}</p>}
         <FormField
           label="Odómetro (km)"
           requiredMark

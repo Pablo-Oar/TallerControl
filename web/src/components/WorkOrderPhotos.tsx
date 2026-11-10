@@ -195,7 +195,7 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = fal
                   aria-label={`Quitar foto ${i + 1}`}
                   className="group absolute right-0 top-0 flex h-11 w-11 items-center justify-center text-lg font-bold text-white"
                 >
-                  <span aria-hidden className="flex h-6 w-6 items-center justify-center bg-tc-navy/80 leading-none group-hover:bg-tc-stamp-red">×</span>
+                  <span aria-hidden className="flex h-6 w-6 items-center justify-center bg-tc-navy/80 leading-none group-hover:bg-tc-danger-solid">×</span>
                 </button>
               )}
             </li>
@@ -230,7 +230,7 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = fal
                     aria-label="Descartar foto"
                     className="group flex h-11 w-11 items-center justify-center text-lg font-bold text-white"
                   >
-                    <span aria-hidden className="flex h-6 w-6 items-center justify-center bg-tc-navy/80 leading-none group-hover:bg-tc-stamp-red">×</span>
+                    <span aria-hidden className="flex h-6 w-6 items-center justify-center bg-tc-navy/80 leading-none group-hover:bg-tc-danger-solid">×</span>
                   </button>
                 </div>
               )}
@@ -295,7 +295,7 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = fal
         </>
       )}
       {error && (
-        <p role="alert" className="text-xs text-tc-stamp-red">
+        <p role="alert" className="text-xs text-tc-danger-solid">
           {error}
         </p>
       )}

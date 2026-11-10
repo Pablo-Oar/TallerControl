@@ -36,7 +36,7 @@ export function ConfirmWithCashModal({ title, message, confirmLabel, accountLabe
     <Modal title={title} onClose={onClose} className="max-w-sm">
       <form onSubmit={submit} className="space-y-4">
         <p className="text-sm text-tc-text-secondary">{message}</p>
-        {error && <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        {error && <p role="alert" className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">{error}</p>}
         {field}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="secondary" size="sm" onClick={onClose} disabled={busy}>Cancelar</Button>

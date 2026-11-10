@@ -143,7 +143,7 @@ export function EditableStatusBadge({ status, label, statusText, options, onSele
       )}
 
       {error && (
-        <p role="alert" className="mt-1 max-w-xs text-xs text-tc-stamp-red">
+        <p role="alert" className="mt-1 max-w-xs text-xs text-tc-danger-solid">
           {error}
         </p>
       )}

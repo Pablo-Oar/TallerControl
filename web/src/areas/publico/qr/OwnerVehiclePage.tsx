@@ -98,9 +98,9 @@ export function OwnerVehiclePage() {
       <div className="mx-auto max-w-md px-4 space-y-5 pt-5">
         {/* Balance pendiente */}
         {data.pendingBalance > 0 && (
-          <div className="border border-amber-300 bg-amber-50 p-4">
-            <p className="text-[11px] font-bold tracking-wider uppercase text-amber-600 mb-1">Saldo pendiente</p>
-            <p className="text-2xl font-bold text-amber-700 tabular-nums">
+          <div className="border border-tc-warning-border bg-tc-warning-bg p-4">
+            <p className="text-[11px] font-bold tracking-wider uppercase text-tc-warning-text mb-1">Saldo pendiente</p>
+            <p className="text-2xl font-bold text-tc-warning-text tabular-nums">
               {fmtARS(data.pendingBalance)}
             </p>
           </div>

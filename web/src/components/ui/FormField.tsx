@@ -46,7 +46,7 @@ const controlSize: Record<Size, string> = {
 }
 
 function borderCls(error?: string) {
-  return error ? 'border-tc-stamp-red' : 'border-tc-border-input'
+  return error ? 'border-tc-danger-solid' : 'border-tc-border-input'
 }
 
 function labelCls(raised: boolean, size: Size, multiline: boolean) {
@@ -86,7 +86,7 @@ function Shell({ id, label, error, hint, requiredMark, size = 'md', className, r
         </label>
       </div>
       {error ? (
-        <p id={`${id}-msg`} role="alert" className="mt-1 text-xs text-tc-stamp-red">
+        <p id={`${id}-msg`} role="alert" className="mt-1 text-xs text-tc-danger-solid">
           {error}
         </p>
       ) : hint ? (

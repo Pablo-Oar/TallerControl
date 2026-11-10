@@ -165,10 +165,10 @@ export function MechanicWorkOrderDetailPage() {
       {order.assignedMechanicId == null && order.status !== 'delivered' && order.status !== 'cancelled' && (
         <Section title="Asignación">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-amber-700">Esta orden no tiene mecánico asignado.</p>
+            <p className="text-sm text-tc-warning-text">Esta orden no tiene mecánico asignado.</p>
             <Button size="sm" loading={assigning} onClick={handleAssignSelf}>Asignarme</Button>
           </div>
-          {assignError && <p role="alert" className="mt-2 text-xs text-tc-stamp-red">{assignError}</p>}
+          {assignError && <p role="alert" className="mt-2 text-xs text-tc-danger-solid">{assignError}</p>}
         </Section>
       )}
 
@@ -192,7 +192,7 @@ export function MechanicWorkOrderDetailPage() {
             </p>
           )}
           <p className="text-sm text-tc-text-secondary">
-            Prioridad: <strong className={order.priority === 'high' ? 'text-amber-800' : undefined}>{PRIORITY_LABELS[order.priority]}</strong>
+            Prioridad: <strong className={order.priority === 'high' ? 'text-tc-warning-text' : undefined}>{PRIORITY_LABELS[order.priority]}</strong>
           </p>
         </div>
       </Section>
@@ -227,7 +227,7 @@ export function MechanicWorkOrderDetailPage() {
               maxLength={2000}
               placeholder="Notas del trabajo…"
             />
-            {notesError && <p className="text-xs text-tc-stamp-red">{notesError}</p>}
+            {notesError && <p className="text-xs text-tc-danger-solid">{notesError}</p>}
             <div className="flex gap-2">
               <Button className="min-h-[44px]" loading={savingNotes} onClick={handleSaveNotes}>Guardar</Button>
               <Button className="min-h-[44px]" variant="secondary" onClick={() => setEditingNotes(false)}>Cancelar</Button>
@@ -327,7 +327,7 @@ export function MechanicWorkOrderDetailPage() {
               rows={2}
               placeholder="Queda en el historial de la orden"
             />
-            {statusError && <p role="alert" className="text-xs text-tc-stamp-red">{statusError}</p>}
+            {statusError && <p role="alert" className="text-xs text-tc-danger-solid">{statusError}</p>}
             <div className="flex gap-2">
               <Button size="sm" loading={savingStatus} onClick={handleChangeStatus} className="flex-1">
                 Confirmar

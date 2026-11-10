@@ -144,7 +144,7 @@ export function QuoteDetailPage() {
   }
 
   if (!quote) {
-    return <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">Presupuesto no encontrado.</p>
+    return <p className="border border-tc-danger-border bg-tc-danger-bg px-4 py-3 text-sm text-tc-danger-text">Presupuesto no encontrado.</p>
   }
 
   const canEdit = quote.status === 'draft'
@@ -171,7 +171,7 @@ export function QuoteDetailPage() {
       </div>
 
       {error && (
-        <div className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-center justify-between">
+        <div className="border border-tc-danger-border bg-tc-danger-bg px-4 py-3 text-sm text-tc-danger-text flex items-center justify-between">
           {error}
           <button onClick={() => setError(null)} className="ml-3 text-xs underline">Cerrar</button>
         </div>
@@ -280,7 +280,7 @@ export function QuoteDetailPage() {
             <>
               <TotalRow label="Subtotal">{fmtARS(quote.subtotalNet)}</TotalRow>
               <TotalRow label={`Descuento (${quote.globalDiscountPct}%)`}>
-                <span className="text-tc-stamp-red">−{fmtARS(quote.discountAmount)}</span>
+                <span className="text-tc-danger-solid">−{fmtARS(quote.discountAmount)}</span>
               </TotalRow>
             </>
           )}
@@ -515,7 +515,7 @@ function ResponseEvidence({ quoteId, responses }: { quoteId: string; responses: 
                 ) : (
                   <span className="text-tc-text-muted">Documento registrado (lo ve el Dueño)</span>
                 )}
-                {failed === r.id && <span className="ml-2 text-xs text-tc-stamp-red">No se pudo leer el documento.</span>}
+                {failed === r.id && <span className="ml-2 text-xs text-tc-danger-solid">No se pudo leer el documento.</span>}
               </div>
             )}
           </li>

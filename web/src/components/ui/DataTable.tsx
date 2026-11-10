@@ -159,7 +159,7 @@ export function DataTable<T>({
   if (error) {
     return (
       <div className={frame}>
-        <div role="alert" className="space-y-3 rounded-xl bg-red-50 px-4 py-4 text-sm text-red-800">
+        <div role="alert" className="space-y-3 rounded-xl bg-tc-danger-bg px-4 py-4 text-sm text-tc-danger-text">
           <p>No se pudo cargar la lista.</p>
           {onRetry && (
             <Button size="sm" variant="secondary" onClick={onRetry}>
@@ -362,9 +362,9 @@ export function DataTable<T>({
 
 const TONE = {
   default: 'text-tc-navy-text-dim hover:text-tc-purple',
-  danger: 'text-tc-stamp-red hover:opacity-70',
-  success: 'text-green-700 hover:text-green-900',
-  warn: 'text-amber-600 hover:text-amber-800',
+  danger: 'text-tc-danger-solid hover:opacity-70',
+  success: 'text-tc-success-text hover:text-tc-success-text',
+  warn: 'text-tc-warning-text hover:text-tc-warning-text',
   purple: 'text-tc-purple hover:opacity-70',
 } as const
 

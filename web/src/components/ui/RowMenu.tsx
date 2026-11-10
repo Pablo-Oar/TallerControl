@@ -85,7 +85,7 @@ export function RowMenu({ items, label = 'Más acciones' }: { items: RowMenuItem
                 onClick={() => { setPos(null); it.onSelect() }}
                 className={cn(
                   'flex min-h-11 w-full items-center px-4 text-left text-xs font-bold tracking-wider uppercase hover:bg-tc-surface md:min-h-9',
-                  it.tone === 'danger' ? 'text-tc-stamp-red' : it.tone === 'warn' ? 'text-amber-700' : 'text-tc-text',
+                  it.tone === 'danger' ? 'text-tc-danger-solid' : it.tone === 'warn' ? 'text-tc-warning-text' : 'text-tc-text',
                 )}
               >
                 {it.label}

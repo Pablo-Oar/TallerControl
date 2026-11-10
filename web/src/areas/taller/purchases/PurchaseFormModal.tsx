@@ -164,7 +164,7 @@ export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
             </button>
           </div>
           {errors.items && !Array.isArray(errors.items) && (
-            <p className="mb-2 text-xs text-red-600">{(errors.items as { message?: string }).message}</p>
+            <p className="mb-2 text-xs text-tc-danger-text">{(errors.items as { message?: string }).message}</p>
           )}
           <div className="space-y-2">
             {fields.map((field, index) => (
@@ -217,7 +217,7 @@ export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
                       type="button"
                       onClick={() => remove(index)}
                       aria-label="Quitar ítem"
-                      className="min-h-[44px] px-3 text-xs text-tc-text-muted hover:text-red-600 transition-colors sm:min-h-0 sm:px-0"
+                      className="min-h-[44px] px-3 text-xs text-tc-text-muted hover:text-tc-danger-text transition-colors sm:min-h-0 sm:px-0"
                     >
                       <span className="sm:hidden">Quitar ítem </span>✕
                     </button>
@@ -235,13 +235,13 @@ export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
         </div>
 
         {missingFiscalData && (
-          <p className="border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          <p className="border border-tc-warning-border bg-tc-warning-bg px-3 py-2 text-xs text-tc-warning-text">
             Sin punto de venta y número de factura la compra queda fuera del CITI. Podés completarlos ahora o más tarde, mientras sea un borrador.
           </p>
         )}
 
         {serverError && (
-          <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{serverError}</p>
+          <p role="alert" className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">{serverError}</p>
         )}
 
         <div className="sticky -bottom-5 -mx-5 -mb-5 mt-2 flex justify-end gap-3 border-t border-tc-border bg-white px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-6px_8px_-6px_rgb(0_0_0/0.12)]">

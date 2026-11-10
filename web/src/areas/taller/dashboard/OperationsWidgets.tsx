@@ -66,12 +66,12 @@ export function LiveOrders({
                       {o.vehicleLabel ? ` · ${o.vehicleLabel}` : ''}
                       <span className="md:hidden">
                         {' · '}
-                        {o.mechanicName ?? <span className="font-semibold text-amber-700">Sin mecánico</span>}
+                        {o.mechanicName ?? <span className="font-semibold text-tc-warning-text">Sin mecánico</span>}
                       </span>
                     </span>
                   </span>
                   <span className="hidden min-w-0 truncate text-sm text-tc-text-secondary md:block">
-                    {o.mechanicName ?? <span className="font-semibold text-amber-700">Sin mecánico</span>}
+                    {o.mechanicName ?? <span className="font-semibold text-tc-warning-text">Sin mecánico</span>}
                   </span>
                   <span className="flex flex-none flex-col items-end gap-1 md:contents">
                     <span className="md:flex md:justify-center">
@@ -134,7 +134,7 @@ export function TodayAppointmentsWidget({ data }: { data: TodayAppointments }) {
                   <span className="block truncate text-xs text-tc-text-muted">
                     <span className="font-mono tracking-widest">{a.vehiclePlate}</span>
                     {' · '}
-                    {a.mechanicName ?? <span className="font-semibold text-amber-700">Sin mecánico asignado</span>}
+                    {a.mechanicName ?? <span className="font-semibold text-tc-warning-text">Sin mecánico asignado</span>}
                   </span>
                 </span>
               </span>

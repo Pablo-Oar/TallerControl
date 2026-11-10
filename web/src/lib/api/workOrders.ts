@@ -36,12 +36,12 @@ export const PRIORITY_LABELS: Record<WorkOrderPriority, string> = {
 }
 
 export const STATUS_COLORS: Record<WorkOrderStatus, string> = {
-  pending: 'bg-yellow-100 text-yellow-700',
-  in_progress: 'bg-blue-100 text-blue-700',
-  waiting_parts: 'bg-orange-100 text-orange-700',
-  completed: 'bg-green-100 text-green-700',
+  pending: 'bg-tc-warning-bg text-tc-warning-text',
+  in_progress: 'bg-tc-info-bg text-tc-info-text',
+  waiting_parts: 'bg-tc-warning-bg text-tc-warning-text',
+  completed: 'bg-tc-success-bg text-tc-success-text',
   delivered: 'bg-slate-100 text-slate-600',
-  cancelled: 'bg-red-100 text-red-600',
+  cancelled: 'bg-tc-danger-bg text-tc-danger-text',
 }
 
 export interface WorkOrderItemDto {

@@ -36,7 +36,7 @@
   --color-tc-done-border: #6ee7b7;
   --color-tc-void-text: #6b7280;
   --color-tc-void-border: #d1d5db;
-  --color-tc-stamp-red: #d32f2f;
+  --color-tc-stamp-red: var(--color-tc-danger-solid);
 
   /* Coupon perforation */
   --color-tc-perf: #c7d3e8;
@@ -93,7 +93,7 @@
   --muted-foreground: var(--color-tc-text-secondary);
   --accent: var(--color-tc-purple-light);
   --accent-foreground: var(--color-tc-purple-mid);
-  --destructive: var(--color-tc-stamp-red);
+  --destructive: var(--color-tc-danger-solid);
   --border: var(--color-tc-border);
   --input: var(--color-tc-border-input);
   --ring: var(--color-tc-purple);

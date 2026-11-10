@@ -89,7 +89,7 @@ export const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(function A
             'placeholder:text-transparent focus:placeholder:text-tc-text-muted',
             isPassword ? 'pr-11' : 'pr-3',
             error
-              ? 'border-tc-stamp-red'
+              ? 'border-tc-danger-solid'
               : 'border-tc-border-input hover:border-tc-text-muted focus:border-tc-purple',
           )}
           {...rest}
@@ -101,7 +101,7 @@ export const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(function A
             // Al enfocar o escribir, la etiqueta sube lentamente y se apoya sobre el borde superior del campo.
             'peer-focus:top-0 peer-focus:left-3 peer-focus:text-xs peer-focus:font-semibold',
             'peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:left-3 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:font-semibold',
-            error ? 'text-tc-stamp-red peer-focus:text-tc-stamp-red' : 'peer-focus:text-tc-purple',
+            error ? 'text-tc-danger-solid peer-focus:text-tc-danger-solid' : 'peer-focus:text-tc-purple',
           )}
         >
           {label}
@@ -119,7 +119,7 @@ export const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(function A
         )}
       </div>
       {(error || hint) && (
-        <p id={descId} className={cn('mt-1 text-xs', error ? 'text-tc-stamp-red' : 'text-tc-text-muted')}>
+        <p id={descId} className={cn('mt-1 text-xs', error ? 'text-tc-danger-solid' : 'text-tc-text-muted')}>
           {error ?? hint}
         </p>
       )}
@@ -130,7 +130,7 @@ export const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(function A
 /** Aviso de error del servidor dentro de una pantalla de acceso (mismo radio que los campos). */
 export function AuthAlert({ children }: { children: ReactNode }) {
   return (
-    <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+    <p role="alert" className="rounded-xl border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">
       {children}
     </p>
   )

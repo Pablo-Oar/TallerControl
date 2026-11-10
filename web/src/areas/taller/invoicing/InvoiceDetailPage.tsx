@@ -65,11 +65,11 @@ export function InvoiceDetailPage() {
           {invoice.isCredit ? 'Nota de crédito' : 'Factura'} {invoice.invoiceType.toUpperCase()}
         </h1>
         <StatusBadge status={invoice.status} hint={INVOICE_STATUS_HINTS[invoice.status]} label={INVOICE_STATUS_LABELS[invoice.status]} />
-        {invoice.isHomologation && <span className="ml-2 border border-amber-300 px-1 text-[11px] font-bold tracking-wider uppercase text-amber-700" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
+        {invoice.isHomologation && <span className="ml-2 border border-tc-warning-border px-1 text-[11px] font-bold tracking-wider uppercase text-tc-warning-text" title="Emitida en homologación: es de prueba y no tiene validez fiscal">Prueba</span>}
       </div>
 
       {invoice.status === 'rejected' && (
-        <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p role="alert" className="border border-tc-danger-border bg-tc-danger-bg px-3 py-2 text-sm text-tc-danger-text">
           ARCA rechazó este comprobante: {invoice.rejectionReason ?? 'sin detalle'}.
         </p>
       )}

@@ -8,8 +8,8 @@ function Chip({ children, tone = 'muted' }: { children: ReactNode; tone?: 'muted
   const tones = {
     muted: 'bg-white/10 text-slate-200',
     purple: 'bg-tc-purple/30 text-violet-200',
-    green: 'bg-emerald-400/20 text-emerald-200',
-    amber: 'bg-amber-400/20 text-amber-200',
+    green: 'bg-emerald-400/20 text-tc-success-text',
+    amber: 'bg-amber-400/20 text-tc-warning-text',
   }
   return <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${tones[tone]}`}>{children}</span>
 }

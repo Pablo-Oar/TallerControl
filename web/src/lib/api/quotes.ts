@@ -26,11 +26,11 @@ export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
 
 export const QUOTE_STATUS_COLORS: Record<QuoteStatus, string> = {
   draft: 'bg-slate-100 text-slate-600',
-  sent: 'bg-blue-100 text-blue-700',
-  approved: 'bg-green-100 text-green-700',
-  partially_approved: 'bg-teal-100 text-teal-700',
-  rejected: 'bg-red-100 text-red-600',
-  expired: 'bg-orange-100 text-orange-700',
+  sent: 'bg-tc-info-bg text-tc-info-text',
+  approved: 'bg-tc-success-bg text-tc-success-text',
+  partially_approved: 'bg-tc-success-bg text-tc-success-text',
+  rejected: 'bg-tc-danger-bg text-tc-danger-text',
+  expired: 'bg-tc-warning-bg text-tc-warning-text',
   converted: 'bg-purple-100 text-purple-700',
   cancelled: 'bg-slate-100 text-slate-500',
 }
