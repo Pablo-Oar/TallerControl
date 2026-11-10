@@ -262,7 +262,7 @@ export function AppointmentsPage() {
               onChange={e => setCancelReason(e.target.value)}
               placeholder="Motivo de cancelación (obligatorio)"
               rows={3}
-              className="w-full border border-tc-border bg-white px-3 py-2 text-sm outline-none focus:border-tc-border-mid transition-colors"
+              className="w-full border border-tc-border-input bg-white px-3 py-2 text-sm outline-none focus:border-tc-purple transition-colors"
             />
             <div className="flex justify-end gap-2">
               <Button type="button" variant="secondary" size="sm" onClick={() => setCancellingId(null)}>

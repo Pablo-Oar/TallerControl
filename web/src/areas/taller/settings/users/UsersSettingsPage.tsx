@@ -120,7 +120,7 @@ export function UsersSettingsPage() {
 
       {invitations.length > 0 && (
         <section aria-label="Invitaciones pendientes" className="overflow-hidden border border-tc-border bg-white">
-          <h2 className="border-b border-tc-border bg-tc-stub-bg px-4 py-2 text-[11px] font-bold tracking-[0.14em] text-tc-text-muted uppercase">
+          <h2 className="border-b border-tc-border bg-tc-stub-bg px-4 py-2 text-[11px] font-bold tracking-[0.14em] text-tc-text-secondary uppercase">
             Invitaciones pendientes
           </h2>
           <ul className="divide-y divide-tc-border">

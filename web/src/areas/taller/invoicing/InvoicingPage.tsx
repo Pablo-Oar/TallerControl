@@ -108,7 +108,7 @@ export function InvoicingPage() {
         <select
           value={status}
           onChange={e => { setStatus(e.target.value as InvoiceStatus | ''); setPage(1) }}
-          className="border border-tc-border bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-border-mid transition-colors"
+          className="border border-tc-border-input bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-purple transition-colors"
         >
           <option value="">Todos los estados</option>
           <option value="authorized">Autorizadas</option>

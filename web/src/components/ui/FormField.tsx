@@ -46,7 +46,7 @@ const controlSize: Record<Size, string> = {
 }
 
 function borderCls(error?: string) {
-  return error ? 'border-tc-stamp-red' : 'border-tc-border-mid'
+  return error ? 'border-tc-stamp-red' : 'border-tc-border-input'
 }
 
 function labelCls(raised: boolean, size: Size, multiline: boolean) {

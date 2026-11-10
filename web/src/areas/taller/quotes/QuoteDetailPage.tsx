@@ -382,7 +382,7 @@ export function QuoteDetailPage() {
             <input
               value={cancelReason}
               onChange={e => setCancelReason(e.target.value)}
-              className="w-full border border-tc-border bg-white px-3 py-2 text-sm outline-none focus:border-tc-border-mid transition-colors"
+              className="w-full border border-tc-border-input bg-white px-3 py-2 text-sm outline-none focus:border-tc-purple transition-colors"
               placeholder="Motivo de cancelación (obligatorio)"
             />
             <div className="flex gap-2">

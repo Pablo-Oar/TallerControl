@@ -134,7 +134,7 @@ export const SignaturePad = forwardRef<SignaturePadHandle, SignaturePadProps>(fu
     <div className={className}>
       <div
         className={cn(
-          'touch-none select-none overflow-hidden border border-tc-border-mid bg-white',
+          'touch-none select-none overflow-hidden border border-tc-border-input bg-white',
           disabled && 'opacity-50',
         )}
       >

@@ -10,7 +10,7 @@ const TILE: Record<Accent, string> = {
   blue: 'bg-tc-inprog-bg text-tc-inprog-text',
   amber: 'bg-amber-50 text-amber-600',
   purple: 'bg-tc-purple-light text-tc-purple-mid',
-  slate: 'bg-tc-stub-bg text-tc-navy-text-dim',
+  slate: 'bg-tc-stub-bg text-tc-text-secondary',
 }
 
 const VALUE: Record<Accent, string> = {

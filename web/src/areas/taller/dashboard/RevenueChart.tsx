@@ -31,7 +31,7 @@ export default function RevenueChart({ days }: { days: RevenueDay[] }) {
             <Tooltip
               cursor={{ fill: 'rgba(124,58,237,0.08)' }}
               formatter={(value) => [fmtARS(Number(value)), 'Ingresos']}
-              contentStyle={{ border: '1px solid #e2e8f0', borderRadius: 0, fontSize: 12 }}
+              contentStyle={{ border: '1px solid #c7ccd6', borderRadius: 0, fontSize: 12 }}
             />
             <Bar dataKey="amount" maxBarSize={44} isAnimationActive={false} />
           </BarChart>
