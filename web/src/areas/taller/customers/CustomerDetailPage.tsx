@@ -12,6 +12,7 @@ import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { useCan } from '../../../lib/auth/permissions'
 import { CustomerFormModal } from './CustomerFormModal'
 import { OwnerAccessCode } from './OwnerAccessCode'
+import { ArrowLeftIcon } from '@/components/ui/icons'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -112,7 +113,7 @@ export function CustomerDetailPage() {
         </div>
         <div className="flex gap-2">
           <Link to="/app/customers">
-            <Button variant="secondary" size="sm">← Volver</Button>
+            <Button variant="secondary" size="sm"><ArrowLeftIcon className="mr-1 inline-block h-4 w-4 align-text-bottom" />Volver</Button>
           </Link>
           {can('customers.write') && <Button size="sm" onClick={() => setEditing(true)}>Editar</Button>}
         </div>

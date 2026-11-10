@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { OnboardingDto } from '../../../lib/api/onboarding'
 import { ChecklistIcon } from './icons'
 import { IconTile } from './Widgets'
+import { ChevronDownIcon } from '@/components/ui/icons'
 
 /**
  * Guía de inicio (solo Dueño). Mientras falten pasos queda a la vista; con más de la mitad hecho arranca
@@ -26,9 +27,7 @@ export function OnboardingCard({ onboarding }: { onboarding: OnboardingDto }) {
         </span>
         <span className="flex items-center gap-2 text-[11px] font-bold tracking-wider tabular-nums text-tc-purple">
           {onboarding.completedCount}/{onboarding.totalCount} · {pct}%
-          <svg className={['h-3 w-3 transition-transform', open ? 'rotate-180' : ''].join(' ')} viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-            <path d="M2 4l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <ChevronDownIcon className={['h-3 w-3 transition-transform', open ? 'rotate-180' : ''].join(' ')} />
         </span>
       </button>
 

@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { ChevronLeftIcon, ChevronRightIcon } from '@/components/ui/icons'
 
 /** Tamaño de página de todas las listas. */
 export const PAGE_SIZE = 10
@@ -44,7 +45,7 @@ export function Pagination({
       </span>
       <div className="flex flex-wrap items-center justify-center gap-1">
         <button type="button" className={btn} onClick={() => onPage(page - 1)} disabled={page === 1}>
-          <span aria-hidden>←</span>
+          <ChevronLeftIcon />
           <span className="sr-only">Anterior</span>
         </button>
         {pageWindow(page, pages).map((p, i) =>
@@ -64,7 +65,7 @@ export function Pagination({
           ),
         )}
         <button type="button" className={btn} onClick={() => onPage(page + 1)} disabled={page >= pages}>
-          <span aria-hidden>→</span>
+          <ChevronRightIcon />
           <span className="sr-only">Siguiente</span>
         </button>
       </div>

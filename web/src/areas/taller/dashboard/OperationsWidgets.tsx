@@ -9,6 +9,7 @@ import { ConvertAppointmentModal } from '../appointments/ConvertAppointmentModal
 import { daysLabel, timeLabel } from './format'
 import { CalendarIcon, ClockIcon, WrenchIcon } from './icons'
 import { StatusStrip, WidgetEmpty, WidgetShell } from './Widgets'
+import { UserOffIcon } from '@/components/ui/icons'
 
 /** Columnas de «Taller en vivo» en escritorio; en celular cada orden es una tarjeta. */
 const LIVE_GRID = 'md:grid md:grid-cols-[3.5rem_minmax(0,1.5fr)_minmax(0,1fr)_8.75rem_8.75rem] md:items-center md:gap-3'
@@ -173,11 +174,3 @@ export function TodayAppointmentsWidget({ data }: { data: TodayAppointments }) {
   )
 }
 
-function UserOffIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="8" r="3.5" />
-      <path d="M5 20a7 7 0 0 1 14 0M4 4l16 16" />
-    </svg>
-  )
-}

@@ -5,6 +5,10 @@ import { hasPermissions } from '../../lib/auth/permissions'
 import { NotificationBell } from '../../components/NotificationBell'
 import { PlateSearchBar } from '../../components/PlateSearchBar'
 import { useState } from 'react'
+import { MenuIcon } from '@/components/ui/icons'
+import { SearchIcon } from '@/components/ui/icons'
+import { SpinnerIcon } from '@/components/ui/icons'
+import { LogOutIcon } from '@/components/ui/icons'
 
 interface NavItem {
   to: string
@@ -117,9 +121,7 @@ export function TallerLayout({ children }: { children: ReactNode }) {
           onClick={() => setSidebarOpen(v => !v)}
           aria-label="Menú"
         >
-          <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-            <path fillRule="evenodd" d="M3 5h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2z" clipRule="evenodd" />
-          </svg>
+          <MenuIcon className="h-5 w-5" />
         </button>
 
         {/* Wordmark */}
@@ -140,9 +142,7 @@ export function TallerLayout({ children }: { children: ReactNode }) {
             onClick={() => navigate('/app/vehicles')}
             aria-label="Buscar"
           >
-            <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-            </svg>
+            <SearchIcon />
           </button>
           <NotificationBell />
           <span className="hidden text-xs text-tc-navy-text lg:block truncate max-w-[160px]">
@@ -154,14 +154,9 @@ export function TallerLayout({ children }: { children: ReactNode }) {
             className="flex h-11 items-center gap-1.5 border border-tc-navy-mid px-3 text-xs font-medium lg:h-7 text-tc-navy-text hover:border-tc-navy-text hover:text-white transition-colors disabled:opacity-50"
           >
             {loggingOut ? (
-              <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-              </svg>
+              <SpinnerIcon className="h-3 w-3 animate-spin" />
             ) : (
-              <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-                <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
-              </svg>
+              <LogOutIcon className="h-3 w-3" />
             )}
             Salir
           </button>

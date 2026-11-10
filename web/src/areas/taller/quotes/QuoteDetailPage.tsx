@@ -19,6 +19,7 @@ import { ConvertQuoteModal } from './ConvertQuoteModal'
 import { formatDateOnly, formatDateTime } from '../../../lib/dates'
 import { useCan } from '../../../lib/auth/permissions'
 import { confirmDialog } from '../../../components/ui/dialogs'
+import { ArrowLeftIcon, ArrowRightIcon } from '@/components/ui/icons'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -161,7 +162,7 @@ export function QuoteDetailPage() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <Link to="/app/quotes" className="inline-flex min-h-11 items-center text-xs font-bold tracking-wider uppercase text-tc-navy-text hover:text-tc-purple transition-colors">
-            ← Presupuestos
+            <ArrowLeftIcon className="mr-1 inline-block h-4 w-4 align-text-bottom" />Presupuestos
           </Link>
           <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">
             Presupuesto #{quote.number}
@@ -199,7 +200,7 @@ export function QuoteDetailPage() {
           {quote.workOrderId && (
             <DataCell label="OT generada">
               <Link to={`/app/work-orders/${quote.workOrderId}`} className="text-tc-purple hover:text-tc-purple-mid font-medium transition-colors">
-                Ver OT →
+                Ver OT <ArrowRightIcon className="ml-0.5 inline-block h-4 w-4 align-text-bottom" />
               </Link>
             </DataCell>
           )}

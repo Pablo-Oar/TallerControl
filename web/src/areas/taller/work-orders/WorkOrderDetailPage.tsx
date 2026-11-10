@@ -36,6 +36,7 @@ import { CreatePaymentModal } from './CreatePaymentModal'
 import { InvoiceSection } from '../invoicing/InvoiceSection'
 import { ShareLink } from '../../../components/ShareLink'
 import { useCan } from '../../../lib/auth/permissions'
+import { ArrowLeftIcon, ArrowRightIcon } from '@/components/ui/icons'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -183,7 +184,7 @@ export function WorkOrderDetailPage() {
         </div>
         <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto">
           <Link to="/app/work-orders" className="contents">
-            <Button variant="secondary" size="sm" className="whitespace-nowrap">← Volver</Button>
+            <Button variant="secondary" size="sm" className="whitespace-nowrap"><ArrowLeftIcon className="mr-1 inline-block h-4 w-4 align-text-bottom" />Volver</Button>
           </Link>
           <a
             href={`/api/v1/work-orders/${order.id}/pdf`}
@@ -448,7 +449,7 @@ export function WorkOrderDetailPage() {
               kind: 'status' as const,
               title: (
                 <>
-                  {change.fromStatus && <>{STATUS_LABELS[change.fromStatus as WorkOrderStatus]} → </>}
+                  {change.fromStatus && <>{STATUS_LABELS[change.fromStatus as WorkOrderStatus]}<ArrowRightIcon className="mx-1 inline-block h-3.5 w-3.5 align-text-bottom" /></>}
                   {STATUS_LABELS[change.toStatus as WorkOrderStatus]}
                 </>
               ),

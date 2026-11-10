@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useSyncExternalStore, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { CloseIcon } from '@/components/ui/icons'
 
 /**
  * Diálogo del sistema (UI-R2 F2, D-24/D-25). Conserva la estética "Jet-Age Ticket Wallet" (cabecera navy, línea
@@ -162,9 +163,7 @@ export function Modal({ title, onClose, children, className = 'max-w-lg' }: Moda
             className="flex h-11 w-11 items-center justify-center text-tc-navy-text hover:text-white transition-colors -mr-2"
             aria-label="Cerrar"
           >
-            <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-              <path d="M3 3l10 10M13 3L3 13" strokeLinecap="round" />
-            </svg>
+            <CloseIcon />
           </button>
         </div>
         {/* Perforation line */}

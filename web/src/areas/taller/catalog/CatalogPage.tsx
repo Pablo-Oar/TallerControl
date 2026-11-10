@@ -13,6 +13,7 @@ import { Modal } from '../../../components/ui/Modal'
 import { FormTextarea } from '../../../components/ui/FormField'
 import { notify } from '../../../components/ui/dialogs'
 import { ApiError } from '../../../lib/api/client'
+import { ChevronDownIcon } from '@/components/ui/icons'
 
 const KIND_LABELS: Record<CatalogItemKind, string> = {
   service: 'Servicio',
@@ -62,7 +63,7 @@ const COLUMNS: DataTableColumn<CatalogItemListDto>[] = [
       i.trackStock ? (
         <span className={['tabular-nums', i.isLowStock ? 'font-semibold text-tc-warning-text' : 'text-tc-text-secondary'].join(' ')}>
           {i.stockQty}
-          {i.isLowStock && <span className="ml-0.5 text-[11px]">▼</span>}
+          {i.isLowStock && <ChevronDownIcon className="ml-0.5 inline-block h-3 w-3" />}
         </span>
       ) : (
         <span className="text-tc-text-muted">—</span>
@@ -227,7 +228,7 @@ export function CatalogPage() {
               {KIND_LABELS[i.kind]} · <span className="tabular-nums text-tc-purple">{i.netPrice != null ? fmtARS(i.netPrice) : '—'}</span>
               {i.trackStock && (
                 <span className={i.isLowStock ? 'font-semibold text-tc-warning-text' : ''}>
-                  {' '}· Stock {i.stockQty}{i.isLowStock ? ' ▼' : ''}
+                  {' '}· Stock {i.stockQty}{i.isLowStock ? ' (bajo)' : ''}
                 </span>
               )}
             </p>

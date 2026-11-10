@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from '../../lib/utils'
+import { MoreIcon } from '@/components/ui/icons'
 
 export interface RowMenuItem {
   label: string
@@ -65,9 +66,7 @@ export function RowMenu({ items, label = 'Más acciones' }: { items: RowMenuItem
         onClick={toggle}
         className="flex min-h-11 min-w-11 items-center justify-center rounded-md text-tc-text-secondary transition-colors hover:bg-tc-surface hover:text-tc-text md:min-h-8 md:min-w-8"
       >
-        <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-          <circle cx="4" cy="10" r="1.6" /><circle cx="10" cy="10" r="1.6" /><circle cx="16" cy="10" r="1.6" />
-        </svg>
+        <MoreIcon />
       </button>
       {pos &&
         createPortal(

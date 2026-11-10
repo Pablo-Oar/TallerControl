@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api/client'
 import { useCan } from '../lib/auth/permissions'
+import { BellIcon } from '@/components/ui/icons'
 
 interface NotificationDto {
   id: string
@@ -81,10 +82,7 @@ export function NotificationBell() {
         aria-expanded={open}
         className="relative flex h-11 w-11 items-center justify-center text-tc-navy-text lg:h-7 lg:w-8 transition-colors hover:text-white"
       >
-        <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-          <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-        </svg>
+        <BellIcon className="h-[18px] w-[18px]" />
         {unread > 0 && (
           <span className="absolute -top-0.5 right-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-tc-purple px-1 text-[11px] font-bold text-white">
             {unread > 9 ? '9+' : unread}

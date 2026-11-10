@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { ArrowLeftIcon } from '@/components/ui/icons'
 
 export function PrivacidadPage() {
   return (
@@ -9,7 +10,7 @@ export function PrivacidadPage() {
             Taller<span className="text-tc-purple">Control</span>
           </span>
           <Link to="/" className="inline-flex min-h-[44px] items-center text-sm font-semibold text-tc-purple hover:underline">
-            ← Volver al inicio
+            <ArrowLeftIcon className="mr-1 inline-block h-4 w-4 align-text-bottom" />Volver al inicio
           </Link>
         </div>
 
