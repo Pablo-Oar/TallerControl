@@ -8,6 +8,7 @@ import { PushTestButton } from './PushTestButton'
 import { Button } from '../../components/ui/Button'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { RequireAuth } from '../../lib/auth/RequireAuth'
+import { LogOutIcon } from '@/components/ui/icons'
 
 const MechanicWorkOrdersPage = lazy(() => import('./MechanicWorkOrdersPage').then(m => ({ default: m.MechanicWorkOrdersPage })))
 const MechanicWorkOrderDetailPage = lazy(() => import('./MechanicWorkOrderDetailPage').then(m => ({ default: m.MechanicWorkOrderDetailPage })))
@@ -43,9 +44,7 @@ export function Component() {
               onClick={handleLogout}
               className="hidden min-h-[40px] items-center gap-2 whitespace-nowrap rounded-lg border border-white/20 px-3 text-xs font-bold tracking-wider text-white/80 uppercase transition-colors hover:border-white/40 hover:bg-white/10 hover:text-white sm:inline-flex"
             >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
-              </svg>
+              <LogOutIcon />
               Cerrar sesión
             </button>
           </div>

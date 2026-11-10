@@ -25,6 +25,7 @@ import { FormField, FormSelect, FormTextarea } from '../../../components/ui/Form
 import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 import { useCan } from '../../../lib/auth/permissions'
+import { CheckIcon, CloseIcon } from '@/components/ui/icons'
 
 
 export function InvoicingSetupPage() {
@@ -125,7 +126,7 @@ function CertificatesSection({
   const { data: testPoints } = useQuery({ queryKey: ['fiscal-points-of-sale'], queryFn: listPointsOfSale })
   const [testingId, setTestingId] = useState<string | null>(null)
   const [testPosId, setTestPosId] = useState('')
-  const [testResult, setTestResult] = useState<string | null>(null)
+  const [testResult, setTestResult] = useState<{ ok: boolean; text: string } | null>(null)
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
@@ -175,11 +176,11 @@ function CertificatesSection({
       const result = await testConnection(certId, testPosId)
       setTestResult(
         result.success
-          ? `✓ Conexión exitosa. Último número: ${result.lastInvoiceNumber ?? 0}`
-          : `✗ Error: ${result.errorMessage}`
+          ? { ok: true, text: `Conexión exitosa. Último número: ${result.lastInvoiceNumber ?? 0}` }
+          : { ok: false, text: `Error: ${result.errorMessage}` }
       )
     } catch {
-      setTestResult('✗ Error al probar la conexión')
+      setTestResult({ ok: false, text: 'Error al probar la conexión' })
     } finally {
       setTestingId(null)
     }
@@ -307,8 +308,9 @@ function CertificatesSection({
               </Button>
             </div>
             {testResult && (
-              <p className={`text-sm ${testResult.startsWith('✓') ? 'text-tc-success-text' : 'text-tc-danger-solid'}`}>
-                {testResult}
+              <p className={`flex items-center gap-1.5 text-sm ${testResult.ok ? 'text-tc-success-text' : 'text-tc-danger-text'}`}>
+                {testResult.ok ? <CheckIcon /> : <CloseIcon />}
+                {testResult.text}
               </p>
             )}
           </div>

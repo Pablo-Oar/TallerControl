@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { StatusBadge } from './StatusBadge'
+import { ChevronDownIcon } from '@/components/ui/icons'
 
 /**
  * Sello de estado editable (UI-R2 F3, D-25 "Edit Badge"). Muestra el estado actual como `StatusBadge` y, al abrirlo,
@@ -112,9 +113,7 @@ export function EditableStatusBadge({ status, label, statusText, options, onSele
         {pending ? (
           <span className="h-3 w-3 animate-spin border-2 border-tc-purple border-t-transparent motion-reduce:animate-none" aria-hidden />
         ) : (
-          <svg className="h-3 w-3 text-tc-text-muted" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-            <path d="M2 4.5l4 4 4-4" strokeLinecap="square" />
-          </svg>
+          <ChevronDownIcon className="h-3 w-3 text-tc-text-muted" />
         )}
       </button>
 

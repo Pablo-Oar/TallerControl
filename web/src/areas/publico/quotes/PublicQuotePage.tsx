@@ -12,6 +12,7 @@ import { SignaturePad, type SignaturePadHandle } from '../../../components/ui/Si
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { labelCls } from '../../../lib/styles'
 import { formatDateOnly, localDateISO } from '../../../lib/dates'
+import { CheckIcon } from '@/components/ui/icons'
 
 
 const fmtARS = (n: number) =>
@@ -85,8 +86,8 @@ export function PublicQuotePage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-tc-surface px-4">
         <div className="border border-tc-border bg-white p-10 max-w-sm w-full text-center">
-          <div className="bg-tc-stub-bg border border-tc-border w-10 h-10 flex items-center justify-center mx-auto mb-4 text-lg font-bold text-tc-text-secondary">
-            ✓
+          <div className="bg-tc-stub-bg border border-tc-border w-10 h-10 flex items-center justify-center mx-auto mb-4 text-lg font-bold text-tc-success-text">
+            <CheckIcon className="h-5 w-5" />
           </div>
           <p className="font-bold text-tc-text">Respuesta enviada</p>
           <p className="mt-2 text-sm text-tc-text-secondary">Tu respuesta fue registrada correctamente.</p>

@@ -9,6 +9,7 @@ import { LoadError } from '../../../components/LoadError'
 import { confirmDialog, notify } from '../../../components/ui/dialogs'
 import { useCan } from '../../../lib/auth/permissions'
 import { INVOICE_STATUS_HINTS, INVOICE_STATUS_LABELS } from './invoiceLabels'
+import { ArrowLeftIcon } from '@/components/ui/icons'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -59,7 +60,7 @@ export function InvoiceDetailPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-3">
         <Link to="/app/invoicing" className="text-xs font-bold tracking-wider uppercase text-tc-text-secondary hover:text-tc-purple">
-          ← Facturas
+          <ArrowLeftIcon className="mr-1 inline-block h-4 w-4 align-text-bottom" />Facturas
         </Link>
         <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">
           {invoice.isCredit ? 'Nota de crédito' : 'Factura'} {invoice.invoiceType.toUpperCase()}

@@ -13,6 +13,7 @@ import { confirmDialog, notify } from '../../../components/ui/dialogs'
 import { FormTextarea } from '../../../components/ui/FormField'
 import { ConfirmWithCashModal } from '../../../components/ConfirmWithCashModal'
 import { useCreateFromQuery } from '../../../lib/useCreateFromQuery'
+import { AlertIcon } from '@/components/ui/icons'
 
 const STATUS_LABELS: Record<PurchaseStatus, string> = {
   draft: 'Borrador',
@@ -255,7 +256,7 @@ export function PurchasesPage() {
 
             {detail.status !== 'cancelled' && detail.isExcludedFromCiti && (
               <p className="border border-tc-warning-border bg-tc-warning-bg px-3 py-2 text-xs text-tc-warning-text">
-                ⚠ Sin datos fiscales completos — excluida del CITI
+                <AlertIcon className="mr-1 inline-block h-3.5 w-3.5 align-text-bottom" />Sin datos fiscales completos — excluida del CITI
               </p>
             )}
 

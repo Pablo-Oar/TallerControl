@@ -5,6 +5,7 @@ import { Button } from '../../../components/ui/Button'
 import { FormField } from '../../../components/ui/FormField'
 import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { ArrowRightIcon } from '@/components/ui/icons'
 
 interface Props {
   onClose: () => void
@@ -89,7 +90,7 @@ export function QrScannerModal({ onClose }: Props) {
                   className="text-sm font-medium text-tc-purple hover:text-tc-purple-mid"
                   onClick={onClose}
                 >
-                  Ver ficha del vehículo →
+                  Ver ficha del vehículo <ArrowRightIcon className="ml-0.5 inline-block h-4 w-4 align-text-bottom" />
                 </Link>
               </div>
             </>

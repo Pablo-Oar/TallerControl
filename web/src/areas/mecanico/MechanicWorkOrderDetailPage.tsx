@@ -17,6 +17,7 @@ import { Timeline } from '../../components/ui/Timeline'
 import { vehiclesApi } from '../../lib/api/vehicles'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { actionErrorMessage } from '../../lib/api/errors'
+import { ArrowLeftIcon, ArrowRightIcon } from '@/components/ui/icons'
 
 const MECHANIC_TRANSITIONS: Partial<Record<WorkOrderStatus, WorkOrderStatus[]>> = {
   pending: ['in_progress'],
@@ -152,7 +153,7 @@ export function MechanicWorkOrderDetailPage() {
           <StatusBadge status={order.status} label={STATUS_LABELS[order.status]} />
         </div>
         <Link to="/m" className="inline-flex min-h-[44px] items-center px-2 text-sm font-bold tracking-wider uppercase text-tc-purple hover:opacity-70">
-          ← Volver
+          <ArrowLeftIcon className="mr-1 inline-block h-4 w-4 align-text-bottom" />Volver
         </Link>
       </div>
 
@@ -266,7 +267,7 @@ export function MechanicWorkOrderDetailPage() {
               kind: 'status' as const,
               title: (
                 <>
-                  {change.fromStatus && <>{STATUS_LABELS[change.fromStatus as WorkOrderStatus]} → </>}
+                  {change.fromStatus && <>{STATUS_LABELS[change.fromStatus as WorkOrderStatus]}<ArrowRightIcon className="mx-1 inline-block h-3.5 w-3.5 align-text-bottom" /></>}
                   {STATUS_LABELS[change.toStatus as WorkOrderStatus]}
                 </>
               ),

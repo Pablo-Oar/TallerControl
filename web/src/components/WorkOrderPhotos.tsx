@@ -4,6 +4,7 @@ import { attachmentsApi } from '../lib/api/attachments'
 import { Button } from './ui/Button'
 import { confirmDialog } from './ui/dialogs'
 import { actionErrorMessage } from '../lib/api/errors'
+import { CloseIcon } from '@/components/ui/icons'
 
 /**
  * Fotos de una orden de trabajo (REQ-13, doc 06 /m/ordenes/:id "subir fotos desde la cámara").
@@ -195,7 +196,7 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = fal
                   aria-label={`Quitar foto ${i + 1}`}
                   className="group absolute right-0 top-0 flex h-11 w-11 items-center justify-center text-lg font-bold text-white"
                 >
-                  <span aria-hidden className="flex h-6 w-6 items-center justify-center bg-tc-navy/80 leading-none group-hover:bg-tc-danger-solid">×</span>
+                  <span aria-hidden className="flex h-6 w-6 items-center justify-center bg-tc-navy/80 leading-none group-hover:bg-tc-danger-solid"><CloseIcon className="h-3.5 w-3.5" /></span>
                 </button>
               )}
             </li>
@@ -230,7 +231,7 @@ export function WorkOrderPhotos({ workOrderId, canDelete = false, readOnly = fal
                     aria-label="Descartar foto"
                     className="group flex h-11 w-11 items-center justify-center text-lg font-bold text-white"
                   >
-                    <span aria-hidden className="flex h-6 w-6 items-center justify-center bg-tc-navy/80 leading-none group-hover:bg-tc-danger-solid">×</span>
+                    <span aria-hidden className="flex h-6 w-6 items-center justify-center bg-tc-navy/80 leading-none group-hover:bg-tc-danger-solid"><CloseIcon className="h-3.5 w-3.5" /></span>
                   </button>
                 </div>
               )}

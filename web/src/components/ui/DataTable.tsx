@@ -2,6 +2,7 @@ import { useId, useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { cn } from '@/lib/utils'
 import { Button } from './Button'
+import { ArrowRightIcon, ChevronDownIcon, ChevronUpIcon, SortIcon } from '@/components/ui/icons'
 
 /**
  * Tabla de datos del sistema (UI-R2, inspirada en `data-table-8` de Watermelon; código propio con los tokens `tc-*`).
@@ -93,11 +94,10 @@ const ALIGN: Record<NonNullable<DataTableColumn<unknown>['align']>, string> = {
 }
 
 function Chevron({ dir }: { dir: SortDir | null }) {
-  return (
-    <svg viewBox="0 0 12 12" className={cn('h-3 w-3 shrink-0', dir ? 'opacity-90' : 'opacity-30')} fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-      {dir === 'desc' ? <path d="M2.5 4.5 6 8l3.5-3.5" /> : dir === 'asc' ? <path d="M2.5 7.5 6 4l3.5 3.5" /> : <path d="M3 5l3-2.5L9 5M3 7l3 2.5L9 7" />}
-    </svg>
-  )
+  const cls = cn('h-3 w-3 shrink-0', dir ? 'opacity-90' : 'opacity-30')
+  if (dir === 'desc') return <ChevronDownIcon className={cls} />
+  if (dir === 'asc') return <ChevronUpIcon className={cls} />
+  return <SortIcon className={cls} />
 }
 
 export function DataTable<T>({
@@ -277,9 +277,7 @@ export function DataTable<T>({
                     aria-label={rowLabel?.(row) ?? 'Abrir'}
                     className="flex h-11 w-12 items-center justify-center text-tc-navy-text-dim transition-colors hover:text-tc-purple"
                   >
-                    <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                      <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    <ArrowRightIcon className="h-3 w-3" />
                   </Link>
                   )}
                 </td>
@@ -335,9 +333,7 @@ export function DataTable<T>({
                   aria-label={rowLabel?.(row) ?? 'Abrir'}
                   className="flex min-h-[44px] w-11 shrink-0 items-center justify-center border-l border-tc-border bg-tc-stub-bg text-tc-text-secondary hover:text-tc-purple"
                 >
-                  <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <ArrowRightIcon className="h-3 w-3" />
                 </Link>
               )}
             </div>
@@ -346,9 +342,7 @@ export function DataTable<T>({
                 {actions(row)}
                 {rowHref && rowHref(row) && (
                   <Link to={rowHref(row)!} aria-label={rowLabel?.(row) ?? 'Abrir'} className="flex text-tc-navy-text-dim hover:text-tc-purple">
-                    <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                      <path d="M2 6h8M6 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    <ArrowRightIcon className="h-3 w-3" />
                   </Link>
                 )}
               </div>

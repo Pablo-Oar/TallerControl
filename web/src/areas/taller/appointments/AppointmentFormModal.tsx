@@ -15,6 +15,7 @@ import { FormField, FormSelect, FormTextarea } from '../../../components/ui/Form
 import { CatalogPicker, CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
 import { labelCls } from '../../../lib/styles'
+import { CloseIcon } from '@/components/ui/icons'
 
 
 const serviceSchema = z.object({
@@ -238,8 +239,8 @@ export function AppointmentFormModal({ editData, onClose, onCreated }: Props) {
                       Servicio {index + 1}
                     </span>
                     {fields.length > 1 && (
-                      <button type="button" onClick={() => remove(index)} className="text-xs text-tc-danger-solid hover:opacity-70">
-                        ×
+                      <button type="button" onClick={() => remove(index)} aria-label={`Quitar servicio ${index + 1}`} className="flex h-6 w-6 items-center justify-center text-tc-danger-solid hover:opacity-70">
+                        <CloseIcon />
                       </button>
                     )}
                   </div>

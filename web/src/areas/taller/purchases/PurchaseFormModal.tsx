@@ -14,6 +14,7 @@ import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 import { labelCls } from '../../../lib/styles'
 import { dateOnlyToUtcIso, localDateISO } from '../../../lib/dates'
+import { CloseIcon } from '@/components/ui/icons'
 
 
 const itemSchema = z.object({
@@ -219,7 +220,7 @@ export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
                       aria-label="Quitar ítem"
                       className="min-h-[44px] px-3 text-xs text-tc-text-muted hover:text-tc-danger-text transition-colors sm:min-h-0 sm:px-0"
                     >
-                      <span className="sm:hidden">Quitar ítem </span>✕
+                      <span className="sm:hidden">Quitar ítem </span><CloseIcon />
                     </button>
                   )}
                 </div>

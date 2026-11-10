@@ -9,6 +9,7 @@ import {
   validateOwnerOtp,
   reportFoundKeys,
 } from '../../../lib/api/qrCards'
+import { ArrowLeftIcon } from '@/components/ui/icons'
 
 type Step = 'scan' | 'challenge' | 'otp' | 'found-keys' | 'found-keys-done'
 
@@ -202,7 +203,7 @@ export function PublicQrPage() {
                 className="w-full text-xs font-bold tracking-wider uppercase text-tc-text-muted hover:text-tc-text-secondary"
                 onClick={() => { setStep('challenge'); setOtp(''); setError(null) }}
               >
-                ← Volver
+                <ArrowLeftIcon className="mr-1 inline-block h-4 w-4 align-text-bottom" />Volver
               </button>
             </form>
           )}
@@ -239,7 +240,7 @@ export function PublicQrPage() {
                 className="w-full text-xs font-bold tracking-wider uppercase text-tc-text-muted hover:text-tc-text-secondary"
                 onClick={() => { setStep('scan'); setError(null) }}
               >
-                ← Volver
+                <ArrowLeftIcon className="mr-1 inline-block h-4 w-4 align-text-bottom" />Volver
               </button>
             </form>
           )}

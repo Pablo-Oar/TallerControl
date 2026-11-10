@@ -5,6 +5,7 @@ import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { Timeline, type TimelineItem } from '../../../components/ui/Timeline'
 import { QUOTE_STATUS_LABELS } from '../../../lib/api/quotes'
 import { formatDate, formatDateOnly } from '../../../lib/dates'
+import { ArrowRightIcon } from '@/components/ui/icons'
 
 const WO_STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
@@ -131,7 +132,7 @@ export function OwnerVehiclePage() {
                       href={q.publicLink}
                       className="mt-2 block text-xs font-bold tracking-wider uppercase text-tc-purple hover:opacity-70"
                     >
-                      Ver presupuesto →
+                      Ver presupuesto <ArrowRightIcon className="ml-0.5 inline-block h-4 w-4 align-text-bottom" />
                     </a>
                   )}
                 </div>

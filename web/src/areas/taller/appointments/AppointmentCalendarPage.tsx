@@ -15,6 +15,7 @@ import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { inputCls } from '../../../lib/styles'
 import { AppointmentFormModal } from './AppointmentFormModal'
 import { AppointmentsTabs } from './AppointmentsTabs'
+import { ChevronLeftIcon, ChevronRightIcon } from '@/components/ui/icons'
 
 const SLOT_MINUTES = 60
 
@@ -83,11 +84,11 @@ export function AppointmentCalendarPage() {
       <AppointmentsTabs />
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button variant="secondary" size="sm" className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0" onClick={() => setMonday(addDaysISO(monday, -7))} aria-label="Semana anterior">←</Button>
+        <Button variant="secondary" size="sm" className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0" onClick={() => setMonday(addDaysISO(monday, -7))} aria-label="Semana anterior"><ChevronLeftIcon /></Button>
         <span className="min-w-[11rem] text-center text-sm font-bold tabular-nums text-tc-text">
           {formatDateOnly(monday)} al {formatDateOnly(sunday)}
         </span>
-        <Button variant="secondary" size="sm" className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0" onClick={() => setMonday(addDaysISO(monday, 7))} aria-label="Semana siguiente">→</Button>
+        <Button variant="secondary" size="sm" className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0" onClick={() => setMonday(addDaysISO(monday, 7))} aria-label="Semana siguiente"><ChevronRightIcon /></Button>
         <Button variant="secondary" size="sm" className="min-h-11 sm:min-h-0" onClick={() => setMonday(mondayOf(localDateISO()))}>Hoy</Button>
         {mechanics && (
           <select value={mechanicId} onChange={e => setMechanicId(e.target.value)} className={`${inputCls} min-h-11 w-full sm:min-h-0 sm:w-auto`} aria-label="Mecánico">
