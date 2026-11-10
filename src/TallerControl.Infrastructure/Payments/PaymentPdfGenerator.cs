@@ -2,11 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using TallerControl.Application.Common;
 using TallerControl.Application.Payments;
 using TallerControl.Domain.Customers;
 using TallerControl.Domain.Payments;
 using TallerControl.Domain.Vehicles;
 using TallerControl.Domain.Work;
+using TallerControl.Infrastructure.Branding;
 using TallerControl.Infrastructure.Persistence;
 
 namespace TallerControl.Infrastructure.Payments;
@@ -17,10 +19,12 @@ namespace TallerControl.Infrastructure.Payments;
 internal sealed class PaymentPdfGenerator : IPaymentPdfGenerator
 {
     private readonly AppDbContext _db;
+    private readonly IWorkshopBranding _branding;
 
-    public PaymentPdfGenerator(AppDbContext db)
+    public PaymentPdfGenerator(AppDbContext db, IWorkshopBranding branding)
     {
         _db = db;
+        _branding = branding;
     }
 
     public async Task<byte[]> GenerateAsync(Guid paymentId, CancellationToken ct)
@@ -46,6 +50,14 @@ internal sealed class PaymentPdfGenerator : IPaymentPdfGenerator
         QuestPDF.Settings.License = LicenseType.Community;
 
         var payment = data.Payment;
+        var logo = (await _branding.GetLogoAsync(payment.TenantId, ct))?.Bytes;
+        return PdfLogo.Generate(l => Build(payment, data.WorkOrderNumber, data.WorkOrderTotal, data.CustomerName,
+            data.VehiclePlate, data.VehicleBrand, data.VehicleModel, l), logo);
+    }
+
+    private static byte[] Build(Payment payment, int workOrderNumber, decimal workOrderTotal, string customerName,
+        string vehiclePlate, string? vehicleBrand, string? vehicleModel, byte[]? logo)
+    {
         var document = Document.Create(container =>
         {
             container.Page(page =>
@@ -54,9 +66,9 @@ internal sealed class PaymentPdfGenerator : IPaymentPdfGenerator
                 page.Margin(2, Unit.Centimetre);
                 page.DefaultTextStyle(t => t.FontSize(10).FontFamily("Arial"));
 
-                page.Header().Element(c => BuildHeader(c, payment));
-                page.Content().Element(c => BuildContent(c, payment, data.WorkOrderNumber, data.WorkOrderTotal,
-                    data.CustomerName, data.VehiclePlate, data.VehicleBrand, data.VehicleModel));
+                page.Header().Element(c => BuildHeader(c, payment, logo));
+                page.Content().Element(c => BuildContent(c, payment, workOrderNumber, workOrderTotal,
+                    customerName, vehiclePlate, vehicleBrand, vehicleModel));
                 page.Footer().Element(BuildFooter);
             });
         });
@@ -64,10 +76,11 @@ internal sealed class PaymentPdfGenerator : IPaymentPdfGenerator
         return document.GeneratePdf();
     }
 
-    private static void BuildHeader(IContainer container, Payment payment)
+    private static void BuildHeader(IContainer container, Payment payment, byte[]? logo)
     {
         container.Row(row =>
         {
+            PdfLogo.Place(row, logo);
             row.RelativeItem().Column(col =>
             {
                 col.Item().Text($"Comprobante de Pago #{payment.Number:D4}")

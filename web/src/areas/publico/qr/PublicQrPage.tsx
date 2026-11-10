@@ -10,6 +10,7 @@ import {
   reportFoundKeys,
 } from '../../../lib/api/qrCards'
 import { ArrowLeftIcon } from '@/components/ui/icons'
+import { WorkshopBrand } from '@/components/ui/WorkshopBrand'
 
 type Step = 'scan' | 'challenge' | 'otp' | 'found-keys' | 'found-keys-done'
 
@@ -121,9 +122,7 @@ export function PublicQrPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-tc-navy px-4 py-8">
       <div className="rounded-xl w-full max-w-sm border border-tc-border bg-white overflow-hidden">
         <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3">
-          <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
-            {scanData.workshop.name}
-          </p>
+          <WorkshopBrand name={scanData.workshop.name} logoUrl={scanData.workshop.logoUrl} />
         </div>
         <div className="px-6 py-6 space-y-5">
           <div>

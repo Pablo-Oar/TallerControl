@@ -1,6 +1,7 @@
 import { useParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { getPublicPayment, METHOD_LABELS } from '../../../lib/api/payments'
+import { WorkshopBrand } from '@/components/ui/WorkshopBrand'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -51,6 +52,7 @@ export function PublicPaymentPage() {
   return (
     <div className="min-h-screen bg-tc-surface">
       <div className="mx-auto max-w-md px-4 py-10">
+        <WorkshopBrand name={data.workshopName} logoUrl={data.logoUrl} className="mb-5" />
         <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3 flex items-center justify-between">
             <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Comprobante de Pago</span>

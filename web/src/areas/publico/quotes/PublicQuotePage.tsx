@@ -14,6 +14,7 @@ import { labelCls } from '../../../lib/styles'
 import { formatDateOnly, localDateISO } from '../../../lib/dates'
 import { CheckIcon } from '@/components/ui/icons'
 import { Checkbox, Radio } from '@/components/ui/Checkbox'
+import { WorkshopBrand } from '@/components/ui/WorkshopBrand'
 
 
 const fmtARS = (n: number) =>
@@ -140,6 +141,7 @@ export function PublicQuotePage() {
   return (
     <div className="min-h-screen bg-tc-surface">
       <div className="mx-auto max-w-2xl px-4 py-10 space-y-5">
+        <WorkshopBrand name={data.workshopName} logoUrl={data.logoUrl} />
 
         {/* Encabezado del presupuesto */}
         <div className="rounded-xl border border-tc-border bg-white overflow-hidden">

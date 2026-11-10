@@ -1,8 +1,10 @@
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using TallerControl.Application.Common;
 using TallerControl.Application.Quotes;
 using TallerControl.Domain.Quotes;
+using TallerControl.Infrastructure.Branding;
 
 namespace TallerControl.Infrastructure.Quotes;
 
@@ -12,10 +14,25 @@ namespace TallerControl.Infrastructure.Quotes;
 /// </summary>
 internal sealed class QuotePdfGenerator : IQuotePdfGenerator
 {
-    public Task<byte[]> GenerateAsync(QuoteDto quote, CancellationToken ct)
+    private readonly IWorkshopBranding _branding;
+    private readonly ITenantContext _tenant;
+
+    public QuotePdfGenerator(IWorkshopBranding branding, ITenantContext tenant)
+    {
+        _branding = branding;
+        _tenant = tenant;
+    }
+
+    public async Task<byte[]> GenerateAsync(QuoteDto quote, CancellationToken ct)
     {
         QuestPDF.Settings.License = LicenseType.Community;
 
+        var logo = _tenant.TenantId is { } tenantId ? (await _branding.GetLogoAsync(tenantId, ct))?.Bytes : null;
+        return PdfLogo.Generate(l => Build(quote, l), logo);
+    }
+
+    private static byte[] Build(QuoteDto quote, byte[]? logo)
+    {
         var document = Document.Create(container =>
         {
             container.Page(page =>
@@ -24,20 +41,20 @@ internal sealed class QuotePdfGenerator : IQuotePdfGenerator
                 page.Margin(2, Unit.Centimetre);
                 page.DefaultTextStyle(t => t.FontSize(10).FontFamily("Arial"));
 
-                page.Header().Element(c => BuildHeader(c, quote));
+                page.Header().Element(c => BuildHeader(c, quote, logo));
                 page.Content().Element(c => BuildContent(c, quote));
                 page.Footer().Element(BuildFooter);
             });
         });
 
-        var bytes = document.GeneratePdf();
-        return Task.FromResult(bytes);
+        return document.GeneratePdf();
     }
 
-    private static void BuildHeader(IContainer container, QuoteDto quote)
+    private static void BuildHeader(IContainer container, QuoteDto quote, byte[]? logo)
     {
         container.Row(row =>
         {
+            PdfLogo.Place(row, logo);
             row.RelativeItem().Column(col =>
             {
                 col.Item().Text($"Presupuesto #{quote.Number}")

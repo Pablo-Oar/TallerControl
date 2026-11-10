@@ -94,9 +94,12 @@ internal sealed class OutboxDispatcher : BackgroundService
 
                 var frontendBase = scope.ServiceProvider.GetRequiredService<IConfiguration>()["App:FrontendBaseUrl"]
                     ?? "http://localhost:5173";
+                var logo = message.TenantId is { } logoTenant && CarriesWorkshopLogo(message.Type)
+                    ? await scope.ServiceProvider.GetRequiredService<IWorkshopBranding>().GetLogoAsync(logoTenant, ct)
+                    : null;
                 foreach (var email in await BuildEmailMessagesAsync(message, db, frontendBase, clock.GetUtcNow(), ct))
                 {
-                    await sender.SendAsync(email, ct);
+                    await sender.SendAsync(logo is null ? email : WithLogo(email, logo), ct);
                 }
 
                 message.MarkProcessed(clock.GetUtcNow());
@@ -112,6 +115,17 @@ internal sealed class OutboxDispatcher : BackgroundService
 
         await db.SaveChangesAsync(ct);
     }
+
+    /// <summary>Emails que el taller le manda a su cliente: llevan el logo del taller arriba.</summary>
+    private static bool CarriesWorkshopLogo(string type) =>
+        type is "email.quote_reminder" or "email.appointment" or "reminder.due";
+
+    private static EmailMessage WithLogo(EmailMessage email, LogoImage logo) =>
+        email with
+        {
+            Logo = logo,
+            HtmlBody = $"""<p><img src="cid:logo" alt="" style="max-height:64px;max-width:220px"></p>{email.HtmlBody}""",
+        };
 
     /// <summary>Avisos push. Sin push configurado no hace nada; un tipo desconocido falla, igual que con los emails.</summary>
     private static async Task DispatchPushAsync(OutboxMessage message, AppDbContext db, IPushSender push, CancellationToken ct)

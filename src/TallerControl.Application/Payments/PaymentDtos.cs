@@ -28,7 +28,9 @@ public sealed record PublicPaymentDto(
     decimal Amount,
     DateTimeOffset PaidAt,
     string? Reference,
-    PaymentStatus Status
+    PaymentStatus Status,
+    string? WorkshopName = null,
+    string? LogoUrl = null
 );
 
 public sealed record CreatePaymentRequest(

@@ -13,15 +13,18 @@ public sealed class GetPublicQuoteHandler
     private readonly IPublicLinkRepository _linkRepo;
     private readonly IQuoteRepository _quoteRepo;
     private readonly TimeProvider _clock;
+    private readonly IWorkshopBranding _branding;
 
     public GetPublicQuoteHandler(
         IPublicLinkRepository linkRepo,
         IQuoteRepository quoteRepo,
-        TimeProvider clock)
+        TimeProvider clock,
+        IWorkshopBranding branding)
     {
         _linkRepo = linkRepo;
         _quoteRepo = quoteRepo;
         _clock = clock;
+        _branding = branding;
     }
 
     public async Task<PublicQuoteDto> HandleAsync(string tokenBase64Url, CancellationToken ct)
@@ -45,7 +48,8 @@ public sealed class GetPublicQuoteHandler
         link.RecordAccess(now);
         await _linkRepo.SaveChangesAsync(ct);
 
-        return MapToPublicDto(quote);
+        var shop = await _branding.GetPublicAsync(link.TenantId, ct);
+        return MapToPublicDto(quote) with { WorkshopName = shop.Name, LogoUrl = shop.LogoUrl };
     }
 
     private static PublicQuoteDto MapToPublicDto(QuoteDto q)

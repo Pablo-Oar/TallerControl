@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { publicAppointmentApi } from '../../../lib/api/appointments'
 import { ApiError } from '../../../lib/api/client'
 import { Button } from '../../../components/ui/Button'
+import { WorkshopBrand } from '@/components/ui/WorkshopBrand'
 
 /** Enlace que recibe el cliente: ve su turno y lo confirma, o avisa «No puedo ir». Sin datos del taller. */
 export function PublicAppointmentPage() {
@@ -72,6 +73,7 @@ export function PublicAppointmentPage() {
   return (
     <div className="min-h-screen bg-tc-surface">
       <div className="mx-auto max-w-md px-4 py-10">
+        <WorkshopBrand name={data.workshopName} logoUrl={data.logoUrl} className="mb-5" />
         <div className="rounded-xl overflow-hidden border border-tc-border bg-white">
           <div className="flex items-center justify-between border-b border-tc-border bg-tc-stub-bg px-6 py-3">
             <span className="text-xs font-bold tracking-[0.14em] text-tc-text-secondary uppercase">Tu turno</span>

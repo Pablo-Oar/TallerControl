@@ -10,10 +10,12 @@ namespace TallerControl.Application.Payments;
 public sealed class GetPublicPaymentHandler
 {
     private readonly IPaymentRepository _repo;
+    private readonly IWorkshopBranding _branding;
 
-    public GetPublicPaymentHandler(IPaymentRepository repo)
+    public GetPublicPaymentHandler(IPaymentRepository repo, IWorkshopBranding branding)
     {
         _repo = repo;
+        _branding = branding;
     }
 
     public async Task<PublicPaymentDto> HandleAsync(string token, CancellationToken ct)
@@ -34,12 +36,16 @@ public sealed class GetPublicPaymentHandler
         var payment = await _repo.FindByTokenHashAsync(hash, ct)
             ?? throw new NotFoundException("El comprobante no existe.");
 
+        var shop = await _branding.GetPublicAsync(payment.TenantId, ct);
+
         return new PublicPaymentDto(
             payment.Number,
             payment.Method,
             payment.Amount,
             payment.PaidAt,
             payment.Reference,
-            payment.Status);
+            payment.Status,
+            shop.Name,
+            shop.LogoUrl);
     }
 }

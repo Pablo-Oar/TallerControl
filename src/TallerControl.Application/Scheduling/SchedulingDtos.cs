@@ -105,7 +105,9 @@ public sealed record PublicAppointmentDto(
     int TotalDurationMinutes,
     AppointmentStatus Status,
     string? VehicleLabel,
-    IReadOnlyList<string> Services);
+    IReadOnlyList<string> Services,
+    string? WorkshopName = null,
+    string? LogoUrl = null);
 
 /// <summary>Respuesta de POST /api/v1/appointments/{id}/public-link (el token solo se ve una vez).</summary>
 public sealed record AppointmentLinkResponse(string Token);

@@ -1,8 +1,10 @@
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using TallerControl.Application.Common;
 using TallerControl.Application.Work;
 using TallerControl.Domain.Work;
+using TallerControl.Infrastructure.Branding;
 
 namespace TallerControl.Infrastructure.Work;
 
@@ -12,10 +14,25 @@ namespace TallerControl.Infrastructure.Work;
 /// </summary>
 internal sealed class WorkOrderPdfGenerator : IWorkOrderPdfGenerator
 {
-    public Task<byte[]> GenerateAsync(WorkOrderDto order, CancellationToken ct)
+    private readonly IWorkshopBranding _branding;
+    private readonly ITenantContext _tenant;
+
+    public WorkOrderPdfGenerator(IWorkshopBranding branding, ITenantContext tenant)
+    {
+        _branding = branding;
+        _tenant = tenant;
+    }
+
+    public async Task<byte[]> GenerateAsync(WorkOrderDto order, CancellationToken ct)
     {
         QuestPDF.Settings.License = LicenseType.Community;
 
+        var logo = _tenant.TenantId is { } tenantId ? (await _branding.GetLogoAsync(tenantId, ct))?.Bytes : null;
+        return PdfLogo.Generate(l => Build(order, l), logo);
+    }
+
+    private static byte[] Build(WorkOrderDto order, byte[]? logo)
+    {
         var document = Document.Create(container =>
         {
             container.Page(page =>
@@ -24,20 +41,20 @@ internal sealed class WorkOrderPdfGenerator : IWorkOrderPdfGenerator
                 page.Margin(2, Unit.Centimetre);
                 page.DefaultTextStyle(t => t.FontSize(10).FontFamily("Arial"));
 
-                page.Header().Element(c => BuildHeader(c, order));
+                page.Header().Element(c => BuildHeader(c, order, logo));
                 page.Content().Element(c => BuildContent(c, order));
                 page.Footer().Element(BuildFooter);
             });
         });
 
-        var bytes = document.GeneratePdf();
-        return Task.FromResult(bytes);
+        return document.GeneratePdf();
     }
 
-    private static void BuildHeader(IContainer container, WorkOrderDto order)
+    private static void BuildHeader(IContainer container, WorkOrderDto order, byte[]? logo)
     {
         container.Row(row =>
         {
+            PdfLogo.Place(row, logo);
             row.RelativeItem().Column(col =>
             {
                 col.Item().Text($"Orden de Trabajo #{order.Number}")

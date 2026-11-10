@@ -21,4 +21,7 @@ public interface IObjectStorage
 
     /// <summary>Primeros <paramref name="byteCount"/> bytes del objeto, para validar los magic bytes.</summary>
     Task<byte[]> ReadPrefixAsync(string fileKey, int byteCount, CancellationToken ct);
+
+    /// <summary>Contenido completo del objeto (hasta <paramref name="maxBytes"/>), o nulo si no existe o lo supera.</summary>
+    Task<byte[]?> ReadAllAsync(string fileKey, long maxBytes, CancellationToken ct);
 }

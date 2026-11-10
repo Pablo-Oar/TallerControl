@@ -161,6 +161,7 @@ public static class DependencyInjection
         services.AddScoped<GetWorkOrderHistoryHandler>();
         services.AddScoped<GetWorkOrderPdfHandler>();
         services.AddScoped<GetWorkOrderPublicLinkHandler>();
+        services.AddScoped<IWorkshopBranding, Branding.WorkshopBrandingService>();
         services.AddScoped<IWorkOrderPdfGenerator, WorkOrderPdfGenerator>();
         services.AddScoped<RequestAttachmentUploadUrlHandler>();
         services.AddScoped<ConfirmAttachmentHandler>();

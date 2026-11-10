@@ -2,6 +2,7 @@ import { useParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { publicApi } from '../../../lib/api/quotes'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { WorkshopBrand } from '@/components/ui/WorkshopBrand'
 
 const WO_STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
@@ -50,6 +51,7 @@ export function PublicWorkOrderPage() {
   return (
     <div className="min-h-screen bg-tc-surface">
       <div className="mx-auto max-w-2xl px-4 py-10">
+        <WorkshopBrand name={data.workshopName} logoUrl={data.logoUrl} className="mb-5" />
         <div className="rounded-xl border border-tc-border bg-white overflow-hidden">
           <div className="bg-tc-stub-bg border-b border-tc-border px-6 py-3 flex items-center justify-between">
             <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Orden de trabajo</span>

@@ -26,6 +26,11 @@ internal sealed class FakeObjectStorage : IObjectStorage
             ? stored.Bytes.Take(byteCount).ToArray()
             : []);
 
+    public Task<byte[]?> ReadAllAsync(string fileKey, long maxBytes, CancellationToken ct) =>
+        Task.FromResult(_objects.TryGetValue(fileKey, out var stored) && stored.Bytes.Length <= maxBytes
+            ? stored.Bytes
+            : null);
+
     /// <summary>Simula que el navegador ya subió el archivo a la URL prefirmada.</summary>
     public void Seed(string fileKey, string contentType, byte[] bytes) => _objects[fileKey] = (contentType, bytes);
 }

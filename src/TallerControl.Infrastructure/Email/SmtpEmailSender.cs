@@ -48,9 +48,21 @@ public sealed class SmtpEmailSender : IEmailSender
             new MailAddress(message.To))
         {
             Subject = message.Subject,
-            Body = message.HtmlBody,
             IsBodyHtml = true,
         };
+
+        if (message.Logo is { } logo)
+        {
+            // El logo viaja dentro del mensaje (no como enlace: una URL prefirmada vence en minutos y el cliente
+            // puede abrir el correo días después). Se referencia desde el HTML como cid:logo.
+            var html = AlternateView.CreateAlternateViewFromString(message.HtmlBody, null, "text/html");
+            html.LinkedResources.Add(new LinkedResource(new MemoryStream(logo.Bytes), logo.ContentType) { ContentId = "logo" });
+            mail.AlternateViews.Add(html);
+        }
+        else
+        {
+            mail.Body = message.HtmlBody;
+        }
 
         if (!string.IsNullOrWhiteSpace(message.ReplyTo))
         {

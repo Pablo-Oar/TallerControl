@@ -23,7 +23,9 @@ public sealed record PublicQuoteDto(
     IReadOnlyList<PublicQuoteItemDto> Items,
     /// <summary>Hash SHA-256 del contenido del presupuesto, en Base64. Requerido para aprobar.</summary>
     string ContentHash,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    string? WorkshopName = null,
+    string? LogoUrl = null);
 
 /// <summary>Renglón visible al cliente (sin costo, doc 05 §2.8).</summary>
 public sealed record PublicQuoteItemDto(
@@ -72,7 +74,9 @@ public sealed record PublicWorkOrderDto(
     string? AssignedMechanicName,
     string? ReportedIssue,
     string? MechanicNotes,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    string? WorkshopName = null,
+    string? LogoUrl = null);
 
 /// <summary>Tipos de token soportados para lookup público.</summary>
 public enum PublicTokenTargetType
