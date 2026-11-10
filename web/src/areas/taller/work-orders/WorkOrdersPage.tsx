@@ -16,6 +16,8 @@ import { pendingTone } from '../../../lib/styles'
 import { formatDate } from '../../../lib/dates'
 import { useCreateFromQuery } from '../../../lib/useCreateFromQuery'
 import { useSearchParams } from 'react-router'
+import { FilterSelect } from '@/components/ui/FilterControls'
+import { Checkbox } from '@/components/ui/Checkbox'
 
 const STATUS_OPTIONS: WorkOrderStatus[] = [
   'pending', 'in_progress', 'waiting_parts', 'completed', 'delivered', 'cancelled',
@@ -133,7 +135,7 @@ export function WorkOrdersPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <select
+        <FilterSelect
           value={statusFilter}
           onChange={e => { setStatusFilter(e.target.value as WorkOrderStatus | ''); setPage(1) }}
           className="rounded-lg border border-tc-border-input bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-purple"
@@ -142,10 +144,9 @@ export function WorkOrdersPage() {
           {STATUS_OPTIONS.map(s => (
             <option key={s} value={s}>{STATUS_LABELS[s]}</option>
           ))}
-        </select>
+        </FilterSelect>
         <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-tc-text-secondary">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={withBalance}
             onChange={e => { setWithBalance(e.target.checked); setPage(1) }}
             className="h-4 w-4 accent-tc-purple"

@@ -9,6 +9,7 @@ import { Button } from '../../../components/ui/Button'
 import { authApi } from '../../../lib/api/auth'
 import { useAuth } from '../../../lib/auth/AuthContext'
 import { ApiError } from '../../../lib/api/client'
+import { Checkbox } from '@/components/ui/Checkbox'
 
 const schema = z.object({
   email: z.string().email('Email inválido'),
@@ -80,7 +81,7 @@ export function LoginPage() {
         />
         <div className="flex items-center justify-between gap-3">
           <label className="flex min-h-[44px] items-center gap-2 text-sm text-tc-text-secondary">
-            <input type="checkbox" {...register('rememberMe')} className="h-4 w-4 accent-tc-purple" />
+            <Checkbox {...register('rememberMe')} />
             Recordarme
           </label>
           <Link to="/forgot-password" className="text-sm font-medium text-tc-purple hover:underline">

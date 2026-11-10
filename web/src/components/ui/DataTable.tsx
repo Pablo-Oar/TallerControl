@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { cn } from '@/lib/utils'
 import { Button } from './Button'
 import { ArrowRightIcon, ChevronDownIcon, ChevronUpIcon, SortIcon } from '@/components/ui/icons'
+import { Tooltip } from './Tooltip'
 
 /**
  * Tabla de datos del sistema (UI-R2, inspirada en `data-table-8` de Watermelon; código propio con los tokens `tc-*`).
@@ -21,10 +22,10 @@ export interface SortState {
   dir: SortDir
 }
 
-/** Ícono ⓘ con un globo explicativo (hover y foco de teclado). */
+/** Ícono ⓘ con un globo explicativo (mouse, foco de teclado y toque). */
 function HeaderHint({ text, label }: { text: string; label: string }) {
   return (
-    <span className="group/hint relative inline-flex normal-case">
+    <Tooltip content={text} className="normal-case">
       <button
         type="button"
         aria-label={`Qué significa ${label}`}
@@ -32,13 +33,7 @@ function HeaderHint({ text, label }: { text: string; label: string }) {
       >
         i
       </button>
-      <span
-        role="tooltip"
-        className="pointer-events-none invisible absolute top-full whitespace-normal left-1/2 z-30 mt-2 w-60 -translate-x-1/2 rounded-lg border border-tc-border bg-white p-3 text-left text-xs font-normal tracking-normal text-tc-text-secondary opacity-0 shadow-floating transition-opacity group-focus-within/hint:visible group-focus-within/hint:opacity-100 group-hover/hint:visible group-hover/hint:opacity-100"
-      >
-        {text}
-      </span>
-    </span>
+    </Tooltip>
   )
 }
 
@@ -341,7 +336,7 @@ export function DataTable<T>({
               <div className={cn('border-t border-tc-border', cardActionsClassName ?? CARD_ACTION_BAR)}>
                 {actions(row)}
                 {rowHref && rowHref(row) && (
-                  <Link to={rowHref(row)!} aria-label={rowLabel?.(row) ?? 'Abrir'} className="flex text-tc-navy-text-dim hover:text-tc-purple">
+                  <Link to={rowHref(row)!} aria-label={rowLabel?.(row) ?? 'Abrir'} className="flex text-tc-navy-mid hover:text-tc-purple">
                     <ArrowRightIcon className="h-3 w-3" />
                   </Link>
                 )}
@@ -355,7 +350,7 @@ export function DataTable<T>({
 }
 
 const TONE = {
-  default: 'text-tc-navy-text-dim hover:text-tc-purple',
+  default: 'text-tc-navy-mid hover:text-tc-purple',
   danger: 'text-tc-danger-solid hover:opacity-70',
   success: 'text-tc-success-text hover:text-tc-success-text',
   warn: 'text-tc-warning-text hover:text-tc-warning-text',

@@ -14,6 +14,7 @@ import { confirmDialog, notify } from '../../../components/ui/dialogs'
 import { ConfirmWithCashModal } from '../../../components/ConfirmWithCashModal'
 import { FormTextarea } from '../../../components/ui/FormField'
 import { useCreateFromQuery } from '../../../lib/useCreateFromQuery'
+import { SearchInput } from '@/components/ui/FilterControls'
 
 const STATUS_LABELS: Record<CounterSaleStatus, string> = {
   draft: 'Borrador',
@@ -156,13 +157,7 @@ export function CounterSalesPage() {
       </div>
 
       <form onSubmit={handleSearch} className="flex flex-wrap items-center gap-2">
-        <input
-          type="search"
-          value={q}
-          onChange={e => setQ(e.target.value)}
-          placeholder="Nº de venta o producto…"
-          className="rounded-lg min-w-0 flex-1 basis-48 border border-tc-border-input bg-white px-3 py-1.5 text-sm outline-none focus:border-tc-purple transition-colors"
-        />
+        <SearchInput value={q} onChange={e => setQ(e.target.value)} placeholder="Nº de venta o producto…" className="min-w-0 flex-1 basis-48" />
         <Button type="submit" variant="secondary" size="sm" className="shrink-0">Buscar</Button>
       </form>
 

@@ -16,6 +16,7 @@ import { inputCls } from '../../../lib/styles'
 import { AppointmentFormModal } from './AppointmentFormModal'
 import { AppointmentsTabs } from './AppointmentsTabs'
 import { ChevronLeftIcon, ChevronRightIcon } from '@/components/ui/icons'
+import { FilterSelect } from '@/components/ui/FilterControls'
 
 const SLOT_MINUTES = 60
 
@@ -91,10 +92,10 @@ export function AppointmentCalendarPage() {
         <Button variant="secondary" size="sm" className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0" onClick={() => setMonday(addDaysISO(monday, 7))} aria-label="Semana siguiente"><ChevronRightIcon /></Button>
         <Button variant="secondary" size="sm" className="min-h-11 sm:min-h-0" onClick={() => setMonday(mondayOf(localDateISO()))}>Hoy</Button>
         {mechanics && (
-          <select value={mechanicId} onChange={e => setMechanicId(e.target.value)} className={`${inputCls} min-h-11 w-full sm:min-h-0 sm:w-auto`} aria-label="Mecánico">
+          <FilterSelect value={mechanicId} onChange={e => setMechanicId(e.target.value)} className={`${inputCls} min-h-11 w-full sm:min-h-0 sm:w-auto`} aria-label="Mecánico">
             <option value="">Todos los mecánicos</option>
             {mechanics.map(m => <option key={m.membershipId} value={m.membershipId}>{m.displayName}</option>)}
-          </select>
+          </FilterSelect>
         )}
       </div>
 

@@ -14,6 +14,9 @@ import { FormTextarea } from '../../../components/ui/FormField'
 import { notify } from '../../../components/ui/dialogs'
 import { ApiError } from '../../../lib/api/client'
 import { ChevronDownIcon } from '@/components/ui/icons'
+import { FilterSelect } from '@/components/ui/FilterControls'
+import { SearchInput } from '@/components/ui/FilterControls'
+import { Checkbox } from '@/components/ui/Checkbox'
 
 const KIND_LABELS: Record<CatalogItemKind, string> = {
   service: 'Servicio',
@@ -152,17 +155,11 @@ export function CatalogPage() {
 
       <form onSubmit={handleSearch} className="space-y-2">
         <div className="flex gap-2">
-        <input
-          type="search"
-          value={q}
-          onChange={e => setQ(e.target.value)}
-          placeholder="Buscar por nombre o SKU…"
-          className="rounded-lg max-md:min-h-11 min-w-0 border border-tc-border-input bg-white px-3 py-2 text-sm text-tc-text-secondary outline-none focus:border-tc-purple flex-1"
-        />
+        <SearchInput value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar por nombre o SKU…" className="min-w-0 flex-1" />
         <Button type="submit" variant="secondary" size="sm">Buscar</Button>
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <select
+        <FilterSelect
           value={kindFilter}
           onChange={e => { setKindFilter(e.target.value as CatalogItemKind | ''); setPage(1) }}
           className="rounded-lg max-md:min-h-11 border border-tc-border-input bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-purple"
@@ -170,11 +167,10 @@ export function CatalogPage() {
           <option value="">Todos los tipos</option>
           <option value="service">Servicios</option>
           <option value="product">Productos</option>
-        </select>
+        </FilterSelect>
         {!showDeleted && (
           <label className="flex items-center gap-1.5 text-sm text-tc-text-secondary">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={activeOnly}
               onChange={e => { setActiveOnly(e.target.checked); setPage(1) }}
               className="h-4 w-4"
@@ -184,8 +180,7 @@ export function CatalogPage() {
         )}
         {can('catalog.write') && (
           <label className="flex items-center gap-1.5 text-sm text-tc-text-secondary">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={showDeleted}
               onChange={e => { setShowDeleted(e.target.checked); setPage(1) }}
               className="h-4 w-4"

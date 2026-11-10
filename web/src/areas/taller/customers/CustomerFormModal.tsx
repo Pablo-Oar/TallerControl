@@ -8,6 +8,7 @@ import { FormField, FormSelect, FormTextarea } from '../../../components/ui/Form
 import { EditDialog } from '../../../components/ui/EditDialog'
 import { ApiError } from '../../../lib/api/client'
 import { useCan } from '../../../lib/auth/permissions'
+import { Checkbox } from '@/components/ui/Checkbox'
 
 const VAT_OPTIONS: { value: VatCondition; label: string }[] = [
   { value: 'consumidor_final', label: 'Consumidor Final' },
@@ -153,7 +154,7 @@ export function CustomerFormModal({ customer, onSuccess, onClose, onDelete }: Pr
         <FormTextarea label="Notas" rows={2} placeholder="Observaciones internas…" {...register('notes')} />
 
         <label className="flex min-h-[44px] items-center gap-2 text-sm text-tc-text-secondary">
-          <input type="checkbox" {...register('doNotContact')} className="h-4 w-4" />
+          <Checkbox {...register('doNotContact')} />
           No contactar
         </label>
 

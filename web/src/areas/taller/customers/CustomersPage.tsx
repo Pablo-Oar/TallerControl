@@ -7,6 +7,7 @@ import { Pagination } from '../../../components/ui/Pagination'
 import { CustomerFormModal } from './CustomerFormModal'
 import { notify } from '../../../components/ui/dialogs'
 import { useCan } from '../../../lib/auth/permissions'
+import { SearchInput } from '@/components/ui/FilterControls'
 
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
@@ -84,13 +85,7 @@ export function CustomersPage() {
 
       <div className="flex flex-wrap items-center gap-2">
         <form onSubmit={handleSearch} className="flex min-w-[14rem] flex-1 gap-2">
-          <input
-            type="search"
-            value={q}
-            onChange={e => setQ(e.target.value)}
-            placeholder="Buscar por nombre, teléfono o documento…"
-            className="rounded-lg min-w-0 flex-1 border border-tc-border-input bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-purple"
-          />
+          <SearchInput value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar por nombre, teléfono o documento…" className="min-w-0 flex-1" />
           <Button type="submit" variant="secondary" size="sm">Buscar</Button>
         </form>
         <button

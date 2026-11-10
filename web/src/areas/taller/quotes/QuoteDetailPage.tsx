@@ -161,7 +161,7 @@ export function QuoteDetailPage() {
       {/* Encabezado */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <Link to="/app/quotes" className="inline-flex min-h-11 items-center text-xs font-bold tracking-wider uppercase text-tc-navy-text hover:text-tc-purple transition-colors">
+          <Link to="/app/quotes" className="inline-flex min-h-11 items-center text-xs font-bold tracking-wider uppercase text-tc-navy-mid hover:text-tc-purple transition-colors">
             <ArrowLeftIcon className="mr-1 inline-block h-4 w-4 align-text-bottom" />Presupuestos
           </Link>
           <h1 className="text-lg font-bold tracking-wide text-tc-text uppercase">

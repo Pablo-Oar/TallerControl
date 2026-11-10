@@ -15,6 +15,7 @@ import { Button } from '../../../components/ui/Button'
 import { confirmDialog } from '../../../components/ui/dialogs'
 import { FormField, FormSelect } from '../../../components/ui/FormField'
 import { AppointmentsTabs } from './AppointmentsTabs'
+import { Checkbox, Radio } from '@/components/ui/Checkbox'
 
 const errorText = (e: unknown) => (e instanceof ApiError ? e.detail : 'No se pudo guardar. Probá de nuevo.')
 
@@ -196,8 +197,7 @@ export function AvailabilityPage() {
             <div className="flex flex-wrap gap-2">
               {WEEK_DAYS.map(d => (
                 <label key={d.value} className="flex min-h-11 cursor-pointer items-center gap-2 border border-tc-border px-3 text-sm">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     className="accent-tc-purple"
                     checked={ruleDays.includes(d.value)}
                     onChange={e => setRuleDays(cur => (e.target.checked ? [...cur, d.value] : cur.filter(x => x !== d.value)))}
@@ -259,11 +259,11 @@ export function AvailabilityPage() {
           <fieldset className="flex flex-wrap gap-4 text-sm text-tc-text-secondary">
             <legend className="sr-only">Tipo</legend>
             <label className="flex min-h-11 cursor-pointer items-center gap-2">
-              <input type="radio" name="ex-kind" className="accent-tc-purple" checked={exKind === 'blocked'} onChange={() => setExKind('blocked')} />
+              <Radio name="ex-kind" className="accent-tc-purple" checked={exKind === 'blocked'} onChange={() => setExKind('blocked')} />
               Día bloqueado (no se agenda)
             </label>
             <label className="flex min-h-11 cursor-pointer items-center gap-2">
-              <input type="radio" name="ex-kind" className="accent-tc-purple" checked={exKind === 'special'} onChange={() => setExKind('special')} />
+              <Radio name="ex-kind" className="accent-tc-purple" checked={exKind === 'special'} onChange={() => setExKind('special')} />
               Horario especial
             </label>
           </fieldset>

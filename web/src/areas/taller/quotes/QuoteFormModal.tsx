@@ -14,6 +14,7 @@ import { Modal } from '../../../components/ui/Modal'
 import { ApiError } from '../../../lib/api/client'
 import { labelCls } from '../../../lib/styles'
 import { localDateISO } from '../../../lib/dates'
+import { Checkbox } from '@/components/ui/Checkbox'
 
 
 const itemSchema = z.object({
@@ -267,7 +268,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                   </div>
 
                   <label className="flex items-center gap-2 text-xs text-tc-text-secondary cursor-pointer">
-                    <input type="checkbox" {...register(`items.${index}.requiredForApproval`)} className="accent-tc-purple" />
+                    <Checkbox {...register(`items.${index}.requiredForApproval`)} />
                     Requerido para aprobación
                   </label>
                 </div>

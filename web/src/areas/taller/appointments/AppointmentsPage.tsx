@@ -20,6 +20,7 @@ import { DataTable, RowAction, sortableWhen, type DataTableColumn } from '../../
 import { Pagination } from '../../../components/ui/Pagination'
 import { AppointmentFormModal } from './AppointmentFormModal'
 import { inputCls } from '../../../lib/styles'
+import { FilterSelect } from '@/components/ui/FilterControls'
 
 const STATUS_OPTIONS: { value: AppointmentStatus | ''; label: string }[] = [
   { value: '', label: 'Todos los estados' },
@@ -164,7 +165,7 @@ export function AppointmentsPage() {
         </div>
         <div>
           <label htmlFor="ap-status" className={fieldLabelCls}>Estado</label>
-          <select
+          <FilterSelect
             id="ap-status"
             value={status}
             onChange={e => { setStatus(e.target.value as AppointmentStatus | ''); setPage(1) }}
@@ -173,7 +174,7 @@ export function AppointmentsPage() {
             {STATUS_OPTIONS.map(o => (
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
-          </select>
+          </FilterSelect>
         </div>
       </div>
 

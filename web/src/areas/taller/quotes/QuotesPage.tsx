@@ -14,6 +14,7 @@ import { Pagination } from '../../../components/ui/Pagination'
 import { QuoteFormModal } from './QuoteFormModal'
 import { formatDate, formatDateOnly } from '../../../lib/dates'
 import { useCreateFromQuery } from '../../../lib/useCreateFromQuery'
+import { FilterSelect } from '@/components/ui/FilterControls'
 
 const STATUS_OPTIONS: QuoteStatus[] = [
   'draft', 'sent', 'approved', 'partially_approved', 'rejected', 'expired', 'converted', 'cancelled',
@@ -103,7 +104,7 @@ export function QuotesPage() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <select
+        <FilterSelect
           value={statusFilter}
           onChange={e => { setStatusFilter(e.target.value as QuoteStatus | ''); setPage(1) }}
           className="rounded-lg border border-tc-border-input bg-white px-3 py-1.5 text-sm text-tc-text-secondary outline-none focus:border-tc-purple"
@@ -112,7 +113,7 @@ export function QuotesPage() {
           {STATUS_OPTIONS.map(s => (
             <option key={s} value={s}>{QUOTE_STATUS_LABELS[s]}</option>
           ))}
-        </select>
+        </FilterSelect>
       </div>
 
       <DataTable<QuoteListDto>
