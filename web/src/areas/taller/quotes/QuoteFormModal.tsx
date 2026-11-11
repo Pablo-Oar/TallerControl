@@ -11,7 +11,6 @@ import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { CatalogPicker, CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
-import { AddRowButton } from '../../../components/ui/AddRowButton'
 import { LINE_GRID_CLS, LineTotalField } from '../../../components/ui/LineTotalField'
 import { ApiError } from '../../../lib/api/client'
 import { labelCls } from '../../../lib/styles'
@@ -75,10 +74,10 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
       },
     })
 
-  const { fields, append, remove } = useFieldArray({ control, name: 'items' })
+  const { fields, prepend, remove } = useFieldArray({ control, name: 'items' })
 
   function addItem() {
-    append({
+    prepend({
       kind: 'service',
       description: '',
       catalogItemId: null,
@@ -280,7 +279,6 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
               </div>
             ))}
           </div>
-          <AddRowButton label="Agregar ítem" onAdd={addItem} />
         </div>
 
         {serverError && (
