@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useDefaultVat } from '../../../lib/auth/defaults'
 import { useForm, useFieldArray } from 'react-hook-form'
+import { AddRowButton } from '../../../components/ui/AddRowButton'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
@@ -336,6 +337,7 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
                 />
               ))}
             </div>
+            {fields.length > 0 && <AddRowButton label="Agregar renglón" onAdd={addItem} />}
           </div>
 
           {serverError && (

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useDefaultVat } from '../../../lib/auth/defaults'
 import { useForm, useFieldArray } from 'react-hook-form'
+import { AddRowButton } from '../../../components/ui/AddRowButton'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
@@ -227,6 +228,10 @@ export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
               </div>
             ))}
           </div>
+          <AddRowButton
+            label="Agregar ítem"
+            onAdd={() => append({ catalogItemId: '', description: '', quantity: '1' as unknown as number, unitCost: '0' as unknown as number, vatRate: String(defaultVat) as unknown as number })}
+          />
         </div>
 
         {/* Percepciones / retenciones */}

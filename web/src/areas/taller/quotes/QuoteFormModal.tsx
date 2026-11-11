@@ -11,6 +11,7 @@ import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { CatalogPicker, CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
+import { AddRowButton } from '../../../components/ui/AddRowButton'
 import { LINE_GRID_CLS, LineTotalField } from '../../../components/ui/LineTotalField'
 import { ApiError } from '../../../lib/api/client'
 import { labelCls } from '../../../lib/styles'
@@ -75,6 +76,18 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
     })
 
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
+
+  function addItem() {
+    append({
+      kind: 'service',
+      description: '',
+      catalogItemId: null,
+      quantity: 1,
+      unitNetPrice: 0,
+      vatRate: defaultVat,
+      requiredForApproval: true,
+    })
+  }
 
   const selectedCustomerId = watch('customerId')
 
@@ -176,17 +189,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
             <span className={labelCls.replace('mb-1 ', '')}>Ítems</span>
             <button
               type="button"
-              onClick={() =>
-                append({
-                  kind: 'service',
-                  description: '',
-                  catalogItemId: null,
-                  quantity: 1,
-                  unitNetPrice: 0,
-                  vatRate: defaultVat,
-                  requiredForApproval: true,
-                })
-              }
+              onClick={addItem}
               className="text-xs font-bold tracking-wider uppercase text-tc-purple hover:text-tc-purple-mid"
             >
               + Agregar ítem
@@ -277,6 +280,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
               </div>
             ))}
           </div>
+          <AddRowButton label="Agregar ítem" onAdd={addItem} />
         </div>
 
         {serverError && (

@@ -1,4 +1,5 @@
 import { useForm, useFieldArray } from 'react-hook-form'
+import { AddRowButton } from '../../../components/ui/AddRowButton'
 import { useDefaultVat } from '../../../lib/auth/defaults'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -139,6 +140,10 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
               </div>
             </div>
           ))}
+          <AddRowButton
+            label="Agregar ítem"
+            onAdd={() => append({ catalogItemId: '', description: '', quantity: 1, unitPrice: 0, vatRate: defaultVat })}
+          />
         </div>
 
         <div className="sticky -bottom-5 -mx-5 -mb-5 mt-2 flex justify-end gap-2 border-t border-tc-border bg-white px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-footer">
