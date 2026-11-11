@@ -40,6 +40,7 @@ internal sealed class PaymentPdfGenerator : IPaymentPdfGenerator
                 Payment = p,
                 WorkOrderNumber = wo.Number,
                 WorkOrderTotal = wo.Total,
+                WorkOrderPaid = wo.PaidAmount,
                 CustomerName = c.Name,
                 VehiclePlate = v.Plate,
                 VehicleBrand = v.Brand,
@@ -51,11 +52,11 @@ internal sealed class PaymentPdfGenerator : IPaymentPdfGenerator
 
         var payment = data.Payment;
         var logo = (await _branding.GetLogoAsync(payment.TenantId, ct))?.Bytes;
-        return PdfLogo.Generate(l => Build(payment, data.WorkOrderNumber, data.WorkOrderTotal, data.CustomerName,
+        return PdfLogo.Generate(l => Build(payment, data.WorkOrderNumber, data.WorkOrderTotal, data.WorkOrderPaid, data.CustomerName,
             data.VehiclePlate, data.VehicleBrand, data.VehicleModel, l), logo);
     }
 
-    private static byte[] Build(Payment payment, int workOrderNumber, decimal workOrderTotal, string customerName,
+    private static byte[] Build(Payment payment, int workOrderNumber, decimal workOrderTotal, decimal workOrderPaid, string customerName,
         string vehiclePlate, string? vehicleBrand, string? vehicleModel, byte[]? logo)
     {
         var voided = payment.Status == PaymentStatus.Voided;
@@ -72,7 +73,7 @@ internal sealed class PaymentPdfGenerator : IPaymentPdfGenerator
                     $"Fecha: {payment.PaidAt:dd/MM/yyyy HH:mm}",
                     $"Método: {MethodLabel(payment.Method)}",
                     voided ? Colors.Red.Darken2 : Colors.Green.Darken2));
-                page.Content().PaddingTop(4).Element(c => BuildContent(c, payment, workOrderNumber, workOrderTotal,
+                page.Content().PaddingTop(4).Element(c => BuildContent(c, payment, workOrderNumber, workOrderTotal, workOrderPaid,
                     customerName, vehiclePlate, vehicleBrand, vehicleModel));
                 page.Footer().Element(PdfStyle.Footer);
             });
@@ -86,6 +87,7 @@ internal sealed class PaymentPdfGenerator : IPaymentPdfGenerator
         Payment payment,
         int workOrderNumber,
         decimal workOrderTotal,
+        decimal workOrderPaid,
         string customerName,
         string vehiclePlate,
         string? vehicleBrand,
@@ -135,19 +137,30 @@ internal sealed class PaymentPdfGenerator : IPaymentPdfGenerator
                     {
                         cols.RelativeColumn(3);
                         cols.RelativeColumn(2);
+                        cols.RelativeColumn(2);
                     });
 
                     table.Header(header =>
                     {
                         header.Cell().Element(x => PdfStyle.HeadText(x, "Concepto"));
+                        header.Cell().Element(x => PdfStyle.HeadText(x, "Fecha de cobro", true));
                         header.Cell().Element(x => PdfStyle.HeadText(x, "Importe", true));
                     });
 
                     table.Cell().Element(x => PdfStyle.BodyCell(x, 0)).Text("Total de la orden");
+                    table.Cell().Element(x => PdfStyle.BodyCell(x, 0)).AlignRight().Text("—").FontColor(PdfStyle.Muted);
                     table.Cell().Element(x => PdfStyle.BodyCell(x, 0)).AlignRight().Text($"$ {workOrderTotal:N2}");
 
                     table.Cell().Element(x => PdfStyle.BodyCell(x, 1)).Text($"Pago ({MethodLabel(payment.Method)})").SemiBold();
+                    table.Cell().Element(x => PdfStyle.BodyCell(x, 1)).AlignRight().Text($"{payment.PaidAt:dd/MM/yyyy HH:mm}");
                     table.Cell().Element(x => PdfStyle.BodyCell(x, 1)).AlignRight().Text($"$ {payment.Amount:N2}").SemiBold();
+
+                    var pending = Math.Max(0, workOrderTotal - workOrderPaid);
+                    var color = pending > 0 ? Colors.Orange.Darken2 : Colors.Green.Darken2;
+                    table.Cell().Element(x => PdfStyle.BodyCell(x, 0)).Text(pending > 0 ? "Pendiente de abonar" : "Orden totalmente abonada")
+                        .SemiBold().FontColor(color);
+                    table.Cell().Element(x => PdfStyle.BodyCell(x, 0)).AlignRight().Text("");
+                    table.Cell().Element(x => PdfStyle.BodyCell(x, 0)).AlignRight().Text($"$ {pending:N2}").SemiBold().FontColor(color);
                 });
             });
 

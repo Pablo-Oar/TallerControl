@@ -102,7 +102,7 @@ internal static class PdfStyle
     public static void Footer(IContainer container) =>
         container.BorderTop(0.5f).BorderColor(Line).PaddingTop(6).Row(row =>
         {
-            row.RelativeItem().Text("Generado con TallerControl · PDF con QuestPDF (licencia MIT)")
+            row.RelativeItem().Text("Generado con TallerControl")
                 .FontSize(7.5f).FontColor(Muted);
             row.AutoItem().Text(t =>
             {
