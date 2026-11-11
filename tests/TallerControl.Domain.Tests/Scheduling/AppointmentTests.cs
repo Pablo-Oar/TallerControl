@@ -65,6 +65,28 @@ public sealed class AppointmentTests
         Assert.NotNull(appt.ConfirmationTokenHash); // hash se conserva para detectar segundo uso (T-APT-03)
     }
 
+    [Fact(DisplayName = "T-APT-10: cambiar el día u hora de un turno Confirmed lo vuelve a Pending")]
+    public void Reprogramar_un_turno_confirmado_lo_vuelve_pendiente()
+    {
+        var appt = MakeAppointment();
+        appt.Confirm();
+
+        appt.Update(Now.AddDays(3), mechanicMembershipId: null, notes: null);
+
+        Assert.Equal(AppointmentStatus.Pending, appt.Status);
+    }
+
+    [Fact(DisplayName = "T-APT-10: cambiar solo las notas no quita la confirmación")]
+    public void Cambiar_notas_mantiene_la_confirmacion()
+    {
+        var appt = MakeAppointment();
+        appt.Confirm();
+
+        appt.Update(Now.AddDays(1), mechanicMembershipId: null, notes: "Traer la llave de seguridad");
+
+        Assert.Equal(AppointmentStatus.Confirmed, appt.Status);
+    }
+
     [Fact(DisplayName = "T-APT-03: confirmar un turno ya Confirmed lanza excepción")]
     public void Turno_ya_confirmado_no_puede_confirmarse_de_nuevo()
     {

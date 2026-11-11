@@ -107,10 +107,20 @@ public sealed class Appointment : Entity, ITenantOwned, IVersioned, IAuditable
         if (scheduledAt == default)
             throw new ArgumentException("El turno necesita una fecha y hora.", nameof(scheduledAt));
 
+        // Si cambia el día o la hora, lo que el cliente había confirmado ya no vale: vuelve a pendiente
+        // hasta que confirme el nuevo horario con un enlace nuevo.
+        var rescheduled = ScheduledAt != scheduledAt;
+
         ScheduledAt = scheduledAt;
         MechanicMembershipId = mechanicMembershipId;
         Notes = notes?.Trim();
+
+        if (rescheduled && Status == AppointmentStatus.Confirmed)
+            Status = AppointmentStatus.Pending;
     }
+
+    /// <summary>¿Cambiaría el horario con este valor? (el handler avisa al cliente solo si cambia).</summary>
+    public bool WouldReschedule(DateTimeOffset scheduledAt) => ScheduledAt != scheduledAt;
 
     /// <summary>Emite un enlace nuevo para el cliente: reemplaza (invalida) al anterior. Solo turnos abiertos.</summary>
     public void ResetConfirmationToken(byte[] tokenHash)

@@ -360,6 +360,37 @@ public sealed class AppointmentsTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.NotFound, (await anon.GetAsync("/api/public/v1/appointments/token-que-no-existe")).StatusCode);
     }
 
+    [Fact(DisplayName = "T-APT-10: Cambiar el día u hora de un turno confirmado lo deja pendiente y emite un enlace nuevo (el viejo deja de servir)")]
+    public async Task Reprogramar_un_turno_confirmado_lo_deja_pendiente()
+    {
+        using var owner = CreateClient();
+        using var anon = CreateClient();
+        await LoginAsync(owner, AppointmentsWebApplicationFactory.OwnerEmail);
+
+        var (id, token, _) = await CreateAppointmentAsync(owner);
+        Assert.Equal(HttpStatusCode.OK, (await anon.PostAsync($"/api/public/v1/appointments/{token}/confirm", null)).StatusCode);
+
+        var confirmed = await owner.GetFromJsonAsync<JsonElement>($"/api/v1/appointments/{id}");
+        Assert.Equal("confirmed", confirmed.GetProperty("status").GetString());
+        var version = confirmed.GetProperty("version").GetUInt32();
+
+        var csrf = await FetchCsrfAsync(owner);
+        var req = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/appointments/{id}")
+        {
+            Content = JsonContent.Create(new { scheduledAt = DateTimeOffset.UtcNow.AddDays(3), mechanicMembershipId = (Guid?)null, notes = (string?)null, force = false }),
+        };
+        req.Headers.Add(AuthenticationSetup.AntiforgeryHeaderName, csrf);
+        req.Headers.TryAddWithoutValidation("If-Match", $"\"{version}\"");
+        var resp = await owner.SendAsync(req);
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+
+        var updated = await owner.GetFromJsonAsync<JsonElement>($"/api/v1/appointments/{id}");
+        Assert.Equal("pending", updated.GetProperty("status").GetString());
+
+        // El enlace que el cliente ya había usado dejó de valer: se le mandó uno nuevo.
+        Assert.Equal(HttpStatusCode.NotFound, (await anon.GetAsync($"/api/public/v1/appointments/{token}")).StatusCode);
+    }
+
     [Fact(DisplayName = "T-APT-08: Los turnos se agrupan por día del taller, no por día UTC (22:00 locales es otro día en UTC)")]
     public async Task Los_dias_son_del_taller()
     {
