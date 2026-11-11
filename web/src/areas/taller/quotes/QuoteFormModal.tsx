@@ -11,6 +11,7 @@ import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { CatalogPicker, CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
+import { LINE_GRID_CLS, LineTotalField } from '../../../components/ui/LineTotalField'
 import { ApiError } from '../../../lib/api/client'
 import { labelCls } from '../../../lib/styles'
 import { localDateISO } from '../../../lib/dates'
@@ -236,7 +237,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                     {...register(`items.${index}.description`)}
                   />
 
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className={LINE_GRID_CLS}>
                     <FormField
                       label="Cantidad"
                       size="sm"
@@ -265,6 +266,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
                       inputClassName="tabular-nums"
                       {...register(`items.${index}.vatRate`, { valueAsNumber: true })}
                     />
+                    <LineTotalField control={control} base={`items.${index}`} priceKey="unitNetPrice" />
                   </div>
 
                   <label className="flex items-center gap-2 text-xs text-tc-text-secondary cursor-pointer">
