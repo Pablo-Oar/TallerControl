@@ -71,8 +71,8 @@ function SidebarLink({ to, label, end }: NavItem) {
       end={end}
       className={({ isActive }) =>
         isActive
-          ? 'flex items-center rounded-lg bg-gradient-to-r from-[#D706DB] via-[#7c3aed] to-[#7c3aed] px-4 py-2.5 text-sm font-semibold text-white shadow-raised lg:py-1.5'
-          : 'flex items-center rounded-lg px-4 py-2.5 text-sm text-tc-navy-text lg:py-1.5 hover:text-white transition-colors'
+          ? 'flex items-center bg-[linear-gradient(to_right,#D706DB,#7c3aed,#7c3aed,var(--color-tc-navy-deep))] px-4 py-2.5 text-sm font-semibold text-white lg:py-1.5'
+          : 'flex items-center px-4 py-2.5 text-sm text-tc-navy-text lg:py-1.5 hover:text-white transition-colors'
       }
     >
       {label}
