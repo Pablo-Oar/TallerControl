@@ -1,10 +1,13 @@
+using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using TallerControl.Application.Common;
+using TallerControl.Application.PublicLinks;
 using TallerControl.Application.Quotes;
 using TallerControl.Domain.Quotes;
 using TallerControl.Infrastructure.Branding;
+using TallerControl.Infrastructure.Persistence;
 
 namespace TallerControl.Infrastructure.Quotes;
 
@@ -14,24 +17,81 @@ namespace TallerControl.Infrastructure.Quotes;
 /// </summary>
 internal sealed class QuotePdfGenerator : IQuotePdfGenerator
 {
+    private const long MaxSignatureBytes = 2 * 1024 * 1024;
+
     private readonly IWorkshopBranding _branding;
     private readonly ITenantContext _tenant;
+    private readonly AppDbContext _db;
+    private readonly IObjectStorage _storage;
+    private readonly ISignatureEncryptor _encryptor;
 
-    public QuotePdfGenerator(IWorkshopBranding branding, ITenantContext tenant)
+    public QuotePdfGenerator(
+        IWorkshopBranding branding, ITenantContext tenant, AppDbContext db, IObjectStorage storage, ISignatureEncryptor encryptor)
     {
         _branding = branding;
         _tenant = tenant;
+        _db = db;
+        _storage = storage;
+        _encryptor = encryptor;
     }
+
+    /// <summary>Quién aprobó el presupuesto: nombre, documento y firma (si dejó). Datos del cliente, nunca del taller.</summary>
+    private sealed record Acceptance(string SignerName, string? DocNumber, byte[]? Signature, DateTimeOffset At, bool Partial);
 
     public async Task<byte[]> GenerateAsync(QuoteDto quote, CancellationToken ct)
     {
         QuestPDF.Settings.License = LicenseType.Community;
 
         var logo = _tenant.TenantId is { } tenantId ? (await _branding.GetLogoAsync(tenantId, ct))?.Bytes : null;
-        return PdfLogo.Generate(l => Build(quote, l), logo);
+        var acceptance = await LoadAcceptanceAsync(quote, ct);
+        return PdfLogo.Generate(l => Build(quote, l, acceptance), logo);
     }
 
-    private static byte[] Build(QuoteDto quote, byte[]? logo)
+    /// <summary>
+    /// Si el presupuesto ya fue aprobado, toma la respuesta vigente del cliente con su firma y documento.
+    /// Nunca hace fallar el PDF: lo que no se pueda leer o descifrar simplemente no se muestra.
+    /// </summary>
+    private async Task<Acceptance?> LoadAcceptanceAsync(QuoteDto quote, CancellationToken ct)
+    {
+        if (quote.Status is not (QuoteStatus.Approved or QuoteStatus.PartiallyApproved or QuoteStatus.Converted))
+            return null;
+
+        try
+        {
+            var r = await _db.Set<QuoteResponse>()
+                .AsNoTracking()
+                .Where(x => x.QuoteId == quote.Id && x.IsCurrent && x.Decision == Quote.DecisionApproved)
+                .OrderByDescending(x => x.CreatedAt)
+                .FirstOrDefaultAsync(ct);
+            if (r is null) return null;
+
+            string? doc = null;
+            if (r.SignerDocNumberEnc is { Length: > 0 })
+            {
+                try { doc = _encryptor.Decrypt(r.SignerDocNumberEnc); }
+                catch (Exception) { doc = null; }
+            }
+
+            byte[]? signature = null;
+            if (!string.IsNullOrWhiteSpace(r.SignatureFileKey))
+            {
+                signature = await _storage.ReadAllAsync(r.SignatureFileKey, MaxSignatureBytes, ct);
+                if (signature is not null)
+                {
+                    try { QuestPDF.Infrastructure.Image.FromBinaryData(signature); }
+                    catch (Exception) { signature = null; }
+                }
+            }
+
+            return new Acceptance(r.SignerName, doc, signature, r.CreatedAt, quote.Status == QuoteStatus.PartiallyApproved);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    private static byte[] Build(QuoteDto quote, byte[]? logo, Acceptance? acceptance)
     {
         var document = Document.Create(container =>
         {
@@ -45,7 +105,7 @@ internal sealed class QuotePdfGenerator : IQuotePdfGenerator
                     StatusLabel(quote.Status),
                     $"Válido hasta: {quote.ValidUntil:dd/MM/yyyy}",
                     $"Emitido: {quote.CreatedAt:dd/MM/yyyy}"));
-                page.Content().PaddingTop(4).Element(c => BuildContent(c, quote));
+                page.Content().PaddingTop(4).Element(c => BuildContent(c, quote, acceptance));
                 page.Footer().Element(PdfStyle.Footer);
             });
         });
@@ -53,7 +113,7 @@ internal sealed class QuotePdfGenerator : IQuotePdfGenerator
         return document.GeneratePdf();
     }
 
-    private static void BuildContent(IContainer container, QuoteDto quote)
+    private static void BuildContent(IContainer container, QuoteDto quote, Acceptance? acceptance)
     {
         container.Column(col =>
         {
@@ -121,6 +181,57 @@ internal sealed class QuotePdfGenerator : IQuotePdfGenerator
                         PdfStyle.TotalLine(totals, $"Descuento ({quote.GlobalDiscountPct:N1} %)", $"-$ {quote.DiscountAmount:N2}");
                     PdfStyle.TotalLine(totals, "IVA", $"$ {quote.VatAmount:N2}");
                     PdfStyle.GrandTotal(totals, "TOTAL", $"$ {quote.Total:N2}");
+                });
+            });
+
+            if (acceptance is not null)
+                col.Item().ShowEntire().Element(c => BuildAcceptance(c, acceptance));
+        });
+    }
+
+    private static void BuildAcceptance(IContainer container, Acceptance a)
+    {
+        container.Column(col =>
+        {
+            PdfStyle.SectionTitle(col, a.Partial ? "Conformidad del cliente (aprobación parcial)" : "Conformidad del cliente");
+
+            col.Item().Border(0.5f).BorderColor(PdfStyle.Line).Padding(12).Row(row =>
+            {
+                row.Spacing(16);
+
+                row.RelativeItem(1.3f).Column(sig =>
+                {
+                    sig.Item().Height(70).AlignMiddle().AlignCenter().Element(c =>
+                    {
+                        if (a.Signature is { Length: > 0 })
+                            c.Image(a.Signature).FitArea();
+                    });
+                    sig.Item().BorderTop(0.8f).BorderColor(PdfStyle.Ink).PaddingTop(3).AlignCenter()
+                        .Text("Firma del cliente").FontSize(8).FontColor(PdfStyle.Muted);
+                });
+
+                row.RelativeItem(1).Column(info =>
+                {
+                    info.Spacing(6);
+                    info.Item().Column(f =>
+                    {
+                        f.Item().Text("NOMBRE").FontSize(7.5f).Bold().LetterSpacing(0.08f).FontColor(PdfStyle.Muted);
+                        f.Item().PaddingTop(1).Text(a.SignerName).SemiBold();
+                    });
+                    if (!string.IsNullOrWhiteSpace(a.DocNumber))
+                    {
+                        info.Item().Column(f =>
+                        {
+                            f.Item().Text("DOCUMENTO").FontSize(7.5f).Bold().LetterSpacing(0.08f).FontColor(PdfStyle.Muted);
+                            f.Item().PaddingTop(1).Text(a.DocNumber).SemiBold();
+                        });
+                    }
+
+                    info.Item().Column(f =>
+                    {
+                        f.Item().Text("FECHA DE APROBACIÓN").FontSize(7.5f).Bold().LetterSpacing(0.08f).FontColor(PdfStyle.Muted);
+                        f.Item().PaddingTop(1).Text($"{a.At:dd/MM/yyyy HH:mm}").SemiBold();
+                    });
                 });
             });
         });
