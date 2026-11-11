@@ -23,6 +23,7 @@ const MECHANIC_TRANSITIONS: Partial<Record<WorkOrderStatus, WorkOrderStatus[]>> 
   pending: ['in_progress'],
   in_progress: ['waiting_parts', 'completed'],
   waiting_parts: ['in_progress'],
+  completed: ['delivered'],
 }
 
 

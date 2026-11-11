@@ -631,8 +631,8 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
     /// NOTA: el ApiExceptionHandler actual mapea UnauthorizedAccessException → 500;
     /// este test documentará esa brecha si falla con 500 en lugar de 403.
     /// </summary>
-    [Fact(DisplayName = "T-WO-10: Mecánico intenta Deliver sin permiso workorders.deliver → 403")]
-    public async Task Mecanico_no_puede_deliver_sin_permiso()
+    [Fact(DisplayName = "T-WO-10: El mecánico asignado puede marcar la orden como entregada")]
+    public async Task Mecanico_puede_entregar_su_orden()
     {
         using var ownerClient = CreateClient();
         using var mechanicClient = CreateClient();
@@ -652,9 +652,9 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         var r2 = await ChangeStatusAsync(mechanicClient, id, "completed");
         r2.EnsureSuccessStatusCode();
 
-        // Completed → Delivered (mecánico NO puede: no tiene workorders.deliver).
+        // Completed → Delivered: los mecánicos suelen entregar el vehículo al cliente.
         var resp = await ChangeStatusAsync(mechanicClient, id, "delivered");
-        Assert.Equal(HttpStatusCode.Forbidden, resp.StatusCode);
+        resp.EnsureSuccessStatusCode();
     }
 
     // ── T-WO-12: Mecánico se autoasigna ──────────────────────────────────────
