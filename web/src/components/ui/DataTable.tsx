@@ -270,13 +270,15 @@ export function DataTable<T>({
               {rowHref && (
                 <td className="w-12 rounded-r-xl p-0 align-middle transition-colors group-hover:bg-tc-surface">
                   {rowHref(row) && (
-                  <Link
-                    to={rowHref(row)!}
-                    aria-label={rowLabel?.(row) ?? 'Abrir'}
-                    className="flex h-11 w-12 items-center justify-center text-tc-text-secondary transition-colors hover:text-tc-purple"
-                  >
-                    <ArrowRightIcon className="h-7 w-7" />
-                  </Link>
+                  <Tooltip content="Abrir el detalle" className="flex">
+                    <Link
+                      to={rowHref(row)!}
+                      aria-label={rowLabel?.(row) ?? 'Abrir'}
+                      className="flex h-11 w-12 items-center justify-center text-tc-text-secondary transition-colors hover:text-tc-purple"
+                    >
+                      <ArrowRightIcon className="h-7 w-7" />
+                    </Link>
+                  </Tooltip>
                   )}
                 </td>
               )}
