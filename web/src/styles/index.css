@@ -206,6 +206,15 @@ input[data-auth-field]:focus-visible {
   outline: none;
 }
 
+/* Campos de texto, selects y áreas de texto: el contorno de foco va pegado al borde (sin la separación de 2 px que
+   dibujaba un doble borde) y el borde toma el violeta, así se ve una sola línea. Los botones conservan su separación. */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline-offset: 0;
+  border-color: #7c3aed;
+}
+
 /* FormField: una sola señal de foco — borde violeta + anillo pegado (sin capa, para ganarle a las utilidades) */
 [data-field]:focus-visible {
   outline-offset: 0;
