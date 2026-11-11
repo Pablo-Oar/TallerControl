@@ -833,6 +833,9 @@ public sealed class WorkOrdersEndpointsTests : IAsyncLifetime
         var bell = await ownerClient.GetFromJsonAsync<JsonElement>("/api/v1/notifications");
         Assert.Contains(bell.GetProperty("items").EnumerateArray(),
             n => n.GetProperty("type").GetString() == "work_order.status" && n.GetProperty("link").GetString()!.Contains(id.ToString()));
+        // Cada cambio de estado del mecánico avisa (en proceso y completada), no solo el cierre.
+        Assert.Equal(2, bell.GetProperty("items").EnumerateArray().Count(
+            n => n.GetProperty("type").GetString() == "work_order.status" && n.GetProperty("link").GetString()!.Contains(id.ToString())));
         Assert.DoesNotContain(_factory.Push.Sent, x => x.Message.Title == "Cambió el estado de una orden" && x.Message.Url!.Contains(id.ToString()));
     }
 
