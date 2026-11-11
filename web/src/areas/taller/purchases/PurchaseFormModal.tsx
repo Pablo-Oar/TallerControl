@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useDefaultVat } from '../../../lib/auth/defaults'
 import { useForm, useFieldArray } from 'react-hook-form'
-import { AddRowButton } from '../../../components/ui/AddRowButton'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
@@ -85,7 +84,7 @@ export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
     },
   })
 
-  const { fields, append, remove } = useFieldArray({ control, name: 'items' })
+  const { fields, prepend, remove } = useFieldArray({ control, name: 'items' })
 
   // Sin punto de venta y número de factura la compra no se puede informar al CITI (se avisa, no se elige).
   const pointOfSale = watch('pointOfSale')
@@ -159,7 +158,7 @@ export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
             <span className={labelCls}>Ítems *</span>
             <button
               type="button"
-              onClick={() => append({ catalogItemId: '', description: '', quantity: '1' as unknown as number, unitCost: '0' as unknown as number, vatRate: String(defaultVat) as unknown as number })}
+              onClick={() => prepend({ catalogItemId: '', description: '', quantity: '1' as unknown as number, unitCost: '0' as unknown as number, vatRate: String(defaultVat) as unknown as number })}
               className="text-xs font-bold tracking-wider uppercase text-tc-purple hover:opacity-70 transition-opacity"
             >
               + Agregar ítem
@@ -228,10 +227,6 @@ export function PurchaseFormModal({ purchase, onSuccess, onClose }: Props) {
               </div>
             ))}
           </div>
-          <AddRowButton
-            label="Agregar ítem"
-            onAdd={() => append({ catalogItemId: '', description: '', quantity: '1' as unknown as number, unitCost: '0' as unknown as number, vatRate: String(defaultVat) as unknown as number })}
-          />
         </div>
 
         {/* Percepciones / retenciones */}
