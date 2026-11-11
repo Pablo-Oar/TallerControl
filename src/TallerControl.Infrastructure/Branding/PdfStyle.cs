@@ -25,7 +25,7 @@ internal static class PdfStyle
 
     /// <summary>Encabezado: logo, título con sello de estado y datos a la derecha; cierra con una línea violeta.</summary>
     public static void Header(
-        IContainer container, byte[]? logo, string title, string status, string rightTop, string rightBottom)
+        IContainer container, byte[]? logo, string title, string status, string rightTop, string rightBottom, string? statusColor = null)
     {
         container.PaddingBottom(14).BorderBottom(2).BorderColor(Violet).PaddingBottom(10).Row(row =>
         {
@@ -35,7 +35,7 @@ internal static class PdfStyle
                 col.Item().Text(title).Bold().FontSize(20).FontColor(Navy);
                 col.Item().PaddingTop(4).AlignLeft().Background(Soft)
                     .PaddingHorizontal(8).PaddingVertical(2)
-                    .Text(status).FontSize(9).SemiBold().FontColor(Violet);
+                    .Text(status).FontSize(9).SemiBold().FontColor(statusColor ?? Violet);
             });
             row.ConstantItem(150).AlignRight().Column(col =>
             {

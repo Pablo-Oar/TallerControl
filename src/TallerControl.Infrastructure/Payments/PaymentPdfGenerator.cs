@@ -58,48 +58,27 @@ internal sealed class PaymentPdfGenerator : IPaymentPdfGenerator
     private static byte[] Build(Payment payment, int workOrderNumber, decimal workOrderTotal, string customerName,
         string vehiclePlate, string? vehicleBrand, string? vehicleModel, byte[]? logo)
     {
+        var voided = payment.Status == PaymentStatus.Voided;
         var document = Document.Create(container =>
         {
             container.Page(page =>
             {
-                page.Size(PageSizes.A4);
-                page.Margin(2, Unit.Centimetre);
-                page.DefaultTextStyle(t => t.FontSize(10).FontFamily("Arial"));
+                PdfStyle.ApplyPage(page);
 
-                page.Header().Element(c => BuildHeader(c, payment, logo));
-                page.Content().Element(c => BuildContent(c, payment, workOrderNumber, workOrderTotal,
+                page.Header().Element(c => PdfStyle.Header(
+                    c, logo,
+                    $"Comprobante de Pago #{payment.Number:D4}",
+                    voided ? "ANULADO" : "VÁLIDO",
+                    $"Fecha: {payment.PaidAt:dd/MM/yyyy HH:mm}",
+                    $"Método: {MethodLabel(payment.Method)}",
+                    voided ? Colors.Red.Darken2 : Colors.Green.Darken2));
+                page.Content().PaddingTop(4).Element(c => BuildContent(c, payment, workOrderNumber, workOrderTotal,
                     customerName, vehiclePlate, vehicleBrand, vehicleModel));
-                page.Footer().Element(BuildFooter);
+                page.Footer().Element(PdfStyle.Footer);
             });
         });
 
         return document.GeneratePdf();
-    }
-
-    private static void BuildHeader(IContainer container, Payment payment, byte[]? logo)
-    {
-        container.Row(row =>
-        {
-            PdfLogo.Place(row, logo);
-            row.RelativeItem().Column(col =>
-            {
-                col.Item().Text($"Comprobante de Pago #{payment.Number:D4}")
-                    .Bold().FontSize(16);
-                col.Item().Text(payment.Status == PaymentStatus.Voided ? "ANULADO" : "Válido")
-                    .FontSize(10)
-                    .FontColor(payment.Status == PaymentStatus.Voided
-                        ? Colors.Red.Darken2
-                        : Colors.Green.Darken2);
-            });
-
-            row.ConstantItem(180).Column(col =>
-            {
-                col.Item().AlignRight().Text($"Fecha: {payment.PaidAt:dd/MM/yyyy HH:mm}")
-                    .FontSize(9);
-                col.Item().AlignRight().Text($"Método: {MethodLabel(payment.Method)}")
-                    .FontSize(9).FontColor(Colors.Grey.Darken1);
-            });
-        });
     }
 
     private static void BuildContent(
@@ -112,41 +91,45 @@ internal sealed class PaymentPdfGenerator : IPaymentPdfGenerator
         string? vehicleBrand,
         string? vehicleModel)
     {
+        var voided = payment.Status == PaymentStatus.Voided;
+
         container.Column(col =>
         {
-            col.Spacing(10);
+            col.Spacing(16);
 
-            // Info OT / cliente / vehículo
-            col.Item().Border(1).BorderColor(Colors.Grey.Lighten2).Padding(8).Row(row =>
+            // Orden / cliente / vehículo
+            col.Item().Element(PdfStyle.InfoBox).Row(row =>
             {
-                row.RelativeItem().Column(c =>
-                {
-                    c.Item().Text("Orden de Trabajo").Bold().FontSize(9).FontColor(Colors.Grey.Darken2);
-                    c.Item().Text($"#{workOrderNumber}");
-                });
-
-                row.RelativeItem().Column(c =>
-                {
-                    c.Item().Text("Cliente").Bold().FontSize(9).FontColor(Colors.Grey.Darken2);
-                    c.Item().Text(customerName);
-                });
-
-                row.RelativeItem().Column(c =>
-                {
-                    c.Item().Text("Vehículo").Bold().FontSize(9).FontColor(Colors.Grey.Darken2);
-                    c.Item().Text(vehiclePlate).FontFamily("Courier New");
-                    if (!string.IsNullOrEmpty(vehicleBrand))
-                        c.Item().Text($"{vehicleBrand} {vehicleModel}".Trim())
-                            .FontColor(Colors.Grey.Darken1).FontSize(9);
-                });
+                row.Spacing(12);
+                PdfStyle.Field(row, "Orden de trabajo", $"#{workOrderNumber}");
+                PdfStyle.Field(row, "Cliente", customerName);
+                PdfStyle.Field(
+                    row, "Vehículo", vehiclePlate,
+                    string.IsNullOrEmpty(vehicleBrand) ? null : $"{vehicleBrand} {vehicleModel}".Trim(),
+                    mono: true);
             });
+
+            // Importe cobrado, bien a la vista
+            col.Item().Background(voided ? Colors.Red.Lighten5 : PdfStyle.Soft)
+                .BorderLeft(4).BorderColor(voided ? Colors.Red.Darken2 : PdfStyle.Violet)
+                .PaddingVertical(12).PaddingHorizontal(14).Row(r =>
+                {
+                    r.RelativeItem().Column(c =>
+                    {
+                        c.Item().Text(voided ? "IMPORTE ANULADO" : "IMPORTE COBRADO")
+                            .FontSize(8).Bold().LetterSpacing(0.1f).FontColor(PdfStyle.Muted);
+                        c.Item().PaddingTop(2).Text(MethodLabel(payment.Method)).FontSize(10).FontColor(PdfStyle.Muted);
+                    });
+                    r.AutoItem().AlignMiddle().Text($"$ {payment.Amount:N2}")
+                        .Bold().FontSize(22).FontColor(voided ? Colors.Red.Darken2 : PdfStyle.Navy);
+                });
 
             // Detalle del pago
             col.Item().Column(c =>
             {
-                c.Item().Text("Detalle del Pago").Bold().FontSize(9).FontColor(Colors.Grey.Darken2);
+                PdfStyle.SectionTitle(c, "Detalle del pago");
 
-                c.Item().PaddingTop(4).Table(table =>
+                c.Item().Table(table =>
                 {
                     table.ColumnsDefinition(cols =>
                     {
@@ -154,14 +137,17 @@ internal sealed class PaymentPdfGenerator : IPaymentPdfGenerator
                         cols.RelativeColumn(2);
                     });
 
-                    table.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("Concepto").Bold().FontSize(9);
-                    table.Cell().Background(Colors.Grey.Lighten3).Padding(4).AlignRight().Text("Importe").Bold().FontSize(9);
+                    table.Header(header =>
+                    {
+                        header.Cell().Element(x => PdfStyle.HeadText(x, "Concepto"));
+                        header.Cell().Element(x => PdfStyle.HeadText(x, "Importe", true));
+                    });
 
-                    table.Cell().Padding(4).Text("Total de la orden");
-                    table.Cell().Padding(4).AlignRight().Text($"${workOrderTotal:N2}");
+                    table.Cell().Element(x => PdfStyle.BodyCell(x, 0)).Text("Total de la orden");
+                    table.Cell().Element(x => PdfStyle.BodyCell(x, 0)).AlignRight().Text($"$ {workOrderTotal:N2}");
 
-                    table.Cell().Padding(4).Text($"Pago ({MethodLabel(payment.Method)})").Bold();
-                    table.Cell().Padding(4).AlignRight().Text($"${payment.Amount:N2}").Bold();
+                    table.Cell().Element(x => PdfStyle.BodyCell(x, 1)).Text($"Pago ({MethodLabel(payment.Method)})").SemiBold();
+                    table.Cell().Element(x => PdfStyle.BodyCell(x, 1)).AlignRight().Text($"$ {payment.Amount:N2}").SemiBold();
                 });
             });
 
@@ -170,39 +156,23 @@ internal sealed class PaymentPdfGenerator : IPaymentPdfGenerator
             {
                 col.Item().Column(c =>
                 {
-                    c.Item().Text("Referencia").Bold().FontSize(9).FontColor(Colors.Grey.Darken2);
-                    c.Item().PaddingTop(2).Text(payment.Reference);
+                    PdfStyle.SectionTitle(c, "Referencia");
+                    c.Item().BorderLeft(2).BorderColor(PdfStyle.Violet).PaddingLeft(8).Text(payment.Reference);
                 });
             }
 
             // Anulación
-            if (payment.Status == PaymentStatus.Voided)
+            if (voided)
             {
-                col.Item().Background(Colors.Red.Lighten4).Padding(8).Column(c =>
-                {
-                    c.Item().Text("PAGO ANULADO").Bold().FontColor(Colors.Red.Darken2);
-                    c.Item().Text($"Motivo: {payment.VoidReason}").FontSize(9);
-                    if (payment.VoidedAt.HasValue)
-                        c.Item().Text($"Anulado el: {payment.VoidedAt:dd/MM/yyyy HH:mm}").FontSize(9);
-                });
+                col.Item().Background(Colors.Red.Lighten5).Border(0.5f).BorderColor(Colors.Red.Lighten2)
+                    .Padding(10).Column(c =>
+                    {
+                        c.Item().Text("PAGO ANULADO").Bold().FontColor(Colors.Red.Darken2);
+                        c.Item().PaddingTop(2).Text($"Motivo: {payment.VoidReason}").FontSize(9);
+                        if (payment.VoidedAt.HasValue)
+                            c.Item().Text($"Anulado el: {payment.VoidedAt:dd/MM/yyyy HH:mm}").FontSize(9).FontColor(PdfStyle.Muted);
+                    });
             }
-        });
-    }
-
-    private static void BuildFooter(IContainer container)
-    {
-        container.Row(row =>
-        {
-            row.RelativeItem().Text("Generado con TallerControl")
-                .FontSize(8).FontColor(Colors.Grey.Darken1);
-            row.RelativeItem().AlignRight()
-                .Text(text =>
-                {
-                    text.Span("Página ").FontSize(8).FontColor(Colors.Grey.Darken1);
-                    text.CurrentPageNumber().FontSize(8).FontColor(Colors.Grey.Darken1);
-                    text.Span(" de ").FontSize(8).FontColor(Colors.Grey.Darken1);
-                    text.TotalPages().FontSize(8).FontColor(Colors.Grey.Darken1);
-                });
         });
     }
 
