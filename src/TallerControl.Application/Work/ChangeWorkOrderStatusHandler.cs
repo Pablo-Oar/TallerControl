@@ -87,7 +87,7 @@ public sealed class ChangeWorkOrderStatusHandler
     /// <summary>
     /// Avisos del cambio de estado, por la cola de salida (misma transacción que el cambio):
     /// si lo cambia otra persona, el mecánico asignado recibe un aviso en el celular; si lo cambia el mecánico a
-    /// «Completada» o «Esperando repuestos», aparece un aviso en la campanita del panel.
+    /// cualquier estado, aparece un aviso en la campanita del panel (dueño y administrativo).
     /// </summary>
     private void NotifyStatusChange(WorkOrder order, WorkOrderStatus status, bool isMechanic)
     {
@@ -104,7 +104,7 @@ public sealed class ChangeWorkOrderStatusHandler
             });
         }
 
-        if (isMechanic && status is WorkOrderStatus.Completed or WorkOrderStatus.WaitingParts)
+        if (isMechanic)
         {
             _outbox.Enqueue("notification.work_order_status", new
             {
