@@ -37,6 +37,7 @@ public sealed class WorkOrder : Entity, ITenantOwned, IVersioned, IAudited, IAud
             WorkOrderStatus.InProgress,
             WorkOrderStatus.WaitingParts,
             WorkOrderStatus.Completed,
+            WorkOrderStatus.Delivered,
         };
 
     private readonly List<WorkOrderItem> _items = [];

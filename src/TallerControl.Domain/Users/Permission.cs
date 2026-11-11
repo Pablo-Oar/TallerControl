@@ -121,7 +121,7 @@ public static class Permission
     {
         VehiclesRead, VehiclesWrite,
         CatalogRead,
-        WorkOrdersRead, WorkOrdersStatus,
+        WorkOrdersRead, WorkOrdersStatus, WorkOrdersDeliver,
         WorkOrdersAssignSelf,
         AttachmentsWrite,
         AppointmentsRead, AppointmentsWrite,
