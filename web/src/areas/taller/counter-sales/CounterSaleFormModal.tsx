@@ -9,6 +9,7 @@ import { Button } from '../../../components/ui/Button'
 import { FormField } from '../../../components/ui/FormField'
 import { CatalogPicker, CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
+import { LINE_GRID_CLS, LineTotalField } from '../../../components/ui/LineTotalField'
 import { ApiError } from '../../../lib/api/client'
 import { labelCls } from '../../../lib/styles'
 
@@ -130,10 +131,11 @@ export function CounterSaleFormModal({ onSuccess, onClose }: Props) {
                 error={errors.items?.[idx]?.description?.message}
                 {...register(`items.${idx}.description`)}
               />
-              <div className="grid grid-cols-3 gap-2">
+              <div className={LINE_GRID_CLS}>
                 <FormField label="Cantidad" size="sm" type="number" step="0.001" inputClassName="tabular-nums" {...register(`items.${idx}.quantity`)} />
                 <FormField label="Precio neto" size="sm" type="number" step="0.01" inputClassName="tabular-nums" {...register(`items.${idx}.unitPrice`)} />
                 <FormField label="IVA %" size="sm" type="number" step="any" inputClassName="tabular-nums" {...register(`items.${idx}.vatRate`)} />
+                <LineTotalField control={control} base={`items.${idx}`} priceKey="unitPrice" />
               </div>
             </div>
           ))}

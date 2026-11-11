@@ -71,8 +71,8 @@ function SidebarLink({ to, label, end }: NavItem) {
       end={end}
       className={({ isActive }) =>
         isActive
-          ? 'flex items-center border-l-2 border-tc-purple pl-4 py-2.5 text-sm font-medium text-white lg:py-1.5'
-          : 'flex items-center border-l-2 border-transparent pl-4 py-2.5 text-sm text-tc-navy-text lg:py-1.5 hover:text-white transition-colors'
+          ? 'flex items-center bg-[linear-gradient(to_right,#D706DB,#7c3aed,#7c3aed,var(--color-tc-navy-deep))] px-4 py-2.5 text-sm font-semibold text-white lg:py-1.5'
+          : 'flex items-center px-4 py-2.5 text-sm text-tc-navy-text lg:py-1.5 hover:text-white transition-colors'
       }
     >
       {label}
@@ -189,7 +189,8 @@ export function TallerLayout({ children }: { children: ReactNode }) {
 
               return (
                 <div key={group.label}>
-                  <p className="mb-1.5 pl-4 text-[11px] font-bold tracking-[0.15em] text-tc-navy-text-dim uppercase">
+                  <p className="mb-2 flex items-center gap-2 border-b border-tc-navy-mid px-4 pb-1.5 text-xs font-extrabold tracking-[0.18em] text-white uppercase">
+                    <span aria-hidden className="h-3 w-1 bg-tc-purple-on-dark" />
                     {group.label}
                   </p>
                   {visibleItems.map(item => (

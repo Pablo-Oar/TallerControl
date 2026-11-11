@@ -11,6 +11,7 @@ import { Button } from '../../../components/ui/Button'
 import { FormField, FormSelect, FormTextarea } from '../../../components/ui/FormField'
 import { CatalogPicker, CustomerPicker } from '../../../components/ui/EntityPickers'
 import { Modal } from '../../../components/ui/Modal'
+import { LINE_GRID_CLS, LineTotalField } from '../../../components/ui/LineTotalField'
 import { ApiError } from '../../../lib/api/client'
 import { labelCls } from '../../../lib/styles'
 
@@ -328,6 +329,7 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
                   key={field.id}
                   index={index}
                   register={register}
+                  control={control}
                   errors={errors}
                   onSelectCatalog={handleCatalogItemSelect}
                   onRemove={() => remove(index)}
@@ -352,8 +354,9 @@ export function WorkOrderFormModal({ order, onSuccess, onClose }: Props) {
 // ── Sub-componente de renglón ──────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ItemRow({ index, register, errors, onSelectCatalog, onRemove }: {
+function ItemRow({ index, register, control, errors, onSelectCatalog, onRemove }: {
   index: number
+  control: unknown
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   register: any
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -381,10 +384,11 @@ function ItemRow({ index, register, errors, onSelectCatalog, onRemove }: {
           error={errors.items?.[index]?.description?.message}
           {...register(`items.${index}.description`)}
         />
-        <div className="grid grid-cols-3 gap-2">
+        <div className={LINE_GRID_CLS}>
           <FormField label="Cantidad" size="sm" type="number" min={0} step="0.001" inputClassName="tabular-nums" {...register(`items.${index}.quantity`, { valueAsNumber: true })} />
           <FormField label="Precio neto" size="sm" type="number" min={0} step="0.01" inputClassName="tabular-nums" {...register(`items.${index}.unitNetPrice`, { valueAsNumber: true })} />
           <FormField label="IVA %" size="sm" type="number" min={0} max={100} inputClassName="tabular-nums" {...register(`items.${index}.vatRate`, { valueAsNumber: true })} />
+          <LineTotalField control={control} base={`items.${index}`} priceKey="unitNetPrice" />
         </div>
       </div>
     </div>
