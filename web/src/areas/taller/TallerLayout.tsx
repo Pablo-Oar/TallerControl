@@ -189,7 +189,8 @@ export function TallerLayout({ children }: { children: ReactNode }) {
 
               return (
                 <div key={group.label}>
-                  <p className="mb-1.5 pl-4 text-[11px] font-bold tracking-[0.15em] text-tc-navy-text-dim uppercase">
+                  <p className="mb-2 flex items-center gap-2 border-b border-tc-navy-mid px-4 pb-1.5 text-xs font-extrabold tracking-[0.18em] text-white uppercase">
+                    <span aria-hidden className="h-3 w-1 bg-tc-purple-on-dark" />
                     {group.label}
                   </p>
                   {visibleItems.map(item => (
