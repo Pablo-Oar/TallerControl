@@ -13,7 +13,7 @@ import { FormTextarea } from '../../components/ui/FormField'
 import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
 import { WorkOrderPhotos } from '../../components/WorkOrderPhotos'
-import { Timeline } from '../../components/ui/Timeline'
+import { Timeline, WORK_ORDER_MARKER } from '../../components/ui/Timeline'
 import { vehiclesApi } from '../../lib/api/vehicles'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { actionErrorMessage } from '../../lib/api/errors'
@@ -265,6 +265,7 @@ export function MechanicWorkOrderDetailPage() {
               id: change.id,
               date: change.changedAt,
               kind: 'status' as const,
+              markerClass: WORK_ORDER_MARKER[change.toStatus],
               title: (
                 <>
                   {change.fromStatus && <>{STATUS_LABELS[change.fromStatus as WorkOrderStatus]}<ArrowRightIcon className="mx-1 inline-block h-3.5 w-3.5 align-text-bottom" /></>}

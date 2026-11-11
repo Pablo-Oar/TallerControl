@@ -25,6 +25,8 @@ export interface TimelineItem {
   badge?: ReactNode
   /** Si se indica, el título es un enlace. */
   href?: string
+  /** Clase de color del punto (pisa el del tipo): p. ej. el color del estado al que pasó la orden. */
+  markerClass?: string
   /** Resalta el ítem (p. ej. la respuesta vigente). */
   emphasis?: boolean
 }
@@ -35,6 +37,28 @@ const MARKER: Record<TimelineKind, string> = {
   quote: 'bg-tc-inprog-text',
   response: 'bg-tc-done-text',
   info: 'bg-tc-navy-text',
+}
+
+/** Color del punto de cada estado de la orden, a tono con su sello (`StatusBadge`). */
+export const WORK_ORDER_MARKER: Record<string, string> = {
+  pending: 'bg-tc-warning-solid',
+  in_progress: 'bg-tc-info-solid',
+  waiting_parts: 'bg-tc-warning-solid',
+  completed: 'bg-tc-done-text',
+  delivered: 'bg-tc-success-solid',
+  cancelled: 'bg-tc-neutral-solid',
+}
+
+/** Ídem para los estados del presupuesto. */
+export const QUOTE_MARKER: Record<string, string> = {
+  draft: 'bg-tc-neutral-solid',
+  sent: 'bg-tc-info-solid',
+  approved: 'bg-tc-done-text',
+  partially_approved: 'bg-tc-success-solid',
+  rejected: 'bg-tc-danger-solid',
+  expired: 'bg-tc-neutral-solid',
+  converted: 'bg-tc-purple',
+  cancelled: 'bg-tc-neutral-solid',
 }
 
 const COLLAPSE_OVER = 120
@@ -80,34 +104,49 @@ interface Props {
 export function Timeline({ items, empty = 'Sin movimientos todavía.', showTime = true, label, className }: Props) {
   if (items.length === 0) return <p className="text-sm text-tc-text-muted">{empty}</p>
   return (
-    <ol aria-label={label} className={cn('relative space-y-4 border-l border-tc-border pl-5', className)}>
+    <ol
+      aria-label={label}
+      className={cn(
+        'relative space-y-3 pl-9 before:absolute before:bottom-3 before:left-[11px] before:top-3 before:w-px before:bg-tc-border-mid',
+        className,
+      )}
+    >
       {items.map(item => {
         const kind = item.kind ?? 'info'
         return (
-          <li key={item.id} className={cn('relative', item.emphasis && 'bg-tc-done-bg/60 -ml-2 pl-2 py-1')}>
+          <li key={item.id} className="relative">
             <span
               aria-hidden
-              className={cn('absolute top-1.5 h-2.5 w-2.5', MARKER[kind], item.emphasis ? '-left-[29px]' : '-left-[25px]')}
-            />
-            <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-              <div className="flex flex-wrap items-baseline gap-x-2 text-sm text-tc-text">
-                {item.href ? (
-                  <Link to={item.href} className="font-semibold text-tc-purple hover:text-tc-purple-mid">
-                    {item.title}
-                  </Link>
-                ) : (
-                  <span className="font-semibold">{item.title}</span>
-                )}
-                {item.author && <span className="text-xs text-tc-text-muted">por {item.author}</span>}
+              className="absolute -left-9 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-white ring-1 ring-tc-border-mid"
+            >
+              <span className={cn('h-2.5 w-2.5 rounded-full', item.markerClass ?? MARKER[kind])} />
+            </span>
+            <div
+              className={cn(
+                'rounded-xl border px-3.5 py-2.5 transition-shadow hover:shadow-raised',
+                item.emphasis ? 'border-tc-success-border bg-tc-success-bg' : 'border-tc-border bg-white',
+              )}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                <div className="flex flex-wrap items-baseline gap-x-2 text-sm text-tc-text">
+                  {item.href ? (
+                    <Link to={item.href} className="font-semibold text-tc-purple hover:text-tc-purple-mid">
+                      {item.title}
+                    </Link>
+                  ) : (
+                    <span className="font-semibold">{item.title}</span>
+                  )}
+                  {item.author && <span className="text-xs text-tc-text-muted">por {item.author}</span>}
+                </div>
+                <div className="flex items-center gap-2">
+                  {item.badge}
+                  <time dateTime={item.date} className="text-xs tabular-nums text-tc-text-muted">
+                    {formatWhen(item.date, showTime)}
+                  </time>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                {item.badge}
-                <time dateTime={item.date} className="text-xs tabular-nums text-tc-text-muted">
-                  {formatWhen(item.date, showTime)}
-                </time>
-              </div>
+              {item.detail && <Detail text={item.detail} />}
             </div>
-            {item.detail && <Detail text={item.detail} />}
           </li>
         )
       })}
