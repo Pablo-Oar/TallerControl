@@ -37,131 +37,93 @@ internal sealed class QuotePdfGenerator : IQuotePdfGenerator
         {
             container.Page(page =>
             {
-                page.Size(PageSizes.A4);
-                page.Margin(2, Unit.Centimetre);
-                page.DefaultTextStyle(t => t.FontSize(10).FontFamily("Arial"));
+                PdfStyle.ApplyPage(page);
 
-                page.Header().Element(c => BuildHeader(c, quote, logo));
-                page.Content().Element(c => BuildContent(c, quote));
-                page.Footer().Element(BuildFooter);
+                page.Header().Element(c => PdfStyle.Header(
+                    c, logo,
+                    $"Presupuesto #{quote.Number}",
+                    StatusLabel(quote.Status),
+                    $"Válido hasta: {quote.ValidUntil:dd/MM/yyyy}",
+                    $"Emitido: {quote.CreatedAt:dd/MM/yyyy}"));
+                page.Content().PaddingTop(4).Element(c => BuildContent(c, quote));
+                page.Footer().Element(PdfStyle.Footer);
             });
         });
 
         return document.GeneratePdf();
     }
 
-    private static void BuildHeader(IContainer container, QuoteDto quote, byte[]? logo)
-    {
-        container.Row(row =>
-        {
-            PdfLogo.Place(row, logo);
-            row.RelativeItem().Column(col =>
-            {
-                col.Item().Text($"Presupuesto #{quote.Number}")
-                    .Bold().FontSize(16);
-                col.Item().Text(StatusLabel(quote.Status))
-                    .FontSize(10).FontColor(Colors.Grey.Darken2);
-            });
-
-            row.ConstantItem(150).Column(col =>
-            {
-                col.Item().AlignRight().Text($"Válido hasta: {quote.ValidUntil:dd/MM/yyyy}")
-                    .FontSize(9);
-                col.Item().AlignRight().Text($"Emitido: {quote.CreatedAt:dd/MM/yyyy}")
-                    .FontSize(9).FontColor(Colors.Grey.Darken1);
-            });
-        });
-    }
-
     private static void BuildContent(IContainer container, QuoteDto quote)
     {
         container.Column(col =>
         {
-            // Cliente y vehículo
-            col.Item().Padding(5).Row(row =>
-            {
-                row.RelativeItem().Column(c =>
-                {
-                    c.Item().Text("CLIENTE").Bold().FontSize(9).FontColor(Colors.Grey.Darken2);
-                    c.Item().Text(quote.CustomerName);
-                });
+            col.Spacing(16);
 
-                row.RelativeItem().Column(c =>
-                {
-                    c.Item().Text("VEHÍCULO").Bold().FontSize(9).FontColor(Colors.Grey.Darken2);
-                    c.Item().Text($"{quote.VehicleBrand} {quote.VehicleModel}".Trim());
-                    c.Item().Text($"Patente: {quote.VehiclePlate}").FontSize(9);
-                });
+            col.Item().Element(PdfStyle.InfoBox).Row(row =>
+            {
+                row.Spacing(12);
+                PdfStyle.Field(row, "Cliente", quote.CustomerName);
+                PdfStyle.Field(
+                    row, "Vehículo", $"{quote.VehicleBrand} {quote.VehicleModel}".Trim(),
+                    $"Patente: {quote.VehiclePlate}");
             });
 
-            col.Item().PaddingVertical(8).LineHorizontal(0.5f);
-
-            // Nota al cliente
             if (!string.IsNullOrEmpty(quote.CustomerNotes))
             {
-                col.Item().Padding(5).Column(c =>
+                col.Item().Column(c =>
                 {
-                    c.Item().Text("NOTAS").Bold().FontSize(9).FontColor(Colors.Grey.Darken2);
-                    c.Item().Text(quote.CustomerNotes).FontSize(9);
+                    PdfStyle.SectionTitle(c, "Notas");
+                    c.Item().BorderLeft(2).BorderColor(PdfStyle.Violet).PaddingLeft(8)
+                        .Text(quote.CustomerNotes).LineHeight(1.35f);
                 });
-                col.Item().PaddingVertical(4).LineHorizontal(0.5f);
             }
 
-            // Tabla de ítems
-            col.Item().Table(table =>
+            col.Item().Column(c =>
             {
-                table.ColumnsDefinition(cols =>
+                PdfStyle.SectionTitle(c, "Detalle");
+
+                c.Item().Table(table =>
                 {
-                    cols.RelativeColumn(4);
-                    cols.RelativeColumn(1);
-                    cols.RelativeColumn(1.5f);
-                    cols.RelativeColumn(1);
-                    cols.RelativeColumn(1.5f);
+                    table.ColumnsDefinition(cols =>
+                    {
+                        cols.RelativeColumn(4.5f);
+                        cols.RelativeColumn(1);
+                        cols.RelativeColumn(2);
+                        cols.RelativeColumn(1.2f);
+                        cols.RelativeColumn(2);
+                    });
+
+                    table.Header(header =>
+                    {
+                        header.Cell().Element(x => PdfStyle.HeadText(x, "Descripción"));
+                        header.Cell().Element(x => PdfStyle.HeadText(x, "Cant.", true));
+                        header.Cell().Element(x => PdfStyle.HeadText(x, "P. unitario", true));
+                        header.Cell().Element(x => PdfStyle.HeadText(x, "IVA", true));
+                        header.Cell().Element(x => PdfStyle.HeadText(x, "Total", true));
+                    });
+
+                    var i = 0;
+                    foreach (var item in quote.Items.OrderBy(it => it.Position))
+                    {
+                        var idx = i++;
+                        table.Cell().Element(x => PdfStyle.BodyCell(x, idx)).Text(item.Description);
+                        table.Cell().Element(x => PdfStyle.BodyCell(x, idx)).AlignRight().Text($"{item.Quantity:0.###}");
+                        table.Cell().Element(x => PdfStyle.BodyCell(x, idx)).AlignRight().Text($"$ {item.UnitNetPrice:N2}");
+                        table.Cell().Element(x => PdfStyle.BodyCell(x, idx)).AlignRight().Text($"{item.VatRate:0.##} %");
+                        table.Cell().Element(x => PdfStyle.BodyCell(x, idx)).AlignRight().Text($"$ {item.LineTotal:N2}");
+                    }
                 });
 
-                table.Header(header =>
+                c.Item().PaddingTop(10).AlignRight().Width(220).Column(totals =>
                 {
-                    header.Cell().Text("Descripción").Bold().FontSize(9);
-                    header.Cell().AlignRight().Text("Cant.").Bold().FontSize(9);
-                    header.Cell().AlignRight().Text("P. Unitario").Bold().FontSize(9);
-                    header.Cell().AlignRight().Text("IVA %").Bold().FontSize(9);
-                    header.Cell().AlignRight().Text("Total").Bold().FontSize(9);
-                    header.Cell().ColumnSpan(5).PaddingTop(2).LineHorizontal(0.5f);
+                    PdfStyle.TotalLine(totals, "Subtotal neto", $"$ {quote.SubtotalNet:N2}");
+                    if (quote.GlobalDiscountPct > 0)
+                        PdfStyle.TotalLine(totals, $"Descuento ({quote.GlobalDiscountPct:N1} %)", $"-$ {quote.DiscountAmount:N2}");
+                    PdfStyle.TotalLine(totals, "IVA", $"$ {quote.VatAmount:N2}");
+                    PdfStyle.GrandTotal(totals, "TOTAL", $"$ {quote.Total:N2}");
                 });
-
-                foreach (var item in quote.Items.OrderBy(i => i.Position))
-                {
-                    table.Cell().Text(item.Description).FontSize(9);
-                    table.Cell().AlignRight().Text($"{item.Quantity:N2}").FontSize(9);
-                    table.Cell().AlignRight().Text($"$ {item.UnitNetPrice:N2}").FontSize(9);
-                    table.Cell().AlignRight().Text($"{item.VatRate:N0} %").FontSize(9);
-                    table.Cell().AlignRight().Text($"$ {item.LineTotal:N2}").FontSize(9);
-                }
-            });
-
-            col.Item().PaddingVertical(6).LineHorizontal(0.5f);
-
-            // Totales
-            col.Item().AlignRight().Column(c =>
-            {
-                c.Item().Text($"Subtotal neto: $ {quote.SubtotalNet:N2}").FontSize(9);
-                if (quote.GlobalDiscountPct > 0)
-                    c.Item().Text($"Descuento ({quote.GlobalDiscountPct:N1} %): -$ {quote.DiscountAmount:N2}").FontSize(9);
-                c.Item().Text($"IVA: $ {quote.VatAmount:N2}").FontSize(9);
-                c.Item().PaddingTop(2).Text($"TOTAL: $ {quote.Total:N2}").Bold().FontSize(12);
             });
         });
-    }
-
-    private static void BuildFooter(IContainer container)
-    {
-        container.AlignCenter()
-            .Text(t =>
-            {
-                t.Span("Generado por TallerControl · PDF generado con ").FontSize(7).FontColor(Colors.Grey.Medium);
-                t.Hyperlink("QuestPDF", "https://www.questpdf.com").FontSize(7).FontColor(Colors.Grey.Medium);
-                t.Span(" (MIT License)").FontSize(7).FontColor(Colors.Grey.Medium);
-            });
     }
 
     private static string StatusLabel(QuoteStatus status) => status switch

@@ -37,68 +37,38 @@ internal sealed class WorkOrderPdfGenerator : IWorkOrderPdfGenerator
         {
             container.Page(page =>
             {
-                page.Size(PageSizes.A4);
-                page.Margin(2, Unit.Centimetre);
-                page.DefaultTextStyle(t => t.FontSize(10).FontFamily("Arial"));
+                PdfStyle.ApplyPage(page);
 
-                page.Header().Element(c => BuildHeader(c, order, logo));
-                page.Content().Element(c => BuildContent(c, order));
-                page.Footer().Element(BuildFooter);
+                page.Header().Element(c => PdfStyle.Header(
+                    c, logo,
+                    $"Orden de Trabajo #{order.Number}",
+                    StatusLabel(order.Status),
+                    $"Prioridad: {PriorityLabel(order.Priority)}",
+                    $"Creada: {order.CreatedAt:dd/MM/yyyy}"));
+                page.Content().PaddingTop(4).Element(c => BuildContent(c, order));
+                page.Footer().Element(PdfStyle.Footer);
             });
         });
 
         return document.GeneratePdf();
     }
 
-    private static void BuildHeader(IContainer container, WorkOrderDto order, byte[]? logo)
-    {
-        container.Row(row =>
-        {
-            PdfLogo.Place(row, logo);
-            row.RelativeItem().Column(col =>
-            {
-                col.Item().Text($"Orden de Trabajo #{order.Number}")
-                    .Bold().FontSize(16);
-                col.Item().Text(StatusLabel(order.Status))
-                    .FontSize(10).FontColor(Colors.Grey.Darken2);
-            });
-
-            row.ConstantItem(150).Column(col =>
-            {
-                col.Item().AlignRight().Text($"Prioridad: {PriorityLabel(order.Priority)}")
-                    .FontSize(9);
-                col.Item().AlignRight().Text($"Creada: {order.CreatedAt:dd/MM/yyyy}")
-                    .FontSize(9).FontColor(Colors.Grey.Darken1);
-            });
-        });
-    }
-
     private static void BuildContent(IContainer container, WorkOrderDto order)
     {
         container.Column(col =>
         {
-            col.Spacing(10);
+            col.Spacing(16);
 
-            // Vehículo y cliente
             col.Item().Element(c => BuildInfoSection(c, order));
 
-            // Problema reportado
             if (!string.IsNullOrWhiteSpace(order.ReportedIssue))
-            {
-                col.Item().Element(c => BuildProblemSection(c, order.ReportedIssue));
-            }
+                col.Item().Element(c => BuildTextSection(c, "Problema reportado", order.ReportedIssue));
 
-            // Renglones
             if (order.Items.Count > 0)
-            {
                 col.Item().Element(c => BuildItemsTable(c, order));
-            }
 
-            // Notas mecánico / internas
             if (!string.IsNullOrWhiteSpace(order.MechanicNotes))
-            {
-                col.Item().Element(c => BuildNotesSection(c, "Notas del mecánico", order.MechanicNotes));
-            }
+                col.Item().Element(c => BuildTextSection(c, "Notas del mecánico", order.MechanicNotes));
 
             // Las notas internas son del taller: nunca van en el PDF que se le entrega al cliente.
         });
@@ -106,49 +76,27 @@ internal sealed class WorkOrderPdfGenerator : IWorkOrderPdfGenerator
 
     private static void BuildInfoSection(IContainer container, WorkOrderDto order)
     {
-        container.Border(1).BorderColor(Colors.Grey.Lighten2).Padding(8).Row(row =>
+        container.Element(PdfStyle.InfoBox).Row(row =>
         {
-            // Cliente
-            row.RelativeItem().Column(col =>
-            {
-                col.Item().Text("Cliente").Bold().FontSize(9).FontColor(Colors.Grey.Darken2);
-                col.Item().Text(order.CustomerName);
-            });
-
-            // Vehículo
-            row.RelativeItem().Column(col =>
-            {
-                col.Item().Text("Vehículo").Bold().FontSize(9).FontColor(Colors.Grey.Darken2);
-                col.Item().Text(order.VehiclePlate).FontFamily("Courier New");
-                if (!string.IsNullOrEmpty(order.VehicleBrand))
-                    col.Item().Text($"{order.VehicleBrand} {order.VehicleModel}".Trim())
-                        .FontColor(Colors.Grey.Darken1);
-            });
-
-            // Odómetro
-            row.RelativeItem().Column(col =>
-            {
-                col.Item().Text("Odómetro").Bold().FontSize(9).FontColor(Colors.Grey.Darken2);
-                col.Item().Text($"{order.OdometerKm:N0} km");
-                if (order.FuelLevel.HasValue)
-                    col.Item().Text($"Combustible: {order.FuelLevel}%").FontColor(Colors.Grey.Darken1);
-            });
-
-            // Mecánico
-            row.RelativeItem().Column(col =>
-            {
-                col.Item().Text("Mecánico").Bold().FontSize(9).FontColor(Colors.Grey.Darken2);
-                col.Item().Text(order.AssignedMechanicName ?? "—");
-            });
+            row.Spacing(12);
+            PdfStyle.Field(row, "Cliente", order.CustomerName);
+            PdfStyle.Field(
+                row, "Vehículo", order.VehiclePlate,
+                string.IsNullOrEmpty(order.VehicleBrand) ? null : $"{order.VehicleBrand} {order.VehicleModel}".Trim(),
+                mono: true);
+            PdfStyle.Field(
+                row, "Odómetro", $"{order.OdometerKm:N0} km",
+                order.FuelLevel.HasValue ? $"Combustible: {order.FuelLevel}%" : null);
+            PdfStyle.Field(row, "Mecánico", order.AssignedMechanicName ?? "—");
         });
     }
 
-    private static void BuildProblemSection(IContainer container, string issue)
+    private static void BuildTextSection(IContainer container, string title, string text)
     {
         container.Column(col =>
         {
-            col.Item().Text("Problema reportado").Bold().FontSize(9).FontColor(Colors.Grey.Darken2);
-            col.Item().PaddingTop(3).Text(issue);
+            PdfStyle.SectionTitle(col, title);
+            col.Item().BorderLeft(2).BorderColor(PdfStyle.Violet).PaddingLeft(8).Text(text).LineHeight(1.35f);
         });
     }
 
@@ -156,81 +104,53 @@ internal sealed class WorkOrderPdfGenerator : IWorkOrderPdfGenerator
     {
         container.Column(col =>
         {
-            col.Item().Text("Renglones").Bold().FontSize(9).FontColor(Colors.Grey.Darken2);
+            PdfStyle.SectionTitle(col, "Renglones");
 
-            col.Item().PaddingTop(3).Table(table =>
+            col.Item().Table(table =>
             {
                 table.ColumnsDefinition(columns =>
                 {
-                    columns.RelativeColumn(4); // descripción
-                    columns.RelativeColumn(1); // cantidad
-                    columns.RelativeColumn(2); // precio neto
-                    columns.RelativeColumn(1); // iva %
-                    columns.RelativeColumn(2); // total línea
+                    columns.RelativeColumn(4.5f); // descripción
+                    columns.RelativeColumn(1);    // cantidad
+                    columns.RelativeColumn(2);    // precio neto
+                    columns.RelativeColumn(1.2f); // iva %
+                    columns.RelativeColumn(2);    // total línea
                 });
 
-                // Encabezado
                 table.Header(header =>
                 {
-                    header.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("Descripción").Bold().FontSize(8);
-                    header.Cell().Background(Colors.Grey.Lighten3).Padding(4).AlignRight().Text("Cant.").Bold().FontSize(8);
-                    header.Cell().Background(Colors.Grey.Lighten3).Padding(4).AlignRight().Text("P. neto").Bold().FontSize(8);
-                    header.Cell().Background(Colors.Grey.Lighten3).Padding(4).AlignRight().Text("IVA %").Bold().FontSize(8);
-                    header.Cell().Background(Colors.Grey.Lighten3).Padding(4).AlignRight().Text("Total").Bold().FontSize(8);
+                    header.Cell().Element(c => PdfStyle.HeadText(c, "Descripción"));
+                    header.Cell().Element(c => PdfStyle.HeadText(c, "Cant.", true));
+                    header.Cell().Element(c => PdfStyle.HeadText(c, "P. neto", true));
+                    header.Cell().Element(c => PdfStyle.HeadText(c, "IVA", true));
+                    header.Cell().Element(c => PdfStyle.HeadText(c, "Total", true));
                 });
 
-                // Filas
+                var i = 0;
                 foreach (var item in order.Items)
                 {
-                    table.Cell().Padding(4).Text(item.Description);
-                    table.Cell().Padding(4).AlignRight().Text(item.Quantity.ToString("G29"));
-                    table.Cell().Padding(4).AlignRight().Text(
-                        order.SubtotalNet.HasValue ? $"${item.UnitNetPrice:N2}" : "—");
-                    table.Cell().Padding(4).AlignRight().Text($"{item.VatRate}%");
-                    table.Cell().Padding(4).AlignRight().Text(
-                        order.Total.HasValue ? $"${item.LineTotal:N2}" : "—");
+                    var idx = i++;
+                    table.Cell().Element(c => PdfStyle.BodyCell(c, idx)).Text(item.Description);
+                    table.Cell().Element(c => PdfStyle.BodyCell(c, idx)).AlignRight().Text(item.Quantity.ToString("G29"));
+                    table.Cell().Element(c => PdfStyle.BodyCell(c, idx)).AlignRight().Text(
+                        order.SubtotalNet.HasValue ? $"$ {item.UnitNetPrice:N2}" : "—");
+                    table.Cell().Element(c => PdfStyle.BodyCell(c, idx)).AlignRight().Text($"{item.VatRate:0.##} %");
+                    table.Cell().Element(c => PdfStyle.BodyCell(c, idx)).AlignRight().Text(
+                        order.Total.HasValue ? $"$ {item.LineTotal:N2}" : "—");
                 }
             });
 
-            // Totales
             if (order.Total.HasValue)
             {
-                col.Item().PaddingTop(4).AlignRight().Column(totals =>
+                col.Item().PaddingTop(10).AlignRight().Width(220).Column(totals =>
                 {
-                    totals.Item().Text($"Subtotal neto: ${order.SubtotalNet:N2}").FontSize(9);
-                    totals.Item().Text($"IVA: ${order.VatAmount:N2}").FontSize(9);
-                    totals.Item().Text($"Total: ${order.Total:N2}").Bold();
+                    PdfStyle.TotalLine(totals, "Subtotal neto", $"$ {order.SubtotalNet:N2}");
+                    PdfStyle.TotalLine(totals, "IVA", $"$ {order.VatAmount:N2}");
+                    PdfStyle.GrandTotal(totals, "TOTAL", $"$ {order.Total:N2}");
                     if (order.Balance > 0)
-                        totals.Item().Text($"Saldo: ${order.Balance:N2}").FontColor(Colors.Orange.Darken2);
+                        PdfStyle.TotalLine(totals, "Saldo pendiente", $"$ {order.Balance:N2}", Colors.Orange.Darken2);
                 });
             }
-        });
-    }
-
-    private static void BuildNotesSection(IContainer container, string title, string? notes)
-    {
-        if (string.IsNullOrWhiteSpace(notes)) return;
-        container.Column(col =>
-        {
-            col.Item().Text(title).Bold().FontSize(9).FontColor(Colors.Grey.Darken2);
-            col.Item().PaddingTop(2).Text(notes);
-        });
-    }
-
-    private static void BuildFooter(IContainer container)
-    {
-        container.Row(row =>
-        {
-            row.RelativeItem().Text("Generado con TallerControl")
-                .FontSize(8).FontColor(Colors.Grey.Darken1);
-            row.RelativeItem().AlignRight()
-                .Text(text =>
-                {
-                    text.Span("Página ").FontSize(8).FontColor(Colors.Grey.Darken1);
-                    text.CurrentPageNumber().FontSize(8).FontColor(Colors.Grey.Darken1);
-                    text.Span(" de ").FontSize(8).FontColor(Colors.Grey.Darken1);
-                    text.TotalPages().FontSize(8).FontColor(Colors.Grey.Darken1);
-                });
         });
     }
 

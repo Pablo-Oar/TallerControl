@@ -9,6 +9,7 @@ using TallerControl.Application.Qr;
 using TallerControl.Domain.Qr;
 using TallerControl.Domain.Tenancy;
 using TallerControl.Domain.Vehicles;
+using TallerControl.Infrastructure.Branding;
 using TallerControl.Infrastructure.Persistence;
 
 namespace TallerControl.Infrastructure.Qr;
@@ -65,37 +66,43 @@ internal sealed class QrPdfGenerator : IQrPdfGenerator
         {
             container.Page(page =>
             {
-                // Formato tarjeta tipo crédito: 85.6 × 54 mm
+                // Formato tarjeta tipo crédito apaisada: 85.6 × 54 mm
                 page.Size(85.6f, 54f, Unit.Millimetre);
-                page.Margin(4, Unit.Millimetre);
-                page.DefaultTextStyle(t => t.FontSize(7));
+                page.Margin(0);
+                page.DefaultTextStyle(t => t.FontSize(7).FontFamily("Arial").FontColor(PdfStyle.Ink));
 
-                page.Content().Column(col =>
-                {
-                    col.Item().Text(tenantName)
-                        .Bold().FontSize(9).AlignCenter();
-
-                    col.Item().PaddingTop(2).Row(row =>
+                // Banda azul marino con el nombre del taller; el resto de la tarjeta es blanco.
+                page.Header().Background(PdfStyle.Navy).PaddingVertical(2.4f, Unit.Millimetre).PaddingHorizontal(4, Unit.Millimetre)
+                    .Row(row =>
                     {
-                        row.RelativeItem().Image(qrBytes);
-
-                        row.ConstantItem(40, Unit.Millimetre).Column(info =>
-                        {
-                            info.Item().Text("Llavero de vehículo").Bold();
-
-                            if (vehicleBrand is not null || vehicleModel is not null)
-                                info.Item().Text($"{vehicleBrand} {vehicleModel}".Trim()).FontSize(7);
-
-                            // La patente NO se incluye (REQ-17 CA-3, T-DOC-04)
-                            info.Item().PaddingTop(4).Text("Escaneá para ver el historial de tu vehículo.")
-                                .FontSize(6);
-                        });
+                        row.RelativeItem().AlignMiddle().Text(tenantName).Bold().FontSize(9).FontColor(Colors.White);
+                        row.AutoItem().AlignMiddle().Text("LLAVERO").FontSize(6).Bold().LetterSpacing(0.15f).FontColor("#a78bfa");
                     });
 
-                    col.Item().PaddingTop(2)
-                        .Text("Generado con TallerControl — www.tallercontrol.com.ar")
-                        .FontSize(5).FontColor(Colors.Grey.Medium).AlignCenter();
+                page.Content().PaddingHorizontal(4, Unit.Millimetre).PaddingVertical(3, Unit.Millimetre).Row(row =>
+                {
+                    row.ConstantItem(29, Unit.Millimetre).Column(qr =>
+                    {
+                        qr.Item().Border(0.6f).BorderColor(PdfStyle.Line).Padding(1.2f, Unit.Millimetre).Image(qrBytes).FitArea();
+                        qr.Item().PaddingTop(1).AlignCenter().Text(card.Code).FontFamily("Courier New").Bold().FontSize(6.5f).FontColor(PdfStyle.Muted);
+                    });
+
+                    row.RelativeItem().PaddingLeft(4, Unit.Millimetre).Column(info =>
+                    {
+                        info.Item().Text("Llavero de vehículo").Bold().FontSize(9).FontColor(PdfStyle.Navy);
+
+                        if (vehicleBrand is not null || vehicleModel is not null)
+                            info.Item().PaddingTop(1).Text($"{vehicleBrand} {vehicleModel}".Trim()).FontSize(8).FontColor(PdfStyle.Muted);
+
+                        // La patente NO se incluye (REQ-17 CA-3, T-DOC-04)
+                        info.Item().PaddingTop(5).BorderLeft(1.2f).BorderColor(PdfStyle.Violet).PaddingLeft(2)
+                            .Text("Escaneá el código para ver el historial de tu vehículo.").FontSize(7).LineHeight(1.3f);
+                    });
                 });
+
+                page.Footer().PaddingBottom(1.5f, Unit.Millimetre).AlignCenter()
+                    .Text("Generado con TallerControl — www.tallercontrol.com.ar")
+                    .FontSize(5).FontColor(Colors.Grey.Medium);
             });
         }).GeneratePdf();
     }

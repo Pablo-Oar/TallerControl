@@ -1,4 +1,5 @@
 using TallerControl.Application.Common;
+using TallerControl.Domain.Scheduling;
 
 namespace TallerControl.Application.Scheduling;
 
@@ -6,7 +7,7 @@ namespace TallerControl.Application.Scheduling;
 /// Actualiza la fecha, mecánico o notas de un turno (concurrencia xmin/If-Match). Si queda con mecánico, el servidor
 /// valida su horario y que no tenga otro turno encima (A-05); el Dueño puede forzarlo.
 /// </summary>
-public sealed class UpdateAppointmentHandler(ISchedulingRepository repo)
+public sealed class UpdateAppointmentHandler(ISchedulingRepository repo, IOutbox outbox)
 {
     public async Task<AppointmentDto> HandleAsync(
         Guid id, UpdateAppointmentRequest request, uint version, bool canForce, CancellationToken ct)
@@ -43,6 +44,8 @@ public sealed class UpdateAppointmentHandler(ISchedulingRepository repo)
             }
         }
 
+        var rescheduled = appointment.WouldReschedule(request.ScheduledAt);
+
         try
         {
             appointment.Update(request.ScheduledAt, request.MechanicMembershipId, request.Notes);
@@ -56,9 +59,34 @@ public sealed class UpdateAppointmentHandler(ISchedulingRepository repo)
             throw new BusinessRuleException(ex.Message);
         }
 
+        // Cambió el día u hora: el cliente recibe un enlace nuevo para confirmar el nuevo horario
+        // (el anterior deja de valer) y el turno queda pendiente hasta que lo confirme.
+        if (rescheduled)
+            await EnqueueNewLinkAsync(appointment, ct);
+
         await repo.SaveChangesAsync(ct);
 
         return await repo.GetFullAsync(id, ct)
             ?? throw new InvalidOperationException("El turno actualizado no se pudo leer.");
+    }
+
+    private async Task EnqueueNewLinkAsync(Appointment appointment, CancellationToken ct)
+    {
+        if (appointment.Status is not (AppointmentStatus.Pending or AppointmentStatus.Confirmed)) return;
+
+        var (token, hash) = AppointmentToken.New();
+        appointment.ResetConfirmationToken(hash);
+
+        var contact = await repo.GetCustomerContactAsync(appointment.CustomerId, ct);
+        if (contact is null || contact.DoNotContact || string.IsNullOrWhiteSpace(contact.Email)) return;
+
+        outbox.Enqueue("email.appointment", new
+        {
+            to = contact.Email,
+            customerName = contact.Name,
+            token,
+            scheduledAt = appointment.ScheduledAt,
+            timeZone = await repo.GetTenantTimeZoneIdAsync(ct),
+        });
     }
 }
