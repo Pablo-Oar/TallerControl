@@ -187,6 +187,18 @@ button:focus-visible {
   [aria-disabled='true'] {
     cursor: not-allowed;
   }
+
+  /* Campos numéricos de ingreso manual: sin las flechitas de subir/bajar. */
+  input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 }
 
 /* AuthInput (pantallas de acceso): el foco lo marca solo el borde violeta, sin el contorno global (evita el doble borde) */
