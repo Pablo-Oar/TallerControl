@@ -25,6 +25,8 @@ export interface TimelineItem {
   badge?: ReactNode
   /** Si se indica, el título es un enlace. */
   href?: string
+  /** Clase de color del punto (pisa el del tipo): p. ej. el color del estado al que pasó la orden. */
+  markerClass?: string
   /** Resalta el ítem (p. ej. la respuesta vigente). */
   emphasis?: boolean
 }
@@ -35,6 +37,28 @@ const MARKER: Record<TimelineKind, string> = {
   quote: 'bg-tc-inprog-text',
   response: 'bg-tc-done-text',
   info: 'bg-tc-navy-text',
+}
+
+/** Color del punto de cada estado de la orden, a tono con su sello (`StatusBadge`). */
+export const WORK_ORDER_MARKER: Record<string, string> = {
+  pending: 'bg-tc-warning-solid',
+  in_progress: 'bg-tc-info-solid',
+  waiting_parts: 'bg-tc-warning-solid',
+  completed: 'bg-tc-done-text',
+  delivered: 'bg-tc-success-solid',
+  cancelled: 'bg-tc-neutral-solid',
+}
+
+/** Ídem para los estados del presupuesto. */
+export const QUOTE_MARKER: Record<string, string> = {
+  draft: 'bg-tc-neutral-solid',
+  sent: 'bg-tc-info-solid',
+  approved: 'bg-tc-done-text',
+  partially_approved: 'bg-tc-success-solid',
+  rejected: 'bg-tc-danger-solid',
+  expired: 'bg-tc-neutral-solid',
+  converted: 'bg-tc-purple',
+  cancelled: 'bg-tc-neutral-solid',
 }
 
 const COLLAPSE_OVER = 120
@@ -95,7 +119,7 @@ export function Timeline({ items, empty = 'Sin movimientos todavía.', showTime 
               aria-hidden
               className="absolute -left-9 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-white ring-1 ring-tc-border-mid"
             >
-              <span className={cn('h-2.5 w-2.5 rounded-full', MARKER[kind])} />
+              <span className={cn('h-2.5 w-2.5 rounded-full', item.markerClass ?? MARKER[kind])} />
             </span>
             <div
               className={cn(

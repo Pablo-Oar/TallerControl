@@ -7,7 +7,7 @@ import { STATUS_LABELS as ORDER_STATUS_LABELS, type WorkOrderStatus } from '../.
 import { QUOTE_STATUS_LABELS, type QuoteStatus } from '../../../lib/api/quotes'
 import { Button } from '../../../components/ui/Button'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
-import { Timeline, type TimelineItem } from '../../../components/ui/Timeline'
+import { Timeline, QUOTE_MARKER, WORK_ORDER_MARKER, type TimelineItem } from '../../../components/ui/Timeline'
 import { VehicleFormModal } from './VehicleFormModal'
 import { ArrowLeftIcon } from '@/components/ui/icons'
 
@@ -24,6 +24,7 @@ function toItem(e: VehicleHistoryEntryDto): TimelineItem {
     id: `${e.type}-${e.id}`,
     date: e.date,
     kind: isOrder ? 'order' : 'quote',
+    markerClass: (isOrder ? WORK_ORDER_MARKER : QUOTE_MARKER)[e.status],
     title: `${isOrder ? 'Orden' : 'Presupuesto'} ${e.number}`,
     href: isOrder ? `/app/work-orders/${e.id}` : `/app/quotes/${e.id}`,
     badge: (

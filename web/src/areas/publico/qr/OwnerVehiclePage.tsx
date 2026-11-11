@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { getOwnerVehicle, type OwnerWorkOrderDto } from '../../../lib/api/qrCards'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
-import { Timeline, type TimelineItem } from '../../../components/ui/Timeline'
+import { Timeline, WORK_ORDER_MARKER, type TimelineItem } from '../../../components/ui/Timeline'
 import { QUOTE_STATUS_LABELS } from '../../../lib/api/quotes'
 import { formatDate, formatDateOnly } from '../../../lib/dates'
 import { ArrowRightIcon } from '@/components/ui/icons'
@@ -31,6 +31,7 @@ function toTimelineItem(wo: OwnerWorkOrderDto): TimelineItem {
     date: wo.createdAt,
     title: `OT #${wo.number}`,
     kind: 'order',
+    markerClass: WORK_ORDER_MARKER[wo.status],
     badge: <StatusBadge status={wo.status} label={WO_STATUS_LABELS[wo.status] ?? wo.status} />,
     detail: parts.length ? parts.join(' · ') : null,
   }
