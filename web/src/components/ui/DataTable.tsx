@@ -270,13 +270,15 @@ export function DataTable<T>({
               {rowHref && (
                 <td className="w-12 rounded-r-xl p-0 align-middle transition-colors group-hover:bg-tc-surface">
                   {rowHref(row) && (
-                  <Link
-                    to={rowHref(row)!}
-                    aria-label={rowLabel?.(row) ?? 'Abrir'}
-                    className="flex h-11 w-12 items-center justify-center text-tc-navy-text-dim transition-colors hover:text-tc-purple"
-                  >
-                    <ArrowRightIcon className="h-3 w-3" />
-                  </Link>
+                  <Tooltip content="Abrir el detalle" className="flex">
+                    <Link
+                      to={rowHref(row)!}
+                      aria-label={rowLabel?.(row) ?? 'Abrir'}
+                      className="flex h-11 w-12 items-center justify-center text-tc-text-secondary transition-colors hover:text-tc-purple"
+                    >
+                      <ArrowRightIcon className="h-7 w-7" />
+                    </Link>
+                  </Tooltip>
                   )}
                 </td>
               )}
@@ -331,7 +333,7 @@ export function DataTable<T>({
                   aria-label={rowLabel?.(row) ?? 'Abrir'}
                   className="flex min-h-[44px] w-11 shrink-0 items-center justify-center border-l border-tc-border bg-tc-stub-bg text-tc-text-secondary hover:text-tc-purple"
                 >
-                  <ArrowRightIcon className="h-3 w-3" />
+                  <ArrowRightIcon className="h-7 w-7" />
                 </Link>
               )}
             </div>
@@ -339,8 +341,8 @@ export function DataTable<T>({
               <div className={cn('border-t border-tc-border', cardActionsClassName ?? CARD_ACTION_BAR)}>
                 {actions(row)}
                 {rowHref && rowHref(row) && (
-                  <Link to={rowHref(row)!} aria-label={rowLabel?.(row) ?? 'Abrir'} className="flex text-tc-navy-mid hover:text-tc-purple">
-                    <ArrowRightIcon className="h-3 w-3" />
+                  <Link to={rowHref(row)!} aria-label={rowLabel?.(row) ?? 'Abrir'} className="flex text-tc-text-secondary hover:text-tc-purple">
+                    <ArrowRightIcon className="h-7 w-7" />
                   </Link>
                 )}
               </div>

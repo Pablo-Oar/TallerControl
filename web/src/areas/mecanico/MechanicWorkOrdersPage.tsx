@@ -165,7 +165,7 @@ export function MechanicWorkOrdersPage() {
                 </div>
 
                 <div className="flex min-h-[44px] w-8 shrink-0 items-center justify-center border-l border-tc-border bg-tc-stub-bg text-tc-text-secondary" aria-hidden="true">
-                  <ArrowRightIcon className="h-3 w-3" />
+                  <ArrowRightIcon className="h-6 w-6" />
                 </div>
               </Link>
             )
