@@ -3,7 +3,7 @@
 // cache-first para assets con hash. Lectura sin conexión del mecánico (P-02): las órdenes que ya vio
 // (GET /api/v1/work-orders…) y la sesión (/me) se guardan en DATA y se sirven si no hay red; el resto de /api/*
 // no se intercepta. DATA se vacía al cerrar sesión (mensaje 'clear-data'). Subir CACHE en cada release de UI.
-const CACHE = 'tc-sw-v7'
+const CACHE = 'tc-sw-v8'
 const DATA = 'tc-data-v1'
 
 /** Lecturas que se guardan para verlas sin conexión (nunca escrituras ni documentos del taller en general). */

@@ -156,6 +156,15 @@ export function Timeline({ items, empty = 'Sin movimientos todavía.', showTime 
                 </div>
               </div>
               {item.detail && <Detail text={item.detail} />}
+              {item.onSelect && (
+                <button
+                  type="button"
+                  onClick={item.onSelect}
+                  className="mt-1 min-h-[36px] text-xs font-bold uppercase tracking-wider text-tc-purple hover:text-tc-purple-mid"
+                >
+                  Ver qué se hizo →
+                </button>
+              )}
             </div>
           </li>
         )
