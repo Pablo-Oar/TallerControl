@@ -16,17 +16,19 @@ namespace TallerControl.Infrastructure.Qr;
 
 /// <summary>
 /// Genera la tarjeta imprimible del llavero QR (REQ-17, T-DOC-04).
-/// La tarjeta NO incluye la patente del vehículo (CA-3 del requisito).
+/// Decisión del 12/11/2026: la tarjeta lleva la patente en grande (el acceso al portal sigue exigiendo OTP o código del cliente).
 /// </summary>
 internal sealed class QrPdfGenerator : IQrPdfGenerator
 {
     private readonly AppDbContext _db;
     private readonly QrOptions _options;
+    private readonly IWorkshopBranding _branding;
 
-    public QrPdfGenerator(AppDbContext db, IOptions<QrOptions> options)
+    public QrPdfGenerator(AppDbContext db, IOptions<QrOptions> options, IWorkshopBranding branding)
     {
         _db = db;
         _options = options.Value;
+        _branding = branding;
     }
 
     public async Task<byte[]> GenerateCardAsync(Guid qrCardId, CancellationToken ct)
@@ -46,15 +48,21 @@ internal sealed class QrPdfGenerator : IQrPdfGenerator
 
         string? vehicleBrand = null;
         string? vehicleModel = null;
+        string? vehicleVersion = null;
+        int? vehicleYear = null;
+        string? vehiclePlate = null;
         if (card.VehicleId.HasValue)
         {
             var v = await _db.Set<Vehicle>()
                 .AsNoTracking()
                 .IgnoreQueryFilters()
-                .Select(x => new { x.Id, x.Brand, x.Model })
+                .Select(x => new { x.Id, x.Brand, x.Model, x.VersionName, x.Year, x.Plate })
                 .FirstOrDefaultAsync(x => x.Id == card.VehicleId.Value, ct);
             vehicleBrand = v?.Brand;
             vehicleModel = v?.Model;
+            vehicleVersion = v?.VersionName;
+            vehicleYear = v?.Year;
+            vehiclePlate = v?.Plate;
         }
 
         var url = $"{_options.BaseUrl.TrimEnd('/')}/q/{card.Code}";
@@ -62,7 +70,13 @@ internal sealed class QrPdfGenerator : IQrPdfGenerator
 
         QuestPDF.Settings.License = LicenseType.Community;
 
-        return Document.Create(container =>
+        var logo = (await _branding.GetLogoAsync(card.TenantId, ct))?.Bytes;
+        var description = string.Join(" ", new[] { vehicleBrand, vehicleModel, vehicleVersion, vehicleYear?.ToString() }
+            .Where(x => !string.IsNullOrWhiteSpace(x)));
+
+        return PdfLogo.Generate(l => Build(l), logo);
+
+        byte[] Build(byte[]? logoBytes) => Document.Create(container =>
         {
             container.Page(page =>
             {
@@ -75,8 +89,10 @@ internal sealed class QrPdfGenerator : IQrPdfGenerator
                 page.Header().Background(PdfStyle.Navy).PaddingVertical(2.4f, Unit.Millimetre).PaddingHorizontal(4, Unit.Millimetre)
                     .Row(row =>
                     {
+                        if (logoBytes is { Length: > 0 })
+                            row.ConstantItem(9, Unit.Millimetre).PaddingRight(2, Unit.Millimetre).Height(7, Unit.Millimetre).Image(logoBytes).FitArea();
                         row.RelativeItem().AlignMiddle().Text(tenantName).Bold().FontSize(9).FontColor(Colors.White);
-                        row.AutoItem().AlignMiddle().Text("LLAVERO").FontSize(6).Bold().LetterSpacing(0.15f).FontColor("#a78bfa");
+                        row.AutoItem().AlignMiddle().Text("HISTORIAL DIGITAL DEL VEHÍCULO").FontSize(5).Bold().LetterSpacing(0.1f).FontColor("#a78bfa");
                     });
 
                 page.Content().PaddingHorizontal(4, Unit.Millimetre).PaddingVertical(3, Unit.Millimetre).Row(row =>
@@ -84,17 +100,16 @@ internal sealed class QrPdfGenerator : IQrPdfGenerator
                     row.ConstantItem(29, Unit.Millimetre).Column(qr =>
                     {
                         qr.Item().Border(0.6f).BorderColor(PdfStyle.Line).Padding(1.2f, Unit.Millimetre).Image(qrBytes).FitArea();
-                        qr.Item().PaddingTop(1).AlignCenter().Text(card.Code).FontFamily("Courier New").Bold().FontSize(6.5f).FontColor(PdfStyle.Muted);
                     });
 
                     row.RelativeItem().PaddingLeft(4, Unit.Millimetre).Column(info =>
                     {
-                        info.Item().Text("Llavero de vehículo").Bold().FontSize(9).FontColor(PdfStyle.Navy);
+                        if (!string.IsNullOrEmpty(vehiclePlate))
+                            info.Item().Text(vehiclePlate).Bold().FontSize(18).LetterSpacing(0.08f).FontColor(PdfStyle.Navy);
 
-                        if (vehicleBrand is not null || vehicleModel is not null)
-                            info.Item().PaddingTop(1).Text($"{vehicleBrand} {vehicleModel}".Trim()).FontSize(8).FontColor(PdfStyle.Muted);
+                        if (description.Length > 0)
+                            info.Item().PaddingTop(1).Text(description).FontSize(8).FontColor(PdfStyle.Muted);
 
-                        // La patente NO se incluye (REQ-17 CA-3, T-DOC-04)
                         info.Item().PaddingTop(5).BorderLeft(1.2f).BorderColor(PdfStyle.Violet).PaddingLeft(2)
                             .Text("Escaneá el código para ver el historial de tu vehículo.").FontSize(7).LineHeight(1.3f);
                     });
