@@ -50,6 +50,7 @@ public sealed class ScanQrCodeHandler(IQrRepository repo, TimeProvider clock)
         var scanEvent = new QrScanEvent(tenantId, qrCardId, codeHash, type, outcome,
             TruncateIp(ip), Truncate(userAgent, 200), clock.GetUtcNow());
         await repo.AddScanEventAsync(scanEvent, ct);
+        await repo.SaveChangesAsync(ct);
     }
 
     private static string? TruncateIp(string? ip)

@@ -23,6 +23,7 @@ public interface IQrRepository
     Task<WorkshopInfoDto?> GetWorkshopInfoByCardIdAsync(Guid qrCardId, CancellationToken ct);
     Task<VehicleOwnerInfo?> GetVehicleOwnerForChallengeAsync(Guid vehicleId, CancellationToken ct);
     Task<OwnerVehicleDto?> GetOwnerVehicleDtoAsync(Guid vehicleId, Guid tenantId, CancellationToken ct);
+    Task<OwnerWorkOrderDetailDto?> GetOwnerWorkOrderAsync(Guid vehicleId, Guid tenantId, int number, CancellationToken ct);
 }
 
 /// <summary>Datos del vehículo y su dueño necesarios para crear el desafío OTP.</summary>

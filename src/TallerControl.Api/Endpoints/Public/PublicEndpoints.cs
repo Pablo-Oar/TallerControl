@@ -18,6 +18,7 @@ namespace TallerControl.Api.Endpoints.Public;
 /// POST /api/public/v1/qr/{code}/owner-challenge       → inicio de verificación del dueño
 /// POST /api/public/v1/qr/{code}/owner-session         → validar OTP y obtener sesión
 /// GET  /api/public/v1/qr/{code}/owner-vehicle         → portal del dueño (cookie tc_qr)
+/// GET  /api/public/v1/qr/{code}/owner-vehicle/work-orders/{number} → detalle de una orden del vehículo (cookie tc_qr)
 /// POST /api/public/v1/qr/{code}/found-keys            → alguien encontró llaves (anónimo, rate-limited)
 /// </summary>
 internal static class PublicEndpoints
@@ -90,6 +91,13 @@ internal static class PublicEndpoints
                 (string code, GetOwnerVehicleHandler handler, IQrCookieService cookies,
                  HttpContext ctx, CancellationToken ct) =>
                     GetOwnerVehicleAsync(code, handler, cookies, ctx, ct))
+            .AllowAnonymous()
+            .WithPublicSecurity();
+
+        app.MapGet("/api/public/v1/qr/{code}/owner-vehicle/work-orders/{number:int}",
+                (string code, int number, GetOwnerWorkOrderHandler handler, IQrCookieService cookies,
+                 HttpContext ctx, CancellationToken ct) =>
+                    GetOwnerWorkOrderAsync(code, number, handler, cookies, ctx, ct))
             .AllowAnonymous()
             .WithPublicSecurity();
 
@@ -167,7 +175,7 @@ internal static class PublicEndpoints
         HttpContext ctx, CancellationToken ct)
     {
         _ = code; // el challengeId identifica unívocamente el desafío; code es solo para logs
-        var session = await handler.HandleAsync(code, request, ct);
+        var session = await handler.HandleAsync(code, request, ct, ctx.Connection.RemoteIpAddress?.ToString());
         var cookieValue = cookies.Protect(session);
         ctx.Response.Cookies.Append(QrCookieName, cookieValue, new CookieOptions
         {
@@ -191,6 +199,18 @@ internal static class PublicEndpoints
 
         var dto = await handler.HandleAsync(session, ct);
         return Results.Ok(dto);
+    }
+
+    private static async Task<IResult> GetOwnerWorkOrderAsync(
+        string code, int number, GetOwnerWorkOrderHandler handler, IQrCookieService cookies,
+        HttpContext ctx, CancellationToken ct)
+    {
+        _ = code;
+        var session = cookies.Unprotect(ctx.Request.Cookies[QrCookieName]);
+        if (session is null)
+            return Results.Unauthorized();
+
+        return Results.Ok(await handler.HandleAsync(session, number, ct));
     }
 
     private static async Task<IResult> ReportFoundKeysAsync(

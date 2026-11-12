@@ -232,6 +232,28 @@ internal sealed class EfQrRepository : IQrRepository
         return new VehicleOwnerInfo(result.Plate, result.Id, result.TenantId, result.Email, result.OwnerAccessCodeHash);
     }
 
+    public async Task<OwnerWorkOrderDetailDto?> GetOwnerWorkOrderAsync(
+        Guid vehicleId, Guid tenantId, int number, CancellationToken ct)
+    {
+        // Solo órdenes de ESTE vehículo y de su taller, no canceladas; no viajan costos ni notas internas.
+        var order = await _db.Set<WorkOrder>()
+            .AsNoTracking()
+            .IgnoreQueryFilters()
+            .Include(w => w.Items)
+            .FirstOrDefaultAsync(w => w.VehicleId == vehicleId && w.TenantId == tenantId
+                && w.Number == number && w.Status != WorkOrderStatus.Cancelled, ct);
+        if (order is null) return null;
+
+        var items = order.Items
+            .OrderBy(i => i.Position)
+            .Select(i => new OwnerWorkOrderItemDto(EnumText.ToSnakeCase(i.Kind.ToString()), i.Description, i.Quantity))
+            .ToList();
+
+        return new OwnerWorkOrderDetailDto(
+            order.Number, EnumText.ToSnakeCase(order.Status.ToString()), order.CreatedAt, order.CompletedAt, order.DeliveredAt,
+            order.OdometerKm, order.ReportedIssue, order.MechanicNotes, items, order.Total);
+    }
+
     public async Task<OwnerVehicleDto?> GetOwnerVehicleDtoAsync(Guid vehicleId, Guid tenantId, CancellationToken ct)
     {
         var vehicle = await _db.Set<Vehicle>()
@@ -251,7 +273,7 @@ internal sealed class EfQrRepository : IQrRepository
             .Take(50)
             .Select(w => new OwnerWorkOrderDto(
                 w.Number,
-                w.Status.ToString().ToLowerInvariant(),
+                EnumText.ToSnakeCase(w.Status.ToString()),
                 w.CreatedAt,
                 w.DeliveredAt ?? w.CompletedAt,
                 w.Total))
@@ -276,7 +298,7 @@ internal sealed class EfQrRepository : IQrRepository
             .Take(10)
             .Select(q => new OwnerQuoteDto(
                 q.Number,
-                q.Status.ToString().ToLowerInvariant(),
+                EnumText.ToSnakeCase(q.Status.ToString()),
                 null,  // PublicLink: no reconstruible desde hash; el dueño accede vía portal QR
                 q.ValidUntil.ToDateTime(TimeOnly.MinValue)))
             .ToListAsync(ct);

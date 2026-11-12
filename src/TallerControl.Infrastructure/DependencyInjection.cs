@@ -228,6 +228,7 @@ public static class DependencyInjection
         services.AddScoped<StartOwnerChallengeHandler>();
         services.AddScoped<ValidateOwnerOtpHandler>();
         services.AddScoped<GetOwnerVehicleHandler>();
+        services.AddScoped<GetOwnerWorkOrderHandler>();
         services.AddScoped<GetQrVehicleSummaryHandler>();
         services.AddScoped<ReportFoundKeysHandler>();
 
