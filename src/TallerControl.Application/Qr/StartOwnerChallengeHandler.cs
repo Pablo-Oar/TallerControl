@@ -74,6 +74,11 @@ public sealed class StartOwnerChallengeHandler(
 
         await verifications.AddAsync(verification, ct);
 
+        // Actividad de la tarjeta (la ve el taller): pidieron verificar la identidad y, si fue por email, se envió el código.
+        await QrActivityLog.AddAsync(repo, clock, card.TenantId, card.Id, code, QrScanEventType.OwnerChallenge, channel, clientIp, ct);
+        if (channel == "email")
+            await QrActivityLog.AddAsync(repo, clock, card.TenantId, card.Id, code, QrScanEventType.OtpSent, "sent", clientIp, ct);
+
         if (channel == "email")
         {
             outbox.Enqueue("QrOtpEmail", new

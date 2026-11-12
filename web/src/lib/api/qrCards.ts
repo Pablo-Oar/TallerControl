@@ -80,6 +80,25 @@ export interface OwnerWorkOrderDto {
   total: number | null
 }
 
+export interface OwnerWorkOrderItemDto {
+  kind: string
+  description: string
+  quantity: number
+}
+
+export interface OwnerWorkOrderDetailDto {
+  number: number
+  status: string
+  createdAt: string
+  completedAt: string | null
+  deliveredAt: string | null
+  odometerKm: number
+  reportedIssue: string | null
+  mechanicNotes: string | null
+  items: OwnerWorkOrderItemDto[]
+  total: number
+}
+
 export interface OwnerQuoteDto {
   number: number
   status: string
@@ -174,6 +193,9 @@ export async function validateOwnerOtp(
     throw new Error(msg)
   }
 }
+
+export const getOwnerWorkOrder = (code: string, number: number) =>
+  api.get<OwnerWorkOrderDetailDto>(`/api/public/v1/qr/${code}/owner-vehicle/work-orders/${number}`)
 
 export const getOwnerVehicle = (code: string) =>
   api.get<OwnerVehicleDto>(`/api/public/v1/qr/${code}/owner-vehicle`)

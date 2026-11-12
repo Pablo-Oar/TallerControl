@@ -13,7 +13,8 @@ public sealed class ValidateOwnerOtpHandler(
     public async Task<QrSession> HandleAsync(
         string code,
         ValidateOwnerOtpRequest request,
-        CancellationToken ct)
+        CancellationToken ct,
+        string? clientIp = null)
     {
         var verification = await verifications.FindPendingByChallengeAsync(request.ChallengeId, ct);
 
@@ -30,6 +31,8 @@ public sealed class ValidateOwnerOtpHandler(
 
         if (!valid)
         {
+            await QrActivityLog.AddAsync(repo, clock, verification.TenantId, verification.QrCardId, code,
+                QrScanEventType.OtpFailed, "invalid_code", clientIp, ct);
             await verifications.SaveChangesAsync(ct);
             throw new BusinessRuleException("Código incorrecto.");
         }
@@ -45,6 +48,8 @@ public sealed class ValidateOwnerOtpHandler(
             throw new BusinessRuleException("La tarjeta ya no está activa.");
         }
 
+        await QrActivityLog.AddAsync(repo, clock, verification.TenantId, card.Id, code,
+            QrScanEventType.OwnerSession, "ok", clientIp, ct);
         await verifications.SaveChangesAsync(ct);
 
         return new QrSession(

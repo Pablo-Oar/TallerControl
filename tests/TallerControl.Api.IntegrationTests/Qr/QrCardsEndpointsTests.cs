@@ -594,6 +594,26 @@ public sealed class QrCardsEndpointsTests : IAsyncLifetime
         // La patente normalizada es QRTEST (sin guiones)
         Assert.Contains("QRTEST", vehicleJson.GetProperty("plate").GetString()!,
             StringComparison.OrdinalIgnoreCase);
+
+        // T-QR-34: el detalle de una orden que no es de este vehículo (o no existe) es 404, no un error distinto
+        var orderReq = new HttpRequestMessage(
+            HttpMethod.Get, $"/api/public/v1/qr/{code}/owner-vehicle/work-orders/999999");
+        orderReq.Headers.Add("Cookie", $"tc_qr={cookieValue}");
+        Assert.Equal(HttpStatusCode.NotFound, (await publicClient.SendAsync(orderReq)).StatusCode);
+        // ...y sin cookie, 401
+        Assert.Equal(HttpStatusCode.Unauthorized,
+            (await publicClient.GetAsync($"/api/public/v1/qr/{code}/owner-vehicle/work-orders/1")).StatusCode);
+
+        // T-QR-35: «Actividad» registra el escaneo, el pedido de verificación y la entrada al portal
+        Assert.Equal(HttpStatusCode.OK, (await publicClient.GetAsync($"/api/public/v1/qr/{code}")).StatusCode);
+        var list = await (await ownerClient.GetAsync($"/api/v1/qr/cards?q={code}")).Content.ReadFromJsonAsync<JsonElement>();
+        var cardId = list.GetProperty("items").EnumerateArray()
+            .First(i => i.GetProperty("code").GetString() == code).GetProperty("id").GetString()!;
+        var events = await (await ownerClient.GetAsync($"/api/v1/qr/cards/{cardId}/events")).Content.ReadFromJsonAsync<JsonElement>();
+        var types = events.GetProperty("items").EnumerateArray().Select(e => e.GetProperty("eventType").GetString()).ToList();
+        Assert.Contains("scan", types);
+        Assert.Contains("owner_challenge", types);
+        Assert.Contains("owner_session", types);
     }
 
     // ── T-QR-20: /owner-vehicle sin cookie devuelve 401 ──────────────────────

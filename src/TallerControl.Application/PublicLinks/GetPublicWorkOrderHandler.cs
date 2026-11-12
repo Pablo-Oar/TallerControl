@@ -49,7 +49,7 @@ public sealed class GetPublicWorkOrderHandler
         return new PublicWorkOrderDto(
             order.Id,
             order.Number,
-            order.Status.ToString(),
+            order.Status.ToSnake(),
             order.CustomerName,
             order.VehiclePlate,
             order.VehicleBrand,

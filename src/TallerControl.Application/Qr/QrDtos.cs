@@ -69,6 +69,21 @@ public record OwnerWorkOrderDto(
     DateTimeOffset? CompletedAt,
     decimal? Total);
 
+/// <summary>Detalle de una orden para el dueño: qué se hizo. Sin costos, notas internas ni importes por renglón.</summary>
+public record OwnerWorkOrderDetailDto(
+    int Number,
+    string Status,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? CompletedAt,
+    DateTimeOffset? DeliveredAt,
+    int OdometerKm,
+    string? ReportedIssue,
+    string? MechanicNotes,
+    IReadOnlyList<OwnerWorkOrderItemDto> Items,
+    decimal Total);
+
+public record OwnerWorkOrderItemDto(string Kind, string Description, decimal Quantity);
+
 public record OwnerQuoteDto(
     int Number,
     string Status,

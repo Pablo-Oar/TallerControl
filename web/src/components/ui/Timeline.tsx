@@ -25,6 +25,8 @@ export interface TimelineItem {
   badge?: ReactNode
   /** Si se indica, el título es un enlace. */
   href?: string
+  /** Si se indica, el título es un botón que la ejecuta (p. ej. abrir el detalle). */
+  onSelect?: () => void
   /** Clase de color del punto (pisa el del tipo): p. ej. el color del estado al que pasó la orden. */
   markerClass?: string
   /** Resalta el ítem (p. ej. la respuesta vigente). */
@@ -133,6 +135,14 @@ export function Timeline({ items, empty = 'Sin movimientos todavía.', showTime 
                     <Link to={item.href} className="font-semibold text-tc-purple hover:text-tc-purple-mid">
                       {item.title}
                     </Link>
+                  ) : item.onSelect ? (
+                    <button
+                      type="button"
+                      onClick={item.onSelect}
+                      className="min-h-[32px] font-semibold text-tc-purple hover:text-tc-purple-mid"
+                    >
+                      {item.title}
+                    </button>
                   ) : (
                     <span className="font-semibold">{item.title}</span>
                   )}

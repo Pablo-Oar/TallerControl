@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { getOwnerVehicle, type OwnerWorkOrderDto } from '../../../lib/api/qrCards'
+import { getOwnerVehicle, getOwnerWorkOrder, type OwnerWorkOrderDto } from '../../../lib/api/qrCards'
+import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { Timeline, WORK_ORDER_MARKER, type TimelineItem } from '../../../components/ui/Timeline'
 import { QUOTE_STATUS_LABELS } from '../../../lib/api/quotes'
@@ -20,8 +22,80 @@ const WO_STATUS_LABELS: Record<string, string> = {
 const fmtARS = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
 
+const KIND_LABELS: Record<string, string> = { service: 'Servicio', product: 'Repuesto / producto', manual: 'Otro' }
+
+/** Detalle de una orden: qué se hizo (servicios y repuestos). Sin costos ni importes por renglón. */
+function OrderDetailModal({ code, number, onClose }: { code: string; number: number; onClose: () => void }) {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['owner-work-order', code, number],
+    queryFn: () => getOwnerWorkOrder(code, number),
+    retry: false,
+  })
+
+  return (
+    <Modal title={`Orden #${number}`} onClose={onClose} className="max-w-lg">
+      {isLoading && <p className="text-sm text-tc-text-muted">Cargando…</p>}
+      {isError && <p className="text-sm text-tc-danger-text">No se pudo cargar el detalle. Escaneá el código QR nuevamente.</p>}
+      {data && (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-tc-text-secondary">
+            <StatusBadge status={data.status} label={WO_STATUS_LABELS[data.status] ?? data.status} />
+            <span>Ingresó el {formatDate(data.createdAt)}</span>
+            {(data.deliveredAt ?? data.completedAt) && (
+              <span>
+                {data.deliveredAt ? 'Entregada' : 'Terminada'} el {formatDate((data.deliveredAt ?? data.completedAt)!)}
+              </span>
+            )}
+            <span>{data.odometerKm.toLocaleString('es-AR')} km</span>
+          </div>
+
+          {data.reportedIssue && (
+            <div>
+              <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Motivo de la consulta</p>
+              <p className="mt-1 text-sm text-tc-text">{data.reportedIssue}</p>
+            </div>
+          )}
+
+          <div>
+            <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Trabajos realizados</p>
+            {data.items.length === 0 ? (
+              <p className="mt-1 text-sm text-tc-text-muted">Todavía no hay trabajos cargados.</p>
+            ) : (
+              <ul className="mt-2 divide-y divide-tc-border rounded-xl border border-tc-border">
+                {data.items.map((it, i) => (
+                  <li key={i} className="flex items-start justify-between gap-3 px-3 py-2.5 text-sm">
+                    <div className="min-w-0">
+                      <p className="font-medium text-tc-text">{it.description}</p>
+                      <p className="text-xs text-tc-text-muted">{KIND_LABELS[it.kind] ?? it.kind}</p>
+                    </div>
+                    <span className="shrink-0 tabular-nums text-tc-text-secondary">
+                      {it.quantity !== 1 ? `× ${Number(it.quantity).toLocaleString('es-AR')}` : ''}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {data.mechanicNotes && (
+            <div>
+              <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Observaciones del taller</p>
+              <p className="mt-1 text-sm text-tc-text">{data.mechanicNotes}</p>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between border-t border-tc-border pt-3">
+            <span className="text-sm font-semibold text-tc-text">Total</span>
+            <span className="text-lg font-bold tabular-nums text-tc-text">{fmtARS(data.total)}</span>
+          </div>
+        </div>
+      )}
+    </Modal>
+  )
+}
+
 /** Solo los campos que ya expone el DTO público (número, estado, fechas y total): el Timeline no recibe nada más. */
-function toTimelineItem(wo: OwnerWorkOrderDto): TimelineItem {
+function toTimelineItem(wo: OwnerWorkOrderDto, onOpen: (n: number) => void): TimelineItem {
   const parts = [
     wo.completedAt ? `Entrega: ${formatDate(wo.completedAt)}` : null,
     wo.total != null ? `Total: ${fmtARS(wo.total)}` : null,
@@ -30,6 +104,7 @@ function toTimelineItem(wo: OwnerWorkOrderDto): TimelineItem {
     id: String(wo.number),
     date: wo.createdAt,
     title: `OT #${wo.number}`,
+    onSelect: () => onOpen(wo.number),
     kind: 'order',
     markerClass: WORK_ORDER_MARKER[wo.status],
     badge: <StatusBadge status={wo.status} label={WO_STATUS_LABELS[wo.status] ?? wo.status} />,
@@ -40,6 +115,7 @@ function toTimelineItem(wo: OwnerWorkOrderDto): TimelineItem {
 export function OwnerVehiclePage() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
+  const [openOrder, setOpenOrder] = useState<number | null>(null)
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['owner-vehicle', code],
@@ -153,10 +229,12 @@ export function OwnerVehiclePage() {
             <p className="px-4 py-6 text-sm text-tc-text-muted">No hay órdenes registradas.</p>
           ) : (
             <div className="px-4 py-4">
-              <Timeline items={data.workOrders.map(toTimelineItem)} showTime={false} label="Historial de órdenes de trabajo" />
+              <Timeline items={data.workOrders.map(wo => toTimelineItem(wo, setOpenOrder))} showTime={false} label="Historial de órdenes de trabajo" />
             </div>
           )}
         </div>
+
+        {openOrder != null && <OrderDetailModal code={code!} number={openOrder} onClose={() => setOpenOrder(null)} />}
 
         <p className="text-center text-xs text-tc-text-muted">
           Esta sesión es válida por 30 minutos.
