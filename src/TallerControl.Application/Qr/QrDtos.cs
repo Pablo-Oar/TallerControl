@@ -80,7 +80,8 @@ public record OwnerWorkOrderDetailDto(
     string? ReportedIssue,
     string? MechanicNotes,
     IReadOnlyList<OwnerWorkOrderItemDto> Items,
-    decimal Total);
+    decimal Total,
+    decimal Pending = 0);
 
 public record OwnerWorkOrderItemDto(string Kind, string Description, decimal Quantity);
 
