@@ -251,7 +251,8 @@ internal sealed class EfQrRepository : IQrRepository
 
         return new OwnerWorkOrderDetailDto(
             order.Number, EnumText.ToSnakeCase(order.Status.ToString()), order.CreatedAt, order.CompletedAt, order.DeliveredAt,
-            order.OdometerKm, order.ReportedIssue, order.MechanicNotes, items, order.Total);
+            order.OdometerKm, order.ReportedIssue, order.MechanicNotes, items, order.Total,
+            Math.Max(0m, order.Total - order.PaidAmount));
     }
 
     public async Task<OwnerVehicleDto?> GetOwnerVehicleDtoAsync(Guid vehicleId, Guid tenantId, CancellationToken ct)

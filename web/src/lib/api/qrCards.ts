@@ -97,6 +97,7 @@ export interface OwnerWorkOrderDetailDto {
   mechanicNotes: string | null
   items: OwnerWorkOrderItemDto[]
   total: number
+  pending: number
 }
 
 export interface OwnerQuoteDto {

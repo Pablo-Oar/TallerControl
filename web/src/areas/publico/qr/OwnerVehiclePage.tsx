@@ -38,16 +38,25 @@ function OrderDetailModal({ code, number, onClose }: { code: string; number: num
       {isError && <p className="text-sm text-tc-danger-text">No se pudo cargar el detalle. Escaneá el código QR nuevamente.</p>}
       {data && (
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-tc-text-secondary">
-            <StatusBadge status={data.status} label={WO_STATUS_LABELS[data.status] ?? data.status} />
-            <span>Ingresó el {formatDate(data.createdAt)}</span>
-            {(data.deliveredAt ?? data.completedAt) && (
-              <span>
-                {data.deliveredAt ? 'Entregada' : 'Terminada'} el {formatDate((data.deliveredAt ?? data.completedAt)!)}
-              </span>
-            )}
-            <span>{data.odometerKm.toLocaleString('es-AR')} km</span>
-          </div>
+          <StatusBadge status={data.status} label={WO_STATUS_LABELS[data.status] ?? data.status} />
+          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-tc-border bg-tc-border text-sm">
+            <div className="bg-white px-3 py-2">
+              <dt className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Ingreso</dt>
+              <dd className="font-medium text-tc-text">{formatDate(data.createdAt)}</dd>
+            </div>
+            <div className="bg-white px-3 py-2">
+              <dt className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
+                {data.deliveredAt ? 'Entrega' : 'Terminada'}
+              </dt>
+              <dd className="font-medium text-tc-text">
+                {data.deliveredAt ?? data.completedAt ? formatDate((data.deliveredAt ?? data.completedAt)!) : '—'}
+              </dd>
+            </div>
+            <div className="col-span-2 bg-white px-3 py-2">
+              <dt className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Odómetro</dt>
+              <dd className="font-medium tabular-nums text-tc-text">{data.odometerKm.toLocaleString('es-AR')} km</dd>
+            </div>
+          </dl>
 
           {data.reportedIssue && (
             <div>
@@ -84,9 +93,25 @@ function OrderDetailModal({ code, number, onClose }: { code: string; number: num
             </div>
           )}
 
-          <div className="flex items-center justify-between border-t border-tc-border pt-3">
-            <span className="text-sm font-semibold text-tc-text">Total</span>
-            <span className="text-lg font-bold tabular-nums text-tc-text">{fmtARS(data.total)}</span>
+          <div className="space-y-1.5 border-t border-tc-border pt-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-tc-text">Total</span>
+              <span className="text-lg font-bold tabular-nums text-tc-text">{fmtARS(data.total)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-tc-text">Adeudado</span>
+              <span
+                className={`text-lg tabular-nums ${
+                  data.pending <= 0
+                    ? 'font-bold text-tc-success-text'
+                    : data.pending >= data.total
+                      ? 'font-bold text-tc-danger-solid'
+                      : 'font-bold text-tc-warning-solid'
+                }`}
+              >
+                {fmtARS(Math.max(0, data.pending))}
+              </span>
+            </div>
           </div>
         </div>
       )}
