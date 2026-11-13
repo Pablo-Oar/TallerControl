@@ -121,7 +121,8 @@ internal sealed class EfQrRepository : IQrRepository
                 vehicle?.Plate,
                 c.AssignedAt, c.RevokedAt,
                 vehicle?.Brand, vehicle?.Model,
-                vehicle is not null ? customerNames.GetValueOrDefault(vehicle.CustomerId) : null);
+                vehicle is not null ? customerNames.GetValueOrDefault(vehicle.CustomerId) : null,
+                vehicle?.CustomerId);
         }).ToList();
 
         return new Page<QrCardListDto>(dtos, page, pageSize, total);
@@ -308,6 +309,6 @@ internal sealed class EfQrRepository : IQrRepository
 
         return new OwnerVehicleDto(
             vehicle.Plate, vehicle.Brand, vehicle.Model, vehicle.OdometerKm,
-            orders, quotes, pendingBalance, shop.Name, shop.LogoUrl);
+            orders, quotes, pendingBalance, shop.Name, shop.LogoUrl, shop.Address, shop.Phone);
     }
 }

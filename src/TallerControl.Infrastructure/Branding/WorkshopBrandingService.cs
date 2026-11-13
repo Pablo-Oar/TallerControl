@@ -29,15 +29,18 @@ internal sealed class WorkshopBrandingService : IWorkshopBranding
 
     public async Task<WorkshopBranding> GetPublicAsync(Guid tenantId, CancellationToken ct)
     {
-        var name = await _db.Set<Tenant>().AsNoTracking().IgnoreQueryFilters()
+        var tenant = await _db.Set<Tenant>().AsNoTracking().IgnoreQueryFilters()
             .Where(t => t.Id == tenantId)
-            .Select(t => t.Name)
-            .FirstOrDefaultAsync(ct) ?? "Taller";
+            .Select(t => new { t.Name, t.Address, t.Phone })
+            .FirstOrDefaultAsync(ct);
+        var name = tenant?.Name ?? "Taller";
 
         var key = await LogoKeyAsync(tenantId, ct);
         return new WorkshopBranding(
             name,
-            key is null ? null : _storage.CreatePresignedGetUrl(key, UrlLifetime));
+            key is null ? null : _storage.CreatePresignedGetUrl(key, UrlLifetime),
+            string.IsNullOrWhiteSpace(tenant?.Address) ? null : tenant.Address.Trim(),
+            string.IsNullOrWhiteSpace(tenant?.Phone) ? null : tenant.Phone.Trim());
     }
 
     public async Task<LogoImage?> GetLogoAsync(Guid tenantId, CancellationToken ct)

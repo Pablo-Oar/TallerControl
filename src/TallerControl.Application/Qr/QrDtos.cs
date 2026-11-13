@@ -12,7 +12,8 @@ public record QrCardListDto(
     DateTimeOffset? RevokedAt,
     string? VehicleBrand = null,
     string? VehicleModel = null,
-    string? CustomerName = null);
+    string? CustomerName = null,
+    Guid? CustomerId = null);
 
 public record QrCardDto(
     Guid Id,
@@ -60,7 +61,9 @@ public record OwnerVehicleDto(
     IReadOnlyList<OwnerQuoteDto> ActiveQuotes,
     decimal PendingBalance,
     string? WorkshopName = null,
-    string? LogoUrl = null);
+    string? LogoUrl = null,
+    string? WorkshopAddress = null,
+    string? WorkshopPhone = null);
 
 public record OwnerWorkOrderDto(
     int Number,

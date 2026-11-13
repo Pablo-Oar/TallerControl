@@ -4,6 +4,8 @@ import { cn } from '@/lib/utils'
 interface WorkshopBrandProps {
   name?: string | null
   logoUrl?: string | null
+  address?: string | null
+  phone?: string | null
   /** `light`: sobre fondo claro; `dark`: sobre el azul marino de los encabezados. */
   tone?: 'light' | 'dark'
   className?: string
@@ -13,7 +15,7 @@ interface WorkshopBrandProps {
  * Logo y nombre del taller en las pantallas públicas que ve el cliente (presupuesto, orden, comprobante, turno,
  * portal del dueño). Si el taller no cargó logo, o la imagen no carga, muestra solo el nombre (o nada).
  */
-export function WorkshopBrand({ name, logoUrl, tone = 'light', className }: WorkshopBrandProps) {
+export function WorkshopBrand({ name, logoUrl, address, phone, tone = 'light', className }: WorkshopBrandProps) {
   const [failed, setFailed] = useState(false)
   const showLogo = !!logoUrl && !failed
   if (!showLogo && !name) return null
@@ -29,9 +31,16 @@ export function WorkshopBrand({ name, logoUrl, tone = 'light', className }: Work
         />
       )}
       {name && (
-        <span className={cn('min-w-0 truncate text-base font-bold tracking-tight', tone === 'dark' ? 'text-white' : 'text-tc-text')}>
-          {name}
-        </span>
+        <div className="min-w-0">
+          <span className={cn('block truncate text-base font-bold tracking-tight', tone === 'dark' ? 'text-white' : 'text-tc-text')}>
+            {name}
+          </span>
+          {(address || phone) && (
+            <span className={cn('block text-xs', tone === 'dark' ? 'text-tc-navy-text-dim' : 'text-tc-text-secondary')}>
+              {[address, phone].filter(Boolean).join(' · ')}
+            </span>
+          )}
+        </div>
       )}
     </div>
   )
