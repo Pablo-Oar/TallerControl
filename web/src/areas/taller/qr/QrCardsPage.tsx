@@ -17,7 +17,8 @@ import {
 } from '../../../lib/api/qrCards'
 import { Button } from '../../../components/ui/Button'
 import { FormField, FormTextarea } from '../../../components/ui/FormField'
-import { VehiclePicker } from '../../../components/ui/EntityPickers'
+import { CustomerPicker } from '../../../components/ui/EntityPickers'
+import { customersApi } from '../../../lib/api/customers'
 import { Modal } from '../../../components/ui/Modal'
 import { StatusBadge } from '../../../components/ui/StatusBadge'
 import { VehicleLabel } from '../../../components/ui/VehicleLabel'
@@ -102,6 +103,7 @@ export function QrCardsPage() {
   const [batchQty, setBatchQty] = useState(10)
   const [assignCode, setAssignCode] = useState('')
   const [assignVehicleId, setAssignVehicleId] = useState('')
+  const [assignCustomerId, setAssignCustomerId] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   const { data, isLoading } = useQuery({
@@ -115,6 +117,19 @@ export function QrCardsPage() {
       }),
   })
 
+  const { data: assignCustomer, isLoading: loadingAssignCustomer } = useQuery({
+    queryKey: ['customer', assignCustomerId],
+    queryFn: () => customersApi.get(assignCustomerId),
+    enabled: !!assignCustomerId,
+  })
+
+  const closeAssign = () => {
+    setShowAssignByCodeModal(false)
+    setAssignCode('')
+    setAssignCustomerId('')
+    setAssignVehicleId('')
+  }
+
   const invalidate = () => qc.invalidateQueries({ queryKey: ['qr-cards'] })
 
   const batchMut = useMutation({
@@ -127,9 +142,7 @@ export function QrCardsPage() {
     mutationFn: () => assignByCode(assignCode.toUpperCase(), assignVehicleId),
     onSuccess: () => {
       invalidate()
-      setShowAssignByCodeModal(false)
-      setAssignCode('')
-      setAssignVehicleId('')
+      closeAssign()
     },
     onError: (e: Error) => setError(e.message),
   })
@@ -219,11 +232,22 @@ export function QrCardsPage() {
         actions={c => (
           <>
             {c.status === 'free' ? (
-              <RowAction tone="purple" onClick={() => { setAssignCode(c.code); setShowAssignByCodeModal(true) }}>Asignar</RowAction>
+              // Misma posición que «Actividad»: un fantasma invisible fija el ancho y «Asignar» queda a su izquierda.
+              <span className="relative inline-flex">
+                <span aria-hidden className="invisible"><RowAction tabIndex={-1}>Actividad</RowAction></span>
+                <span className="absolute inset-0 flex items-center justify-start">
+                  <RowAction tone="purple" onClick={() => { setAssignCode(c.code); setShowAssignByCodeModal(true) }}>Asignar</RowAction>
+                </span>
+              </span>
             ) : (
               <RowAction onClick={() => setActivityCard({ id: c.id, code: c.code })}>Actividad</RowAction>
             )}
-            {c.status === 'assigned' && <RowActionLink tone="purple" href={getQrCardPrintUrl(c.id)} target="_blank" rel="noreferrer">PDF</RowActionLink>}
+            {c.status === 'assigned' ? (<RowActionLink tone="purple" href={getQrCardPrintUrl(c.id)} target="_blank" rel="noreferrer">PDF</RowActionLink>
+            ) : (
+              <span aria-hidden className="invisible">
+                <RowActionLink href="#" tabIndex={-1}>PDF</RowActionLink>
+              </span>
+            )}
             {(c.status === 'assigned' || c.status === 'lost' || can('qr.revoke')) && (
               <RowMenu
                 items={[
@@ -300,7 +324,7 @@ export function QrCardsPage() {
       )}
 
       {showAssignByCodeModal && (
-        <Modal title="Asignar tarjeta por código" onClose={() => setShowAssignByCodeModal(false)} className="max-w-sm">
+        <Modal title="Asignar tarjeta por código" onClose={closeAssign} className="max-w-sm">
           <div className="space-y-4">
             <FormField
               label="Código de la tarjeta"
@@ -309,9 +333,40 @@ export function QrCardsPage() {
               value={assignCode}
               onChange={(e) => setAssignCode(e.target.value.toUpperCase())}
             />
-            <VehiclePicker value={assignVehicleId} onChange={id => setAssignVehicleId(id)} />
+            <CustomerPicker
+              value={assignCustomerId}
+              onChange={id => { setAssignCustomerId(id); setAssignVehicleId('') }}
+            />
+            {assignCustomerId && (
+              <fieldset>
+                <legend className="mb-1 text-xs font-bold tracking-wider text-tc-text-secondary uppercase">Vehículo del cliente</legend>
+                {loadingAssignCustomer && <p className="text-sm text-tc-text-muted">Cargando vehículos…</p>}
+                {assignCustomer && assignCustomer.vehicles.length === 0 && (
+                  <p className="text-sm text-tc-text-muted">Este cliente todavía no tiene vehículos cargados.</p>
+                )}
+                <div className="space-y-1.5">
+                  {assignCustomer?.vehicles.map(v => (
+                    <label
+                      key={v.id}
+                      className={`flex min-h-[44px] cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm ${
+                        assignVehicleId === v.id ? 'border-tc-purple bg-tc-purple-light' : 'border-tc-border bg-white'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="assign-vehicle"
+                        checked={assignVehicleId === v.id}
+                        onChange={() => setAssignVehicleId(v.id)}
+                      />
+                      <span className="font-mono font-bold tracking-wider">{v.plate}</span>
+                      <span className="truncate text-tc-text-secondary">{[v.brand, v.model, v.year].filter(Boolean).join(' ')}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            )}
             <div className="flex justify-end gap-2">
-              <Button variant="secondary" size="sm" onClick={() => setShowAssignByCodeModal(false)}>
+              <Button variant="secondary" size="sm" onClick={closeAssign}>
                 Cancelar
               </Button>
               <Button
