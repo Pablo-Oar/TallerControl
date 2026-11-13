@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { RowMenu } from '../../../components/ui/RowMenu'
 import { formatDate } from '../../../lib/dates'
 import { confirmDialog } from '../../../components/ui/dialogs'
@@ -52,14 +53,23 @@ const COLUMNS: DataTableColumn<QrCardListDto>[] = [
   {
     key: 'customer',
     header: 'Cliente',
-    cell: c => <span className="truncate text-tc-text-secondary">{c.customerName || <span className="text-tc-text-muted">—</span>}</span>,
+    cell: c =>
+      c.customerName && c.customerId ? (
+        <Link to={`/app/customers/${c.customerId}`} className="truncate font-medium text-tc-purple hover:underline">
+          {c.customerName}
+        </Link>
+      ) : (
+        <span className="text-tc-text-muted">—</span>
+      ),
   },
   {
     key: 'plate',
     header: 'Vehículo',
     cell: c =>
-      c.vehiclePlate ? (
-        <VehicleLabel plate={c.vehiclePlate} brand={c.vehicleBrand} model={c.vehicleModel} />
+      c.vehiclePlate && c.vehicleId ? (
+        <Link to={`/app/vehicles/${c.vehicleId}`} className="inline-block hover:underline">
+          <VehicleLabel plate={c.vehiclePlate} brand={c.vehicleBrand} model={c.vehicleModel} />
+        </Link>
       ) : (
         <span className="text-tc-text-muted">—</span>
       ),
@@ -208,7 +218,11 @@ export function QrCardsPage() {
         getRowId={c => c.id}
         actions={c => (
           <>
-            <RowAction onClick={() => setActivityCard({ id: c.id, code: c.code })}>Actividad</RowAction>
+            {c.status === 'free' ? (
+              <RowAction tone="purple" onClick={() => { setAssignCode(c.code); setShowAssignByCodeModal(true) }}>Asignar</RowAction>
+            ) : (
+              <RowAction onClick={() => setActivityCard({ id: c.id, code: c.code })}>Actividad</RowAction>
+            )}
             {c.status === 'assigned' && <RowActionLink tone="purple" href={getQrCardPrintUrl(c.id)} target="_blank" rel="noreferrer">PDF</RowActionLink>}
             {(c.status === 'assigned' || c.status === 'lost' || can('qr.revoke')) && (
               <RowMenu

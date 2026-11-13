@@ -1,7 +1,7 @@
 namespace TallerControl.Application.Common;
 
 /// <summary>Nombre del taller y enlace temporal a su logo, para las pantallas públicas.</summary>
-public sealed record WorkshopBranding(string Name, string? LogoUrl);
+public sealed record WorkshopBranding(string Name, string? LogoUrl, string? Address = null, string? Phone = null);
 
 /// <summary>Imagen del logo ya leída del almacenamiento (para incrustarla en un PDF o un email).</summary>
 public sealed record LogoImage(byte[] Bytes, string ContentType);

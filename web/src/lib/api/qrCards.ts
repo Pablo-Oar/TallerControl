@@ -14,6 +14,7 @@ export interface QrCardListDto {
   vehicleBrand?: string | null
   vehicleModel?: string | null
   customerName?: string | null
+  customerId?: string | null
 }
 
 export interface QrCardDto {
@@ -63,6 +64,8 @@ export interface OwnerChallengeResult {
 export interface OwnerVehicleDto {
   workshopName?: string | null
   logoUrl?: string | null
+  workshopAddress?: string | null
+  workshopPhone?: string | null
   plate: string
   brand: string | null
   model: string | null

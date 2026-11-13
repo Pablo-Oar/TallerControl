@@ -39,12 +39,9 @@ internal sealed class QrPdfGenerator : IQrPdfGenerator
             .FirstOrDefaultAsync(q => q.Id == qrCardId, ct)
             ?? throw new InvalidOperationException($"Tarjeta QR {qrCardId} no encontrada.");
 
-        var tenantName = await _db.Set<Tenant>()
-            .AsNoTracking()
-            .IgnoreQueryFilters()
-            .Where(t => t.Id == card.TenantId)
-            .Select(t => t.Name)
-            .FirstOrDefaultAsync(ct) ?? "Taller";
+        var shop = await _branding.GetPublicAsync(card.TenantId, ct);
+        var tenantName = shop.Name;
+        var contact = string.Join("  ·  ", new[] { shop.Address, shop.Phone }.Where(x => !string.IsNullOrWhiteSpace(x)));
 
         string? vehicleBrand = null;
         string? vehicleModel = null;
@@ -91,7 +88,12 @@ internal sealed class QrPdfGenerator : IQrPdfGenerator
                     {
                         if (logoBytes is { Length: > 0 })
                             row.ConstantItem(9, Unit.Millimetre).PaddingRight(2, Unit.Millimetre).Height(7, Unit.Millimetre).Image(logoBytes).FitArea();
-                        row.RelativeItem().AlignMiddle().Text(tenantName).Bold().FontSize(9).FontColor(Colors.White);
+                        row.RelativeItem().AlignMiddle().Column(name =>
+                        {
+                            name.Item().Text(tenantName).Bold().FontSize(9).FontColor(Colors.White);
+                            if (contact.Length > 0)
+                                name.Item().Text(contact).FontSize(5.5f).FontColor("#cbd5e1");
+                        });
                         row.AutoItem().AlignMiddle().Text("HISTORIAL DIGITAL DEL VEHÍCULO").FontSize(5).Bold().LetterSpacing(0.1f).FontColor("#a78bfa");
                     });
 

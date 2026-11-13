@@ -186,7 +186,7 @@ export function OwnerVehiclePage() {
       {/* Header */}
       <div className="bg-tc-navy border-b border-tc-border px-4 py-5">
         <div className="mx-auto max-w-md">
-          <WorkshopBrand name={data.workshopName} logoUrl={data.logoUrl} tone="dark" className="mb-4" />
+          <WorkshopBrand name={data.workshopName} logoUrl={data.logoUrl} address={data.workshopAddress} phone={data.workshopPhone} tone="dark" className="mb-4" />
           <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">
             Portal del dueño
           </p>
