@@ -84,6 +84,15 @@ export function PublicQuotePage() {
   const canRespond = data.status === 'sent'
   const isExpired = data.validUntil.slice(0, 10) < localDateISO()
 
+  // Totales con lo que el cliente dejó tildado (el servidor recalcula el total aprobado al recibir la respuesta).
+  const kept = data.items.filter(i => !excluded.has(i.id))
+  const r2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100
+  const factor = 1 - data.globalDiscountPct / 100
+  const shownSubtotal = r2(kept.reduce((a, i) => a + i.lineNet, 0))
+  const shownDiscount = r2(shownSubtotal * (1 - factor))
+  const shownVat = r2(kept.reduce((a, i) => a + i.lineVat, 0) * factor)
+  const shownTotal = r2(shownSubtotal - shownDiscount + shownVat)
+
   if (submitted) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-tc-surface px-4">
@@ -196,7 +205,7 @@ export function PublicQuotePage() {
               </thead>
               <tbody className="divide-y divide-tc-border">
                 {data.items.map(item => (
-                  <tr key={item.id} className="hover:bg-tc-surface transition-colors">
+                  <tr key={item.id} className={`hover:bg-tc-surface transition-colors ${excluded.has(item.id) ? 'opacity-50' : ''}`}>
                     <td className="px-3 py-3 sm:px-4 text-tc-text">
                       {item.description}
                       {canRespond && !isExpired && (
@@ -237,21 +246,21 @@ export function PublicQuotePage() {
               <>
                 <div className="flex justify-between text-tc-text-secondary">
                   <span className="text-xs font-bold tracking-wider uppercase">Subtotal</span>
-                  <span className="tabular-nums">{fmtARS(data.subtotalNet)}</span>
+                  <span className="tabular-nums">{fmtARS(shownSubtotal)}</span>
                 </div>
                 <div className="flex justify-between text-tc-text-secondary">
                   <span className="text-xs font-bold tracking-wider uppercase">Descuento ({data.globalDiscountPct}%)</span>
-                  <span className="tabular-nums text-tc-danger-solid">−{fmtARS(data.discountAmount)}</span>
+                  <span className="tabular-nums text-tc-danger-solid">−{fmtARS(shownDiscount)}</span>
                 </div>
               </>
             )}
             <div className="flex justify-between text-tc-text-secondary">
               <span className="text-xs font-bold tracking-wider uppercase">IVA</span>
-              <span className="tabular-nums">{fmtARS(data.vatAmount)}</span>
+              <span className="tabular-nums">{fmtARS(shownVat)}</span>
             </div>
             <div className="flex justify-between border-t border-tc-border pt-2 text-base font-bold text-tc-text">
               <span className="text-xs font-bold tracking-wider uppercase">Total</span>
-              <span className="tabular-nums text-tc-purple">{fmtARS(data.total)}</span>
+              <span className="tabular-nums text-tc-purple">{fmtARS(shownTotal)}</span>
             </div>
           </div>
         </div>

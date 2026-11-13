@@ -84,7 +84,7 @@ export function QuoteFormModal({ quote, onSuccess, onClose }: Props) {
       quantity: 1,
       unitNetPrice: 0,
       vatRate: defaultVat,
-      requiredForApproval: true,
+      requiredForApproval: false,
     })
   }
 
