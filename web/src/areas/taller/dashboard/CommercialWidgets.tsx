@@ -130,7 +130,7 @@ export function HotQuotesWidget({ data, thresholds }: { data: HotQuotes; thresho
   )
 }
 
-const KIND_LABELS = { cash: 'Efectivo', bank: 'Banco', digital: 'Billetera' } as const
+const KIND_LABELS = { cash: 'Efectivo', card: 'Tarjeta', bank_transfer: 'Transferencia', check: 'Cheque', other: 'Otro' } as const
 
 /** Estado de la caja: saldo por cuenta y quién tiene la sesión abierta. */
 export function CashWidget({ data }: { data: CashStatus }) {

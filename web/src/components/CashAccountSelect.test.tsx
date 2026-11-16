@@ -36,7 +36,7 @@ describe('useCashAccountChoice', () => {
     auth.value = { user: { permissions: ['cash.read'] } }
     api.listAccounts.mockResolvedValue([
       { id: 'a1', name: 'Caja chica', kind: 'cash', isActive: true, sessionOpenedAt: '2026-10-21T10:00:00Z' },
-      { id: 'a2', name: 'Banco', kind: 'bank', isActive: true, sessionOpenedAt: null },
+      { id: 'a2', name: 'Banco', kind: 'bank_transfer', isActive: true, sessionOpenedAt: null },
       { id: 'a3', name: 'Vieja', kind: 'cash', isActive: false, sessionOpenedAt: null },
     ])
   })
