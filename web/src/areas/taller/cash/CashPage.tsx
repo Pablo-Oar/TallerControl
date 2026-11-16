@@ -21,7 +21,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { ChevronDownIcon } from '@/components/ui/icons'
 
-const KIND_LABELS: Record<CashAccountKind, string> = { cash: 'Efectivo', bank: 'Banco', digital: 'Digital' }
+const KIND_LABELS: Record<CashAccountKind, string> = { cash: 'Efectivo', card: 'Tarjeta', bank_transfer: 'Transferencia bancaria', check: 'Cheque', other: 'Otro' }
 
 const REASON_LABELS: Record<CashMovementReason, string> = {
   payment: 'Cobro de orden',
@@ -207,8 +207,10 @@ function AccountFormModal({ account, onDone, onClose }: { account?: CashAccountD
         <FormField label="Nombre" requiredMark value={name} onChange={e => setName(e.target.value)} placeholder="Nombre de la cuenta" maxLength={100} required />
         <FormSelect label="Tipo" value={kind} onChange={e => setKind(e.target.value as CashAccountKind)}>
           <option value="cash">Efectivo</option>
-          <option value="bank">Banco</option>
-          <option value="digital">Digital</option>
+          <option value="card">Tarjeta</option>
+          <option value="bank_transfer">Transferencia bancaria</option>
+          <option value="check">Cheque</option>
+          <option value="other">Otro</option>
         </FormSelect>
         {account && (
           <label className="flex items-center gap-2 text-sm text-tc-text-secondary">

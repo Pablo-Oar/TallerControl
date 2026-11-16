@@ -1,6 +1,6 @@
 import { api } from './client'
 
-export type CashAccountKind = 'cash' | 'bank' | 'digital'
+export type CashAccountKind = 'cash' | 'card' | 'bank_transfer' | 'check' | 'other'
 export type CashSessionStatus = 'open' | 'closed'
 export type CashMovementDirection = 'in' | 'out'
 export type CashMovementReason = 'payment' | 'purchase_payment' | 'counter_sale_income' | 'manual_income' | 'manual_expense'

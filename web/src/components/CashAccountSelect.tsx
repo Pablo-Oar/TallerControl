@@ -5,7 +5,7 @@ import { useCan } from '../lib/auth/permissions'
 import { FormSelect } from './ui/FormField'
 
 const STORAGE_KEY = 'tc_cash_account'
-const KIND_LABELS: Record<CashAccountKind, string> = { cash: 'Efectivo', bank: 'Banco', digital: 'Digital' }
+const KIND_LABELS: Record<CashAccountKind, string> = { cash: 'Efectivo', card: 'Tarjeta', bank_transfer: 'Transferencia bancaria', check: 'Cheque', other: 'Otro' }
 
 function readStored(): string {
   try {

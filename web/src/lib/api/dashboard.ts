@@ -81,7 +81,7 @@ export interface TodayAppointments {
 export interface CashAccountStatus {
   id: string
   name: string
-  kind: 'cash' | 'bank' | 'digital'
+  kind: 'cash' | 'card' | 'bank_transfer' | 'check' | 'other'
   balance: number
   sessionOpenedAt: string | null
   sessionOpenedBy: string | null

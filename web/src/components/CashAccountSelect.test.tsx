@@ -36,7 +36,7 @@ describe('useCashAccountChoice', () => {
     auth.value = { user: { permissions: ['cash.read'] } }
     api.listAccounts.mockResolvedValue([
       { id: 'a1', name: 'Caja chica', kind: 'cash', isActive: true, sessionOpenedAt: '2026-10-21T10:00:00Z' },
-      { id: 'a2', name: 'Banco', kind: 'bank', isActive: true, sessionOpenedAt: null },
+      { id: 'a2', name: 'Banco', kind: 'bank_transfer', isActive: true, sessionOpenedAt: null },
       { id: 'a3', name: 'Vieja', kind: 'cash', isActive: false, sessionOpenedAt: null },
     ])
   })
@@ -50,7 +50,7 @@ describe('useCashAccountChoice', () => {
 
   it('elegir una cuenta la devuelve y la recuerda para la próxima vez', async () => {
     renderProbe()
-    await screen.findByRole('option', { name: 'Banco · Banco' })
+    await screen.findByRole('option', { name: 'Banco · Transferencia bancaria' })
     await userEvent.selectOptions(screen.getByLabelText('Ingresa a la cuenta'), 'a2')
     expect(screen.getByTestId('chosen')).toHaveTextContent('a2')
     expect(screen.getByText(/no tiene la sesión abierta/i)).toBeInTheDocument()
