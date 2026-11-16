@@ -184,9 +184,13 @@ export function QuoteDetailPage() {
           <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-tc-text-muted">Datos del presupuesto</span>
         </div>
         <div className="grid grid-cols-2 gap-0 sm:grid-cols-3 divide-x divide-tc-border">
-          <DataCell label="Cliente">{quote.customerName}</DataCell>
+          <DataCell label="Cliente">
+            <Link to={`/app/customers/${quote.customerId}`} className="text-tc-purple hover:underline">{quote.customerName}</Link>
+          </DataCell>
           <DataCell label="Vehículo">
-            <span className="font-mono font-bold tracking-wider">{quote.vehiclePlate}</span>
+            <Link to={`/app/vehicles/${quote.vehicleId}`} className="text-tc-purple hover:underline">
+              <span className="font-mono font-bold tracking-wider">{quote.vehiclePlate}</span>
+            </Link>
             {(quote.vehicleBrand || quote.vehicleModel) && (
               <span className="ml-1 text-tc-text-secondary">— {[quote.vehicleBrand, quote.vehicleModel].filter(Boolean).join(' ')}</span>
             )}

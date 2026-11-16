@@ -209,9 +209,13 @@ export function WorkOrderDetailPage() {
       {/* Info principal: coupon anatomy */}
       <div className="grid gap-4 md:grid-cols-2">
         <Section title="Cliente y vehículo">
-          <Row label="Cliente">{order.customerName}</Row>
+          <Row label="Cliente">
+            <Link to={`/app/customers/${order.customerId}`} className="text-tc-purple hover:underline">{order.customerName}</Link>
+          </Row>
           <Row label="Vehículo">
-            <span className="font-mono font-bold tracking-widest">{order.vehiclePlate}</span>
+            <Link to={`/app/vehicles/${order.vehicleId}`} className="text-tc-purple hover:underline">
+              <span className="font-mono font-bold tracking-widest">{order.vehiclePlate}</span>
+            </Link>
             {vehicleLabel && <span className="ml-1 text-tc-text-secondary">— {vehicleLabel}</span>}
           </Row>
           <Row label="Odómetro">
