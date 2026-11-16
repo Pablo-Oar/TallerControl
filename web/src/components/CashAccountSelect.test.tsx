@@ -50,7 +50,7 @@ describe('useCashAccountChoice', () => {
 
   it('elegir una cuenta la devuelve y la recuerda para la próxima vez', async () => {
     renderProbe()
-    await screen.findByRole('option', { name: 'Banco · Banco' })
+    await screen.findByRole('option', { name: 'Banco · Transferencia bancaria' })
     await userEvent.selectOptions(screen.getByLabelText('Ingresa a la cuenta'), 'a2')
     expect(screen.getByTestId('chosen')).toHaveTextContent('a2')
     expect(screen.getByText(/no tiene la sesión abierta/i)).toBeInTheDocument()
